@@ -296,9 +296,11 @@ export let send_message = (): void => {
 
         assert(draft_id !== undefined);
         const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        // The message event may have arrived first and deleted the draft.
+        if (draft !== false) {
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
+        }
     }
 
     transmit.send_message(
