@@ -4934,7 +4934,7 @@ paths:
                               description: |
                                 Event sent to the previous owner of a bot when the bot's
                                 owner is changed, unless the previous owner is an
-                                organization administrator.
+                                organization administrator or is deactivated.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
