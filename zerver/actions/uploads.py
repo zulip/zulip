@@ -29,25 +29,29 @@ class AttachmentChangeResult:
 def do_claim_attachments(
     message: Message | ScheduledMessage, potential_path_ids: list[str]
 ) -> bool:
+    if len(potential_path_ids) == 0:
+        return False
+
     claimed = False
+    user_profile = message.sender
+    is_message_realm_public = False
+    is_message_web_public = False
+    if isinstance(message, Message):
+        is_channel_message = message.is_channel_message
+    else:
+        assert isinstance(message, ScheduledMessage)
+        is_channel_message = message.is_channel_message()
+
+    if is_channel_message:
+        stream = Stream.objects.get(id=message.recipient.type_id)
+        is_message_realm_public = stream.is_public()
+        is_message_web_public = (
+            user_profile.realm.web_public_streams_enabled() and stream.is_web_public
+        )
+
     for path_id in potential_path_ids:
-        user_profile = message.sender
-        is_message_realm_public = False
-        is_message_web_public = False
-        if isinstance(message, Message):
-            is_channel_message = message.is_channel_message
-        else:
-            assert isinstance(message, ScheduledMessage)
-            is_channel_message = message.is_channel_message()
-
-        if is_channel_message:
-            stream = Stream.objects.get(id=message.recipient.type_id)
-            is_message_realm_public = stream.is_public()
-            is_message_web_public = (
-                user_profile.realm.web_public_streams_enabled() and stream.is_web_public
-            )
-
-        if not validate_attachment_request(user_profile, path_id)[0]:
+        is_valid, attachment = validate_attachment_request(user_profile, path_id)
+        if not is_valid:
             # Technically, there are 2 cases here:
             # * The user put something in their message that has the form
             # of an upload URL, but does not actually correspond to a previously
@@ -65,9 +69,10 @@ def do_claim_attachments(
             )
             continue
 
+        assert attachment is not None
         claimed = True
         attachment = claim_attachment(
-            path_id, message, is_message_realm_public, is_message_web_public
+            attachment, message, is_message_realm_public, is_message_web_public
         )
         if not isinstance(message, ScheduledMessage):
             # attachment update events don't say anything about scheduled messages,
