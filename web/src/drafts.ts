@@ -512,6 +512,16 @@ export function rewire_update_draft(value: typeof update_draft): void {
     update_draft = value;
 }
 
+export function clear_is_sending_saving(draft_id: string): void {
+    const draft = draft_model.getDraft(draft_id);
+    // The draft may have been deleted while its message was sending.
+    if (draft === false) {
+        return;
+    }
+    draft.is_sending_saving = false;
+    draft_model.editDraft(draft_id, draft);
+}
+
 export function current_recipient_data(): {
     stream_name: string | undefined;
     topic: string | undefined;

@@ -295,12 +295,7 @@ export let send_message = (): void => {
         drafts.sync_count();
 
         assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        // The message event may have arrived first and deleted the draft.
-        if (draft !== false) {
-            draft.is_sending_saving = false;
-            drafts.draft_model.editDraft(draft_id, draft);
-        }
+        drafts.clear_is_sending_saving(draft_id);
     }
 
     transmit.send_message(
@@ -457,10 +452,7 @@ function schedule_message_to_custom_date(): void {
             $banner_container,
             $("textarea#compose-textarea"),
         );
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        drafts.clear_is_sending_saving(draft_id);
     };
 
     channel.post({

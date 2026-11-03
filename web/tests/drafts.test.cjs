@@ -280,6 +280,19 @@ test("draft_model delete", () => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
+test("clear_is_sending_saving", () => {
+    const draft_model = drafts.draft_model;
+    const id = draft_model.addDraft({...draft_1, is_sending_saving: true});
+
+    drafts.clear_is_sending_saving(id);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
+
+    // The draft can be deleted while its message is sending.
+    draft_model.deleteDrafts([id]);
+    drafts.clear_is_sending_saving(id);
+    assert.equal(draft_model.getDraft(id), false);
+});
+
 test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     mock_banners();
