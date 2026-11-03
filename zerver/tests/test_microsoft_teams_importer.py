@@ -171,7 +171,7 @@ def mock_microsoft_graph_api_calls(
         )
         responses.add(
             responses.GET,
-            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX, re.VERBOSE),
             body=read_test_image_file("img.png"),
             content_type="image/png",
             status=200,
@@ -805,7 +805,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
     def test_process_hosted_content_attachments(self) -> None:
         responses.add(
             responses.GET,
-            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX, re.VERBOSE),
             body=read_test_image_file("img.png"),
             content_type="image/png",
             status=200,
@@ -816,7 +816,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             content: str
             hosted_content_count: int
             test_name: str
-            is_direct_message_type: bool
             teams_message_id: str = "T"
             zulip_message_id: int = 0
             zulip_user_id: int = 0
@@ -845,14 +844,12 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     """,
                 ),
                 hosted_content_count=1,
-                is_direct_message_type=False,
                 test_name="text and an image",
             ),
             # Unprocessed converted html
             MessageFixture(
                 content="Normal text and an ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
                 hosted_content_count=1,
-                is_direct_message_type=False,
                 test_name="text and an image 2",
             ),
             MessageFixture(
@@ -862,7 +859,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     "Third ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
                 ),
                 hosted_content_count=3,
-                is_direct_message_type=False,
                 test_name="multiple images",
             ),
             # This is actual decoded content from a message in messages_002145f2-eaba-4962-997d-6d841a9f50af.json
@@ -892,19 +888,16 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     """,
                 ),
                 hosted_content_count=0,
-                is_direct_message_type=False,
                 test_name="two custom emojis",
             ),
             MessageFixture(
                 content="Normal message",
                 hosted_content_count=0,
-                is_direct_message_type=False,
                 test_name="text only",
             ),
             MessageFixture(
                 content="MS Sharepoint attachment URL ![image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
                 hosted_content_count=0,
-                is_direct_message_type=False,
                 test_name="text and other URL",
             ),
             MessageFixture(
@@ -913,15 +906,13 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     "Get a hosted content ![valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
                 ),
                 hosted_content_count=1,
-                is_direct_message_type=False,
                 test_name="invalid get hosted content URL and a valid one",
             ),
             MessageFixture(
                 content=(
                     "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
                 ),
-                hosted_content_count=0,
-                is_direct_message_type=True,
+                hosted_content_count=1,
                 test_name="DM hosted content",
             ),
         ]
@@ -946,7 +937,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                     attachment_result = process_hosted_content_attachments(
                         content=fixture.content,
                         do_download_and_export_upload_file=do_download_and_export_upload_file,
-                        is_direct_message_type=fixture.is_direct_message_type,
                         microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
                         realm_id=realm_id,
                         teams_message_id=fixture.teams_message_id,
