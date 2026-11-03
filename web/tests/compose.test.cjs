@@ -257,7 +257,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok(draft_deleted);
 });
 
-test_ui("send_message", ({override, override_rewire, mock_template}) => {
+test_ui("send_message", ({disallow, override, override_rewire, mock_template}) => {
     mock_banners();
     clock.setSystemTime(new Date(fake_now * 1000));
 
@@ -387,6 +387,17 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
+        assert.ok(echo_error_msg_checked);
+    })();
+
+    (function test_error_after_message_event_deleted_draft() {
+        stub_state = initialize_state_stub_dict();
+        echo_error_msg_checked = false;
+        override(drafts.draft_model, "getDraft", () => false);
+        disallow(drafts.draft_model, "editDraft");
+
+        compose.send_message();
+
         assert.ok(echo_error_msg_checked);
     })();
 

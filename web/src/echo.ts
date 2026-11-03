@@ -11,6 +11,7 @@ import * as browser_history from "./browser_history.ts";
 import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -495,6 +496,10 @@ export let reify_message_id = (local_id: string, server_id: number): void => {
     if (message === undefined) {
         return;
     }
+
+    // The server has the message, so its draft is no longer needed.
+    // Delete it before message_store.reify_message_id strips draft_id.
+    drafts.draft_model.deleteDrafts([message.draft_id]);
 
     message.id = server_id;
     message.locally_echoed = false;

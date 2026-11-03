@@ -11,6 +11,11 @@ const {$} = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {
+        deleteDrafts: noop,
+    },
+});
 const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -163,6 +168,56 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ]);
+});
+
+function set_up_local_echo(override, local_id, draft_id) {
+    const deleted_draft_ids = [];
+    override(drafts.draft_model, "deleteDrafts", (draft_ids) => {
+        deleted_draft_ids.push(...draft_ids);
+    });
+    const message = {
+        id: Number.parseFloat(local_id),
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        content: "<p>hello</p>",
+        draft_id,
+        locally_echoed: true,
+    };
+    echo.track_local_message(message);
+    override(message_store, "get", () => message);
+    override(message_store, "reify_message_id", () => {
+        // Mirror the real conversion, which drops the local-echo fields.
+        delete message.draft_id;
+    });
+    override(compose_notifications, "reify_message_id", noop);
+    override(hash_util, "search_terms_to_hash", noop);
+    override(browser_history, "update_current_history_state_data", noop);
+    return {message, deleted_draft_ids};
+}
+
+run_test("process_from_server deletes the draft of a send that errored", ({override}) => {
+    const {message, deleted_draft_ids} = set_up_local_echo(override, "40.01", "draft-40");
+
+    echo.message_send_error(message.id, "Connection reset");
+    assert.ok(message.failed_request);
+    assert.deepEqual(deleted_draft_ids, []);
+
+    // The server had accepted the message, so its event still arrives.
+    echo.process_from_server([{id: 41, local_id: "40.01", content: message.content}]);
+    assert.ok(!message.failed_request);
+    assert.deepEqual(deleted_draft_ids, ["draft-40"]);
+});
+
+run_test("reify_message_id deletes a sent message's draft only once", ({override}) => {
+    const {message, deleted_draft_ids} = set_up_local_echo(override, "42.01", "draft-42");
+
+    // The send response reifies the message, then its event arrives.
+    echo.reify_message_id("42.01", 43);
+    assert.deepEqual(deleted_draft_ids, ["draft-42"]);
+    echo.process_from_server([{id: 43, local_id: "42.01", content: message.content}]);
+    assert.deepEqual(deleted_draft_ids, ["draft-42"]);
 });
 
 run_test("process_from_server for messages to add to narrow", ({override}) => {
