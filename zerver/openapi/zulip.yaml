@@ -4932,9 +4932,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users when a bot has been deactivated.
-                                Note that this is very similar to the bot_remove event
-                                and one of them will be removed soon.
+                                Event sent to the previous owner of a bot when the bot's
+                                owner is changed, unless the previous owner is an
+                                organization administrator.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4950,13 +4950,13 @@ paths:
                                 bot:
                                   type: object
                                   description: |
-                                    Object containing details about the deactivated bot.
+                                    Object containing details about the bot.
                                   additionalProperties: false
                                   properties:
                                     user_id:
                                       type: integer
                                       description: |
-                                        The user ID of the deactivated bot.
+                                        The user ID of the bot.
                               example:
                                 {
                                   "type": "realm_bot",
