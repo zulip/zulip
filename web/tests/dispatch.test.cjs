@@ -1405,6 +1405,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_inbox_show_channel_folders, false);
 
+    event = event_fixtures.user_settings__web_left_sidebar_topics_order;
+    override(user_settings, "web_left_sidebar_topics_order", 1);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_topics_order, 2);
+
     event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
     override(stream_list, "build_stream_list", noop);
     override(user_settings, "web_left_sidebar_show_channel_folders", true);

@@ -15983,6 +15983,20 @@ paths:
 
                     **Changes**: New in Zulip 12.0 (feature level 431).
                   example: true
+                web_left_sidebar_topics_order:
+                  description: |
+                    Whether the web/desktop application's left sidebar lists a
+                    channel's resolved topics after its unresolved ones.
+
+                    - 1 - All topics in order of recent activity
+                    - 2 - Resolved topics after unresolved topics
+
+                    **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
@@ -16327,6 +16341,8 @@ paths:
               hide_ai_features:
                 contentType: application/json
               web_inbox_show_channel_folders:
+                contentType: application/json
+              web_left_sidebar_topics_order:
                 contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
@@ -20158,6 +20174,16 @@ paths:
                               are displayed in the web/desktop application's Inbox view.
 
                               **Changes**: New in Zulip 12.0 (feature level 431).
+                          web_left_sidebar_topics_order:
+                            type: integer
+                            description: |
+                              Whether the web/desktop application's left sidebar lists a
+                              channel's resolved topics after its unresolved ones.
+
+                              - 1 - All topics in order of recent activity
+                              - 2 - Resolved topics after unresolved topics
+
+                              **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -22595,6 +22621,16 @@ paths:
                               are displayed in the web/desktop application's Inbox view.
 
                               **Changes**: New in Zulip 12.0 (feature level 431).
+                          web_left_sidebar_topics_order:
+                            type: integer
+                            description: |
+                              Whether the web/desktop application's left sidebar lists a
+                              channel's resolved topics after its unresolved ones.
+
+                              - 1 - All topics in order of recent activity
+                              - 2 - Resolved topics after unresolved topics
+
+                              **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -23973,6 +24009,20 @@ paths:
                     are displayed in the web/desktop application's Inbox view.
 
                     **Changes**: New in Zulip 12.0 (feature level 431).
+                web_left_sidebar_topics_order:
+                  description: |
+                    Whether the web/desktop application's left sidebar lists a
+                    channel's resolved topics after its unresolved ones.
+
+                    - 1 - All topics in order of recent activity
+                    - 2 - Resolved topics after unresolved topics
+
+                    **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_left_sidebar_show_channel_folders:
                   type: boolean
                   description: |
@@ -24406,6 +24456,8 @@ paths:
               hide_ai_features:
                 contentType: application/json
               web_inbox_show_channel_folders:
+                contentType: application/json
+              web_left_sidebar_topics_order:
                 contentType: application/json
               web_left_sidebar_show_channel_folders:
                 contentType: application/json

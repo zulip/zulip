@@ -117,6 +117,21 @@ class UserBaseSettings(models.Model):
     # of the Zulip web app.
     web_left_sidebar_show_channel_folders = models.BooleanField(default=True, db_default=True)
 
+    # UI setting controlling whether the Zulip web app's left sidebar
+    # lists a channel's resolved topics after its unresolved ones.
+    WEB_LEFT_SIDEBAR_TOPICS_ORDER_RECENT_ACTIVITY = 1
+    WEB_LEFT_SIDEBAR_TOPICS_ORDER_UNRESOLVED_FIRST = 2
+
+    WEB_LEFT_SIDEBAR_TOPICS_ORDER_CHOICES = [
+        WEB_LEFT_SIDEBAR_TOPICS_ORDER_RECENT_ACTIVITY,
+        WEB_LEFT_SIDEBAR_TOPICS_ORDER_UNRESOLVED_FIRST,
+    ]
+
+    web_left_sidebar_topics_order = models.PositiveSmallIntegerField(
+        default=WEB_LEFT_SIDEBAR_TOPICS_ORDER_RECENT_ACTIVITY,
+        db_default=WEB_LEFT_SIDEBAR_TOPICS_ORDER_RECENT_ACTIVITY,
+    )
+
     # UI setting controlling whether or not the Zulip web app will
     # mark messages as read as it scrolls through the feed.
 
@@ -387,6 +402,7 @@ class UserBaseSettings(models.Model):
         web_home_view=str,
         web_inbox_show_channel_folders=bool,
         web_left_sidebar_show_channel_folders=bool,
+        web_left_sidebar_topics_order=int,
         web_left_sidebar_unreads_count_summary=bool,
         web_line_height_percent=int,
         web_mark_read_on_scroll_policy=int,
