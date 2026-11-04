@@ -82,23 +82,21 @@ Note the `zh-hans` prefix--that url pattern gets added by `i18n_patterns`.
 
 ## API endpoints use [REST](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
-Our example is a REST API endpoint. It's a PUT to `/users`.
+Our example is a REST API endpoint. It's a POST to `/users`.
 
 With the exception of incoming webhooks (which we do not usually control the
 format of) and logged-out endpoints, Zulip uses REST
 for its API. This means that we use:
 
-- POST for creating something new where we don't have a unique
-  ID. Also used as a catch-all if no other verb is appropriate.
-- PUT for creating something for which we have a unique ID.
+- POST for creating something
 - DELETE for deleting something
-- PATCH for updating or editing attributes of something.
+- PATCH for updating or editing attributes of something
 - GET to get something (read-only)
 - HEAD to check the existence of something to GET, without getting it;
   useful to check a link without downloading a potentially large link
 - OPTIONS (handled automatically, see more below)
 
-Of these, PUT, DELETE, HEAD, OPTIONS, and GET are _idempotent_, which
+Of these, DELETE, HEAD, OPTIONS, and GET are _idempotent_, which
 means that we can send the request multiple times and get the same
 state on the server. You might get a different response after the first
 request, as we like to give our clients an error so they know that no
@@ -112,17 +110,14 @@ as much as possible.
 This [tutorial](https://www.restapitutorial.com/) can be helpful if you are
 new to REST web applications.
 
-### PUT is only for creating new things
+### POST is for creating new things
 
-If you're used to using PUT to update or modify resources, you might
-find our convention a little strange.
+We use POST to create resources (for example, sending a message, which
+may be sent multiple times with the same content), and PATCH to modify
+existing resources.
 
-We use PUT to create resources with unique identifiers, POST to create
-resources without unique identifiers (like sending a message with the
-same content multiple times), and PATCH to modify resources.
-
-In our example, `create_user_backend` uses PUT, because there's a unique
-identifier, the user's email.
+In our example, `create_user_backend` uses POST, because it creates a
+new user.
 
 ### OPTIONS
 
@@ -166,12 +161,12 @@ In our example,
 
 ```python
 GET=get_members_backend,
-PUT=create_user_backend
+POST=create_user_backend
 ```
 
 are supplied as arguments to `rest_path`, along with the
 [HTTPRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/).
-The request has the HTTP verb `PUT`, which `rest_dispatch` can use to
+The request has the HTTP verb `POST`, which `rest_dispatch` can use to
 find the correct view to show:
 `zerver.views.users.create_user_backend`.
 

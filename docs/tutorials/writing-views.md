@@ -271,13 +271,9 @@ it happens automatically in the implementation of `rest_dispatch`--see
 [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/main/zerver/lib/rest.py)
 for more.
 
-If you're creating new data, try to figure out if the thing you are
-creating is uniquely identifiable. For example, if you're creating a
-user, there's only one user per email. If you can find a unique ID,
-you should use PUT for the view. If you want to create the data multiple
-times for multiple requests (for example, requesting the send_message
-view multiple times with the same content should send multiple
-messages), you should use POST.
+If you're creating new data, you should use POST for the view. For
+example, requesting the send_message view multiple times with the same
+content should send multiple messages.
 
 If you're updating existing data, use PATCH.
 
