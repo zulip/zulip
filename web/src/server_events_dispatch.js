@@ -1113,6 +1113,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "web_left_sidebar_topics_order":
                     topic_list.update();
+                    stream_ui_updates.update_left_sidebar_topics_order_widget();
                     break;
                 case "receives_typing_notifications":
                     if (!user_settings.receives_typing_notifications) {

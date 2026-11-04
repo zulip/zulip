@@ -1277,7 +1277,8 @@ input[type="checkbox"] {
 
 .emojiset_choices,
 .user_list_style_values,
-.web_left_sidebar_topics_order_values {
+.web_left_sidebar_topics_order_values,
+.left_sidebar_topics_order_values {
     padding: 0 10px;
 }
 
