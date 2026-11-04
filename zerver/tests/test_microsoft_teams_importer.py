@@ -36,6 +36,7 @@ from zerver.data_import.microsoft_teams import (
     get_user_roles,
     is_microsoft_teams_event_message,
     process_hosted_content_attachments,
+    process_messages,
 )
 from zerver.data_import.microsoft_teams_message_conversion import (
     HOSTED_CONTENT_GRAPH_API_URL_REGEX,
@@ -983,3 +984,47 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                         )
         finally:
             shutil.rmtree(output_dir)
+
+    def test_skip_messages_not_sent_by_users(self) -> None:
+        app_message: MicrosoftTeamsFieldsT = {
+            "Id": "1754976555179",
+            "MessageType": "message",
+            "CreatedDateTime": "2025-08-12T05:29:15.179+00:00",
+            "From": {
+                "Application": {"Id": "workflows-app-id", "DisplayName": "Workflows"},
+                "Device": None,
+                "User": None,
+            },
+            "Body": {"ContentType": "html", "Content": "<p>Hello</p>"},
+            "ChatId": None,
+            "ChannelIdentity": {"TeamId": "team-id", "ChannelId": "channel-id"},
+        }
+        system_message: MicrosoftTeamsFieldsT = {
+            **app_message,
+            "Id": "1754976555180",
+            "MessageType": "systemEventMessage",
+            "From": None,
+        }
+
+        with self.assertLogs(level="WARNING") as warn_logs:
+            conversion_result = process_messages(
+                added_teams={},
+                channel_metadata=None,
+                do_download_and_export_upload_file=lambda parameter: None,
+                domain_name="zulip.example.com",
+                messages=[app_message, system_message],
+                microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
+                microsoft_teams_user_id_to_zulip_user_id={},
+                realm={},
+                realm_id=0,
+                subscriber_map={},
+            )
+
+        self.assert_length(conversion_result.zerver_messages, 0)
+        self.assertListEqual(
+            warn_logs.output,
+            [
+                "WARNING:root:Skipping message 1754976555179, which wasn't sent by a user.",
+                "WARNING:root:Skipping message 1754976555180, which wasn't sent by a user.",
+            ],
+        )

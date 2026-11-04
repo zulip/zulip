@@ -577,6 +577,13 @@ def process_messages(
         if is_microsoft_teams_event_message(message):
             continue
 
+        if message["From"] is None or message["From"]["User"] is None:
+            # Messages sent by apps, such as bots, have a `From.Application`
+            # sender instead of a user, and system messages may have no sender:
+            # https://learn.microsoft.com/en-us/graph/api/resources/chatmessagefromidentityset?view=graph-rest-1.0
+            logging.warning("Skipping message %s, which wasn't sent by a user.", message["Id"])
+            continue
+
         # Determine message type, private or channel.
         if message["ChannelIdentity"] is not None:
             if channel_metadata is None:
