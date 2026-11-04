@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 import render_confirm_language_change from "../templates/settings/confirm_language_change.hbs";
+import render_confirm_left_sidebar_topics_order_default from "../templates/settings/confirm_left_sidebar_topics_order_default.hbs";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -18,8 +19,12 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import * as settings_ui from "./settings_ui.ts";
+import * as stream_color from "./stream_color.ts";
+import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
@@ -123,6 +128,84 @@ export function launch_default_language_setting_modal_for_spectator(): void {
         on_click() {
             // We perform no actions since the 'close_on_submit' field takes care
             // of closing the modal.
+        },
+    });
+}
+
+// Changing the default only affects channels that follow it, so
+// before saving, list the channels that don't and offer to reset
+// them. A reset can be undone until the change is confirmed, when
+// the resets go in one request, and the new default is saved once
+// they succeed.
+function confirm_left_sidebar_topics_order_default_change(
+    overriding_subs: StreamSubscription[],
+    $status_element: JQuery,
+    save: () => void,
+    cancel: () => void,
+): void {
+    const values = Object.values(settings_config.web_left_sidebar_topics_order_values);
+    const channels = overriding_subs.map((sub) => ({
+        stream_id: sub.stream_id,
+        name: sub.name,
+        invite_only: sub.invite_only,
+        is_web_public: sub.is_web_public,
+        is_archived: sub.is_archived,
+        stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(sub.color),
+        order_description: values.find((value) => value.code === sub.left_sidebar_topics_order)
+            ?.description,
+    }));
+    let saved = false;
+    const stream_ids_to_reset = new Set<number>();
+
+    function post_render(modal_unique_id: string): void {
+        $(`#${CSS.escape(modal_unique_id)}`).on(
+            "click",
+            ".left-sidebar-topics-order-override-button",
+            function (this: HTMLElement) {
+                const $row = $(this).closest(".left-sidebar-topics-order-override");
+                const stream_id = Number($row.attr("data-stream-id"));
+                const will_reset = $(this).hasClass("reset-left-sidebar-topics-order");
+                if (will_reset) {
+                    stream_ids_to_reset.add(stream_id);
+                } else {
+                    stream_ids_to_reset.delete(stream_id);
+                }
+                $row.find(".left-sidebar-topics-order-override-value").toggleClass("hide");
+                $row.find(".left-sidebar-topics-order-override-button").toggleClass("hide");
+            },
+        );
+    }
+
+    dialog_widget.launch({
+        modal_title_html: $t_html({defaultMessage: "Change how resolved topics are shown?"}),
+        modal_content_html: render_confirm_left_sidebar_topics_order_default({channels}),
+        modal_submit_button_text: $t({defaultMessage: "Change default setting"}),
+        id: "confirm_left_sidebar_topics_order_default",
+        close_on_submit: true,
+        post_render,
+        on_click() {
+            saved = true;
+            if (stream_ids_to_reset.size === 0) {
+                save();
+                return;
+            }
+            const subscription_data = [...stream_ids_to_reset].map((stream_id) => ({
+                stream_id,
+                property: "left_sidebar_topics_order",
+                value: settings_config.left_sidebar_topics_order_inherit,
+            }));
+            settings_ui.do_settings_change(
+                channel.post,
+                "/json/users/me/subscriptions/properties",
+                {subscription_data: JSON.stringify(subscription_data)},
+                $status_element,
+                {success_continuation: save},
+            );
+        },
+        on_hidden() {
+            if (!saved) {
+                cancel();
+            }
         },
     });
 }
@@ -315,9 +398,32 @@ export function set_up(settings_panel: SettingsPanel): void {
         if (value === settings_object.web_left_sidebar_topics_order) {
             return;
         }
-        change_display_setting(
-            {web_left_sidebar_topics_order: value},
-            $container.find(".left-sidebar-settings-status").expectOne(),
+        const $status_element = $container.find(".left-sidebar-settings-status").expectOne();
+        const save = (): void => {
+            change_display_setting({web_left_sidebar_topics_order: value}, $status_element);
+        };
+        const overriding_subs = stream_data
+            .subscribed_subs()
+            .filter(
+                (sub) =>
+                    sub.left_sidebar_topics_order !==
+                    settings_config.left_sidebar_topics_order_inherit,
+            );
+        if (overriding_subs.length === 0) {
+            save();
+            return;
+        }
+        confirm_left_sidebar_topics_order_default_change(
+            overriding_subs,
+            $status_element,
+            save,
+            () => {
+                $container
+                    .find(
+                        `.setting_web_left_sidebar_topics_order_choice[value=${settings_object.web_left_sidebar_topics_order}]`,
+                    )
+                    .prop("checked", true);
+            },
         );
     });
 
