@@ -422,9 +422,17 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         raw_exported_users_data = self.get_exported_microsoft_teams_user_data()
 
         raw_exported_user_full_names = [user["DisplayName"] for user in raw_exported_users_data]
-        deleted_user_full_names = [
-            f"Deleted Teams user {user_id}" for user_id in DELETED_MICROSOFT_TEAMS_USERS
-        ]
+        all_exported_messages: list[MicrosoftTeamsFieldsT] = []
+        for team_id in EXPORTED_MICROSOFT_TEAMS_TEAM_ID.values():
+            all_exported_messages += self.get_exported_team_message_list(team_id)
+        deleted_user_display_names = {
+            message["From"]["User"]["Id"]: message["From"]["User"]["DisplayName"]
+            for message in all_exported_messages
+            if message["From"] is not None
+            and message["From"]["User"]["Id"] in DELETED_MICROSOFT_TEAMS_USERS
+        }
+        self.assertSetEqual(set(deleted_user_display_names), set(DELETED_MICROSOFT_TEAMS_USERS))
+        deleted_user_full_names = list(deleted_user_display_names.values())
 
         imported_user_full_names = self.get_imported_realm_user_field_values("full_name")
         self.assertEqual(
