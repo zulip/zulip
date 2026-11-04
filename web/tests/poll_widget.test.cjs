@@ -12,8 +12,22 @@ const {$} = require("./lib/zjquery.cjs");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
+const rendered_markdown = mock_esm("../src/rendered_markdown", {
+    update_elements() {},
+});
 
 const {PollData} = zrequire("poll_data");
+
+const {initialize_user_settings} = zrequire("user_settings");
+initialize_user_settings({
+    user_settings: {
+        translate_emoticons: false,
+    },
+});
+
+const markdown = zrequire("markdown");
+const markdown_config = zrequire("markdown_config");
+markdown.initialize(markdown_config.get_helpers());
 
 const poll_widget = zrequire("poll_widget");
 
@@ -282,7 +296,7 @@ run_test("activate another person poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "What do you want?");
+    assert.equal($poll_question_header.html(), "What do you want?");
 
     {
         /* Testing data sent to server on adding option */
@@ -407,7 +421,7 @@ run_test("activate own poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "Where to go?");
+    assert.equal($poll_question_header.html(), "Where to go?");
 
     {
         /* Testing data sent to server on editing question */
@@ -424,4 +438,80 @@ run_test("activate own poll", ({mock_template}) => {
         $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
+});
+
+run_test("render mentions in poll question and options", ({mock_template, override}) => {
+    const rendered_elements = [];
+    override(rendered_markdown, "update_elements", ($elem) => {
+        rendered_elements.push($elem);
+    });
+
+    let rendered_results_context;
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, (context) => {
+        rendered_results_context = context;
+        return "widgets/poll_widget_results";
+    });
+
+    const $widget_elem = $("<div>").addClass("widget-content");
+    const set_widget_find_result = (selector) => {
+        const $elem = $.create(selector);
+        $widget_elem.set_find_results(selector, $elem);
+        return $elem;
+    };
+
+    set_widget_find_result("button.poll-option");
+    set_widget_find_result("input.poll-option");
+    const $widget_option_container = set_widget_find_result("ul.poll-widget");
+    set_widget_find_result("button.poll-question-check");
+    set_widget_find_result(".poll-edit-question");
+    const $poll_question_header = set_widget_find_result(".poll-question-header");
+    set_widget_find_result(".poll-question-bar");
+    set_widget_find_result(".poll-option-bar");
+    set_widget_find_result("button.poll-vote");
+    set_widget_find_result(".poll-please-wait");
+    set_widget_find_result("button.poll-question-remove");
+    set_widget_find_result("input.poll-question");
+
+    const activate_opts = {
+        message: {
+            sender_id: alice.user_id,
+        },
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "Should we ask @**Alice Lee**?",
+                options: ["@**Alice Lee**", "Someone else"],
+            },
+        },
+    };
+
+    const {widget_data} = poll_widget.activate(activate_opts);
+    const render_opts = {
+        $elem: $widget_elem,
+        callback() {},
+        message: {
+            sender_id: alice.user_id,
+        },
+        widget_data,
+        rerender: false,
+    };
+
+    poll_widget.render(render_opts);
+
+    assert.equal(
+        $poll_question_header.html(),
+        'Should we ask <span class="user-mention" data-user-id="100">@Alice Lee</span>?',
+    );
+
+    assert.equal(rendered_results_context.options.length, 2);
+    assert.equal(
+        rendered_results_context.options[0].option_html,
+        '<span class="user-mention" data-user-id="100">@Alice Lee</span>',
+    );
+    assert.equal(rendered_results_context.options[1].option_html, "Someone else");
+
+    assert.equal(rendered_elements.length, 2);
+    assert.equal(rendered_elements[0][0], $poll_question_header[0]);
+    assert.equal(rendered_elements[1][0], $widget_option_container[0]);
 });

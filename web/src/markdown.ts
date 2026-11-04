@@ -876,6 +876,18 @@ export function render(
     };
 }
 
+export function maybe_unwrap_single_paragraph(html: string): string {
+    const trimmed = html.trim();
+    if (
+        trimmed.startsWith("<p>") &&
+        trimmed.endsWith("</p>") &&
+        !trimmed.slice("<p>".length, -"</p>".length).includes("</p>")
+    ) {
+        return trimmed.slice("<p>".length, -"</p>".length);
+    }
+    return html;
+}
+
 export function parse_non_message(raw_content: string): string {
     assert(web_app_helpers !== undefined);
     // Occasionally we get markdown from the server that is not technically
@@ -883,4 +895,8 @@ export function parse_non_message(raw_content: string): string {
     // raw_content exactly as if it were a Zulip message, so we will
     // handle things like mentions, stream links, and linkifiers.
     return parse({raw_content, helper_config: web_app_helpers}).content;
+}
+
+export function parse_non_message_inline(raw_content: string): string {
+    return maybe_unwrap_single_paragraph(parse_non_message(raw_content));
 }

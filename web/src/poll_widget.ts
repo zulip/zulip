@@ -8,10 +8,12 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
@@ -112,8 +114,15 @@ export function render({
         const has_question = question.trim() !== "";
         const waiting = !is_my_poll && !has_question;
 
-        $elem.find(".poll-question-header").toggle(!input_mode);
-        $elem.find(".poll-question-header").text(question);
+        const $question_header = $elem.find(".poll-question-header");
+        $question_header.toggle(!input_mode);
+        if (has_question) {
+            const rendered_question = markdown.parse_non_message_inline(question);
+            $question_header.html(rendered_question);
+            rendered_markdown.update_elements($question_header);
+        } else {
+            $question_header.empty();
+        }
         $elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
@@ -262,9 +271,18 @@ export function render({
 
     function render_results(): void {
         const widget_data = poll_data.get_widget_data();
+        const options = widget_data.options.map((opt) => ({
+            ...opt,
+            option_html: markdown.parse_non_message_inline(opt.option),
+        }));
 
-        const html = render_widgets_poll_widget_results(widget_data);
-        $elem.find("ul.poll-widget").html(html);
+        const html = render_widgets_poll_widget_results({
+            ...widget_data,
+            options,
+        });
+        const $poll_list = $elem.find("ul.poll-widget");
+        $poll_list.html(html);
+        rendered_markdown.update_elements($poll_list);
 
         $elem
             .find("button.poll-vote")

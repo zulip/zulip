@@ -1052,6 +1052,16 @@ test("translate_emoticons_to_names", () => {
 
 test("parse_non_message", () => {
     assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
+    assert.equal(markdown.parse_non_message_inline("type `/day`"), "type <code>/day</code>");
+    assert.equal(
+        markdown.parse_non_message_inline("hello @**Cordelia, Lear's daughter**"),
+        'hello <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span>',
+    );
+    assert.equal(markdown.maybe_unwrap_single_paragraph("<p>test</p>"), "test");
+    assert.equal(
+        markdown.maybe_unwrap_single_paragraph("<p>test 1</p>\n<p>test 2</p>"),
+        "<p>test 1</p>\n<p>test 2</p>",
+    );
 });
 
 test("missing unicode emojis", ({override}) => {
