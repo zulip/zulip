@@ -109,8 +109,7 @@ show my message multiple times. PATCH is special--it can be
 idempotent, and we like to write API endpoints in an idempotent fashion,
 as much as possible.
 
-This [cookbook](http://restcookbook.com/) and
-[tutorial](https://www.restapitutorial.com/) can be helpful if you are
+This [tutorial](https://www.restapitutorial.com/) can be helpful if you are
 new to REST web applications.
 
 ### PUT is only for creating new things
