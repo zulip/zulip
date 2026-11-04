@@ -143,7 +143,6 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     // new narrow, and then reopen search if it got closed.
     if ($(".navbar-search.expanded").length === 0) {
         open_search_bar_and_close_narrow_description();
-        focus_search_input_at_end();
         search_input_has_changed = true;
     }
 }
