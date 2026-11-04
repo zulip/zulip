@@ -1525,8 +1525,8 @@ def apply_event(
 
             if field == "realm_jitsi_server_url":
                 state["jitsi_server_url"] = (
-                    state["realm_jitsi_server_url"]
-                    if state["realm_jitsi_server_url"] is not None
+                    event["value"]
+                    if event["value"] is not None
                     else state["server_jitsi_server_url"]
                 )
 
