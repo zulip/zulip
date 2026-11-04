@@ -331,9 +331,9 @@ def create_is_mirror_dummy_user(
     realm: dict[str, Any],
     realm_id: int,
     domain_name: str,
+    user_full_name: str,
 ) -> None:
     zulip_user_id = NEXT_ID("user")
-    user_full_name = f"Deleted Teams user {microsoft_team_user_id}"
     email = Address(username=microsoft_team_user_id, domain=domain_name).addr_spec
     user_profile_dict = build_user_profile(
         avatar_source=UserProfile.DEFAULT_AVATAR_SOURCE,
@@ -620,6 +620,7 @@ def process_messages(
                 realm,
                 realm_id,
                 domain_name,
+                user_full_name=f"Deleted Teams user {microsoft_teams_sender_id}",
             )
 
         message_id = NEXT_ID("message")
