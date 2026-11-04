@@ -156,6 +156,9 @@ class Stream(models.Model):
     can_resolve_topics_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_mention_many_users_group = models.ForeignKey(
+        UserGroup, null=True, default=None, on_delete=models.RESTRICT, related_name="+"
+    )
 
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "show all topics" for a
@@ -224,6 +227,11 @@ class Stream(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_mention_many_users_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=None,
         ),
     }
 
@@ -294,6 +302,7 @@ class Stream(models.Model):
         "can_remove_subscribers_group_id",
         "can_subscribe_group_id",
         "can_resolve_topics_group_id",
+        "can_mention_many_users_group_id",
         "is_recently_active",
         "topics_policy",
     ]
