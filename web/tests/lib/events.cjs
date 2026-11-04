@@ -1369,6 +1369,13 @@ exports.fixtures = {
         value: false,
     },
 
+    user_settings__web_left_sidebar_resolved_topics_order: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_resolved_topics_order",
+        value: 2,
+    },
+
     user_settings__web_left_sidebar_show_channel_folders: {
         type: "user_settings",
         op: "update",
