@@ -696,7 +696,8 @@ def process_avatars(
 
 
 # Retry on 429 (rate-limited) and common server errors that are
-# typically transient for file-hosting services like Slack's CDN.
+# typically transient for file-hosting services like Slack's CDN and
+# for APIs like Microsoft Graph.
 # Once retries run out, return the last response instead of raising
 # RetryError, so callers can log the service's error message.
 data_import_session = OutgoingSession(
