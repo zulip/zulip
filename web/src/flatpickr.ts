@@ -20,6 +20,33 @@ function is_numeric_key(key: string): boolean {
 
 const ENABLE_TIME_DEFAULT = true;
 
+type LocaleWithWeekInfo = Intl.Locale & {
+    // Not yet in TypeScript's lib; some older browsers provide only
+    // the weekInfo getter, and others provide neither.
+    getWeekInfo?: () => {firstDay: number};
+    weekInfo?: {firstDay: number};
+};
+
+export function get_first_day_of_week(): number {
+    // The first day of the week depends on the user's region (e.g.,
+    // Monday for en-GB, Sunday for en-US), which the browser's default
+    // formatting locale captures better than the Zulip language
+    // setting. We don't use navigator.language, because Firefox sets
+    // it from the preferred page language, ignoring the user's
+    // regional format settings.
+    const locale: LocaleWithWeekInfo = new Intl.Locale(
+        new Intl.DateTimeFormat().resolvedOptions().locale,
+    );
+    const week_info = locale.getWeekInfo?.() ?? locale.weekInfo;
+    if (week_info === undefined) {
+        // Sunday, flatpickr's default.
+        return 0;
+    }
+    // Intl numbers days from 1 (Monday) to 7 (Sunday), whereas
+    // flatpickr numbers them from 0 (Sunday) to 6 (Saturday).
+    return week_info.firstDay % 7;
+}
+
 export function show_flatpickr(
     element: HTMLElement,
     callback: (time: string) => void,
@@ -87,6 +114,7 @@ export function show_flatpickr(
         formatDate: (date) => formatISO(date),
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
+        locale: {firstDayOfWeek: get_first_day_of_week()},
         minuteIncrement: 1,
         onKeyDown(_selectedDates, _dateStr, instance, event: KeyboardEvent) {
             // See also the keydown handler below.
