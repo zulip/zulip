@@ -251,6 +251,34 @@ a.help_link_widget {
     width: calc(100% - 10em - 6em);
 }
 
+.left-sidebar-resolved-topics-order-overrides {
+    margin-top: 15px;
+}
+
+.left-sidebar-resolved-topics-order-override {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+
+    .stream-privacy {
+        display: flex;
+        align-items: center;
+    }
+
+    .left-sidebar-resolved-topics-order-override-name {
+        font-weight: 600;
+    }
+
+    .left-sidebar-resolved-topics-order-override-value {
+        margin-left: 6px;
+    }
+
+    .reset-left-sidebar-resolved-topics-order {
+        margin-left: auto;
+    }
+}
+
 #language_selection_modal {
     & table {
         width: 90%;
