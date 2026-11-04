@@ -30,6 +30,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    data_import_session,
     get_attachment_path_and_content,
     get_data_file,
     make_subscriber_map,
@@ -237,7 +238,7 @@ def get_microsoft_graph_api_data(
     # https://learn.microsoft.com/en-us/graph/paging?tabs=http#server-side-paging
     next_link: str | None = api_url
     while next_link is not None:
-        response = requests.get(
+        response = data_import_session.get(
             next_link, headers={"Authorization": f"Bearer {token}"}, params=parameters
         )
 

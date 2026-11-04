@@ -9,6 +9,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Concatenate, TypeAlias
+from unittest import mock
 from urllib.parse import parse_qs, urlsplit
 
 import orjson
@@ -17,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django_stubs_ext import QuerySetAny
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
+from urllib3.util import Retry
 
 from zerver.data_import.import_util import AttachmentRecordData, get_data_file
 from zerver.data_import.microsoft_teams import (
@@ -710,6 +712,40 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 MICROSOFT_GRAPH_API_URL.format(endpoint="/directoryRoles"),
                 token="MICROSOFT_GRAPH_API_TOKEN",
             )
+        self.assertEqual("HTTP error accessing the Microsoft Graph API.", str(e.exception))
+
+    @responses.activate
+    def test_get_microsoft_graph_api_data_retries_throttled_requests(self) -> None:
+        url = MICROSOFT_GRAPH_API_URL.format(endpoint="/directoryRoles")
+        responses.add(responses.GET, url, status=429, body="Too Many Requests")
+        responses.add(
+            responses.GET,
+            url,
+            json.dumps({"value": [{"id": "role-id"}]}),
+            content_type="application/json",
+        )
+
+        with mock.patch.object(Retry, "sleep"):
+            result = get_microsoft_graph_api_data(url, token="MICROSOFT_GRAPH_API_TOKEN")
+        self.assert_length(responses.calls, 2)
+        self.assertListEqual(result, [{"id": "role-id"}])
+
+    @responses.activate
+    def test_get_microsoft_graph_api_data_after_retries(self) -> None:
+        url = MICROSOFT_GRAPH_API_URL.format(endpoint="/directoryRoles")
+        responses.add(responses.GET, url, status=503, body="Service Unavailable")
+
+        with (
+            mock.patch.object(Retry, "sleep"),
+            self.assertLogs(level="INFO") as logs,
+            self.assertRaises(Exception) as e,
+        ):
+            get_microsoft_graph_api_data(url, token="MICROSOFT_GRAPH_API_TOKEN")
+        # The first request plus 3 retries.
+        self.assert_length(responses.calls, 4)
+        self.assertListEqual(
+            logs.output, ["INFO:root:HTTP error: 503, Response: Service Unavailable"]
+        )
         self.assertEqual("HTTP error accessing the Microsoft Graph API.", str(e.exception))
 
     def test_get_user_roles(self) -> None:
