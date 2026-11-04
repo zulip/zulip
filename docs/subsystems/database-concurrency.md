@@ -122,8 +122,9 @@ When locking rows from a queryset with joins, use `of=("self",)` unless you
 intentionally need to lock related tables too.
 
 ```python
-rows = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED) \
-    .select_for_update(of=("self",), no_key=True)
+rows = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).select_for_update(
+    of=("self",), no_key=True
+)
 ```
 
 [postgres-row-level-lock-doc]: https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-ROWS

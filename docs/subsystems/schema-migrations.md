@@ -136,11 +136,13 @@ the new code is deployed. (For nullable columns this isn't a
 concern — the column simply takes `NULL` for omitted inserts.)
 
 ```python
-migrations.AddField(
-    model_name="realmauditlog",
-    name="scrubbed",
-    field=models.BooleanField(db_default=False, default=False),
-),
+(
+    migrations.AddField(
+        model_name="realmauditlog",
+        name="scrubbed",
+        field=models.BooleanField(db_default=False, default=False),
+    ),
+)
 ```
 
 `default=` is the Django-level default used by ORM `.create()`,
@@ -520,6 +522,7 @@ the iteration for you:
 ```python
 from zerver.lib.migrate import do_batch_update
 
+
 def update_is_channel_message(apps, schema_editor):
     Message = apps.get_model("zerver", "Message")
     with connection.cursor() as cursor:
@@ -528,6 +531,7 @@ def update_is_channel_message(apps, schema_editor):
             Message._meta.db_table,
             [SQL("is_channel_message = (SELECT type = 2 ...)")],
         )
+
 
 class Migration(migrations.Migration):
     atomic = False

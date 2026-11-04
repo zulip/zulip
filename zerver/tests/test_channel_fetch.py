@@ -991,6 +991,7 @@ class GetSubscribersTest(ZulipTestCase):
                 )
             else:
                 self.assertEqual(sub["can_remove_subscribers_group"], admins_group.id)
+            self.assertIsNone(sub["can_mention_many_users_group"])
 
     def test_stream_post_policy_values_in_subscription_objects(self) -> None:
         hamlet = self.example_user("hamlet")

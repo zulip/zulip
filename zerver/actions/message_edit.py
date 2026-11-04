@@ -1883,11 +1883,12 @@ def check_update_message(
                 raise StreamWildcardMentionNotAllowedError
 
         if message.is_channel_message and rendering_result.mentions_topic_wildcard:
+            stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
             topic_participant_count = len(
                 participants_for_topic(message.realm.id, message.recipient.id, message.topic_name())
             )
             if not topic_wildcard_mention_allowed(
-                message.sender, topic_participant_count, message.realm
+                message.sender, topic_participant_count, message.realm, stream=stream
             ):
                 raise TopicWildcardMentionNotAllowedError
 

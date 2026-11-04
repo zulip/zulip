@@ -101,7 +101,7 @@ corporate email system), you will likely need to use something like
 these setting values:
 
 ```python
-EMAIL_HOST = 'localhost'
+EMAIL_HOST = "localhost"
 EMAIL_PORT = 25
 EMAIL_USE_TLS = False
 EMAIL_HOST_USER = ""
@@ -146,8 +146,8 @@ can log them to a file instead.
 To do so, add these lines to `/etc/zulip/settings.py`:
 
 ```python
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/var/log/zulip/emails'
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "/var/log/zulip/emails"
 ```
 
 Then outgoing emails that Zulip would have sent will just be written

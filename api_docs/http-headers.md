@@ -61,9 +61,7 @@ parameter when initializing the Python bindings. For example, the
 official Zulip Nagios integration is initialized like this:
 
 ``` python
-client = zulip.Client(
-    config_file=opts.config, client=f"ZulipNagios/{VERSION}"
-)
+client = zulip.Client(config_file=opts.config, client=f"ZulipNagios/{VERSION}")
 ```
 
 If you are working on an integration that you plan to share outside

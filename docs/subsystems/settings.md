@@ -33,6 +33,7 @@ access these anywhere in the Zulip Django code using, for example:
 
 ```python
 from django.conf import settings
+
 print(settings.EMAIL_GATEWAY_PATTERN)
 ```
 

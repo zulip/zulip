@@ -107,6 +107,7 @@ class TestCreateStreams(ZulipTestCase):
                     "invite_only": True,
                     "message_retention_days": -1,
                     "can_remove_subscribers_group": moderators_system_group,
+                    "can_mention_many_users_group": moderators_system_group,
                 }
                 for (stream_name, stream_description) in zip(
                     stream_names, stream_descriptions, strict=False
@@ -125,6 +126,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.invite_only)
             self.assertTrue(stream.message_retention_days == -1)
             self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+            self.assertEqual(stream.can_mention_many_users_group.id, moderators_system_group.id)
             # Streams created where acting_user is None have no creator
             self.assertIsNone(stream.creator_id)
 
@@ -1048,6 +1050,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(stream.can_remove_subscribers_group_id, admins_group.id)
         self.assertEqual(stream.can_send_message_group_id, everyone_group.id)
         self.assertEqual(stream.can_subscribe_group_id, nobody_group.id)
+        self.assertIsNone(stream.can_mention_many_users_group)
 
         # Check setting values sent in stream creation events.
         event_stream = events[0]["event"]["streams"][0]
@@ -1060,6 +1063,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(event_stream["can_remove_subscribers_group"], admins_group.id)
         self.assertEqual(event_stream["can_send_message_group"], everyone_group.id)
         self.assertEqual(event_stream["can_subscribe_group"], nobody_group.id)
+        self.assertIsNone(event_stream["can_mention_many_users_group"])
 
     def test_acting_user_is_creator(self) -> None:
         """

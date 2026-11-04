@@ -235,6 +235,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, StringConstraints, model_validator
 
+
 class AddSubscriptionData(BaseModel):
     name: str
     color: str | None = None
@@ -362,15 +363,16 @@ channel.patch({
 Here's how you might manually make a call from python:
 
 ```py
-payload = {'name': new_name}
+payload = {"name": new_name}
 
 # email and API key
-api_auth = ('hello@example.com', '0123456789abcdeFGHIJKLmnopQRSTUV')
+api_auth = ("hello@example.com", "0123456789abcdeFGHIJKLmnopQRSTUV")
 
-r = requests.patch(SERVER_URL + 'api/v1/realm',
-                   data=json.dumps(payload),
-                   auth=api_auth,
-                  )
+r = requests.patch(
+    SERVER_URL + "api/v1/realm",
+    data=json.dumps(payload),
+    auth=api_auth,
+)
 ```
 
 This is simply an illustration; we recommend making use of the [Zulip

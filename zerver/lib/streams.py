@@ -106,6 +106,7 @@ class StreamDict(TypedDict, total=False):
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
+    can_mention_many_users_group: UserGroup | None
     can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
 
@@ -269,8 +270,10 @@ def get_stream_permission_default_group(
     setting_name: str,
     system_groups_name_dict: dict[str, NamedUserGroup],
     creator: UserProfile | None = None,
-) -> UserGroup:
+) -> UserGroup | None:
     setting_default_name = Stream.stream_permission_group_settings[setting_name].default_group_name
+    if setting_default_name is None:
+        return None
     if setting_default_name == "channel_creator":
         if creator:
             default_group = UserGroup(
@@ -286,8 +289,8 @@ def get_stream_permission_default_group(
 
 def get_default_values_for_stream_permission_group_settings(
     realm: Realm, creator: UserProfile | None = None
-) -> dict[str, UserGroup]:
-    group_setting_values = {}
+) -> dict[str, UserGroup | None]:
+    group_setting_values: dict[str, UserGroup | None] = {}
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for setting_name in Stream.stream_permission_group_settings:
         group_setting_values[setting_name] = get_stream_permission_default_group(
@@ -392,6 +395,7 @@ def create_stream_if_needed(
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     can_resolve_topics_group: UserGroup | None = None,
+    can_mention_many_users_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
@@ -401,13 +405,13 @@ def create_stream_if_needed(
         invite_only, history_public_to_subscribers
     )
 
-    group_setting_values: dict[str, UserGroup | Callable[[], UserGroup]] = {}
+    group_setting_values: dict[str, UserGroup | Callable[[], UserGroup | None] | None] = {}
     request_settings_dict = locals()
     # We don't want to calculate this value if no default values are
     # needed.
     system_groups_name_dict = None
 
-    def get_default_group_for_setting(setting_name: str) -> UserGroup:
+    def get_default_group_for_setting(setting_name: str) -> UserGroup | None:
         nonlocal system_groups_name_dict
         if system_groups_name_dict is None:
             system_groups_name_dict = get_role_based_system_groups_dict(realm)
@@ -420,14 +424,17 @@ def create_stream_if_needed(
             continue
 
         if request_settings_dict[setting_name] is None:
-            # Computing a default is not free: the "channel_creator"
-            # default creates an anonymous group. get_or_create only
-            # resolves callables in `defaults` when it actually
-            # creates the object, so passing one here avoids leaving
-            # an unused group behind when the channel already exists.
-            group_setting_values[setting_name] = partial(
-                get_default_group_for_setting, setting_name
-            )
+            if Stream.stream_permission_group_settings[setting_name].default_group_name is None:
+                group_setting_values[setting_name] = None
+            else:
+                # Computing a default is not free: the "channel_creator"
+                # default creates an anonymous group. get_or_create only
+                # resolves callables in `defaults` when it actually
+                # creates the object, so passing one here avoids leaving
+                # an unused group behind when the channel already exists.
+                group_setting_values[setting_name] = partial(
+                    get_default_group_for_setting, setting_name
+                )
         else:
             group_setting_values[setting_name] = request_settings_dict[setting_name]
 
@@ -540,6 +547,7 @@ def create_streams_if_needed(
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
+            can_mention_many_users_group=stream_dict.get("can_mention_many_users_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
@@ -1350,6 +1358,18 @@ def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: St
     return False
 
 
+def can_mention_many_users_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    if stream.can_mention_many_users_group_id is None:
+        return user_profile.can_mention_many_users()
+
+    return user_has_permission_for_group_setting(
+        stream.can_mention_many_users_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_mention_many_users_group"],
+        direct_member_only=False,
+    )
+
+
 def bulk_can_remove_subscribers_from_streams(
     streams: list[Stream], user_profile: UserProfile
 ) -> bool:
@@ -1587,7 +1607,7 @@ def access_requested_group_permissions_for_streams(
     user_profile: UserProfile,
     realm: Realm,
     request_settings_dict: dict[str, Any],
-) -> tuple[dict[str, dict[str, UserGroup]], dict[int, UserGroupMembersData]]:
+) -> tuple[dict[str, dict[str, UserGroup | None]], dict[int, UserGroupMembersData]]:
     anonymous_group_membership = {}
     stream_group_settings_map = {}
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
@@ -1750,6 +1770,9 @@ def list_to_streams(
                 "can_remove_subscribers_group"
             ]
             stream_dict["can_resolve_topics_group"] = group_settings_map["can_resolve_topics_group"]
+            stream_dict["can_mention_many_users_group"] = group_settings_map[
+                "can_mention_many_users_group"
+            ]
             stream_dict["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
 
         # We already filtered out existing streams, so dup_streams
@@ -1771,6 +1794,7 @@ def list_to_streams(
             getattr(stream, setting_name + "_id")
             for stream in created_streams
             for setting_name in Stream.stream_permission_group_settings
+            if getattr(stream, setting_name + "_id") is not None
         }
         unused_group_ids = [
             group_id for group_id in anonymous_group_membership if group_id not in used_group_ids
@@ -1879,6 +1903,9 @@ def stream_to_dict(
     can_resolve_topics_group = get_group_setting_value_for_register_api(
         stream.can_resolve_topics_group_id, anonymous_group_membership
     )
+    can_mention_many_users_group = get_group_setting_value_for_register_api(
+        stream.can_mention_many_users_group_id, anonymous_group_membership
+    )
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
@@ -1898,6 +1925,7 @@ def stream_to_dict(
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_resolve_topics_group=can_resolve_topics_group,
+        can_mention_many_users_group=can_mention_many_users_group,
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
@@ -2059,7 +2087,9 @@ def get_anonymous_group_membership_dict_for_streams(
     setting_group_ids = set()
     for stream in streams:
         for setting_name in Stream.stream_permission_group_settings:
-            setting_group_ids.add(getattr(stream, setting_name + "_id"))
+            setting_group_id = getattr(stream, setting_name + "_id")
+            if setting_group_id is not None:
+                setting_group_ids.add(setting_group_id)
 
     anonymous_groups_membership_dict: dict[int, UserGroupMembersData] = dict()
 

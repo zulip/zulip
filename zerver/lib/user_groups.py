@@ -580,20 +580,19 @@ def check_user_group_name(group_name: str) -> str:
 
 
 @overload
-def get_group_setting_value_for_api(setting_value_group: None) -> None:
-    ...
+def get_group_setting_value_for_api(setting_value_group: None) -> None: ...
 
 
 @overload
-def get_group_setting_value_for_api(setting_value_group: UserGroup) -> int | UserGroupMembersData:
-    ...
+def get_group_setting_value_for_api(
+    setting_value_group: UserGroup,
+) -> int | UserGroupMembersData: ...
 
 
 @overload
 def get_group_setting_value_for_api(
     setting_value_group: UserGroup | None,
-) -> int | UserGroupMembersData | None:
-    ...
+) -> int | UserGroupMembersData | None: ...
 
 
 def get_group_setting_value_for_api(
@@ -617,22 +616,19 @@ def get_group_setting_value_for_api(
 
 
 @overload
-def convert_to_user_group_members_dict(value: None) -> None:
-    ...
+def convert_to_user_group_members_dict(value: None) -> None: ...
 
 
 @overload
 def convert_to_user_group_members_dict(
     value: int | UserGroupMembersData,
-) -> int | UserGroupMembersDict:
-    ...
+) -> int | UserGroupMembersDict: ...
 
 
 @overload
 def convert_to_user_group_members_dict(
     value: int | UserGroupMembersData | None,
-) -> int | UserGroupMembersDict | None:
-    ...
+) -> int | UserGroupMembersDict | None: ...
 
 
 def convert_to_user_group_members_dict(
@@ -665,24 +661,21 @@ def get_setting_value_for_user_group_object(
 def get_group_setting_value_for_register_api(
     setting_group_id: None,
     anonymous_group_membership: dict[int, UserGroupMembersData],
-) -> None:
-    ...
+) -> None: ...
 
 
 @overload
 def get_group_setting_value_for_register_api(
     setting_group_id: int,
     anonymous_group_membership: dict[int, UserGroupMembersData],
-) -> int | UserGroupMembersDict:
-    ...
+) -> int | UserGroupMembersDict: ...
 
 
 @overload
 def get_group_setting_value_for_register_api(
     setting_group_id: int | None,
     anonymous_group_membership: dict[int, UserGroupMembersData],
-) -> int | UserGroupMembersDict | None:
-    ...
+) -> int | UserGroupMembersDict | None: ...
 
 
 def get_group_setting_value_for_register_api(

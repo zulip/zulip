@@ -298,6 +298,7 @@ def update_stream_backend(
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     default_push_notifications: Json[bool] | None = None,
@@ -686,6 +687,7 @@ def create_channel(
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
+    can_mention_many_users_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,
@@ -772,6 +774,7 @@ def create_channel(
         can_remove_subscribers_group=group_settings_map["can_remove_subscribers_group"],
         can_subscribe_group=group_settings_map["can_subscribe_group"],
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
+        can_mention_many_users_group=group_settings_map["can_mention_many_users_group"],
         folder=folder,
         topics_policy=topics_policy_value,
     )
@@ -782,7 +785,7 @@ def create_channel(
         unused_group_ids = [
             setting_value.id
             for setting_value in group_settings_map.values()
-            if setting_value.id in anonymous_group_membership
+            if setting_value is not None and setting_value.id in anonymous_group_membership
         ]
         UserGroup.objects.filter(id__in=unused_group_ids).delete()
 
@@ -837,6 +840,7 @@ def add_subscriptions_backend(
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
+    can_mention_many_users_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,

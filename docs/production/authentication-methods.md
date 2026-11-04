@@ -232,8 +232,9 @@ In either configuration, you will need to do the following:
      an LDAP user given their email address (i.e. a search by
      `LDAP_EMAIL_ATTR`). For example:
      ```python
-     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                                 ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+     AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
+         "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(mail=%(email)s)"
+     )
      ```
    - Set `AUTH_LDAP_USERNAME_ATTR` to the name of the LDAP
      attribute for the user's LDAP username in that search result.
@@ -254,19 +255,23 @@ of the following configurations:
 - To access by Active Directory username:
 
   ```python
-  AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                     ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)")
-  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                     ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+  AUTH_LDAP_USER_SEARCH = LDAPSearch(
+      "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(sAMAccountName=%(user)s)"
+  )
+  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
+      "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(mail=%(email)s)"
+  )
   AUTH_LDAP_USERNAME_ATTR = "sAMAccountName"
   ```
 
 - To access by Active Directory email address:
   ```python
-  AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                     ldap.SCOPE_SUBTREE, "(mail=%(user)s)")
-  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-                                              ldap.SCOPE_SUBTREE, "(mail=%(email)s)")
+  AUTH_LDAP_USER_SEARCH = LDAPSearch(
+      "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(mail=%(user)s)"
+  )
+  AUTH_LDAP_REVERSE_EMAIL_SEARCH = LDAPSearch(
+      "ou=users,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(mail=%(email)s)"
+  )
   AUTH_LDAP_USERNAME_ATTR = "mail"
   ```
 
@@ -357,6 +362,7 @@ groups. To configure this feature:
 
    ```python
    from django_auth_ldap.config import ActiveDirectoryGroupType
+
    AUTH_LDAP_GROUP_TYPE = ActiveDirectoryGroupType()
    ```
 
@@ -367,8 +373,7 @@ groups. To configure this feature:
 
    ```python
    AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
-       "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE,
-       "(objectClass=groupOfUniqueNames)"
+       "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfUniqueNames)"
    )
    ```
 
@@ -380,10 +385,10 @@ groups. To configure this feature:
 
    ```python
    LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
-     "subdomain1" : [
-         "group1",
-         "group2",
-     ]
+       "subdomain1": [
+           "group1",
+           "group2",
+       ]
    }
    ```
 
@@ -583,10 +588,13 @@ An example configuration for Active Directory group restriction can be:
 
 ```python
 import django_auth_ldap
+
 AUTH_LDAP_GROUP_TYPE = django_auth_ldap.config.ActiveDirectoryGroupType()
 
 AUTH_LDAP_REQUIRE_GROUP = "cn=enabled,ou=groups,dc=example,dc=com"
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)")
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    "ou=groups,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
+)
 ```
 
 Please note that `AUTH_LDAP_GROUP_TYPE` needs to be set to the correct
@@ -1526,9 +1534,7 @@ You can write custom Python logic that will wrap such `authenticate()`
 calls by specifying in `/etc/zulip/settings.py`:
 
 ```python3
-def custom_auth_wrapper(
-    auth_func, *args, **kwargs
-):
+def custom_auth_wrapper(auth_func, *args, **kwargs):
     from zerver.lib.exceptions import JsonableError
 
     backend = args[0]
@@ -1543,6 +1549,7 @@ def custom_auth_wrapper(
             raise JsonableError("Your IP address is not allowed to log in as this user.")
 
     return user_profile
+
 
 # We need to actually specify to use this function defined above as the
 # custom authentication wrapper:

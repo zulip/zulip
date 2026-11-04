@@ -71,12 +71,12 @@ The Zulip server-side configuration is straightforward:
 
   ```python
   SCIM_CONFIG = {
-     "subdomain": {
-        "bearer_token": "<secret token>",
-        "scim_client_name": "okta",
-        "name_formatted_included": False,
-        "create_guests_without_streams": True,
-     }
+      "subdomain": {
+          "bearer_token": "<secret token>",
+          "scim_client_name": "okta",
+          "name_formatted_included": False,
+          "create_guests_without_streams": True,
+      }
   }
   ```
 
@@ -91,17 +91,17 @@ The Zulip server-side configuration is straightforward:
 
   ```python
   SCIM_CONFIG = {
-     "subdomain": {
-        "bearer_token": "<secret token>",
-        "scim_client_name": "okta",
-        "name_formatted_included": False,
-        "custom_profile_field_map": {
-            # Phone number
-            "phone_number": "phoneNumber",
-            # Birthday
-            "birthday": "birthday",
-        },
-     }
+      "subdomain": {
+          "bearer_token": "<secret token>",
+          "scim_client_name": "okta",
+          "name_formatted_included": False,
+          "custom_profile_field_map": {
+              # Phone number
+              "phone_number": "phoneNumber",
+              # Birthday
+              "birthday": "birthday",
+          },
+      }
   }
   ```
 

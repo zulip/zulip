@@ -159,6 +159,7 @@ There are a few ways to see your translations in the Zulip UI:
 
   ```python
   import requests
+
   headers = {"Accept-Language": "de"}
   response = requests.get("http://localhost:9991/login/", headers=headers)
   print(response.content)

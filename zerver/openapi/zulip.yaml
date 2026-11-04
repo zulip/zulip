@@ -13426,6 +13426,8 @@ paths:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 can_create_topic_group:
                   $ref: "#/components/schemas/CanCreateTopicGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 folder_id:
                   description: |
                     This parameter adds the newly created channel to the specified
@@ -13480,6 +13482,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -19595,6 +19599,7 @@ paths:
                                 can_subscribe_group: {}
                                 can_resolve_topics_group: {}
                                 can_create_topic_group: {}
+                                can_mention_many_users_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -24687,6 +24692,7 @@ paths:
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
                                 can_create_topic_group: {}
+                                can_mention_many_users_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -25320,6 +25326,23 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_mention_many_users_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to use wildcard mentions in this channel
+                        expressed as an [update to a group-setting value][update-group-setting], or `null`
+                        to inherit the organization-level setting.
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        **Changes**: New in Zulip 13.0 (feature level ZF-bf821c).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -25353,6 +25376,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
       responses:
         "200":
@@ -25932,6 +25957,8 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 default_push_notifications:
                   $ref: "#/components/schemas/DefaultPushNotifications"
               required:
@@ -25959,6 +25986,8 @@ paths:
               can_remove_subscribers_group:
                 contentType: application/json
               can_resolve_topics_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               can_send_message_group:
                 contentType: application/json
@@ -27938,6 +27967,7 @@ components:
             can_subscribe_group: {}
             can_resolve_topics_group: {}
             can_create_topic_group: {}
+            can_mention_many_users_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -28152,6 +28182,8 @@ components:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         can_create_topic_group:
           $ref: "#/components/schemas/CanCreateTopicGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         subscriber_count:
           type: number
           description: |
@@ -29379,6 +29411,8 @@ components:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         can_create_topic_group:
           $ref: "#/components/schemas/CanCreateTopicGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         is_archived:
           type: boolean
           description: |
@@ -31678,6 +31712,18 @@ components:
             [setting-values]: /api/group-setting-values
             [private-channels]: /help/channel-permissions/#private-channels
             [system-groups]: /api/group-setting-values#system-groups
+    CanMentionManyUsersGroup:
+      oneOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - type: "null"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to use wildcard mentions in the channel, or `null`
+            if inheriting from the organization-level setting.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-bf821c).
+
+            [setting-values]: /api/group-setting-values
     LinkifierPattern:
       description: |
         The [Python regular

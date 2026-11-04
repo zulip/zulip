@@ -63,8 +63,10 @@ framework; as you can see, it's very little code on top of our
 def user_profile_by_email_realm_id_cache_key(email: str, realm_id: int) -> str:
     return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
+
 def user_profile_by_email_realm_cache_key(email: str, realm: "Realm") -> str:
     return user_profile_by_email_realm_id_cache_key(email, realm.id)
+
 
 @cache_with_key(user_profile_by_email_realm_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:

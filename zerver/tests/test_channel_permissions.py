@@ -746,6 +746,44 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             skip_changing_group_setting=True,
         )
 
+    def test_can_mention_many_users_group(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        stream = self.subscribe(user_profile, "stream_name1")
+
+        self.assertIsNone(stream.can_mention_many_users_group)
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        params = {
+            "can_mention_many_users_group": orjson.dumps({"new": moderators_group.id}).decode()
+        }
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.can_mention_many_users_group_id, moderators_group.id)
+        self.assertEqual(events[0]["event"]["type"], "stream")
+        self.assertEqual(events[0]["event"]["op"], "update")
+        self.assertEqual(events[0]["event"]["property"], "can_mention_many_users_group")
+        self.assertEqual(events[0]["event"]["value"], moderators_group.id)
+
+        # Reset back to None (inherit from realm)
+        params = {
+            "can_mention_many_users_group": orjson.dumps(
+                {"new": None, "old": moderators_group.id}
+            ).decode()
+        }
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertIsNone(stream.can_mention_many_users_group)
+        self.assertEqual(events[0]["event"]["property"], "can_mention_many_users_group")
+        self.assertIsNone(events[0]["event"]["value"])
+
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)

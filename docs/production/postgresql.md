@@ -217,7 +217,7 @@ repeatedly retry the list, in order, until the replica is promoted and becomes
 writable. To configure this, in `/etc/zulip/settings.py`, set:
 
 ```python3
-REMOTE_POSTGRES_HOST = 'primary-database-host,warm-standby-host'
+REMOTE_POSTGRES_HOST = "primary-database-host,warm-standby-host"
 ```
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html

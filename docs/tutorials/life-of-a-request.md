@@ -137,9 +137,7 @@ yields a response with this HTTP header:
 We can see this reflected in [zproject/urls.py](https://github.com/zulip/zulip/blob/main/zproject/urls.py):
 
 ```python
-rest_path('users',
-          GET=get_members_backend,
-          POST=create_user_backend),
+(rest_path("users", GET=get_members_backend, POST=create_user_backend),)
 ```
 
 In this way, the API is partially self-documenting.
@@ -166,8 +164,8 @@ the request, and then figure out which view to show from that.
 In our example,
 
 ```python
-GET=get_members_backend,
-PUT=create_user_backend
+GET = (get_members_backend,)
+PUT = create_user_backend
 ```
 
 are supplied as arguments to `rest_path`, along with the

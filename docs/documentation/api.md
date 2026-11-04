@@ -170,17 +170,15 @@ automatically in Zulip's automated test suite. The code for our
 example API endpoint looks like this:
 
 ```python
-@openapi_test_function('/messages/render:post')
+@openapi_test_function("/messages/render:post")
 def render_message(client: Client) -> None:
     # {code_example|start}
     # Render a message
-    request = {
-        'content': '**foo**'
-    }
+    request = {"content": "**foo**"}
     result = client.render_message(request)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/messages/render', 'post', '200')
+    validate_against_openapi_schema(result, "/messages/render", "post", "200")
 ```
 
 This is an actual Python function which will be run as part of the

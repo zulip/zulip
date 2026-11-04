@@ -10,8 +10,8 @@ and PEP 526 (Python 3.6) syntax for static types:
 ```python
 user_dict: Dict[str, UserProfile] = {}
 
-def get_user(email: str, realm: Realm) -> UserProfile:
-    ... # Actual code of the function here
+
+def get_user(email: str, realm: Realm) -> UserProfile: ...  # Actual code of the function here
 ```
 
 You can learn more about it at:
@@ -50,7 +50,7 @@ example, if your code has a type error like this:
 
 ```python
 foo = 1
-foo = '1'
+foo = "1"
 ```
 
 you'll get an error like this:
@@ -131,8 +131,7 @@ object, you should always supply the model type that it accepts as the
 first type parameter.
 
 ```python
-def foo(user: QuerySet[UserProfile]) -> None:
-    ...
+def foo(user: QuerySet[UserProfile]) -> None: ...
 ```
 
 For `.values_list`, supply the type of the column as the second type
@@ -150,6 +149,7 @@ key-value pairs for the columns.
 class BookMetadata(TypedDict):
     id: int
     name: str
+
 
 def get_book_meta_data(
     book_ids: List[int],
@@ -170,6 +170,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
 
 class FooTestCase(ZulipTestCase):
     def helper(self) -> "TestHttpResponse":
@@ -225,6 +226,7 @@ def f(x: int) -> int: ...
 def f(x: str) -> int: ...  # oops
 def f(x: Union[int, str]) -> Union[int, str]:
     return x
+
 
 x: int = f("three!!")
 ```
@@ -394,8 +396,7 @@ are also optional values as above). This signature does not use the
 `Optional` type:
 
 ```python
-def func(flag: bool = False) -> str:
-    ...
+def func(flag: bool = False) -> str: ...
 ```
 
 A collection such as `List` should only be `Optional` if `None` would
@@ -463,10 +464,11 @@ def f(items: Iterable[Realm]) -> None:
     for item in items:
         ...
 
+
 realms_list: List[Realm] = [zulip, analytics]
 realms_queryset: QuerySet[Realm] = Realm.objects.all()
 
-f(realms_list)      # OK
+f(realms_list)  # OK
 f(realms_queryset)  # Also OK
 ```
 
@@ -492,7 +494,9 @@ def fancy(func: Callable[[str], str]) -> Callable[[int], str]:
     def wrapped_func(n: int) -> str:
         print("so fancy")
         return func(str(n))
+
     return wrapped_func
+
 
 @fancy
 def f(s: str) -> str:
@@ -507,8 +511,11 @@ def fancy(message: str) -> Callable[[Callable[[str], str]], Callable[[int], str]
         def wrapped_func(n: int) -> str:
             print(message)
             return func(str(n))
+
         return wrapped_func
+
     return wrapper
+
 
 @fancy("so fancy")
 def f(s: str) -> str:
@@ -524,11 +531,14 @@ output signature is always the same as the input signature:
 ```python
 FuncT = TypeVar("FuncT", bound=Callable[..., object])
 
+
 def fancy(func: FuncT) -> FuncT:
     def wrapped_func(*args: object, **kwargs: object) -> object:
         print("so fancy")
         return func(*args, **kwargs)
+
     return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
+
 
 @fancy
 def f(s: str) -> str:

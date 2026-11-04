@@ -494,6 +494,7 @@ def send_subscription_add_events(
                 ],
                 can_send_message_group=stream_dict["can_send_message_group"],
                 can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
+                can_mention_many_users_group=stream_dict["can_mention_many_users_group"],
                 can_resolve_topics_group=stream_dict["can_resolve_topics_group"],
                 can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
@@ -1787,7 +1788,7 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
 def do_change_stream_group_based_setting(
     stream: Stream,
     setting_name: str,
-    new_setting_value: NamedUserGroup | UserGroupMembersData,
+    new_setting_value: NamedUserGroup | UserGroupMembersData | None,
     *,
     old_setting_api_value: int | UserGroupMembersData | None = None,
     acting_user: UserProfile,
@@ -1805,8 +1806,10 @@ def do_change_stream_group_based_setting(
     if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
         old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
 
-    if isinstance(new_setting_value, NamedUserGroup):
-        user_group: UserGroup = new_setting_value
+    if new_setting_value is None:
+        user_group: UserGroup | None = None
+    elif isinstance(new_setting_value, NamedUserGroup):
+        user_group = new_setting_value
     else:
         user_group = update_or_create_user_group_for_setting(
             acting_user,

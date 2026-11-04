@@ -449,6 +449,9 @@ def build_stream_dict_for_never_sub(
     can_resolve_topics_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_resolve_topics_group_id"], anonymous_group_membership
     )
+    can_mention_many_users_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_mention_many_users_group_id"], anonymous_group_membership
+    )
     can_subscribe_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
     )
@@ -468,6 +471,7 @@ def build_stream_dict_for_never_sub(
         can_send_message_group=can_send_message_group_value,
         can_remove_subscribers_group=can_remove_subscribers_group_value,
         can_resolve_topics_group=can_resolve_topics_group_value,
+        can_mention_many_users_group=can_mention_many_users_group_value,
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
@@ -856,7 +860,9 @@ def gather_subscriptions_helper(
         setting_group_ids = set()
         for stream_dict in all_stream_dicts:
             for setting_name in Stream.stream_permission_group_settings:
-                setting_group_ids.add(stream_dict[setting_name + "_id"])
+                setting_group_id = stream_dict[setting_name + "_id"]
+                if setting_group_id is not None:
+                    setting_group_ids.add(setting_group_id)
         anonymous_group_ids = UserGroup.objects.filter(
             id__in=setting_group_ids, named_user_group=None
         ).values_list("id", flat=True)

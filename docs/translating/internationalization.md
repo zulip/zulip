@@ -275,7 +275,7 @@ should always be a literal string enclosed by `_()`
 function, for example:
 
 ```python
-JsonableError(_('English text'))
+JsonableError(_("English text"))
 ```
 
 If you're declaring a user-facing string at top level or in a class, you need to
@@ -287,8 +287,8 @@ from zproject.backends import check_password_strength, email_belongs_to_ldap
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
-def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
-  ...
+
+def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse: ...
 ```
 
 ```python

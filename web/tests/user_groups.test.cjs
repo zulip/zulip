@@ -596,6 +596,23 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         expected_groups_list,
     );
 
+    assert.deepEqual(
+        group_permission_settings.get_realm_user_groups_for_dropdown_list_widget(
+            "can_mention_many_users_group",
+            "stream",
+        ),
+        [
+            {name: "translated: Admins, moderators, members and guests", unique_id: 6},
+            {name: "translated: Admins, moderators and members", unique_id: 5},
+            {name: "translated: Admins, moderators and full members", unique_id: 7},
+            {name: "translated: Admins and moderators", unique_id: 4},
+            {name: "translated: Admins", unique_id: 3},
+            {name: "translated: Owners", unique_id: 2},
+            {name: "translated: Nobody", unique_id: 1},
+            {name: "Students", unique_id: 9},
+        ],
+    );
+
     expected_groups_list = [
         {name: "translated: Admins, moderators, members and guests", unique_id: 6},
         {name: "translated: Admins, moderators and members", unique_id: 5},

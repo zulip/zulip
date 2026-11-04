@@ -189,6 +189,7 @@ def fetch_database(key: str) -> str:
     # Do some look-ups in a database
     return data
 
+
 def greet(name_key: str) -> str:
     name = fetch_database(name_key)
     return "Hello" + name
@@ -200,6 +201,7 @@ def greet(name_key: str) -> str:
 
   ```python
   from greetings import greet
+
 
   def test_greet() -> str:
       greeting = greet("Mario")
@@ -219,6 +221,7 @@ the code is correct._
 
 ```python
 from unittest.mock import patch
+
 
 def test_greet() -> None:
     # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
@@ -247,7 +250,7 @@ those are the ones starting with a dunder `__`). From the docs:
 from unittest import mock
 
 foo = mock.Mock()
-foo.bar('quux')
+foo.bar("quux")
 foo.baz
 foo.qux = 42
 ```
@@ -256,7 +259,7 @@ is _not_ going to throw any errors. Our mock silently accepts all these calls an
 `Mock` also implements methods for us to access and assert its records, e.g.,
 
 ```python
-foo.bar.assert_called_with('quux')
+foo.bar.assert_called_with("quux")
 ```
 
 Finally, `unittest.mock` also provides a method to mock objects only within a scope: `patch()`. We can use `patch()` either
@@ -269,10 +272,12 @@ As an example, look at the following code:
 from unittest import mock
 from os import urandom
 
-with mock.patch('__main__.urandom', return_value=42):
+with mock.patch("__main__.urandom", return_value=42):
     print(urandom(1))
-    print(urandom(1)) # No matter what value we plug in for urandom, it will always return 42.
-print(urandom(1)) # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
+    print(urandom(1))  # No matter what value we plug in for urandom, it will always return 42.
+print(
+    urandom(1)
+)  # We exited the context manager, so the mock doesn't apply anymore. Will return a random byte.
 ```
 
 _Note that calling `mock.patch('os.urandom', return_value=42)` wouldn't work here_: `os.urandom` would be the name of our patched
@@ -325,7 +330,7 @@ from Django as well as our own custom helpers. Here is an example:
 
 ```python
 with self.settings(RATE_LIMITING=True):
-    with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+    with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
         api_result = my_webhook(request)
 
 self.assertTrue(rate_limit_mock.called)

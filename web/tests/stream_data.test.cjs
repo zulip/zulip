@@ -550,6 +550,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     const social = {
         color: "red",
@@ -562,6 +563,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     const test = {
         color: "yellow",
@@ -573,6 +575,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     const world = {
         color: "blue",
@@ -585,6 +588,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     const errors = {
         color: "green",
@@ -597,6 +601,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
@@ -690,6 +695,7 @@ test("admin_options", ({override}) => {
             can_administer_channel_group,
             can_add_subscribers_group: admins_group.id,
             can_subscribe_group: admins_group.id,
+            can_mention_many_users_group: null,
             date_created: 1691057093,
             creator_id: null,
         };
@@ -794,6 +800,7 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
         date_created: 1691057093,
         creator_id: null,
         default_push_notifications: false,
@@ -809,6 +816,7 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
         date_created: 1691057093,
         creator_id: null,
     };
@@ -825,6 +833,7 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
         date_created: 1691057093,
         creator_id: null,
         is_archived: true,
@@ -842,6 +851,7 @@ test("stream_settings", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: admins_group.id,
         can_subscribe_group: admins_group.id,
+        can_mention_many_users_group: null,
         date_created: 1691057093,
         creator_id: null,
         is_archived: false,
@@ -887,6 +897,11 @@ test("stream_settings", ({override}) => {
         sub,
         moderators_group.id,
     );
+    stream_data.update_stream_permission_group_setting(
+        "can_mention_many_users_group",
+        sub,
+        moderators_group.id,
+    );
     stream_data.update_channel_folder(sub, 3);
     stream_data.update_default_push_notifications(sub, true);
     assert.equal(sub.invite_only, false);
@@ -895,6 +910,7 @@ test("stream_settings", ({override}) => {
     assert.equal(sub.topics_policy, "allow_topics_policy");
     assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
+    assert.equal(sub.can_mention_many_users_group, moderators_group.id);
     assert.equal(sub.folder_id, 3);
     assert.equal(sub.default_push_notifications, true);
 
@@ -1712,6 +1728,34 @@ test("can_resolve_topics", ({override}) => {
     assert.equal(stream_data.can_resolve_topics(archived_sub), false);
 });
 
+test("can_mention_many_users", ({override}) => {
+    const sub = {
+        name: "Denmark",
+        subscribed: true,
+        color: "red",
+        stream_id: 1,
+        can_mention_many_users_group: null,
+    };
+    stream_data.add_sub_for_tests(sub);
+
+    override(realm, "realm_can_mention_many_users_group", admins_group.id);
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_mention_many_users(sub), true);
+
+    initialize_and_override_current_user(test_user.user_id, override);
+    assert.equal(stream_data.can_mention_many_users(sub), false);
+
+    // Channel override with everyone group
+    sub.can_mention_many_users_group = everyone_group.id;
+    assert.equal(stream_data.can_mention_many_users(sub), true);
+
+    // Channel override with nobody group
+    sub.can_mention_many_users_group = nobody_group.id;
+    assert.equal(stream_data.can_mention_many_users(sub), false);
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_mention_many_users(sub), false);
+});
+
 test("can_unsubscribe_others", ({override}) => {
     const sub = {
         name: "Denmark",
@@ -1722,6 +1766,7 @@ test("can_unsubscribe_others", ({override}) => {
         can_administer_channel_group: nobody_group.id,
         can_add_subscribers_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
+        can_mention_many_users_group: null,
     };
     stream_data.add_sub_for_tests(sub);
 
@@ -1785,6 +1830,7 @@ test("can_subscribe_others", ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     stream_data.add_sub_for_tests(sub);
 
@@ -1854,6 +1900,7 @@ test("user_can_set_topics_policy", ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     stream_data.add_sub_for_tests(sub);
 
@@ -1889,6 +1936,7 @@ test("user_can_set_delete_message_policy", ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: nobody_group.id,
         can_remove_subscribers_group: admins_group.id,
+        can_mention_many_users_group: null,
     };
     stream_data.add_sub_for_tests(sub);
 

@@ -153,8 +153,8 @@ rules about integrating third-party projects.
   reason to do otherwise.
 - Unpacking sequences doesn't require list brackets:
   ```python
-  [x, y] = xs    # unnecessary
-  x, y = xs      # better
+  [x, y] = xs  # unnecessary
+  x, y = xs  # better
   ```
 - For string formatting, use `x % (y,)` rather than `x % y`, to avoid
   ambiguity if `y` happens to be a tuple.

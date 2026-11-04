@@ -237,9 +237,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: List[IncomingWebhookIntegration] = [
 In that list, find the entry for the example Hello World integration:
 
 ```python
+(
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
+)
 ```
 
 This tells the Zulip API to call the `api_helloworld_webhook` function in

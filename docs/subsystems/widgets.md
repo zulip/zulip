@@ -244,27 +244,27 @@ is the code that produces the JSON.
 
 ```py
 def format_quiz_for_widget(quiz_id: str, quiz: Dict[str, Any]) -> str:
-    widget_type = 'zform'
-    question = quiz['question']
-    answers = quiz['answers']
+    widget_type = "zform"
+    question = quiz["question"]
+    answers = quiz["answers"]
 
-    heading = quiz_id + ': ' + question
+    heading = quiz_id + ": " + question
 
     def get_choice(letter: str) -> Dict[str, str]:
         answer = answers[letter]
-        reply = 'answer ' + quiz_id + ' ' + letter
+        reply = "answer " + quiz_id + " " + letter
 
         return dict(
-            type='multiple_choice',
+            type="multiple_choice",
             short_name=letter,
             long_name=answer,
             reply=reply,
         )
 
-    choices = [get_choice(letter) for letter in 'ABCD']
+    choices = [get_choice(letter) for letter in "ABCD"]
 
     extra_data = dict(
-        type='choices',
+        type="choices",
         heading=heading,
         choices=choices,
     )

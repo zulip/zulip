@@ -578,13 +578,19 @@ def check_stream_update(
         assert value in Stream.STREAM_POST_POLICY_TYPES
     elif prop in Stream.stream_permission_group_settings:
         assert extra_keys == set()
-        assert isinstance(value, int | dict)
-        # We cannot validate a TypedDict using isinstance, thus
-        # requiring this check.
-        if isinstance(value, dict):
-            expected_keys = set(inspect.get_annotations(UserGroupMembersDict).keys())
-            keys = set(value.keys())
-            assert expected_keys == keys
+        if (
+            Stream.stream_permission_group_settings[prop].default_group_name is None
+            and value is None
+        ):
+            pass
+        else:
+            assert isinstance(value, int | dict)
+            # We cannot validate a TypedDict using isinstance, thus
+            # requiring this check.
+            if isinstance(value, dict):
+                expected_keys = set(inspect.get_annotations(UserGroupMembersDict).keys())
+                keys = set(value.keys())
+                assert expected_keys == keys
     elif prop == "first_message_id":
         assert extra_keys == set()
         assert isinstance(value, int)

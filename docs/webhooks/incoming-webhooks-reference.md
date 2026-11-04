@@ -223,7 +223,6 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 
 ```python
 class QuerytestHookTests(WebhookTestCase):
-
     TOPIC = "Default topic"
 
     def test_querytest_test_one(self) -> None:
@@ -235,8 +234,12 @@ class QuerytestHookTests(WebhookTestCase):
         expected_topic = "Query test"
         expected_message = "This is a test of custom query parameters."
 
-        self.check_webhook('test_one', expected_topic, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        self.check_webhook(
+            "test_one",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
 ```
 
 You can also override `get_body` or `get_payload` if your test data
@@ -292,9 +295,11 @@ def test_unknown_action_no_data(self) -> None:
     self.subscribe(self.test_user, self.channel_name)
 
     # post to the webhook url
-    post_params = {'stream_name': self.channel_name,
-                   'content_type': 'application/x-www-form-urlencoded'}
-    result = self.client_post(self.url, 'unknown_action', **post_params)
+    post_params = {
+        "stream_name": self.channel_name,
+        "content_type": "application/x-www-form-urlencoded",
+    }
+    result = self.client_post(self.url, "unknown_action", **post_params)
 
     # check that we got the expected error message
     self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
