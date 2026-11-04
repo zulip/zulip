@@ -1409,6 +1409,7 @@ run_test("user_settings", ({override}) => {
     event = event_fixtures.user_settings__web_left_sidebar_topics_order;
     override(user_settings, "web_left_sidebar_topics_order", 1);
     override(topic_list, "update", noop);
+    override(stream_ui_updates, "update_left_sidebar_topics_order_widget", noop);
     dispatch(event);
     assert_same(user_settings.web_left_sidebar_topics_order, 2);
 

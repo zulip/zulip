@@ -191,6 +191,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         web_left_sidebar_topics_order(value) {
             sub.web_left_sidebar_topics_order = value;
             topic_list.update();
+            stream_ui_updates.update_left_sidebar_topics_order_widget();
         },
         invite_only(value) {
             assert(other_values !== undefined);

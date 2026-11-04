@@ -2,6 +2,7 @@ import {$} from "jquery";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
+import render_left_sidebar_topics_order from "../templates/stream_settings/left_sidebar_topics_order.hbs";
 import render_stream_can_subscribe_group_label from "../templates/stream_settings/stream_can_subscribe_group_label.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
@@ -20,6 +21,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -467,6 +469,27 @@ export function update_permissions_banner(sub: StreamSubscription): void {
 
     const rendered_tip = render_stream_settings_tip(sub);
     $settings.find(".stream-settings-tip-container").html(rendered_tip);
+}
+
+// Rerenders the radio group in the channel settings being edited, if
+// any, since both the channel's value and the user's default, which
+// the first option's label shows, can change.
+export function update_left_sidebar_topics_order_widget(): void {
+    const $stream_row = $("#channels_overlay_container .stream-row.active");
+    if ($stream_row.length === 0) {
+        return;
+    }
+    const stream_id = Number($stream_row.attr("data-stream-id"));
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined) {
+        return;
+    }
+    $("#channels_overlay_container .left_sidebar_topics_order_values").html(
+        render_left_sidebar_topics_order({
+            options: stream_settings_data.get_left_sidebar_topics_order_options(sub),
+            stream_id,
+        }),
+    );
 }
 
 export function update_notification_setting_checkbox(
