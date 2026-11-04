@@ -11,7 +11,9 @@ import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewPersonal from "../include/_SelectChannelViewPersonal.mdx";
 
 Zulip assigns each of your channels a color when you subscribe to the
-channel. Changing a channel's color does not change it for anyone else.
+channel. You can choose a personal color, or follow the color set by an
+organization administrator. Changing a personal color does not affect anyone
+else.
 
 <Tabs>
   <TabItem label="Via left sidebar">
@@ -35,12 +37,18 @@ channel. Changing a channel's color does not change it for anyone else.
 
       1. Under **Personal settings**, click on the colored square below **Channel color**.
       1. Select a color from the grid, use the color picker, or enter a hex code.
+      1. Select **Reset to default** to follow the color set by an organization administrator.
       1. Click **Choose** to save and apply the color change.
     </FlattenedSteps>
 
     <ChannelSettingsNavbarTip />
   </TabItem>
 </Tabs>
+
+Organization administrators can set a default color for a channel in its
+**General** settings. Users who follow the default will see color changes made
+by an administrator. Choosing a personal color overrides that default until
+you reset your color.
 
 ## Related articles
 

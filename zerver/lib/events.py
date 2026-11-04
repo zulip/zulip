@@ -1408,6 +1408,7 @@ def apply_event(
                     recipient__type=Recipient.STREAM,
                 ).values(
                     *Subscription.API_FIELDS,
+                    "auto_color",
                     "recipient_id",
                     "active",
                 )

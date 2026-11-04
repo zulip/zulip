@@ -1,9 +1,6 @@
-import assert from "minimalistic-assert";
-
 import * as channel from "./channel.ts";
 import * as settings_ui from "./settings_ui.ts";
 import type {StreamProperties, StreamSubscription} from "./sub_store.ts";
-import * as sub_store from "./sub_store.ts";
 
 export type SubData = {
     [Property in keyof StreamProperties]: {
@@ -42,8 +39,23 @@ export function set_stream_property(
     bulk_set_stream_property([sub_data], $status_element);
 }
 
-export function set_color(stream_id: number, color: string): void {
-    const sub = sub_store.get(stream_id);
-    assert(sub !== undefined);
-    set_stream_property(sub, {property: "color", value: color});
+export function set_color(stream_id: number, color: string | null): void {
+    const data = {
+        subscription_data: JSON.stringify([{stream_id, property: "color", value: color}]),
+    };
+    void channel.post({url: "/json/users/me/subscriptions/properties", data});
+}
+
+export function set_default_color(
+    stream_id: number,
+    color: string | null,
+    $status_element?: JQuery,
+): void {
+    const url = `/json/streams/${stream_id}`;
+    const data = {default_color: JSON.stringify(color)};
+    if ($status_element) {
+        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
+    } else {
+        void channel.patch({url, data});
+    }
 }

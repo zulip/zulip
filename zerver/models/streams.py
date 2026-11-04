@@ -122,6 +122,8 @@ class Stream(models.Model):
     # inheriting from the user's account-level default.
     default_push_notifications = models.BooleanField(default=False, db_default=False)
 
+    default_color = models.CharField(max_length=10, null=True, default=None)
+
     # on_delete field for group value settings is set to RESTRICT
     # because we don't want to allow deleting a user group in case it
     # is referenced by the respective setting. We are not using PROTECT
@@ -271,6 +273,7 @@ class Stream(models.Model):
         "creator_id",
         "date_created",
         "deactivated",
+        "default_color",
         "default_push_notifications",
         "description",
         "first_message_id",
@@ -394,8 +397,9 @@ class Subscription(models.Model):
     # Whether this user had muted this stream.
     is_muted = models.BooleanField(default=False)
 
-    DEFAULT_STREAM_COLOR = "#c2c2c2"
-    color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+    color = models.CharField(max_length=10, null=True, default=None)
+    # Keep automatic assignment separate from a user's personal color override.
+    auto_color = models.CharField(max_length=10, null=True, default=None)
     pin_to_top = models.BooleanField(default=False)
 
     # These fields are stream-level overrides for the user's default

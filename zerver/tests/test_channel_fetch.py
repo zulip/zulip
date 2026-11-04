@@ -595,7 +595,14 @@ class GetSubscribersTest(ZulipTestCase):
         expected_fields = set(Subscription.API_FIELDS)
 
         subscription_dict_fields = set(SingleSubscription.model_fields)
-        computed_fields = {"in_home_view", "email_address", "stream_weekly_traffic", "subscribers"}
+        computed_fields = {
+            "auto_color",
+            "color_is_default",
+            "in_home_view",
+            "email_address",
+            "stream_weekly_traffic",
+            "subscribers",
+        }
         # `SingleSubscription` has all the fields of `APIStreamDict`, which
         # need to be excluded here in addition to the computed fields and
         # `Subscription.API_FIELDS`.
@@ -606,6 +613,8 @@ class GetSubscribersTest(ZulipTestCase):
 
     def verify_sub_fields(self, sub_data: SubscriptionInfo) -> None:
         other_fields = {
+            "auto_color",
+            "color_is_default",
             "is_archived",
             "is_announcement_only",
             "in_home_view",
