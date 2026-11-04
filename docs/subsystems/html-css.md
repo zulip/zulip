@@ -185,7 +185,7 @@ In development mode, bundles are built and served on the fly using
 webpack-dev-server with live reloading. In production mode (and when creating a
 release tarball using `tools/build-release-tarball`), the
 `tools/update-prod-static` tool (called by both `tools/build-release-tarball`
-and `tools/upgrade-zulip-from-git`) is responsible for orchestrating the
+and `scripts/upgrade-zulip-from-git`) is responsible for orchestrating the
 webpack build, JS minification and a host of other steps for getting the assets
 ready for deployment.
 
