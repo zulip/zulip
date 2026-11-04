@@ -531,6 +531,15 @@ export function show_settings_for(node: HTMLElement): void {
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
     stream_ui_updates.update_channel_email_section(sub);
 
+    const $settings = $("#stream_settings");
+    $settings.find(".stream-default-color-reset").on("click", () => {
+        stream_settings_api.set_default_color(
+            stream_id,
+            null,
+            $settings.find(".stream-settings-subsection .alert-notification"),
+        );
+    });
+
     $("#channels_overlay_container").on(
         "click",
         ".stream-creation-confirmation-banner .main-view-banner-close-button",

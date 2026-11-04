@@ -2489,6 +2489,47 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "test_push_default")
         self.assertFalse(stream.default_push_notifications)
 
+    def test_stream_default_color(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "default_color_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#123456").decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.default_color, "#123456")
+
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": stream.name}]).decode()},
+        )
+        self.assert_json_success(result)
+        subscription = Subscription.objects.get(user_profile=hamlet, recipient=stream.recipient)
+        self.assertIsNone(subscription.color)
+        self.assertIsNotNone(subscription.auto_color)
+        serialized_sub = next(
+            item for item in gather_subscriptions(hamlet)[0] if item["stream_id"] == stream.id
+        )
+        self.assertEqual(serialized_sub["color"], "#123456")
+        self.assertTrue(serialized_sub["color_is_default"])
+
+        self.login_user(admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"default_color": orjson.dumps(None).decode()}
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertIsNone(stream.default_color)
+        serialized_sub = next(
+            item for item in gather_subscriptions(hamlet)[0] if item["stream_id"] == stream.id
+        )
+        self.assertEqual(serialized_sub["color"], subscription.auto_color)
+
     def test_new_subscription_gets_push_notifications_from_stream(self) -> None:
         """When a stream has default_push_notifications=True, brand-new
         subscriptions get push_notifications=True, overriding the user default."""
@@ -3929,6 +3970,42 @@ class SubscriptionRestApiTest(ZulipTestCase):
             {"property": "color", "value": "#c2c2c2"},
         )
         self.assert_json_success(result)
+
+    def test_default_channel_color_and_reset(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        subs = gather_subscriptions(user)[0]
+        sub_data = subs[0]
+        stream = Stream.objects.get(id=sub_data["stream_id"])
+        stream.default_color = "#123456"
+        stream.save(update_fields=["default_color"])
+
+        self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream.id}",
+            {"property": "color", "value": "#abcdef"},
+        )
+        stream.default_color = "#654321"
+        stream.save(update_fields=["default_color"])
+        serialized_sub = next(
+            item for item in gather_subscriptions(user)[0] if item["stream_id"] == stream.id
+        )
+        self.assertEqual(serialized_sub["color"], "#abcdef")
+        self.assertFalse(serialized_sub["color_is_default"])
+
+        result = self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream.id}",
+            {"property": "color", "value": "null"},
+        )
+        self.assert_json_success(result)
+        subscription = Subscription.objects.get(user_profile=user, recipient=stream.recipient)
+        self.assertIsNone(subscription.color)
+        serialized_sub = next(
+            item for item in gather_subscriptions(user)[0] if item["stream_id"] == stream.id
+        )
+        self.assertEqual(serialized_sub["color"], "#654321")
+        self.assertTrue(serialized_sub["color_is_default"])
 
     def test_api_invalid_property(self) -> None:
         """

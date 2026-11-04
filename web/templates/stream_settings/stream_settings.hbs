@@ -63,6 +63,23 @@
                       }}
                 </div>
 
+                {{#if is_admin}}
+                    <div class="input-group stream-default-color-setting">
+                        <label class="settings-field-label">{{t "Default channel color"}}</label>
+                        <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_default_stream_color" data-stream-id="{{sub.stream_id}}">
+                            <span class="stream-settings-color-preview stream-default-color-preview" style="background: {{sub.default_color}};"></span>
+                            <span>{{t "Change default color"}}</span>
+                        </button>
+                        {{> ../components/action_button
+                          label=(t "Clear default color")
+                          variant="subtle"
+                          intent="neutral"
+                          type="button"
+                          custom_classes="stream-default-color-reset"
+                          }}
+                    </div>
+                {{/if}}
+
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="settings-field-label">
                         {{t "Email address" }}
