@@ -66,7 +66,7 @@ out the following files in the [Zulip server repository][server-repo]:
 
 - `tools/fetch-contributor-data` - The script that fetches contributor
   data from GitHub's API.
-- `static/js/portico/team.js` - The JavaScript code that processes and
+- `web/src/portico/team.ts` - The JavaScript code that processes and
   renders the data received from GitHub.
 
 ## Attribution for non-code contributions
