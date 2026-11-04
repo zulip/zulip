@@ -344,6 +344,39 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.assertTrue(msg.flags.read.is_set)
             self.assertTrue(msg.flags.historical.is_set)
 
+    def test_add_new_user_history_query_count_for_guest_with_private_streams(self) -> None:
+        realm = get_realm("zulip")
+        guest = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+
+        streams = []
+        message_ids = []
+        for i in range(4):
+            stream_name = f"private_stream_{i}"
+            stream = self.make_stream(
+                stream_name, realm, invite_only=True, history_public_to_subscribers=True
+            )
+            self.subscribe(hamlet, stream_name)
+            message_ids.append(self.send_stream_message(hamlet, stream_name, "history"))
+            # As in user creation, the new user is subscribed before
+            # add_new_user_history is called.
+            self.subscribe(guest, stream_name)
+            streams.append(stream)
+
+        # We know the user is subscribed to all of the streams, so
+        # the number of queries shouldn't depend on the number of streams.
+        with self.assert_database_query_count(4):
+            add_new_user_history(guest, streams)
+
+        self.assertEqual(
+            set(
+                UserMessage.objects.filter(
+                    user_profile=guest, message_id__in=message_ids
+                ).values_list("message_id", flat=True)
+            ),
+            set(message_ids),
+        )
+
     def test_only_tracked_onboarding_messages_marked_unread(self) -> None:
         """
         Realms with tracked onboarding messages have only

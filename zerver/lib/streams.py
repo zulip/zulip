@@ -1202,9 +1202,15 @@ def bulk_can_access_stream_metadata_user_ids(streams: list[Stream]) -> dict[int,
     return result
 
 
-def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
+def can_access_stream_history(
+    user_profile: UserProfile, stream: Stream, *, is_subscribed: bool | None = None
+) -> bool:
     """Determine whether the provided user is allowed to access the
     history of the target stream.
+
+    Callers that already know whether the user is subscribed to the
+    stream can pass is_subscribed to avoid a database query to look up
+    the subscription.
 
     This is used by the caller to determine whether this user can get
     historical messages before they joined for a narrowing search.
@@ -1229,6 +1235,11 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
         return True
 
     if stream.is_history_public_to_subscribers():
+        if is_subscribed is not None:
+            return not stream.deactivated and check_basic_stream_access(
+                user_profile, stream, is_subscribed=is_subscribed
+            )
+
         # In this case, we check if the user is subscribed.
         error = _("Invalid channel name '{channel_name}'").format(channel_name=stream.name)
         try:

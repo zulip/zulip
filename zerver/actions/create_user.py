@@ -213,14 +213,13 @@ def add_new_user_history(
 
     realm = user_profile.realm
     # Find recipient ids for the user's streams, limiting to just
-    # those where we can access the streams' full history.
-    #
-    # TODO: This will do database queries in a loop if many private
-    # streams are involved.
+    # those where we can access the streams' full history. The user
+    # has just been subscribed to all of these streams, so we don't
+    # need to query for their subscriptions.
     recipient_ids = [
         assert_is_not_none(stream.recipient_id)
         for stream in streams
-        if can_access_stream_history(user_profile, stream)
+        if can_access_stream_history(user_profile, stream, is_subscribed=True)
     ]
 
     # Start by finding recent messages matching those recipients.
