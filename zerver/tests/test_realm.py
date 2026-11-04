@@ -2830,6 +2830,7 @@ class RealmAPITest(ZulipTestCase):
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
+            web_left_sidebar_topics_order=UserProfile.WEB_LEFT_SIDEBAR_TOPICS_ORDER_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,

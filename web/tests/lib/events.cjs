@@ -1376,6 +1376,13 @@ exports.fixtures = {
         value: false,
     },
 
+    user_settings__web_left_sidebar_topics_order: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_topics_order",
+        value: 2,
+    },
+
     user_settings__web_left_sidebar_unreads_count_summary: {
         type: "user_settings",
         op: "update",
