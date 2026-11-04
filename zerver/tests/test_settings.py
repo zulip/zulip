@@ -360,6 +360,7 @@ class ChangeSettingsTest(ZulipTestCase):
             demote_inactive_streams=2,
             web_mark_read_on_scroll_policy=2,
             web_channel_default_view=2,
+            web_left_sidebar_topics_order=2,
             user_list_style=2,
             web_animate_image_previews="on_hover",
             web_stream_unreads_count_display_policy=2,
@@ -388,6 +389,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "color_scheme",
             "web_mark_read_on_scroll_policy",
             "web_channel_default_view",
+            "web_left_sidebar_topics_order",
             "web_stream_unreads_count_display_policy",
         ]:
             data = {setting_name: test_value}
@@ -462,6 +464,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "setting_name": "web_channel_default_view",
                 "value": 10,
                 "error_msg": "Invalid web_channel_default_view: Value error, Not in the list of possible values",
+            },
+            {
+                "setting_name": "web_left_sidebar_topics_order",
+                "value": 10,
+                "error_msg": "Invalid web_left_sidebar_topics_order: Value error, Not in the list of possible values",
             },
             {
                 "setting_name": "user_list_style",
