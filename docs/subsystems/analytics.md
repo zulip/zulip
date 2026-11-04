@@ -182,7 +182,7 @@ The relevant files are:
   get_chart_data in this file.
 - `web/src/stats/stats.ts`: The JavaScript and Plotly code.
 - `templates/analytics/stats.html`
-- `web/styles/stats.css` and `web/styles/legacy_portico.css`: We are in the
+- `web/styles/portico/stats.css` and `web/styles/portico/legacy_portico.css`: We are in the
   process of re-styling this page to use in-app CSS instead of the portico CSS,
   but there is currently still a lot of portico influence.
 - `analytics/urls.py`: Has the URL routes; it's unlikely you will have to
