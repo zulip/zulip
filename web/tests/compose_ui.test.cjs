@@ -116,6 +116,68 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
+run_test("insert_and_scroll_into_view", ({override}) => {
+    let autosize_called = false;
+    override(autosize, "update", () => {
+        autosize_called = true;
+    });
+
+    let inserted_text = "";
+    override(text_field_edit, "insertTextIntoField", (_elt, text) => {
+        inserted_text = text;
+    });
+
+    let replaced_text = "";
+    override(text_field_edit, "setFieldText", (_elt, text) => {
+        replaced_text = text;
+    });
+
+    const $textarea = $("textarea#test-insert-textarea");
+    let blurred = false;
+    let focused = false;
+    $textarea.on("blur", () => {
+        blurred = true;
+    });
+    $textarea.on("focus", () => {
+        focused = true;
+    });
+
+    // Case 1: textarea fits content without scrollable overflow (scrollHeight <= clientHeight).
+    // autosize is updated, but blur and focus are not triggered.
+    $textarea[0].scrollHeight = 100;
+    $textarea[0].clientHeight = 100;
+    compose_ui.insert_and_scroll_into_view("new line\n", $textarea);
+    assert.equal(inserted_text, "new line\n");
+    assert.ok(autosize_called);
+    assert.ok(!blurred);
+    assert.ok(!focused);
+
+    // Case 2: textarea has scrollable overflow (scrollHeight > clientHeight).
+    // Blur and focus are triggered to scroll cursor into view.
+    autosize_called = false;
+    $textarea[0].scrollHeight = 200;
+    $textarea[0].clientHeight = 100;
+    compose_ui.insert_and_scroll_into_view("another line\n", $textarea);
+    assert.equal(inserted_text, "another line\n");
+    assert.ok(autosize_called);
+    assert.ok(blurred);
+    assert.ok(focused);
+
+    // Case 3: replace_all uses setFieldText
+    blurred = false;
+    focused = false;
+    $textarea[0].scrollHeight = 100;
+    $textarea[0].clientHeight = 100;
+    compose_ui.insert_and_scroll_into_view("replacement", $textarea, true);
+    assert.equal(replaced_text, "replacement");
+    assert.ok(!blurred);
+    assert.ok(!focused);
+
+    // Case 4: replace_all_without_undo_support sets .val() directly
+    compose_ui.insert_and_scroll_into_view("fast replacement", $textarea, false, true);
+    assert.equal($textarea.val(), "fast replacement");
+});
+
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret(4);

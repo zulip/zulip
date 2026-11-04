@@ -143,11 +143,14 @@ export let insert_and_scroll_into_view = (
     } else {
         insertTextIntoField(util.the($textarea), content);
     }
-    // Blurring and refocusing ensures the cursor / selection is in view
-    // in chromium browsers.
-    $textarea.trigger("blur");
-    $textarea.trigger("focus");
     autosize_textarea($textarea);
+    const textarea = util.the($textarea);
+    if (textarea.scrollHeight > textarea.clientHeight) {
+        // Blurring and refocusing ensures the cursor / selection is in view
+        // in chromium browsers when the textarea has scrollable overflow.
+        $textarea.trigger("blur");
+        $textarea.trigger("focus");
+    }
 };
 
 export function rewire_insert_and_scroll_into_view(

@@ -159,9 +159,11 @@ const auto_px =
 
 class FakeElement extends RejectMissing {
     _tippy = undefined;
+    clientHeight = 0;
     classList = new FakeClassList();
     dataset = new FakeDataSet(this);
     innerHTML = "never-been-set";
+    scrollHeight = 0;
     selectionEnd = undefined;
     selectionStart = undefined;
     style = new FakeStyle();
