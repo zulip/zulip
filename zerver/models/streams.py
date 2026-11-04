@@ -231,7 +231,7 @@ class Stream(models.Model):
         "can_mention_many_users_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
-            default_group_name=None,
+            default_group_name=SystemGroups.EVERYONE,
         ),
     }
 

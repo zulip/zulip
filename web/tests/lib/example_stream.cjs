@@ -20,6 +20,7 @@ exports.make_stream = (opts = {}) => {
         can_remove_subscribers_group: 0,
         can_administer_channel_group: 2,
         can_create_topic_group: 2,
+        can_mention_many_users_group: null,
         color: "abcd12",
         /* This is rarely going to be the case, but a valid possibility. */
         creator_id: null,

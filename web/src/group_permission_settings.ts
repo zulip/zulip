@@ -88,6 +88,7 @@ export const stream_group_setting_name_schema = z.enum([
     "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
+    "can_mention_many_users_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
@@ -178,12 +179,16 @@ export function get_tooltip_for_group_without_direct_permission(supergroup_id: n
 }
 
 export function get_assigned_permission_object(
-    setting_value: GroupSettingValue,
+    setting_value: GroupSettingValue | null,
     setting_name: RealmGroupSettingName | StreamGroupSettingName | GroupGroupSettingName,
     group_id: number,
     can_edit_settings: boolean,
     setting_type: "realm" | "stream" | "group",
 ): AssignedGroupPermission | undefined {
+    if (setting_value === null) {
+        return undefined;
+    }
+
     // This function returns an object of type AssignedGroupPermission
     // containing details about whether the user can edit the setting,
     // if the group has the permission, and returns undefined otherwise.

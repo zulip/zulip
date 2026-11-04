@@ -14,7 +14,7 @@ const group_permission_setting_schema = z.object({
     allow_internet_group: z.boolean(),
     allow_nobody_group: z.boolean(),
     allow_everyone_group: z.boolean(),
-    default_group_name: z.string(),
+    default_group_name: z.nullable(z.string()),
     default_for_system_groups: z.nullable(z.string()),
     allowed_system_groups: z.array(z.string()),
 });

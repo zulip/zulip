@@ -516,7 +516,7 @@ export function update_default_push_notifications(
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
-    group_setting: GroupSettingValue,
+    group_setting: GroupSettingValue | null,
 ): void {
     sub[setting_name] = group_setting;
 }
@@ -843,6 +843,22 @@ export function can_resolve_topics(sub: StreamSubscription): boolean {
         sub.can_resolve_topics_group,
         "can_resolve_topics_group",
         "stream",
+    );
+}
+
+export function can_mention_many_users(sub: StreamSubscription): boolean {
+    if (sub.can_mention_many_users_group !== null && sub.can_mention_many_users_group !== undefined) {
+        return settings_data.user_has_permission_for_group_setting(
+            sub.can_mention_many_users_group,
+            "can_mention_many_users_group",
+            "stream",
+        );
+    }
+
+    return settings_data.user_has_permission_for_group_setting(
+        realm.realm_can_mention_many_users_group,
+        "can_mention_many_users_group",
+        "realm",
     );
 }
 

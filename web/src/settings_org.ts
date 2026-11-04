@@ -805,7 +805,7 @@ export function discard_stream_property_element_changes(
         assert(pill_widget !== null);
         settings_components.set_group_setting_widget_value(
             pill_widget,
-            group_setting_value_schema.parse(property_value),
+            z.nullable(group_setting_value_schema).parse(property_value),
         );
         update_dependent_subsettings(property_name);
         return;

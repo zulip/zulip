@@ -1,6 +1,7 @@
 import {$} from "jquery";
 import assert from "minimalistic-assert";
 
+import { z } from "zod";
 import render_first_stream_created_modal from "../templates/stream_settings/first_stream_created_modal.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -107,7 +108,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         stream_settings_ui.update_stream_permission_group_setting(
             stream_permission_group_settings_schema.parse(property),
             sub,
-            group_setting_value_schema.parse(value),
+            z.nullable(group_setting_value_schema).parse(value),
         );
         switch (property) {
             case "can_subscribe_group":
@@ -135,7 +136,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
-            group_setting_value_schema.parse(value),
+            z.nullable(group_setting_value_schema).parse(value),
             sub,
         );
         return;

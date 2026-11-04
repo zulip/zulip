@@ -380,6 +380,22 @@ test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
 
     override(current_user, "user_id", bob.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    // Test channel-level override of wildcard mention permission.
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
+    large_stream.can_mention_many_users_group = admin.id;
+    override(current_user, "user_id", alice.user_id);
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+    override(current_user, "user_id", bob.user_id);
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    override(realm, "realm_can_mention_many_users_group", admin.id);
+    large_stream.can_mention_many_users_group = everyone.id;
+    override(current_user, "user_id", alice.user_id);
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    large_stream.can_mention_many_users_group = null;
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
 });
 
 test_ui("validate_stream_message", ({override, mock_template}) => {

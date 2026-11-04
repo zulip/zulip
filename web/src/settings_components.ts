@@ -763,7 +763,7 @@ export let get_input_element_value = (
             const setting_name = extract_property_name($input_elem);
             const pill_widget = get_group_setting_widget(setting_name);
             assert(pill_widget !== null);
-            return get_group_setting_widget_value(pill_widget);
+            return get_group_setting_widget_value(pill_widget, setting_name);
         }
         case "info-density-setting":
             assert(input_elem instanceof HTMLInputElement);
@@ -950,7 +950,7 @@ export function check_stream_settings_property_changed(
     if (Object.keys(realm.server_supported_permission_settings.stream).includes(property_name)) {
         const pill_widget = get_group_setting_widget(property_name);
         assert(pill_widget !== null);
-        proposed_val = get_group_setting_widget_value(pill_widget);
+        proposed_val = get_group_setting_widget_value(pill_widget, property_name, "stream");
         return !_.isEqual(current_val, proposed_val);
     }
 
@@ -977,7 +977,9 @@ export function check_stream_settings_property_changed(
 
 export function get_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
-): GroupSettingValue {
+    setting_name?: string,
+    setting_type: "realm" | "stream" | "group" = "stream",
+): GroupSettingValue | null {
     const setting_pills = pill_widget.items();
     const direct_subgroups: number[] = [];
     const direct_members: number[] = [];
@@ -991,6 +993,15 @@ export function get_group_setting_widget_value(
     }
 
     if (direct_members.length === 0 && direct_subgroups.length === 0) {
+        if (setting_name !== undefined) {
+            const config = group_permission_settings.get_group_permission_setting_config(
+                setting_name,
+                setting_type,
+            );
+            if (config?.default_group_name === null) {
+                return null;
+            }
+        }
         const nobody_group = user_groups.get_user_group_from_name("role:nobody")!;
         return nobody_group.id;
     }
@@ -1192,7 +1203,7 @@ export function populate_data_for_stream_settings_request(
         const $input_elem = $(input_elem);
         if (check_stream_settings_property_changed(input_elem, sub)) {
             const input_value = get_input_element_value(input_elem);
-            if (input_value !== undefined && input_value !== null) {
+            if (input_value !== undefined) {
                 const property_name = extract_property_name($input_elem);
                 if (property_name === "channel_privacy") {
                     assert(typeof input_value === "string");
@@ -1661,6 +1672,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_mention_group", null],
     ["can_delete_any_message_group", null],
     ["can_delete_own_message_group", null],
+    ["can_mention_many_users_group", null],
     ["can_move_messages_out_of_channel_group", null],
     ["can_move_messages_within_channel_group", null],
     ["can_remove_members_group", null],
@@ -1705,9 +1717,13 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
 
 export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
-    property_value: GroupSettingValue,
+    property_value: GroupSettingValue | null,
 ): void {
     pill_widget.clear(true);
+
+    if (property_value === null) {
+        return;
+    }
 
     if (typeof property_value === "number") {
         const user_group = user_groups.get_user_group_from_id(property_value);
@@ -1891,7 +1907,9 @@ export function create_stream_group_setting_widget({
             setting_name,
             "stream",
         )!.default_group_name;
-        if (default_group_name === "channel_creator") {
+        if (default_group_name === null) {
+            set_group_setting_widget_value(pill_widget, null);
+        } else if (default_group_name === "channel_creator") {
             set_group_setting_widget_value(pill_widget, {
                 direct_members: [current_user.user_id],
                 direct_subgroups: [],
@@ -2007,7 +2025,7 @@ export function get_group_assigned_stream_permissions(group: UserGroup): {
             }
             const assigned_permission_object =
                 group_permission_settings.get_assigned_permission_object(
-                    group_setting_value_schema.parse(setting_value),
+                    z.nullable(group_setting_value_schema).parse(setting_value),
                     setting_name,
                     group.id,
                     can_edit_settings,

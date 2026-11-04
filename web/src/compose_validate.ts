@@ -804,7 +804,14 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-function user_can_mention_many_users(): boolean {
+function user_can_mention_many_users(stream_id?: number): boolean {
+    if (stream_id !== undefined) {
+        const sub = stream_data.get_sub_by_id(stream_id);
+        if (sub !== undefined) {
+            return stream_data.can_mention_many_users(sub);
+        }
+    }
+
     return settings_data.user_has_permission_for_group_setting(
         realm.realm_can_mention_many_users_group,
         "can_mention_many_users_group",
@@ -813,11 +820,11 @@ function user_can_mention_many_users(): boolean {
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_stream() || user_can_mention_many_users();
+    return !is_recipient_large_stream() || user_can_mention_many_users(compose_state.stream_id());
 }
 
 export function topic_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_topic() || user_can_mention_many_users();
+    return !is_recipient_large_topic() || user_can_mention_many_users(compose_state.stream_id());
 }
 
 export function set_wildcard_mention_threshold(value: number): void {
@@ -831,7 +838,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     // stream, check if they permission to do so. If yes, warn them
     // if they haven't acknowledged the wildcard warning yet.
     if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
-        if (!user_can_mention_many_users()) {
+        if (!user_can_mention_many_users(opts.stream_id)) {
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,

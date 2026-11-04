@@ -373,9 +373,14 @@ function create_stream(): void {
     const group_setting_values: Record<string, string> = {};
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
         assert(group_setting_widgets[setting_name] !== undefined);
-        group_setting_values[setting_name] = JSON.stringify(
-            settings_components.get_group_setting_widget_value(group_setting_widgets[setting_name]),
+        const setting_value = settings_components.get_group_setting_widget_value(
+            group_setting_widgets[setting_name],
+            setting_name,
+            "stream",
         );
+        if (setting_value !== null) {
+            group_setting_values[setting_name] = JSON.stringify(setting_value);
+        }
     }
 
     loading.make_indicator($("#stream_creating_indicator"), {

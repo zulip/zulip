@@ -73,6 +73,12 @@
       prefix=prefix
       help_link="/help/configure-who-can-start-new-topics" }}
 
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_mention_many_users_group"
+      label=group_setting_labels.can_mention_many_users_group
+      prefix=prefix
+      help_link="/help/restrict-wildcard-mentions" }}
+
     <div class="input-group">
         <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
         <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">

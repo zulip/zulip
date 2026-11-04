@@ -882,7 +882,7 @@ export function update_group_permissions_panel_on_losing_stream_access(stream_id
 
 export function update_stream_setting_in_permissions_panel(
     setting_name: StreamGroupSettingName,
-    new_value: GroupSettingValue,
+    new_value: GroupSettingValue | null,
     sub: StreamSubscription,
 ): void {
     const active_group_id = get_active_data().id;

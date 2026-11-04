@@ -47,6 +47,15 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
+        can_mention_many_users_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: true,
+            default_group_name: null,
+            default_for_system_groups: null,
+            allowed_system_groups: [],
+        },
         can_move_messages_out_of_channel_group: {
             require_system_group: false,
             allow_internet_group: false,

@@ -74,6 +74,14 @@ export function is_sub_already_present(sub: StreamSubscription): boolean {
     return stream_ui_updates.row_for_stream_id(sub.stream_id).length > 0;
 }
 
+export function update_can_mention_many_users_group_setting(
+    sub: StreamSubscription,
+    new_value: number,
+): void {
+    stream_data.update_can_mention_many_users_group_setting(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "can_mention_many_users_group");
+}
+
 export function update_left_panel_row(sub: StreamSubscription): void {
     const $row = stream_ui_updates.row_for_stream_id(sub.stream_id);
 
@@ -248,7 +256,7 @@ export function update_default_push_notifications_setting(
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
-    new_value: GroupSettingValue,
+    new_value: GroupSettingValue | null,
 ): void {
     stream_data.update_stream_permission_group_setting(setting_name, sub, new_value);
     stream_ui_updates.update_setting_element(sub, setting_name);

@@ -828,6 +828,9 @@ export const all_group_setting_labels = {
         can_delete_own_message_group: $t({
             defaultMessage: "Who can delete their own messages in this channel",
         }),
+        can_mention_many_users_group: $t({
+            defaultMessage: "Who can notify a large number of users with a wildcard mention",
+        }),
         can_move_messages_out_of_channel_group: $t({
             defaultMessage: "Who can move messages out of this channel",
         }),
@@ -945,6 +948,7 @@ export const stream_group_permission_settings: StreamGroupSettingName[] = [
     "can_remove_subscribers_group",
     "can_send_message_group",
     "can_create_topic_group",
+    "can_mention_many_users_group",
     "can_move_messages_within_channel_group",
     "can_move_messages_out_of_channel_group",
     "can_resolve_topics_group",
