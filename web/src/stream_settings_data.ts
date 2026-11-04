@@ -1,4 +1,7 @@
+import assert from "minimalistic-assert";
+
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as peer_data from "./peer_data.ts";
 import type {User} from "./people.ts";
 import * as settings_config from "./settings_config.ts";
@@ -34,6 +37,39 @@ export const ARCHIVED_STATUS_FILTERS = {
     NON_ARCHIVED_CHANNELS: "non_archived_channels",
     ARCHIVED_CHANNELS: "archived_channels",
 };
+
+export type LeftSidebarResolvedTopicsOrderOption = {
+    code: number;
+    description: string;
+    is_selected: boolean;
+};
+
+// The choices for a channel's left_sidebar_resolved_topics_order,
+// starting with following the user's default, whose current value
+// is shown in the label.
+export function get_left_sidebar_resolved_topics_order_options(
+    sub: StreamSubscription,
+): LeftSidebarResolvedTopicsOrderOption[] {
+    const values = Object.values(settings_config.web_left_sidebar_resolved_topics_order_values);
+    const default_value = values.find(
+        (value) => value.code === user_settings.web_left_sidebar_resolved_topics_order,
+    );
+    assert(default_value !== undefined);
+    const options = [
+        {
+            code: settings_config.left_sidebar_resolved_topics_order_inherit,
+            description: $t(
+                {defaultMessage: "Use my default ({default_description})"},
+                {default_description: default_value.description},
+            ),
+        },
+        ...values,
+    ];
+    return options.map((option) => ({
+        ...option,
+        is_selected: option.code === sub.left_sidebar_resolved_topics_order,
+    }));
+}
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {

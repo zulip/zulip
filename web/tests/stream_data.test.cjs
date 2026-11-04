@@ -190,6 +190,37 @@ test("demotes_resolved_topics", ({override}) => {
     assert.ok(!stream_data.demotes_resolved_topics(social.stream_id));
 });
 
+test("get_left_sidebar_resolved_topics_order_options", ({override}) => {
+    const sub = {left_sidebar_resolved_topics_order: 0};
+    override(user_settings, "web_left_sidebar_resolved_topics_order", 2);
+
+    let options = stream_settings_data.get_left_sidebar_resolved_topics_order_options(sub);
+    assert.deepEqual(
+        options.map((option) => [option.code, option.is_selected]),
+        [
+            [0, true],
+            [2, false],
+            [1, false],
+        ],
+    );
+    // The first option's label names the current default.
+    assert.ok(options[0].description.includes("Use my default"));
+    assert.ok(options[0].description.includes("Resolved topics after unresolved topics"));
+
+    override(user_settings, "web_left_sidebar_resolved_topics_order", 1);
+    sub.left_sidebar_resolved_topics_order = 2;
+    options = stream_settings_data.get_left_sidebar_resolved_topics_order_options(sub);
+    assert.deepEqual(
+        options.map((option) => [option.code, option.is_selected]),
+        [
+            [0, false],
+            [2, true],
+            [1, false],
+        ],
+    );
+    assert.ok(options[0].description.includes("Resolved topics in order of recent activity"));
+});
+
 test("basics", () => {
     const denmark = {
         subscribed: false,

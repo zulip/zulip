@@ -248,6 +248,7 @@ test("update_property", ({override, override_rewire}) => {
     // Test left sidebar resolved topics order
     {
         override(topic_list, "update", noop);
+        override(stream_ui_updates, "update_left_sidebar_resolved_topics_order_widget", noop);
         stream_events.update_property(stream_id, "left_sidebar_resolved_topics_order", 2);
         assert.equal(sub.left_sidebar_resolved_topics_order, 2);
     }
