@@ -1,7 +1,7 @@
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
-from typing import Any, TypedDict
+from typing import Any, TypedDict, overload
 
 from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet, Value
@@ -39,7 +39,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 
 @dataclass
 class GroupSettingChangeRequest:
-    new: int | UserGroupMembersData
+    new: int | UserGroupMembersData | None
     old: int | UserGroupMembersData | None = None
 
 
@@ -499,12 +499,17 @@ def update_or_create_user_group_for_setting(
 
 
 def access_user_group_api_value_for_setting(
-    setting_user_group: int | UserGroupMembersData,
+    setting_user_group: int | UserGroupMembersData | None,
     realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
-) -> NamedUserGroup | UserGroupMembersData:
+) -> NamedUserGroup | UserGroupMembersData | None:
+    if setting_user_group is None:
+        if permission_configuration.default_group_name is None:
+            return None
+        raise JsonableError(_("Invalid parameters"))
+
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
             setting_user_group, realm, for_read=False, for_setting=True
@@ -574,9 +579,29 @@ def check_user_group_name(group_name: str) -> str:
     return group_name
 
 
+@overload
+def get_group_setting_value_for_api(setting_value_group: None) -> None:
+    ...
+
+
+@overload
+def get_group_setting_value_for_api(setting_value_group: UserGroup) -> int | UserGroupMembersData:
+    ...
+
+
+@overload
 def get_group_setting_value_for_api(
-    setting_value_group: UserGroup,
-) -> int | UserGroupMembersData:
+    setting_value_group: UserGroup | None,
+) -> int | UserGroupMembersData | None:
+    ...
+
+
+def get_group_setting_value_for_api(
+    setting_value_group: UserGroup | None,
+) -> int | UserGroupMembersData | None:
+    if setting_value_group is None:
+        return None
+
     if hasattr(setting_value_group, "named_user_group"):
         return setting_value_group.id
 
@@ -591,9 +616,30 @@ def get_group_setting_value_for_api(
     )
 
 
+@overload
+def convert_to_user_group_members_dict(value: None) -> None:
+    ...
+
+
+@overload
 def convert_to_user_group_members_dict(
     value: int | UserGroupMembersData,
 ) -> int | UserGroupMembersDict:
+    ...
+
+
+@overload
+def convert_to_user_group_members_dict(
+    value: int | UserGroupMembersData | None,
+) -> int | UserGroupMembersDict | None:
+    ...
+
+
+def convert_to_user_group_members_dict(
+    value: int | UserGroupMembersData | None,
+) -> int | UserGroupMembersDict | None:
+    if value is None:
+        return None
     if isinstance(value, UserGroupMembersData):
         return UserGroupMembersDict(
             direct_members=value.direct_members, direct_subgroups=value.direct_subgroups
@@ -615,10 +661,37 @@ def get_setting_value_for_user_group_object(
     )
 
 
+@overload
+def get_group_setting_value_for_register_api(
+    setting_group_id: None,
+    anonymous_group_membership: dict[int, UserGroupMembersData],
+) -> None:
+    ...
+
+
+@overload
 def get_group_setting_value_for_register_api(
     setting_group_id: int,
     anonymous_group_membership: dict[int, UserGroupMembersData],
 ) -> int | UserGroupMembersDict:
+    ...
+
+
+@overload
+def get_group_setting_value_for_register_api(
+    setting_group_id: int | None,
+    anonymous_group_membership: dict[int, UserGroupMembersData],
+) -> int | UserGroupMembersDict | None:
+    ...
+
+
+def get_group_setting_value_for_register_api(
+    setting_group_id: int | None,
+    anonymous_group_membership: dict[int, UserGroupMembersData],
+) -> int | UserGroupMembersDict | None:
+    if setting_group_id is None:
+        return None
+
     if setting_group_id not in anonymous_group_membership:
         # anonymous_group_membership is defined to contain the
         # membership of all non-named UserGroup used for realm settings.
@@ -1240,9 +1313,12 @@ def get_server_supported_permission_settings() -> ServerSupportedPermissionSetti
 
 
 def parse_group_setting_value(
-    setting_value: int | UserGroupMembersData,
+    setting_value: int | UserGroupMembersData | None,
     nobody_group: NamedUserGroup,
-) -> int | UserGroupMembersData:
+) -> int | UserGroupMembersData | None:
+    if setting_value is None:
+        return None
+
     if isinstance(setting_value, int):
         return setting_value
 
@@ -1256,9 +1332,15 @@ def parse_group_setting_value(
 
 
 def are_both_group_setting_values_equal(
-    first_setting_value: int | UserGroupMembersData,
-    second_setting_value: int | UserGroupMembersData,
+    first_setting_value: int | UserGroupMembersData | None,
+    second_setting_value: int | UserGroupMembersData | None,
 ) -> bool:
+    if first_setting_value is None and second_setting_value is None:
+        return True
+
+    if first_setting_value is None or second_setting_value is None:
+        return False
+
     if isinstance(first_setting_value, int) and isinstance(second_setting_value, int):
         return first_setting_value == second_setting_value
 
@@ -1275,8 +1357,8 @@ def are_both_group_setting_values_equal(
 
 
 def validate_group_setting_value_change(
-    current_setting_api_value: int | UserGroupMembersData,
-    new_setting_value: int | UserGroupMembersData,
+    current_setting_api_value: int | UserGroupMembersData | None,
+    new_setting_value: int | UserGroupMembersData | None,
     expected_current_setting_value: int | UserGroupMembersData | None,
 ) -> bool:
     if expected_current_setting_value is not None and not are_both_group_setting_values_equal(
@@ -1292,8 +1374,11 @@ def validate_group_setting_value_change(
 
 
 def get_group_setting_value_for_audit_log_data(
-    setting_value: int | UserGroupMembersData,
-) -> int | dict[str, list[int]]:
+    setting_value: int | UserGroupMembersData | None,
+) -> int | dict[str, list[int]] | None:
+    if setting_value is None:
+        return None
+
     if isinstance(setting_value, int):
         return setting_value
 

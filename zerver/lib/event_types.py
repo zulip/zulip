@@ -893,6 +893,7 @@ class BasicStreamFields(BaseEventModel):
     can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict | None = None
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
@@ -967,6 +968,7 @@ class SingleSubscription(BaseEventModel):
     can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict | None = None
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
