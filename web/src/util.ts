@@ -505,11 +505,34 @@ export function validate_custom_time_input(time_input: number, can_be_zero = tru
     return true;
 }
 
+function describe_element(element: Element): string {
+    const id = element.id ? `#${element.id}` : "";
+    const classes = [...element.classList].map((name) => `.${name}`).join("");
+    return element.tagName.toLowerCase() + id + classes;
+}
+
+// Describes the state of the page body, for diagnosing errors where
+// an element that should always exist is missing from the DOM.
+function get_document_state(): Record<string, unknown> {
+    // lib.dom types `document.body` as non-null, but it is null while
+    // the document has no body element, e.g. after `document.open()`.
+    const body: HTMLElement | null = document.body;
+    if (!body) {
+        return {ready_state: document.readyState};
+    }
+    return {
+        ready_state: document.readyState,
+        body_child_count: body.childElementCount,
+        has_app_container: body.querySelector(".app") !== null,
+        body_children: [...body.children].slice(0, 25).map((element) => describe_element(element)),
+    };
+}
+
 // Helper for shorthand for Typescript to get an item from a list with
 // exactly one item.
 export function the<T>(items: T[] | JQuery<T>): T {
     if (items.length === 0) {
-        blueslip.error("the: expected only 1 item, got none");
+        blueslip.error("the: expected only 1 item, got none", get_document_state());
     } else if (items.length > 1) {
         blueslip.error("the: expected only 1 item, got more", {
             num_items: items.length,
