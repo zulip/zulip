@@ -1824,3 +1824,27 @@ button#register_auth_button_gitlab {
 #slack-import-unexpected-failure .text-error {
     font-size: 1em;
 }
+
+/* Entregable 4 - Grupo 1 */
+.portico-page:has(.app.login-page) {
+    background: linear-gradient(
+        130deg,
+        hsl(218deg 70% 22%),
+        hsl(260deg 53% 41%) 60%,
+        hsl(314deg 45% 41%)
+    );
+}
+
+.app.login-page .get-started {
+    color: white;
+    font-weight: 600;
+}
+
+.app.login-page .login-page-container {
+    border-top: 6px solid hsl(260deg 100% 83%);
+    box-shadow: 0 18px 40px hsl(220deg 65% 12% / 25%);
+}
+
+.app.login-page .contact-admin p {
+    color: white;
+}
