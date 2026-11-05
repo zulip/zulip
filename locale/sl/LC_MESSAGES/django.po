@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
 "PO-Revision-Date: 2026-03-31 19:21+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/django/"
@@ -391,6 +391,7 @@ msgid "Method not allowed (405)"
 msgstr "Metoda ni dovoljena (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Notranja napaka strežnika"
 
@@ -775,17 +776,14 @@ msgid "Open communities directory"
 msgstr "Imenik odprtih skupnosti"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Filtriraj po kategoriji"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "Vse"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Kategorije"
 
@@ -936,6 +934,33 @@ msgstr "Povezava"
 msgid "Ship wheel"
 msgstr ""
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+#, fuzzy
+#| msgid "Getting started"
+msgid "Get started"
+msgstr "Uvod"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#, fuzzy
+#| msgid "Keep your conversations organized with topics"
+msgid "A Zulip channel with conversations organized by topic"
+msgstr "Ohranite svoje pogovore organizirane s temami"
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -981,12 +1006,6 @@ msgid ""
 msgstr ""
 "Odgovore na pogosto zastavljena vprašanja najdete v <a href=\"/help/"
 "\">centru za pomoč Zulip</a>."
-
-#: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
-msgid "Get started"
-msgstr "Uvod"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1083,16 +1102,24 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
+#| "a> the page."
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 "Če to sporočilo ne izgine, poskusite <a class=\"reload-lnk\">ponovno "
 "naložiti</a> stran."
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 "Napaka pri nalaganju Zulipa. Poskusite <a class=\"reload-lnk\">ponovno "
 "naložiti</a> stran."
@@ -1646,11 +1673,6 @@ msgstr "Zapri"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "Posodobi"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3295,6 +3317,12 @@ msgid "Why Zulip"
 msgstr "Zakaj Zulip"
 
 #: templates/zerver/footer.html
+#, fuzzy
+#| msgid "Import from Slack"
+msgid "Switch from Slack"
+msgstr "Uvoz iz Slacka"
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Funkcije"
 
@@ -3481,51 +3509,6 @@ msgstr "Pravilnik o zasebnosti"
 #: templates/zerver/footer.html
 msgid "Website attributions"
 msgstr "Pripisi spletnega mesta"
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Več kot %(integrations_count_display)s izvornih integracij."
-
-#: templates/zerver/integrations/catalog.html
-#, fuzzy
-#| msgid ""
-#| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
-#| "and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"In na stotine več prek <a href=\"/integrations/doc/zapier\">Zapier</a> in <a "
-"href=\"/integrations/doc/ifttt\">IFTTT</a>."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Išči integracije"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Integracije po meri"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Dohodni spletni kljuki"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Interaktivni boti"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
-msgstr ""
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3917,6 +3900,22 @@ msgstr ""
 "href=\"%(self_hosted_login_help)s\">prijaviš za upravljanje paketov in "
 "obračunavanja.</a>"
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "Zdaj lahko zaprete to okno."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Ponastavite geslo"
@@ -3991,6 +3990,12 @@ msgid ""
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
 msgstr ""
+
+#: templates/zerver/slack_import.html
+#, fuzzy
+#| msgid "Start import"
+msgid "Start over"
+msgstr "Začni uvoz"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -4183,17 +4188,17 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} je sprejel vaše povabilo, da se pridruži Zulipu!"
 
 #: zerver/actions/create_user.py
+#, fuzzy
+#| msgid "Cannot deactivate user group in use."
+msgid "Cannot reactivate a deleted user"
+msgstr "Ni mogoče deaktivirati uporabniške skupine v uporabi."
+
+#: zerver/actions/create_user.py
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 "Ni mogoče aktivirati začasnega računa; namesto tega prosite uporabnika, naj "
 "se registrira."
-
-#: zerver/actions/create_user.py
-#, fuzzy
-#| msgid "Cannot deactivate user group in use."
-msgid "Cannot reactivate a deleted user"
-msgstr "Ni mogoče deaktivirati uporabniške skupine v uporabi."
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4304,7 +4309,9 @@ msgid "Direct messages cannot have topics."
 msgstr "Neposredna sporočila ne morejo imeti tem."
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Neveljaven propagate_mode brez urejanja teme"
 
 #: zerver/actions/message_edit.py
@@ -4378,6 +4385,12 @@ msgid ""
 "{user}."
 msgstr ""
 "{changed_messages_count} sporočil je {user} premaknil sem iz {old_location}."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message's topic has passed."
+msgid "The time limit for moving this topic has passed."
+msgstr "Časovna omejitev za urejanje teme tega sporočila je potekla."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4466,10 +4479,6 @@ msgstr ""
 "Kanal obstaja, vendar nima naročnikov."
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr "Nimate dovoljenja za dostop do nekaterih prejemnikov."
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Pripomočki: programer API je poslal neveljavno vsebino JSON"
 
@@ -4503,6 +4512,15 @@ msgstr "Emoji po meri s tem imenom že obstaja."
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
 msgstr "Neveljavna oblika slike"
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
+msgstr ""
+"Izvoz podatkov je zaključen. [Ogled in prenos izvozov]"
+"({export_settings_link})."
 
 #: zerver/actions/realm_linkifiers.py
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4740,7 +4758,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Ta končna točka ne sprejema zahtev botov."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "Mora biti skrbnik strežnika"
 
 #: zerver/decorator.py
@@ -4842,22 +4862,6 @@ msgstr ""
 "prosite, naj poveča število licenc, nato poskusite znova."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr "Preverjeno, da ste človek!"
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr "Preverjanje, da niste bot…"
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr "Izzivi niso omogočeni."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr "Preverjanje ni uspelo, poskusite znova."
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Novo geslo"
 
@@ -4939,6 +4943,22 @@ msgstr "Pri brisanju priponke je prišlo do napake. Poskusite znova pozneje."
 msgid "Message must have recipients!"
 msgstr "Sporočilo mora imeti prejemnike!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr "Preverjeno, da ste človek!"
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr "Preverjanje, da niste bot…"
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr "Preverjanje ni uspelo, poskusite znova."
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr "Izzivi niso omogočeni."
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr "Ime mape kanala ne sme biti prazno."
@@ -4955,6 +4975,21 @@ msgstr "Ime kanala je že v uporabi"
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
 msgstr "Neveljaven ID mape kanala"
+
+#: zerver/lib/compose_reply.py
+#, fuzzy, python-brace-format
+#| msgid "{user_silent_mention} [said]({conversation_url}):"
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr "{user_silent_mention} je [rekel]({conversation_url}):"
+
+#: zerver/lib/compose_reply.py
+#, fuzzy, python-brace-format
+#| msgid "{user_silent_mention} [said]({conversation_url}):"
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr "{user_silent_mention} je [rekel]({conversation_url}):"
 
 #: zerver/lib/demo_organizations.py
 msgid "Configure owner account email address."
@@ -5059,8 +5094,16 @@ msgstr ""
 "{error_message}"
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
 msgstr "E-pošta brez zadeve"
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
+msgstr ""
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5531,66 +5574,6 @@ msgstr ""
 msgid "Invalid external account type"
 msgstr "Neveljavna vrsta zunanjega računa"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Okvirji integracije"
-
-#: zerver/lib/integrations.py
-msgid "Video calling"
-msgstr "Video klici"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Neprekinjena integracija"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Podpora strankam"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Namestitev"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Zabava"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Komunikacija"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Finančno"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr "Človeški viri"
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Trženje"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Razno"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr "Spremljanje"
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Upravljanje projektov"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Produktivnost"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Nadzor različic"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "Sporočilo ne sme biti prazno"
@@ -5663,6 +5646,11 @@ msgstr ""
 #| msgid "{fullname}'s moderation requests"
 msgid "{fullname} moderation"
 msgstr "Zahteve za moderiranje od {fullname}"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -6210,10 +6198,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} je omenil vse:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Novo sporočilo"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr "Testno obvestilo"
 
@@ -6287,6 +6271,10 @@ msgstr "'{email}' ne uporablja več Zulipa."
 msgid "You can't send direct messages outside of your organization."
 msgstr "Ne morete pošiljati neposrednih sporočil zunaj vaše organizacije."
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr "Nimate dovoljenja za dostop do nekaterih prejemnikov."
+
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
@@ -6333,26 +6321,11 @@ msgstr "{user_silent_mention} je [poslal]({conversation_url}) seznam opravil."
 
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr "{user_silent_mention} je [rekel]({conversation_url}):"
-
-#: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
 #| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
 msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
 msgstr "{user_silent_mention} je [poslal]({conversation_url}) seznam opravil."
-
-#: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
-msgstr "{user_silent_mention} je [rekel]({conversation_url}):"
 
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
@@ -6760,6 +6733,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr "Neveljavna vrednost {key} {value} ({error})"
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Neveljavno ime vdelanega bota."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Neveljavni konfiguracijski podatki!"
 
@@ -6780,7 +6757,7 @@ msgstr "Neveljaven ID uporabnika: {user_id}"
 msgid "No such bot"
 msgstr "Takšen bot ne obstaja"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Takšen uporabnik ne obstaja"
 
@@ -7242,6 +7219,12 @@ msgstr "Dogodek {event_id} ni bil v tej čakalni vrsti"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Slab ID čakalne vrste dogodkov: {queue_id}"
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Seja ni bila najdena"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr "Generiranje izziva je spodletelo"
@@ -7426,17 +7409,11 @@ msgstr "Potrebna je razlaga."
 msgid "Message reporting is not enabled in this organization."
 msgstr "Poročanje o sporočilih v tej organizaciji ni omogočeno."
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Manjkajoč pošiljatelj"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Zrcaljenje ni dovoljeno z ID-ji prejemnikov"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Neveljavno zrcaljeno sporočilo"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Sporočila ni mogoče prikazati"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7697,6 +7674,27 @@ msgid "Invalid playground"
 msgstr "Neveljavno igrišče"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr "Uvoza ni mogoče preklicati, ko se je že začel."
 
@@ -7725,6 +7723,13 @@ msgstr "Uvažanje pretvorjenih podatkov iz Slacka…"
 #: zerver/views/registration.py
 msgid "Finalizing import…"
 msgstr "Zaključevanje uvoza…"
+
+#: zerver/views/registration.py
+#, fuzzy
+#| msgid "Subdomain is already in use. Please choose a different one."
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
+msgstr "Poddomena je že v uporabi. Prosimo, izberite drugo."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7782,10 +7787,6 @@ msgstr "Zahtevan je dostop do vsebine kanala."
 msgid "Channel already has that name."
 msgstr "Kanal že ima to ime."
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Ni nič za storiti. Določite vsaj eno izmed \"add\" ali \"delete\"."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7794,6 +7795,18 @@ msgstr "{user_full_name} vas je naročil na {channel_name}."
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr "{user_full_name} vas je naročil na naslednje kanale:"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to {channel_name}."
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr "{user_full_name} vas je naročil na {channel_name}."
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to the following channels:"
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr "{user_full_name} vas je naročil na naslednje kanale:"
 
 #: zerver/views/streams.py
@@ -7984,6 +7997,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "Uporabniška skupina {group_id} ni podskupina te skupine."
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr "Ni nič za storiti. Določite vsaj eno izmed \"add\" ali \"delete\"."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "Spremembe avatarja so v tej organizaciji onemogočene."
@@ -8105,6 +8122,12 @@ msgstr ""
 "Ni uspelo spremeniti lastnika, boti ne morejo imeti v lasti drugih botov"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Neveljavno ime vdelanega bota."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -8116,10 +8139,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Vdelani boti niso omogočeni."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Neveljavno ime vdelanega bota."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -8245,15 +8264,6 @@ msgstr "Napaka: parameter channels_map_to_topics, ki ni 0 ali 1"
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr "Neznano dejanje spletnega kaveljna WordPress: {hook}"
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
-msgstr ""
-"Izvoz podatkov je zaključen. [Ogled in prenos izvozov]"
-"({export_settings_link})."
 
 #: zilencer/auth.py
 msgid "The verification secret has expired"
@@ -8410,6 +8420,93 @@ msgstr "Neveljaven OTP"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ni mogoče hkrati uporabljati mobile_flow_otp in desktop_flow_otp."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Več kot %(integrations_count_display)s izvornih integracij."
+
+#, fuzzy
+#~| msgid ""
+#~| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</"
+#~| "a> and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "In na stotine več prek <a href=\"/integrations/doc/zapier\">Zapier</a> in "
+#~ "<a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+
+#~ msgid "Search integrations"
+#~ msgstr "Išči integracije"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Integracije po meri"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Dohodni spletni kljuki"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Interaktivni boti"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Okvirji integracije"
+
+#~ msgid "Video calling"
+#~ msgstr "Video klici"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Neprekinjena integracija"
+
+#~ msgid "Customer support"
+#~ msgstr "Podpora strankam"
+
+#~ msgid "Deployment"
+#~ msgstr "Namestitev"
+
+#~ msgid "Entertainment"
+#~ msgstr "Zabava"
+
+#~ msgid "Communication"
+#~ msgstr "Komunikacija"
+
+#~ msgid "Financial"
+#~ msgstr "Finančno"
+
+#~ msgid "Human resources"
+#~ msgstr "Človeški viri"
+
+#~ msgid "Marketing"
+#~ msgstr "Trženje"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Razno"
+
+#~ msgid "Monitoring"
+#~ msgstr "Spremljanje"
+
+#~ msgid "Project management"
+#~ msgstr "Upravljanje projektov"
+
+#~ msgid "Productivity"
+#~ msgstr "Produktivnost"
+
+#~ msgid "Version control"
+#~ msgstr "Nadzor različic"
+
+#~ msgid "New message"
+#~ msgstr "Novo sporočilo"
+
+#~ msgid "Missing sender"
+#~ msgstr "Manjkajoč pošiljatelj"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Zrcaljenje ni dovoljeno z ID-ji prejemnikov"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Neveljavno zrcaljeno sporočilo"
 
 #~ msgid "X (Twitter)"
 #~ msgstr "X (Twitter)"

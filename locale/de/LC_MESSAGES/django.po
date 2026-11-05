@@ -45,11 +45,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
 "PO-Revision-Date: 2026-07-21 17:11+0000\n"
 "Last-Translator: Darim <dario.caroprese@protonmail.com>\n"
-"Language-Team: German <https://hosted.weblate.org/projects/zulip/django/de/>"
-"\n"
+"Language-Team: German <https://hosted.weblate.org/projects/zulip/django/de/"
+">\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -437,6 +437,7 @@ msgid "Method not allowed (405)"
 msgstr "Methode nicht erlaubt (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Interner Serverfehler"
 
@@ -830,17 +831,14 @@ msgid "Open communities directory"
 msgstr "Community-Verzeichnis öffnen"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Nach Kategorie filtern"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "Alles"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Kategorien"
 
@@ -985,6 +983,31 @@ msgstr "Link"
 msgid "Ship wheel"
 msgstr "Steuerrad"
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+msgid "Get started"
+msgstr "Loslegen"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#, fuzzy
+#| msgid "Keep your conversations organized with topics"
+msgid "A Zulip channel with conversations organized by topic"
+msgstr "Organisiere deine Unterhaltungen mit Themen"
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -1030,10 +1053,6 @@ msgid ""
 msgstr ""
 "Antworten auf häufig gestellte Fragen findest du im <a href=\"/help/\">Zulip "
 "Hilfecenter</a>."
-
-#: templates/corporate/zulip-cloud.html
-msgid "Get started"
-msgstr "Loslegen"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1139,16 +1158,24 @@ msgstr ""
 "herunter.</a>"
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
+#| "a> the page."
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 "Wenn diese Meldung nicht verschwindet, versuche die Seite <a class=\"reload-"
 "lnk\">neu zu laden</a>."
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 "Fehler beim Laden von Zulip. Versuche die Seite <a class=\"reload-lnk\">neu "
 "zu laden</a>."
@@ -1709,11 +1736,6 @@ msgstr "Schließen"
 msgid "Update"
 msgstr "Aktualisieren"
 
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
-
 #: templates/zerver/digest_base.html
 msgid "Digest"
 msgstr "Zusammenfassung"
@@ -2089,8 +2111,9 @@ msgid ""
 "content</a> in email notifications."
 msgstr ""
 "Diese E-Mail enthält keinen Nachrichteninhalt, da deine Organisation <a "
-"class=\"content_disabled_help_link\" href=\"%(help_url)s\">"
-"Nachrichteninhalte</a> in E-Mail-Benachrichtigungen ausblendet."
+"class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">Nachrichteninhalte</a> in E-Mail-Benachrichtigungen "
+"ausblendet."
 
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/missed_message.html
@@ -3375,6 +3398,12 @@ msgid "Why Zulip"
 msgstr "Warum Zulip"
 
 #: templates/zerver/footer.html
+#, fuzzy
+#| msgid "Import from Slack"
+msgid "Switch from Slack"
+msgstr "Import von Slack"
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Features"
 
@@ -3557,47 +3586,6 @@ msgstr "Datenschutzrichtlinie"
 #: templates/zerver/footer.html
 msgid "Website attributions"
 msgstr "Webseiten-Urheberschaft"
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Mehr als %(integrations_count_display)s native Integrationen."
-
-#: templates/zerver/integrations/catalog.html
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"Und hunderte weitere mit <a href=\"/integrations/zapier\">Zapier</a>, und <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Integration suchen"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Eigene Integrationen"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Eingehende Webhooks"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Interaktive Bots"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr "Zurück zur Liste"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
-msgstr "Zurück"
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3994,6 +3982,22 @@ msgstr ""
 "href=\"%(self_hosted_login_help)s\">einloggen, um Preispläne und "
 "Rechnungswesen zu bearbeiten.</a>"
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "Du kannst dieses Fenster nun schließen."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Setze dein Passwort zurück"
@@ -4074,6 +4078,12 @@ msgstr ""
 "folge den Anweisungen für den <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\">Importvorgang für Zulip Cloud (über den "
 "Support)</a>, um den Import abzuschließen."
+
+#: templates/zerver/slack_import.html
+#, fuzzy
+#| msgid "Start import"
+msgid "Start over"
+msgstr "Import starten"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -4274,15 +4284,15 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} hat deine Einladung zum Beitritt zu Zulip angenommen!"
 
 #: zerver/actions/create_user.py
+msgid "Cannot reactivate a deleted user"
+msgstr "Ein gelöschter Nutzer kann nicht reaktiviert werden"
+
+#: zerver/actions/create_user.py
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 "Ein Platzhalterkonto kann nicht aktiviert werden; fordere den Nutzer "
 "stattdessen auf, sich zu registrieren."
-
-#: zerver/actions/create_user.py
-msgid "Cannot reactivate a deleted user"
-msgstr "Ein gelöschter Nutzer kann nicht reaktiviert werden"
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4396,7 +4406,9 @@ msgid "Direct messages cannot have topics."
 msgstr "Direktnachrichten können keine Themen haben."
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Ungültiger propagate_mode ohne Bearbeitung des Themas"
 
 #: zerver/actions/message_edit.py
@@ -4476,6 +4488,13 @@ msgid ""
 msgstr ""
 "{changed_messages_count} Nachrichten wurden von {user} aus {old_location} "
 "hierher verschoben."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message's topic has passed."
+msgid "The time limit for moving this topic has passed."
+msgstr ""
+"Das Zeitlimit zum Bearbeiten des Themas dieser Nachricht ist abgelaufen."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4566,10 +4585,6 @@ msgstr ""
 "{channel_name} zu senden. Der Kanal existiert, hat aber keine Abonnenten."
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr "Du bist nicht berechtigt, auf einige der Empfänger zuzugreifen."
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Der API-Programmierer hat ungültiges JSON gesendet"
 
@@ -4605,6 +4620,15 @@ msgstr "Es existiert bereits ein eigenes Emoji mit diesem Namen."
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
 msgstr "Ungültiges Bildformat"
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
+msgstr ""
+"Dein Datenexport ist abgeschlossen. [Exporte anzeigen und herunterladen]"
+"({export_settings_link})."
 
 #: zerver/actions/realm_linkifiers.py
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4842,7 +4866,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Dieser Endpunkt akzeptiert keine Bot-Anfragen."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "Muss ein Server-Administrator sein"
 
 #: zerver/decorator.py
@@ -4948,22 +4974,6 @@ msgstr ""
 "versuche es dann erneut."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr "Verifiziert, das du ein menschlicher Nutzer bist!"
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr "Verifiziere, das du kein Bot bist…"
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr "Herausforderungen sind nicht aktiviert."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr "Verifikation fehlgeschlagen, bitte versuche es erneut."
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Neues Passwort"
 
@@ -5044,6 +5054,22 @@ msgstr ""
 msgid "Message must have recipients!"
 msgstr "Nachricht muss Empfänger haben!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr "Verifiziert, das du ein menschlicher Nutzer bist!"
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr "Verifiziere, das du kein Bot bist…"
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr "Verifikation fehlgeschlagen, bitte versuche es erneut."
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr "Herausforderungen sind nicht aktiviert."
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr "Kanalordnername kann nicht leer sein."
@@ -5060,6 +5086,22 @@ msgstr "Kanalordnername wird bereits verwendet"
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
 msgstr "Ungültige Kanalordner-ID"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+"{user_silent_mention} [schrieb]({conversation_url}) in {topic_pretty_link}:"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr ""
+"{user_silent_mention} [schrieb]({conversation_url}) an "
+"{list_of_recipient_mentions}:"
 
 #: zerver/lib/demo_organizations.py
 msgid "Configure owner account email address."
@@ -5152,8 +5194,16 @@ msgstr ""
 "{error_message}"
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
 msgstr "E-Mail ohne Betreff"
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
+msgstr ""
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5605,66 +5655,6 @@ msgstr "YouTube-Handle"
 msgid "Invalid external account type"
 msgstr "Unzulässige externe Kontoart"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Integrations-Frameworks"
-
-#: zerver/lib/integrations.py
-msgid "Video calling"
-msgstr "Videoanruf"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Kontinuierliche Integration"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Kundenbetreuung"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Softwarebereitstellung"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Entertainment"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Kommunikation"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Finanzen"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr "Personal"
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Marketing"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Verschiedenes"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr "Monitoring"
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Projektmanagement"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Produktivität"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Versionsverwaltung"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "Nachricht darf nicht leer sein"
@@ -5727,6 +5717,11 @@ msgstr "[Originalnachricht]({direct_message_link})"
 #, python-brace-format
 msgid "{fullname} moderation"
 msgstr "{fullname} Moderationsanfragen"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -6273,10 +6268,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} hat alle erwähnt:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Neue Nachricht"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr "Testbenachrichtigung"
 
@@ -6348,6 +6339,10 @@ msgid "You can't send direct messages outside of your organization."
 msgstr ""
 "Du kannst keine Direktnachrichten außerhalb deiner Organisation senden."
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr "Du bist nicht berechtigt, auf einige der Empfänger zuzugreifen."
+
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
@@ -6392,27 +6387,11 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-"{user_silent_mention} [schrieb]({conversation_url}) in {topic_pretty_link}:"
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
 msgstr ""
 "{user_silent_mention} [sendete]({conversation_url}) eine {widget} an "
 "{list_of_recipient_mentions}."
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
-msgstr ""
-"{user_silent_mention} [schrieb]({conversation_url}) an "
-"{list_of_recipient_mentions}:"
 
 #: zerver/lib/reminders.py
 #, python-brace-format
@@ -6824,6 +6803,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr "Ungültiger {key}-Wert {value} ({error})"
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Ungültiger Name für einen eingebetteten Bot."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Ungültige Konfigurationsdaten!"
 
@@ -6844,7 +6827,7 @@ msgstr "Ungültige Nutzer-ID: {user_id}"
 msgid "No such bot"
 msgstr "Bot nicht vorhanden"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Nutzer:in nicht vorhanden"
 
@@ -7316,6 +7299,12 @@ msgstr "Ereignis {event_id} war nicht in dieser Warteschlange enthalten"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Ungültige Event-Queue-ID: {queue_id}"
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Session nicht gefunden"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr "Generierung der Challenge fehlgeschlagen"
@@ -7503,17 +7492,11 @@ msgstr "Eine Erklärung ist erforderlich."
 msgid "Message reporting is not enabled in this organization."
 msgstr "Das Melden von Nachrichten ist in dieser Organisation nicht aktiviert."
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Fehlende:r Absender:in"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Mirroring mit Empfänger-Nutzer-IDs nicht erlaubt"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Ungültige gespiegelte Nachricht"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Kann Nachricht nicht rendern"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7785,6 +7768,25 @@ msgid "Invalid playground"
 msgstr "Ungültige Spielwiese"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr "Import kann nicht abgebrochen werden, nachdem er gestartet wurde."
 
@@ -7816,6 +7818,13 @@ msgstr "Importiere konvertierte Slack-Daten…"
 #: zerver/views/registration.py
 msgid "Finalizing import…"
 msgstr "Finalisiere Import…"
+
+#: zerver/views/registration.py
+#, fuzzy
+#| msgid "Subdomain is already in use. Please choose a different one."
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
+msgstr "Subdomain wird bereits verwendet. Bitte wähle eine andere."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7873,10 +7882,6 @@ msgstr "Zugriff auf Inhalt des Kanals ist erforderlich."
 msgid "Channel already has that name."
 msgstr "Der Kanal hat schon diesen Namen."
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Es gibt nichts zu tun. Gib mindestens \"add\" oder \"delete\" an."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7885,6 +7890,18 @@ msgstr "{user_full_name} hat dich zum Kanal {channel_name} hinzugefügt."
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr "{user_full_name} hat dich zu den folgenden Kanälen hinzugefügt:"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to {channel_name}."
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr "{user_full_name} hat dich zum Kanal {channel_name} hinzugefügt."
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to the following channels:"
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr "{user_full_name} hat dich zu den folgenden Kanälen hinzugefügt:"
 
 #: zerver/views/streams.py
@@ -8083,6 +8100,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "Die Nutzergruppe {group_id} ist keine Untergruppe dieser Gruppe."
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr "Es gibt nichts zu tun. Gib mindestens \"add\" oder \"delete\" an."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "Das Ändern von Avataren ist in dieser Organisation deaktiviert."
@@ -8197,6 +8218,12 @@ msgstr ""
 "besitzen"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Ungültiger Name für einen eingebetteten Bot."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -8208,10 +8235,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Eingebettete Bots sind nicht aktiviert."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Ungültiger Name für einen eingebetteten Bot."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -8329,15 +8352,6 @@ msgstr "Fehler: channels_map_to_topics hat einen anderen Wert als 0 oder 1"
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr "Unbekannte WordPress Webhook-Aktion: {hook}"
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
-msgstr ""
-"Dein Datenexport ist abgeschlossen. [Exporte anzeigen und herunterladen]"
-"({export_settings_link})."
 
 #: zilencer/auth.py
 msgid "The verification secret has expired"
@@ -8494,6 +8508,95 @@ msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 "Es geht nicht, gleichzeitig sowohl mobile_flow_otp als auch desktop_flow_otp "
 "zu benutzen."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Mehr als %(integrations_count_display)s native Integrationen."
+
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "Und hunderte weitere mit <a href=\"/integrations/zapier\">Zapier</a>, und "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+
+#~ msgid "Search integrations"
+#~ msgstr "Integration suchen"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Eigene Integrationen"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Eingehende Webhooks"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Interaktive Bots"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Back to list"
+#~ msgstr "Zurück zur Liste"
+
+#~ msgid "Back"
+#~ msgstr "Zurück"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Integrations-Frameworks"
+
+#~ msgid "Video calling"
+#~ msgstr "Videoanruf"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Kontinuierliche Integration"
+
+#~ msgid "Customer support"
+#~ msgstr "Kundenbetreuung"
+
+#~ msgid "Deployment"
+#~ msgstr "Softwarebereitstellung"
+
+#~ msgid "Entertainment"
+#~ msgstr "Entertainment"
+
+#~ msgid "Communication"
+#~ msgstr "Kommunikation"
+
+#~ msgid "Financial"
+#~ msgstr "Finanzen"
+
+#~ msgid "Human resources"
+#~ msgstr "Personal"
+
+#~ msgid "Marketing"
+#~ msgstr "Marketing"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Verschiedenes"
+
+#~ msgid "Monitoring"
+#~ msgstr "Monitoring"
+
+#~ msgid "Project management"
+#~ msgstr "Projektmanagement"
+
+#~ msgid "Productivity"
+#~ msgstr "Produktivität"
+
+#~ msgid "Version control"
+#~ msgstr "Versionsverwaltung"
+
+#~ msgid "New message"
+#~ msgstr "Neue Nachricht"
+
+#~ msgid "Missing sender"
+#~ msgstr "Fehlende:r Absender:in"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Mirroring mit Empfänger-Nutzer-IDs nicht erlaubt"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Ungültige gespiegelte Nachricht"
 
 #~ msgid "X (Twitter)"
 #~ msgstr "X (Twitter)"
