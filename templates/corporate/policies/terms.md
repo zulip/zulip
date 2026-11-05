@@ -66,7 +66,7 @@ online service providers obtain parental consent before they knowingly
 collect personally identifiable information online from children who
 are under thirteen (13). We do not knowingly collect or solicit
 personally identifiable information from children under thirteen (13)
-years of age and children below the minimum [minimum age of consent in
+years of age and children below the [minimum age of consent in
 their country](/policies/age-of-consent); if you are a child under the
 age of thirteen (13) or below the minimum age of consent in your
 country, please do not attempt to register for or otherwise use the
