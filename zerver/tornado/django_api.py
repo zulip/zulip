@@ -18,6 +18,7 @@ from urllib3.util import Retry
 from zerver.lib.event_types import BaseEvent
 from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
+from zerver.lib.tracing import get_trace_context
 from zerver.models import Client, Realm, UserProfile
 from zerver.models.users import get_user_profile_narrow_by_id
 from zerver.tornado.sharding import (
@@ -270,7 +271,12 @@ def send_event_rollback_unsafe(
             notify_tornado_queue_name(port),
             # sent_at lets Tornado measure how long the event took to
             # reach waiting clients, for the delivery latency SLI.
-            dict(event=event, users=port_users, sent_at=time.time()),
+            dict(
+                event=event,
+                users=port_users,
+                sent_at=time.time(),
+                trace_context=get_trace_context(),
+            ),
             partial(send_notification_http, port),
         )
 

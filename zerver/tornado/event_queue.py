@@ -34,6 +34,7 @@ from zerver.lib.queue import (
     retry_event,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
+from zerver.lib.tracing import continue_trace
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField, Message
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
@@ -1872,7 +1873,12 @@ def get_wrapped_process_notification(queue_name: str) -> Callable[[list[dict[str
     def wrapped_process_notification(notices: list[dict[str, Any]]) -> None:
         for notice in notices:
             try:
-                process_notification(notice)
+                with continue_trace(
+                    "process_notification",
+                    notice.get("trace_context"),
+                    {"zulip.event.type": notice["event"]["type"]},
+                ):
+                    process_notification(notice)
             except Exception:
                 retry_event(queue_name, notice, failure_processor)
 

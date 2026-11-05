@@ -32,7 +32,11 @@ from typing import Any
 import orjson
 from django.core.wsgi import get_wsgi_application
 
+from zerver.lib.tracing import setup_tracing
+
 try:
+    setup_tracing("zulip-django")
+
     # This application object is used by any WSGI server configured to use this
     # file. This includes Django's development server, if the WSGI_APPLICATION
     # setting points here.

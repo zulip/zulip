@@ -189,6 +189,13 @@ prod = [
   # Used for monitoring memcached
   "prometheus-client",
 
+  # Distributed tracing, sent over OTLP to an OpenTelemetry Collector
+  "opentelemetry-sdk",
+  "opentelemetry-exporter-otlp-proto-http",
+  "opentelemetry-instrumentation-django",
+  "opentelemetry-instrumentation-redis",
+  "opentelemetry-instrumentation-requests",
+
   # For captchas on unauth'd pages which can generate emails
   "altcha",
 
