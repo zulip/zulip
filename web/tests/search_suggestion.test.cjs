@@ -1034,6 +1034,27 @@ test("channel_completion", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+for (const separator of ["-", "_", "/"]) {
+    test(`channel_word_boundary_completion (${separator})`, ({override}) => {
+        override(narrow_state, "stream_id", noop);
+        const design_id = new_stream_id();
+        stream_data.add_sub_for_tests(
+            make_stream({
+                stream_id: design_id,
+                name: `project${separator}design${separator}planning`,
+                subscribed: true,
+            }),
+        );
+
+        for (const query of ["design", "DES", `design${separator}plan`]) {
+            assert.deepEqual(get_suggestions(query), [query, `channel:${design_id}`]);
+            assert.deepEqual(get_suggestions(`channel:${query}`), [`channel:${design_id}`]);
+            assert.deepEqual(get_suggestions(`-channel:${query}`), [`-channel:${design_id}`]);
+        }
+        assert.deepEqual(get_suggestions("esign"), ["esign"]);
+    });
+}
+
 test("channel_exact_name_surfaces_siblings", ({override}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
