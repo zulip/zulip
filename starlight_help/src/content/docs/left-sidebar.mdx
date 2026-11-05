@@ -6,6 +6,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
 import ConfigureChannelLinks from "../include/_ConfigureChannelLinks.mdx";
@@ -20,6 +21,7 @@ import ViewDmsLeftSidebar from "../include/_ViewDmsLeftSidebar.mdx";
 import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
 import PanelLeftIcon from "~icons/zulip-icon/panel-left";
 import PanelLeftDashedIcon from "~icons/zulip-icon/panel-left-dashed";
+import SearchIcon from "~icons/zulip-icon/search";
 import SquarePlusIcon from "~icons/zulip-icon/square-plus";
 
 The left sidebar in the Zulip web and desktop apps helps you navigate your
@@ -60,6 +62,39 @@ where clicking on channel links in the left sidebar takes you.
 ## Find a channel you're subscribed to
 
 <FilterChannels />
+
+## Find a topic
+
+<Tabs>
+  <TabItem label="In a specific channel">
+    <Steps>
+      1. Click on a channel in the left sidebar.
+      1. Click the **search** (<SearchIcon />) button next to the
+         channel name.
+      1. Search for a specific word in the topic or the full topic
+         name.
+    </Steps>
+
+    <ZulipTip>
+      You can also the filter topics in a channel by [whether they
+      are resolved](#filter-by-whether-topics-are-resolved) or
+      [whether they are followed](#filter-by-whether-topics-are-followed).
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="In all channels">
+    <Steps>
+      1. Type `topic:` followed by a specific word in the topic (or the
+         full topic name) in the **Filter left sidebar** box at the top
+         of the left sidebar.
+    </Steps>
+
+    <ZulipNote>
+      **Note**: This only shows recent topics that match your topic
+      search.
+    </ZulipNote>
+  </TabItem>
+</Tabs>
 
 ## Adjust what information is shown
 
