@@ -833,7 +833,7 @@
   "Get API key": "Získat API klíč",
   "Go back through viewing history": "Vrátit se zpět do historie prohlížení",
   "Go forward through viewing history": "Pokračovat vpřed v historii prohlížení",
-  "Go invisible": "Jít neviditelný",
+  "Go invisible": "Zneviditelnit se",
   "Go to #{channel_name} &gt; <z-topic-display-name></z-topic-display-name>": "Přejít na #{channel_name} &gt; <z-topic-display-name></z-topic-display-name>",
   "Go to #{display_recipient}": "Jít do #{display_recipient}",
   "Go to #{display_recipient} > {topic_display_name}": "Přejít na #{display_recipient} > {topic_display_name}",

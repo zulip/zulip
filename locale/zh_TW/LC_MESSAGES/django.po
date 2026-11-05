@@ -19,8 +19,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-10 08:32+0000\n"
-"Last-Translator: UDP <udp@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-10-08 06:38+0000\n"
+"Last-Translator: hanyang cheng <cinxiafortis@tutanota.de>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.10.1.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -721,10 +721,9 @@ msgstr "您的伺服器已超過此操作的 執行頻率限制。"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
-#, fuzzy, python-format
-#| msgid "You can try again in %(retry_after)s seconds."
+#, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr "您可以在 %(retry_after)s 秒後重試。"
+msgstr "您可以在 %(retry_after_string)s 秒後重試。"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Upgrade"
@@ -3282,8 +3281,6 @@ msgid "LinkedIn"
 msgstr "LinkedIn"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Bluesky handle"
 msgid "Bluesky"
 msgstr "Bluesky 帳號名稱"
 
@@ -3338,11 +3335,11 @@ msgstr "REST API"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back to list"
-msgstr ""
+msgstr "返回列表"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back"
-msgstr ""
+msgstr "返回"
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3779,6 +3776,9 @@ msgid ""
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
 msgstr ""
+"在匯入過程中發生意外錯誤。請依照 <a href=\"https://zulip.com/help/import-"
+"from-slack#import-your-data-into-zulip\"> Zulip Cloud 匯入流程 </a> 的說明來"
+"完成您的匯入流程。"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -3977,10 +3977,8 @@ msgid ""
 msgstr "無法啟用佔位符帳號；請要求使用者註冊。"
 
 #: zerver/actions/create_user.py
-#, fuzzy
-#| msgid "Cannot deactivate user group in use."
 msgid "Cannot reactivate a deleted user"
-msgstr "無法停用使用中的使用者群組。"
+msgstr "無法重新啟用已移除的使用者"
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4318,10 +4316,8 @@ msgid "Scheduled message was already sent"
 msgstr "已排程訊息已經發送"
 
 #: zerver/actions/scheduled_messages.py
-#, fuzzy
-#| msgid "Reminder does not exist"
 msgid "Reminder could not be sent."
-msgstr "提醒不存在"
+msgstr "提醒無法送出"
 
 #: zerver/actions/scheduled_messages.py
 msgid "Message could not be sent at the scheduled time."
@@ -4624,16 +4620,13 @@ msgid "New password confirmation"
 msgstr "確認新密碼"
 
 #: zerver/forms.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "You're making too many attempts to sign in. Try again in {seconds} "
-#| "seconds or contact your organization administrator for help."
+#, python-brace-format
 msgid ""
 "You're making too many attempts to sign in. Try again in "
 "{retry_after_string} or contact your organization administrator for help."
 msgstr ""
-"您嘗試登入的次數過多。請在 {seconds} 秒後再試一次，或聯絡您的組織管理員尋求協"
-"助。"
+"您嘗試登入的次數過多。請在 {retry_after_string} 秒後再試一次，或聯絡您的組織"
+"管理員尋求協助。"
 
 #: zerver/forms.py
 msgid ""
@@ -6795,7 +6788,7 @@ msgstr "Zulip Cloud Plus 可用。升級以取得使用權限。"
 
 #: zerver/models/realms.py
 msgid "Disabled"
-msgstr ""
+msgstr "已停用"
 
 #: zerver/models/realms.py
 msgid "Allow GIFs rated G (General audience)"

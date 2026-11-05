@@ -21,8 +21,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 18:56+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2026-06-21 05:01+0000\n"
+"Last-Translator: tsarmento <tsarmento@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/zulip/django/"
 "pt/>\n"
 "Language: pt\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -416,6 +416,9 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Algo deu errado. Pedimos desculpas pelo ocorrido. Já sabemos do problema e "
+"estamos trabalhando para corrigi-lo. O Zulip será carregado automaticamente "
+"assim que voltar a funcionar."
 
 #: templates/500.html
 #, fuzzy, python-format
@@ -437,6 +440,8 @@ msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Algo deu errado. Pedimos desculpas pelo ocorrido. O Zulip será carregado "
+"automaticamente assim que voltar a funcionar."
 
 #: templates/500.html
 #, fuzzy, python-format
@@ -926,7 +931,7 @@ msgstr "Guia Zulip para projetos de código aberto"
 
 #: templates/corporate/role/engineers.html
 msgid "Dog in glasses with a laptop"
-msgstr ""
+msgstr "Cachorro de óculos com um laptop"
 
 #: templates/corporate/role/engineers.html
 #, fuzzy
