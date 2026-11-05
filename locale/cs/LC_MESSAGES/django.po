@@ -17,8 +17,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-13 16:12+0000\n"
-"Last-Translator: Pavel Fric <pavelfric@yahoo.com>\n"
+"PO-Revision-Date: 2026-07-23 14:11+0000\n"
+"Last-Translator: Jaromír Matýšek <kerray@kerray.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/zulip/django/cs/>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
 "<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -384,7 +384,7 @@ msgstr ""
 
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
-msgstr ""
+msgstr "Ujistěte se, že v prohlížeči máte pro tyto stránky povolené cookies."
 
 #: templates/4xx.html
 msgid ""
