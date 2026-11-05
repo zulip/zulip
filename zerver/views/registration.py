@@ -72,7 +72,7 @@ from zerver.lib.demo_organizations import (
     schedule_demo_organization_deletion_reminder,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.exceptions import JsonableError, RateLimitedError, RealmSubdomainUnavailableError
 from zerver.lib.i18n import (
     get_browser_language_code,
     get_default_language_for_anonymous_user,
@@ -834,17 +834,37 @@ def registration_helper(
                 extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
                 how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
 
-            realm = do_create_realm(
-                string_id,
-                realm_name,
-                org_type=realm_type,
-                default_language=realm_default_language,
-                prereg_realm=prereg_realm,
-                how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
-                    how_found_zulip
-                ],
-                how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
-            )
+            try:
+                realm = do_create_realm(
+                    string_id,
+                    realm_name,
+                    org_type=realm_type,
+                    default_language=realm_default_language,
+                    prereg_realm=prereg_realm,
+                    how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                        how_found_zulip
+                    ],
+                    how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
+                )
+            except RealmSubdomainUnavailableError:
+                form.add_error(
+                    "realm_subdomain",
+                    _("Subdomain is already in use. Please choose a different one."),
+                )
+                return render_registration_form(
+                    request,
+                    form=form,
+                    email=email,
+                    key=key,
+                    name_validated=name_validated,
+                    realm=realm,
+                    realm_creation=realm_creation,
+                    password_required=password_required,
+                    require_ldap_password=require_ldap_password,
+                    prereg_realm=prereg_realm,
+                    next_url=next,
+                    status=400,
+                )
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]

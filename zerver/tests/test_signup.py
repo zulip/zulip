@@ -34,6 +34,7 @@ from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.exceptions import RealmSubdomainUnavailableError
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import (
@@ -1903,6 +1904,101 @@ class UserSignUpTest(ZulipTestCase):
                 f"/accounts/login/?email={quote(email)}&already_registered=1"
             )
         )
+
+    def test_do_create_realm_subdomain_unavailable_error(self) -> None:
+        """
+        do_create_realm raises RealmSubdomainUnavailableError when attempting to
+        create a realm with an existing subdomain.
+        """
+        with self.assertRaises(RealmSubdomainUnavailableError):
+            do_create_realm("zulip", "Zulip clone")
+
+    def test_do_create_realm_unexpected_integrity_error(self) -> None:
+        """
+        do_create_realm re-raises IntegrityError when an unexpected database
+        integrity error occurs during realm creation.
+        """
+        with (
+            patch.object(Realm, "save", side_effect=IntegrityError("unexpected error")),
+            self.assertRaises(IntegrityError),
+        ):
+            do_create_realm("new-realm-subdomain", "New Realm")
+
+    def test_realm_creation_with_subdomain_race(self) -> None:
+        """
+        The availability check for a realm subdomain can race with another
+        realm creation. Verify that RealmSubdomainUnavailableError is handled
+        by re-rendering the registration form with an error without consuming
+        the confirmation link.
+        """
+        email = self.nonreg_email("newguy")
+        realm_subdomain = "custom-test"
+        realm_name = "Race organization"
+
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain=realm_subdomain,
+            realm_name=realm_name,
+        )
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
+        with patch(
+            "zerver.views.registration.do_create_realm",
+            side_effect=RealmSubdomainUnavailableError(realm_subdomain),
+        ):
+            result = self.submit_reg_form_for_user(
+                email,
+                "password",
+                realm_subdomain=realm_subdomain,
+                realm_name=realm_name,
+            )
+
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response(
+            "Subdomain is already in use. Please choose a different one.", result
+        )
+        self.assert_in_response('id="registration"', result)
+        self.assert_in_response('name="realm_subdomain"', result)
+        self.assert_in_response(f'value="{realm_subdomain}"', result)
+        self.assert_in_response(f'value="{realm_name}"', result)
+
+        # The user can retry with the same confirmation link and only a new
+        # organization URL.
+        result = self.submit_reg_form_for_user(
+            email,
+            "password",
+            realm_subdomain="custom-test-2",
+            realm_name=realm_name,
+        )
+        self.assertEqual(result.status_code, 302)
+
+    def test_realm_creation_with_unexpected_integrity_error(self) -> None:
+        email = self.nonreg_email("newguy")
+        realm_subdomain = "custom-test"
+
+        self.submit_realm_creation_form(
+            email,
+            realm_subdomain=realm_subdomain,
+            realm_name="Zulip test",
+        )
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
+        with (
+            patch(
+                "zerver.views.registration.do_create_realm",
+                side_effect=IntegrityError("unexpected error"),
+            ),
+            self.assertRaises(IntegrityError),
+            self.assertLogs("django.request", "ERROR"),
+        ):
+            self.submit_reg_form_for_user(
+                email,
+                "password",
+                realm_subdomain=realm_subdomain,
+                realm_name="Zulip test",
+            )
 
     def test_signup_with_weak_password(self) -> None:
         """
