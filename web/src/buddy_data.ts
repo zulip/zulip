@@ -396,7 +396,8 @@ function maybe_shrink_list(
                 pm_ids_set,
                 filter_by_stream_id ? stream_id : undefined,
             ) ||
-            conversation_participants.has(user_id),
+            conversation_participants.has(user_id) ||
+            get_num_unread(user_id) > 0,
     );
 
     return user_ids;
