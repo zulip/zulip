@@ -253,6 +253,11 @@ module "zulip" {
     CERTIFICATES = "self-signed"
 
     CONFIG_application_server__queue_workers_multiprocess = "false"
+
+    # Trazas (zerver/lib/tracing.py); sin el endpoint, Zulip no
+    # instrumenta nada.
+    OTEL_EXPORTER_OTLP_ENDPOINT = module.monitoring.otlp_endpoint
+    OTEL_TRACES_SAMPLER_ARG     = tostring(var.trace_sample_ratio)
     }, var.external_host != "" ? {} : {
     # Zulip arma correos de bots y usuarios ficticios con el dominio
     # de EXTERNAL_HOST; una IP no es un dominio válido y la creación

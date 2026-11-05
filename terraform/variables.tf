@@ -193,18 +193,31 @@ variable "zulip_email_password" {
   sensitive   = true
 }
 
+variable "trace_sample_ratio" {
+  description = "Fracción de peticiones de Zulip que se trazan (0 a 1). Cloud Trace incluye 2,5 millones de spans al mes y cobra USD 0,20 por millón adicional."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.trace_sample_ratio >= 0 && var.trace_sample_ratio <= 1
+    error_message = "trace_sample_ratio debe estar entre 0 y 1."
+  }
+}
+
 variable "monitoring_images" {
-  description = "Imágenes del stack de monitoreo (exporters, Grafana y frontend de Managed Prometheus)."
+  description = "Imágenes del stack de monitoreo (exporters, Grafana, frontend de Managed Prometheus y OpenTelemetry Collector)."
   type = object({
     postgres_exporter = string
     redis_exporter    = string
     grafana           = string
     gmp_frontend      = string
+    otel_collector    = string
   })
   default = {
     postgres_exporter = "quay.io/prometheuscommunity/postgres-exporter:v0.20.1"
     redis_exporter    = "oliver006/redis_exporter:v1.94.0"
     grafana           = "grafana/grafana:13.2.5"
     gmp_frontend      = "gke.gcr.io/prometheus-engine/frontend:v0.19.4-gke.0"
+    otel_collector    = "otel/opentelemetry-collector-contrib:0.162.0"
   }
 }

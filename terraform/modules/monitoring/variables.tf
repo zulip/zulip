@@ -15,10 +15,11 @@ variable "namespace" {
 }
 
 variable "images" {
-  description = "Imágenes de Grafana y del frontend de Managed Prometheus."
+  description = "Imágenes de Grafana, del frontend de Managed Prometheus y del OpenTelemetry Collector."
   type = object({
-    grafana  = string
-    frontend = string
+    grafana   = string
+    frontend  = string
+    collector = string
   })
 }
 
@@ -37,6 +38,15 @@ variable "scrape_targets" {
     path      = optional(string, "/metrics")
   }))
   default = {}
+}
+
+variable "trace_clients" {
+  description = "Pods que pueden enviar trazas al OpenTelemetry Collector: namespace y label app."
+  type = list(object({
+    namespace = string
+    app       = string
+  }))
+  default = []
 }
 
 variable "scrape_interval" {
