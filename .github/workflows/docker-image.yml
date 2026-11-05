@@ -1,22 +1,91 @@
 name: Docker image CI/CD
 
-# La infraestructura tiene su propio pipeline (terraform.yml); la
-# imagen se reconstruye con cualquier otro cambio del repositorio.
-# En los PR solo corren el lint y el escaneo del Dockerfile; la
-# imagen se construye, escanea y publica al hacer merge a main.
+# La infraestructura tiene su propio pipeline (terraform.yml). La imagen
+# no se reconstruye si un cambio solo toca lo que no afecta a Zulip en
+# producción: infraestructura, documentación, pruebas y configuración
+# del repositorio. "*.md" cubre solo la raíz; zerver y templates tienen
+# Markdown que sí se usa.
+# En los PR solo corren el lint y el escaneo del Dockerfile; al hacer
+# merge a main, la imagen se construye, escanea, publica y despliega.
 on:
   push:
     branches:
       - main
     paths-ignore:
       - "terraform/**"
+      - "observability/**"
+      - "docs/**"
+      - "zerver/tests/**"
+      - "corporate/tests/**"
+      - "puppet/kandra/**"
+      - ".claude/**"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/FUNDING.yml"
+      - ".github/funding.json"
+      - ".github/pull_request_template.md"
+      - ".github/workflows/api-docs-update-check.yml"
+      - ".github/workflows/auto-add-parent-label.yml"
+      - ".github/workflows/codeql-analysis.yml"
+      - ".github/workflows/production-suite.yml"
       - ".github/workflows/terraform.yml"
+      - ".github/workflows/update-oneclick-apps.yml"
+      - ".github/workflows/zizmor.yml"
+      - ".github/workflows/zulip-ci.yml"
+      - ".github/workflows/zulip-cloud-deploy.yaml"
+      - "*.md"
+      - "LICENSE"
+      - "NOTICE"
+      - "Vagrantfile"
+      - "Dockerfile-postgresql"
+      - ".codecov.yml"
+      - ".codespellignore"
+      - ".devcontainer.json"
+      - ".editorconfig"
+      - ".env.example"
+      - ".gitlint"
+      - ".mailmap"
+      - ".readthedocs.yaml"
+      - ".sonarcloud.properties"
   pull_request:
     branches:
       - main
     paths-ignore:
       - "terraform/**"
+      - "observability/**"
+      - "docs/**"
+      - "zerver/tests/**"
+      - "corporate/tests/**"
+      - "puppet/kandra/**"
+      - ".claude/**"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/FUNDING.yml"
+      - ".github/funding.json"
+      - ".github/pull_request_template.md"
+      - ".github/workflows/api-docs-update-check.yml"
+      - ".github/workflows/auto-add-parent-label.yml"
+      - ".github/workflows/codeql-analysis.yml"
+      - ".github/workflows/production-suite.yml"
       - ".github/workflows/terraform.yml"
+      - ".github/workflows/update-oneclick-apps.yml"
+      - ".github/workflows/zizmor.yml"
+      - ".github/workflows/zulip-ci.yml"
+      - ".github/workflows/zulip-cloud-deploy.yaml"
+      - "*.md"
+      - "LICENSE"
+      - "NOTICE"
+      - "Vagrantfile"
+      - "Dockerfile-postgresql"
+      - ".codecov.yml"
+      - ".codespellignore"
+      - ".devcontainer.json"
+      - ".editorconfig"
+      - ".env.example"
+      - ".gitlint"
+      - ".mailmap"
+      - ".readthedocs.yaml"
+      - ".sonarcloud.properties"
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
@@ -172,48 +241,107 @@ jobs:
           done <<< "$IMAGE_TAGS"
 
 
-  # Las imágenes van fijadas en Terraform: en vez de desplegar aquí,
-  # se abre un PR que cambia images.zulip al tag recién publicado.
-  # Al hacer merge, terraform.yml lo aplica tras aprobar "production".
-  deploy-pr:
-    name: Open PR to deploy the new image
+  # Las imágenes van fijadas en Terraform: el tag recién publicado se
+  # escribe en main para que el código siga describiendo lo desplegado.
+  # Un push hecho con GITHUB_TOKEN no dispara otros workflows, así que
+  # este commit no vuelve a construir la imagen ni repite el apply.
+  update-image:
+    name: Point Terraform at the new image
     needs: [build, push]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+    outputs:
+      deploy: ${{ steps.bump.outputs.deploy }}
     steps:
       - name: Checkout repository
-        # Necesita credenciales para subir la rama del PR.
+        # Necesita credenciales para subir el commit, y el historial
+        # (sin blobs) para comparar commits.
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked]
-      - name: Point images.zulip at the new tag
+        with:
+          ref: main
+          fetch-depth: 0
+          filter: blob:none
+      - name: Commit the new tag to main
         id: bump
         env:
           IMAGE_TAGS: ${{ needs.build.outputs.image_tags }}
         run: |
           image=$(grep ':sha-' <<< "$IMAGE_TAGS" | head -n 1)
           tag=${image##*:}
+          # Si un merge posterior terminó antes, esta imagen es más vieja
+          # que la desplegada y publicarla sería un rollback.
+          current=$(sed -nE 's#^ *zulip +=.*:sha-([0-9a-f]+)".*#\1#p' terraform/variables.tf)
+          if [ -n "$current" ] && git merge-base --is-ancestor "$GITHUB_SHA" "$current"; then
+            if [ "$(git rev-parse "$current")" != "$GITHUB_SHA" ]; then
+              echo "::notice::main already deploys sha-$current, newer than $tag"
+              echo "deploy=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
           sed -E -i "s#(zulip +=) \"ghcr\.io/[^\"]+\"#\1 \"$image\"#" terraform/variables.tf
           if git diff --quiet; then
-            echo "terraform/variables.tf already uses $image"
             exit 0
           fi
-          echo "image=$image" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-      - name: Open pull request
-        if: steps.bump.outputs.image != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          IMAGE: ${{ steps.bump.outputs.image }}
-          TAG: ${{ steps.bump.outputs.tag }}
-        run: |
-          branch="deploy/zulip-$TAG"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          git commit -am "deploy: Zulip $TAG"
-          git push origin "$branch"
-          gh pr create --base main --head "$branch" \
-            --title "deploy: Zulip $TAG" \
-            --body "Actualiza \`images.zulip\` a \`$IMAGE\`, publicada por Docker image CI/CD. Al hacer merge, Terraform CI/CD la despliega tras aprobar el Environment \`production\`; Zulip se reinicia una vez."
+          git commit -am "deploy: Zulip $tag"
+          # Otro merge puede haber llegado a main mientras tanto.
+          for attempt in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            sleep $((attempt * 5))
+            git pull --rebase origin main
+          done
+          exit 1
+
+  # Mismos pasos y grupo de concurrencia que el apply de terraform.yml:
+  # los dos pipelines escriben el mismo estado y deben hacerlo en cola.
+  deploy:
+    name: Deploy with Terraform
+    needs: update-image
+    if: needs.update-image.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: terraform-apply
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_VAR_zulip_email_password: ${{ secrets.ZULIP_EMAIL_PASSWORD }}
+      TF_VAR_zulip_administrator: ${{ secrets.ZULIP_ADMINISTRATOR }}
+      TF_VAR_authorized_networks: ${{ secrets.AUTHORIZED_NETWORKS }}
+      TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
+    steps:
+      - name: Checkout repository
+        # main, no el commit que disparó el pipeline: ese no tiene el tag
+        # nuevo, y aplicarlo revertiría lo que se haya mergeado después.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_wrapper: false
+      - name: Write terraform.tfvars
+        working-directory: terraform
+        env:
+          TERRAFORM_TFVARS: ${{ vars.TERRAFORM_TFVARS }}
+        run: printf '%s\n' "$TERRAFORM_TFVARS" > terraform.tfvars
+      - name: Terraform init
+        working-directory: terraform
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: terraform init -input=false -backend-config="bucket=$TF_STATE_BUCKET"
+      - name: Terraform apply
+        working-directory: terraform
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve
