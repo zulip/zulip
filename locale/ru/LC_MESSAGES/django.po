@@ -27,10 +27,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-27 01:48+0000\n"
+"PO-Revision-Date: 2026-04-28 19:03+0000\n"
 "Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/"
-">\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3490,10 +3490,8 @@ msgid "LinkedIn"
 msgstr "LinkedIn"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Bluesky handle"
 msgid "Bluesky"
-msgstr "Идентификатор Bluesky"
+msgstr "Bluesky"
 
 #: templates/zerver/footer.html
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
@@ -3546,11 +3544,11 @@ msgstr "REST API"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back to list"
-msgstr ""
+msgstr "Назад к списку"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back"
-msgstr ""
+msgstr "Назад"
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -4599,10 +4597,8 @@ msgid "Scheduled message was already sent"
 msgstr "Отложенное сообщение уже отправлено"
 
 #: zerver/actions/scheduled_messages.py
-#, fuzzy
-#| msgid "Reminder does not exist"
 msgid "Reminder could not be sent."
-msgstr "Напоминание отсутствует"
+msgstr "Не удалось отправить напоминание."
 
 #: zerver/actions/scheduled_messages.py
 msgid "Message could not be sent at the scheduled time."
@@ -5272,10 +5268,8 @@ msgid "Must be an organization owner"
 msgstr "Нужно быть владельцем организации"
 
 #: zerver/lib/exceptions.py
-#, fuzzy
-#| msgid "Must be an organization owner"
 msgid "Must be a bot user"
-msgstr "Нужно быть владельцем организации"
+msgstr "Должен быть пользователь бота"
 
 #: zerver/lib/exceptions.py
 msgid "Your username or password is incorrect"
@@ -5460,10 +5454,8 @@ msgid "Server is not configured to use push notification service."
 msgstr "Сервер не настроен на использование службы push-уведомлений."
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Already has an account."
 msgid "Atlassian account ID"
-msgstr "Уже имеет учетную запись."
+msgstr "ID учетной записи Atlassian"
 
 #: zerver/lib/external_accounts.py
 msgid "Behance username"

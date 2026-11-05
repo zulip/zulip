@@ -29,17 +29,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-26 05:26+0000\n"
-"Last-Translator: Daniel Capilla <dcapillae@gmail.com>\n"
-"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django/es/"
-">\n"
+"PO-Revision-Date: 2026-11-04 17:44+0000\n"
+"Last-Translator: Emily Sutherlin "
+"<emilysutherlin@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django/es/>"
+"\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
 "0) ? 1 : 2);\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.11.1.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -2010,7 +2011,7 @@ msgstr "Gestionar preferencias de correo"
 #: templates/zerver/emails/custom_email_base.pre.html
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt
 msgid "Unsubscribe from marketing emails"
-msgstr "Desubscribirse de emails de marketing"
+msgstr "Cancelar suscripción a correos electrónicos promocionales"
 
 #: templates/zerver/emails/deactivate.html
 #: templates/zerver/portico_error_pages/user_deactivated.html
@@ -2107,7 +2108,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html
 msgid "Unsubscribe from digest emails"
-msgstr "Desubscribirse de los emails de digesto"
+msgstr "Cancelar suscripción a resúmenes por correo electrónico"
 
 #: templates/zerver/emails/digest.subject.txt
 #, python-format
@@ -2168,7 +2169,7 @@ msgstr "Gestionar preferencias de correo:"
 
 #: templates/zerver/emails/digest.txt
 msgid "Unsubscribe from digest emails:"
-msgstr "Darse de baja de los resúmenes por correo electrónico:"
+msgstr "Cancelar suscripción a resúmenes por correo electrónico:"
 
 #: templates/zerver/emails/email_base_default.html
 #: templates/zerver/emails/email_base_marketing.html
@@ -2618,7 +2619,7 @@ msgstr "Seguridad de Zulip"
 
 #: templates/zerver/emails/notify_new_login.html
 msgid "Unsubscribe from login notifications"
-msgstr "Desuscribirse de notificaciones de inicio de sesión"
+msgstr "Cancelar suscripción a notificaciones de inicio de sesión"
 
 #: templates/zerver/emails/notify_new_login.subject.txt
 #, python-format
@@ -2705,7 +2706,8 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_topics.txt
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
-msgstr "Desubscribirse de los coreros de bienvenida de %(realm_name)s"
+msgstr ""
+"Cancelar suscripción a correos electrónicos de bienvenida de %(realm_name)s"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.subject.txt
 msgid "Choosing the chat app for your team"
@@ -2758,7 +2760,7 @@ msgid ""
 "can work best for your needs. Check out this guide to key Zulip features for "
 "organizations like yours!"
 msgstr ""
-"Mientras aprendés a usar Zulip, nos encantaría ayudarte a descubrir cómo se "
+"Mientras aprendes a usar Zulip, nos encantaría ayudarte a descubrir cómo se "
 "pueda adaptar a tus necesidades. Revisá esta guía de características clave "
 "de Zulip para organizaciones como la tuya!"
 
@@ -3521,10 +3523,8 @@ msgid "LinkedIn"
 msgstr "LinkedIn"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Bluesky handle"
 msgid "Bluesky"
-msgstr "Nombre de usuario de Bluesky"
+msgstr "Bluesky"
 
 #: templates/zerver/footer.html
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
@@ -3577,11 +3577,11 @@ msgstr "REST API"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back to list"
-msgstr ""
+msgstr "Volver a la lista"
 
 #: templates/zerver/integrations/doc.html
 msgid "Back"
-msgstr ""
+msgstr "Atrás"
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -4188,15 +4188,15 @@ msgstr "Error al darse de baja del correo electrónico"
 
 #: templates/zerver/unsubscribe_link_error.html
 msgid "Unknown email unsubscribe request"
-msgstr "Petición de desuscripción de correo desconocida"
+msgstr "Solicitud de cancelar suscripción a un correo desconocido"
 
 #: templates/zerver/unsubscribe_link_error.html
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
 "don't recognize the URL."
 msgstr ""
-"¡Hola! Parece que has intentado darte de baja de algo, pero no reconocemos "
-"la URL."
+"¡Hola! Parece que intentaste cancelar una suscripción de algo, pero no "
+"reconocemos la URL."
 
 #: templates/zerver/unsubscribe_link_error.html
 #, python-format
@@ -4638,10 +4638,8 @@ msgid "Scheduled message was already sent"
 msgstr "El mensaje programado ya se ha enviado"
 
 #: zerver/actions/scheduled_messages.py
-#, fuzzy
-#| msgid "Reminder does not exist"
 msgid "Reminder could not be sent."
-msgstr "El recordatorio no existe"
+msgstr "No se ha podido enviar el recordatorio."
 
 #: zerver/actions/scheduled_messages.py
 msgid "Message could not be sent at the scheduled time."
@@ -5319,10 +5317,8 @@ msgid "Must be an organization owner"
 msgstr "Debe ser un propietario de la organización"
 
 #: zerver/lib/exceptions.py
-#, fuzzy
-#| msgid "Must be an organization owner"
 msgid "Must be a bot user"
-msgstr "Debe ser un propietario de la organización"
+msgstr "Debe ser un usuario de bot"
 
 #: zerver/lib/exceptions.py
 msgid "Your username or password is incorrect"
@@ -5509,10 +5505,8 @@ msgstr ""
 "push."
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Already has an account."
 msgid "Atlassian account ID"
-msgstr "Ya tiene una cuenta."
+msgstr "ID de cuenta de Atlassian"
 
 #: zerver/lib/external_accounts.py
 msgid "Behance username"
@@ -6491,7 +6485,7 @@ msgstr "El canal o canales ({channel_names}) no existen"
 #: zerver/lib/streams.py
 #, python-brace-format
 msgid "Default channel group with id '{group_id}' does not exist."
-msgstr "No existe el grupo de canales predeterminado con el ID «{group_id}»."
+msgstr "No existe el grupo de canales predeterminado con el id '{group_id}'."
 
 #: zerver/lib/string_validation.py
 msgid "Channel name can't be empty."
@@ -7949,7 +7943,7 @@ msgstr "No estás suscrito al canal con el ID {channel_id}"
 
 #: zerver/views/submessage.py
 msgid "Invalid json for submessage"
-msgstr "JSON inválido para el submensaje"
+msgstr "json inválido para el submensaje"
 
 #: zerver/views/tusd.py zerver/views/upload.py
 #, python-brace-format

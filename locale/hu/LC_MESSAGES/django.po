@@ -17,8 +17,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:30+0000\n"
-"Last-Translator: Buzási Róbert <drbuzasi@gmail.com>\n"
+"PO-Revision-Date: 2026-10-18 16:22+0000\n"
+"Last-Translator: Keller Mónika <kmoni2026@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/zulip/django/"
 "hu/>\n"
 "Language: hu\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -38,19 +38,19 @@ msgstr "Hibás szervezet"
 
 #: analytics/views/stats.py
 msgid "Public channels"
-msgstr ""
+msgstr "Nyilvános csatornák"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "Privát csatornák"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
-msgstr ""
+msgstr "Közvetlen üzenetek"
 
 #: analytics/views/stats.py
 msgid "Group direct messages"
-msgstr ""
+msgstr "Csoport üzenetek"
 
 #: analytics/views/stats.py
 #, python-brace-format
@@ -81,10 +81,9 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
-"A szerveződéseteknek már semennyi Zulip licensze sem maradt. Kérjük [növeld "
-"a licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
-"felhasználókat]({deactivate_user_help_page_link}), hogy tudjatok új tagokat "
-"hívni."
+"A szervezetednek már nincs Z ulip licensze. Kérjük [növeld a licenszeid "
+"számát]({billing_page_link}) vagy [függessz fel passzív felhasználókat]("
+"{deactivate_user_help_page_link}), hogy tudjatok új tagokat hívni."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -93,7 +92,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
-"A szerveződéseteknek már csak egy Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetednek már csak egy Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy egynél több tagot is "
 "meghívhassatok."
@@ -105,7 +104,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
-"A szerveződéseteknek már csak kettő Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetednek már csak kettő Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy kettőnél több tagot "
 "is meghívhassatok."
@@ -117,7 +116,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
-"A szerveződéseteknek már csak három Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetefnek már csak három Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy háromnál több tagot "
 "is meghívhassatok."
@@ -136,20 +135,24 @@ msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
 msgstr ""
+"A szervezetednek nincs elegendő Zulip-licence. A meghívók nem kerültek "
+"kiküldésre."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"A szervezetednek nincs elegendő Zulip-licence a vendégfelhasználó "
+"szerepkörének módosításához."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "A regisztráció jelenleg nem érhető el."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Érvénytelen távoli kiszolgáló."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -196,10 +199,11 @@ msgstr "Valami gond van. Várj pár másodpercet és próbáld újra."
 #: corporate/lib/stripe.py
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Kérjük, adjon meg egy bankkártyát az ingyenes próbaidőszak megkezdése előtt."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Kérjük, adjon meg egy bankkártyát a csomagfrissítés ütemezéséhez."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -217,6 +221,8 @@ msgstr "Szerződésmódosítás nem lehetséges. A szerződés lejárt."
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Ingyenes próbaverziós csomag esetén az aktuális számlázási időszakban nem "
+"frissíthetők a licencek."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -243,6 +249,8 @@ msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"Nem módosíthatók a licencek a következő számlázási ciklusra olyan előfizetés "
+"esetén, amelynél a csomag szintjének csökkentése (downgrade) történik."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -277,7 +285,7 @@ msgstr "Fizetési szándék nem található"
 
 #: corporate/lib/stripe.py
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "Adja meg a stripe_session_id vagy stripe_invoice_id értéket"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -291,7 +299,7 @@ msgstr ""
 
 #: corporate/views/billing_page.py
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "A „confirmed” paraméter kötelező"
 
 #: corporate/views/remote_billing_page.py
 msgid "Billing access token expired."
@@ -314,20 +322,20 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "A folytatáshoz el kell fogadnia a Szolgáltatási feltételeket."
 
 #: corporate/views/remote_billing_page.py
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "Ez a zulip_org_id nincs regisztrálva a Zulip számlázási rendszerében."
 
 #: corporate/views/remote_billing_page.py
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "Érvénytelen zulip_org_key ehhez a zulip_org_id-hez."
 
 #: corporate/views/remote_billing_page.py
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "A szerverregisztrációdat érvénytelenítették."
 
 #: templates/404.html templates/4xx.html
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html
@@ -336,7 +344,7 @@ msgstr "Hiba"
 
 #: templates/404.html
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Az oldal nem található (404)"
 
 #: templates/404.html templates/4xx.html
 #, python-format
@@ -347,27 +355,34 @@ msgstr ""
 
 #: templates/4xx.html
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "Hozzáférés megtagadva (403)"
 
 #: templates/4xx.html
 msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
+"A kérés nem teljesíthető, mivel a böngészője nem küldte el a hozzáférés "
+"hitelesítéséhez szükséges adatokat. A probléma megoldása érdekében:"
 
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
 msgstr ""
+"Győződjön meg arról, hogy böngészője engedélyezi a cookie-kat ezen az "
+"oldalon."
 
 #: templates/4xx.html
 msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"Ellenőrizze, hogy vannak-e olyan böngésző-adatvédelmi beállítások vagy "
+"bővítmények, amelyek blokkolják a Referer fejléceket, és kapcsolja ki őket "
+"erre az oldalra vonatkozóan."
 
 #: templates/4xx.html
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "A metódus nem engedélyezett (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
 msgid "Internal server error"
@@ -378,6 +393,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Valami hiba történt. Elnézést kérünk! Tudunk a problémáról, és dolgozunk a "
+"megoldásán. Amint a rendszer újra működik, a Zulip automatikusan betöltődik."
 
 #: templates/500.html
 #, python-format
@@ -392,6 +409,8 @@ msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Valami hiba történt. Elnézést kérünk! Amint minden újra működik, a Zulip "
+"automatikusan betöltődik."
 
 #: templates/500.html
 #, python-format
@@ -425,27 +444,27 @@ msgstr "Zulip analitika %(target_name)s számára"
 
 #: templates/analytics/stats.html
 msgid "Organization summary"
-msgstr ""
+msgstr "Szervezeti összefoglaló"
 
 #: templates/analytics/stats.html
 msgid "Number of users"
-msgstr ""
+msgstr "Felhasználók száma"
 
 #: templates/analytics/stats.html
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Az elmúlt 15 napban aktív felhasználók"
 
 #: templates/analytics/stats.html
 msgid "Number of guests"
-msgstr ""
+msgstr "Vendégek száma"
 
 #: templates/analytics/stats.html
 msgid "Total number of messages"
-msgstr ""
+msgstr "Üzenetek teljes száma"
 
 #: templates/analytics/stats.html
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Üzenetek száma az elmúlt 30 napban"
 
 #: templates/analytics/stats.html
 msgid "File storage in use"

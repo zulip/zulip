@@ -25,10 +25,11 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:36+0000\n"
-"Last-Translator: Arusekk <arek_koz@o2.pl>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/"
-">\n"
+"PO-Revision-Date: 2026-09-09 07:43+0000\n"
+"Last-Translator: Przemysław Waleczny "
+"<undastyle@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/>"
+"\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
 "(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -923,7 +924,7 @@ msgstr "Zobacz przewodnik Zulip dla projektów open-source"
 
 #: templates/corporate/role/engineers.html
 msgid "Dog in glasses with a laptop"
-msgstr ""
+msgstr "Pies w okularach z laptopem"
 
 #: templates/corporate/role/engineers.html
 #, fuzzy
@@ -933,19 +934,19 @@ msgstr "rozpocznij dyskusję"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip conversation with sentry bot"
-msgstr ""
+msgstr "Zdjęcie ekranu konwersacji na Zulip z botem sentry"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip inbox"
-msgstr ""
+msgstr "Zdjęcie ekranu skrzynki odbiorczej Zulip"
 
 #: templates/corporate/role/engineers.html
 msgid "Open laptop with book inside"
-msgstr ""
+msgstr "Otwarty laptop z książką w środku"
 
 #: templates/corporate/role/engineers.html
 msgid "Two hands assembling puzzle"
-msgstr ""
+msgstr "Dwie ręce układające puzzle"
 
 #: templates/corporate/role/engineers.html
 #, fuzzy
@@ -955,7 +956,7 @@ msgstr "Historia wysłanych wiadomości"
 
 #: templates/corporate/role/engineers.html
 msgid "Lightning"
-msgstr ""
+msgstr "Błyskawica"
 
 #: templates/corporate/role/engineers.html
 #: zerver/models/custom_profile_fields.py
@@ -964,7 +965,7 @@ msgstr "Link"
 
 #: templates/corporate/role/engineers.html
 msgid "Ship wheel"
-msgstr ""
+msgstr "Ster"
 
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
@@ -1103,6 +1104,8 @@ msgstr "Przeglądaj publicznie dostępne kanału w {org_name} bez logowania się
 msgid ""
 "Because you're using an unsupported or very old browser, Zulip may not load."
 msgstr ""
+"Jako, iż korzystasz z niewspieranej lub bardzo starej przeglądarki, Zulip "
+"może się nie załadować."
 
 #: templates/zerver/app/index.html
 msgid ""
@@ -1110,6 +1113,9 @@ msgid ""
 "load. <a href=\"https://zulip.com/apps/\" target=\"_blank\" rel=\"noopener "
 "noreferrer\">Download the latest version.</a>"
 msgstr ""
+"Jako, że korzystasz z bardzo starej wersji aplikacji, Zulip może się na "
+"załadować. <a href=\"https://zulip.com/apps/\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Pobierz najnowszą wersję. </a>"
 
 #: templates/zerver/app/index.html
 msgid ""

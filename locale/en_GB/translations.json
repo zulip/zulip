@@ -160,7 +160,7 @@
   "Admins, moderators and members": "Admins, moderators and members",
   "Admins, moderators, members and guests": "Admins, moderators, members and guests",
   "Advanced configuration": "",
-  "Advertise organization in the Zulip communities directory": "Advertise organization in the Zulip communities directory",
+  "Advertise organization in the Zulip communities directory": "Advertise organisation in the Zulip communities directory",
   "After how much time should all data for this organization be permanently deleted (users, channels, messages, etc.)?": "After how much time should all data for this organisation be permanently deleted (users, channels, messages, etc.)?",
   "Alert word": "Alert word",
   "Alert word <b>{alert_word}</b> removed successfully!": "",
