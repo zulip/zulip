@@ -146,7 +146,7 @@ so they are notified.
 
 ## Remotely debugging a droplet
 
-To SSH into a droplet, first make sure you have a SSH key associated with your
+To SSH into a droplet, first make sure you have an SSH key associated with your
 GitHub account, then ask the student to run the following in their
 VM:
 

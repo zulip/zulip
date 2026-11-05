@@ -226,7 +226,7 @@ Django, TypeScript/JavaScript, and CSS.
   number of others we would like to add. Also, several extensions to the
   framework that would dramatically improve the user experience of using
   integrations, e.g., being able to do callbacks to third-party services
-  like Stripe to display more user-friendly notifications. The [the integrations
+  like Stripe to display more user-friendly notifications. The [integrations
   label on GitHub](https://github.com/zulip/zulip/labels/area%3A%20integrations)
   lists some of the priorities here (many of which are great preparatory
   projects). 175 or 350 hours; medium difficulty with various possible difficult

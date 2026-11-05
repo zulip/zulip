@@ -208,7 +208,7 @@ The cost for fetching `page_params` varies dramatically based
 primarily on the organization's size, varying from 90ms-300ms for a
 typical organization but potentially multiple seconds for large open
 organizations with 10,000s of users. There is also smaller
-variability based on a individual user's personal data state,
+variability based on an individual user's personal data state,
 primarily in that having 10,000s of unread messages results in a
 somewhat expensive query to find which channels/topics those are in.
 
