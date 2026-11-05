@@ -286,7 +286,7 @@ lifecycle transition cost][s3-pricing].
 
 ## Data export bucket
 
-The [data export process](export-and-import.md#data-export) process, when
+The [data export process](export-and-import.md#data-export), when
 [triggered from the
 UI](https://zulip.com/help/export-your-organization), uploads the
 completed export so it is available to download from the server; this

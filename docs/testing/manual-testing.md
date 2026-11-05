@@ -70,7 +70,7 @@ Try narrowing from the message view:
 ### Messagebox
 
 With messagebox we want to test mainly the functioning of all
-all the keyboard shortcuts and click handlers.
+the keyboard shortcuts and click handlers.
 
 Apart from that there are three views of a message box, we want
 to test their appearance too:

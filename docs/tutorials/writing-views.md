@@ -169,7 +169,7 @@ The `typed_endpoint` decorator parses the declared
 of the decorated function, and for each argument that has been declared,
 it extracts the HTTP parameter with that name from the request,
 parses it according to the type annotation, and then passes it to
-the function. It will return an nicely JSON formatted HTTP 400 error
+the function. It will return a nicely formatted JSON HTTP 400 error
 in the event that an argument is missing, doesn't parse as JSON, or
 otherwise is invalid.
 

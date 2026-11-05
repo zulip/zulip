@@ -275,8 +275,8 @@ are examples of this pattern.)
 Mypy provides the [`Any`
 type](https://mypy.readthedocs.io/en/stable/dynamic_typing.html) for
 interoperability with untyped code, but it is completely unchecked.
-You can put an value of an arbitrary type into an expression of type
-`Any`, and get an value of an arbitrary type out, and mypy will make
+You can put a value of an arbitrary type into an expression of type
+`Any`, and get a value of an arbitrary type out, and mypy will make
 no effort to check that the input and output types match. So using
 `Any` defeats the type safety that mypy would otherwise provide.
 

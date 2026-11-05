@@ -1372,7 +1372,7 @@ _Released 2025-03-20_
   Permissions panel showing all the permissions that membership in the
   group grants.
 - Channel administration permissions have been restructured to be
-  based on groups, with new settings for administrering channels,
+  based on groups, with new settings for administering channels,
   adding subscribers, removing them, and being able to join channels.
 - The access control model for message content in channels has been
   generalized to allow users to be able to join a private channel at
@@ -1578,7 +1578,7 @@ _Released 2025-03-20_
   which collection of messages to move.
 - Improved compose user mention typeahead to de-prioritize bots.
 - Improved internationalization (emoji picker categories, joining
-  lists of names without hardcoding `,` as a the separator, etc.)
+  lists of names without hardcoding `,` as the separator, etc.)
 - Fixed a bug where new user accounts joining an organization that had
   been idle in recent months would be created with very few messages
   in their combined feed.
@@ -2329,7 +2329,7 @@ _Released 2023-12-15_
 - Linkifiers are now processed in a defined, editable order.
 - Scheduled messages are now displayed when viewing the conversation
   where they will be sent.
-- Message edit history has a Shift+H keyboard shortuct and is now
+- Message edit history has a Shift+H keyboard shortcut and is now
   accessed via the mouse exclusively by clicking on EDITED/MOVED
   notices, simplifying the main message actions popover.
 - Users can now delete messages sent by bots that they control as
@@ -2747,7 +2747,7 @@ _Released 2023-05-31_
   been migrated from a custom format string to RFC 6570 URL
   templates. A database migration will automatically migrate existing
   linkifiers correctly in the vast majority of cases, but some fancier
-  linkfiers may require manual adjustment to generate correct URLs
+  linkifiers may require manual adjustment to generate correct URLs
   following this upgrade.
 - PostgreSQL 11 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)

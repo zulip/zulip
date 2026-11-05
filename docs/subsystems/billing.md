@@ -127,7 +127,7 @@ Here are some flows to test when upgrading a remote Zulip organization:
   `SELF_HOSTING_FREE_TRIAL_DAYS` to `30` days. You can change this
   value and other settings for your development environment only in
   `zproject/custom_dev_settings.py`, or secrets in
-  `zproject/dev-secrets.conf`. Note that this only provides free trail
+  `zproject/dev-secrets.conf`. Note that this only provides a free trial
   for the basic plan.
 
   - Using a valid card number like `4242 4242 4242 4242`, the

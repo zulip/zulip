@@ -318,7 +318,7 @@ then calls `send_event_on_commit`, passing the event and the list of
 users whose browser sessions should be notified as the second argument.
 The latter argument can be a single user (if the setting is a personal
 one, like time display format), members in a particular channel only or
-all active users in an realm.
+all active users in a realm.
 
 :::{tip}
 
