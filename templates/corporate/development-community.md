@@ -263,7 +263,7 @@ topic to a different channel](/help/move-content-to-another-channel).
 - [#learning](https://chat.zulip.org/#narrow/channel/92-learning) is
   for posting great learning resources one comes across.
 - [#off topic](https://chat.zulip.org/#narrow/channel/97-off-topic) is
-  is for occasional conversations not related to Zulip, usually things
+  for occasional conversations not related to Zulip, usually things
   of general interest to open-source communities.
 
 You can always find the description for the channel you’re reading at
