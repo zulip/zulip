@@ -463,6 +463,36 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
+test("always show users with unread direct messages", () => {
+    // Add enough offline users that maybe_shrink_list hides them.
+    for (const i of _.range(2000, 2700)) {
+        people.add_active_user({
+            user_id: i,
+            full_name: `Human ${i}`,
+            email: `person${i}@example.com`,
+        });
+        set_presence(i, "offline");
+    }
+    // Fred has no presence data, like a user inactive for a long time.
+    people.add_active_user(fred);
+
+    // Fred is offline, so he is hidden.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+
+    // Fred sends us a direct message that we haven't read yet.
+    unread.process_unread_message({
+        id: 1,
+        type: "private",
+        user_ids_string: fred.user_id.toString(),
+        unread: true,
+        mentioned: false,
+        mentioned_me_directly: false,
+    });
+
+    // Now Fred is shown, even though he is offline.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, fred.user_id]);
+});
+
 test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
