@@ -167,8 +167,11 @@ jobs:
       TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
     steps:
       - name: Checkout repository
+        # main, no el commit que disparó el pipeline: docker-image.yml
+        # puede haber escrito un tag de imagen más nuevo mientras tanto.
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: main
           persist-credentials: false
       - name: Authenticate to Google Cloud (Workload Identity Federation)
         uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
