@@ -67,9 +67,14 @@ module "monitoring" {
 
   project_id             = var.project_id
   name                   = var.name
-  images                 = { grafana = var.monitoring_images.grafana, frontend = var.monitoring_images.gmp_frontend }
   grafana_admin_password = module.secrets.values["grafana_admin_password"]
   labels                 = local.labels
+
+  images = {
+    grafana   = var.monitoring_images.grafana
+    frontend  = var.monitoring_images.gmp_frontend
+    collector = var.monitoring_images.otel_collector
+  }
 
   scrape_targets = {
     postgres-exporter = {
@@ -91,6 +96,11 @@ module "monitoring" {
       port      = 9200
     }
   }
+
+  trace_clients = [{
+    namespace = kubernetes_namespace_v1.zulip.metadata[0].name
+    app       = "zulip"
+  }]
 
   # El CRD PodMonitoring lo instala GKE al habilitar Managed Prometheus.
   depends_on = [module.gke]

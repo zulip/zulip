@@ -17,6 +17,7 @@ if settings.PRODUCTION:
     settings.SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 from zerver.lib.debug import interactive_debug_listen
+from zerver.lib.tracing import setup_tracing
 from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado.descriptors import set_current_port
 from zerver.tornado.event_queue import (
@@ -56,6 +57,7 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: Any) -> None:
         interactive_debug_listen()
+        setup_tracing("zulip-tornado")
         addrport = options["addrport"]
         assert isinstance(addrport, str)
 
