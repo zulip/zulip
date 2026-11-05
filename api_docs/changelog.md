@@ -1000,7 +1000,7 @@ No changes; API feature level used for the Zulip 11.0 release.
   integration URL parameter options. Previously, these optional URL
   parameters were included in the `config_options` field (see feature
   level 318 entry). The `config_options` object is now reserved for
-  configuration data that can be set when creating an bot user for a
+  configuration data that can be set when creating a bot user for a
   specific incoming webhook integration.
 
 **Feature level 402**
@@ -3321,7 +3321,7 @@ No changes; feature level used for Zulip 7.0 release.
 
 * [All REST API endpoints](/api/rest-error-handling#ignored-parameters):
   Implemented `ignored_parameters_unsupported` as a possible return value
-  in the JSON success response for all endpoints. This value is a array
+  in the JSON success response for all endpoints. This value is an array
   of any parameters that were sent in the request by the client that are
   not supported by the endpoint. Previously, unsupported parameters were
   silently ignored, except in the subset of endpoints which already
@@ -4581,7 +4581,7 @@ No changes; feature level used for Zulip 3.0 release.
   `realm_bot` events no longer contain an `email` field to identify
   the user; use the `user_id` field instead.  Previously, some (but
   not all) events of these types contained an `email` key in addition to
-  to `user_id`) for identifying the modified user.
+  `user_id` for identifying the modified user.
 * [`PATCH /users/{user_id}`](/api/update-user): The `is_admin` and
   `is_guest` parameters were removed in favor of the more general
   `role` parameter for specifying a change in user role.
