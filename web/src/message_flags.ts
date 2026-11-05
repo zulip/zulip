@@ -25,7 +25,26 @@ export function rewire__unread_batch_size(value: typeof _unread_batch_size): voi
 export const send_read = (function () {
     let queue: Message[] = [];
     let start: DebouncedFunc<() => void>;
+    let in_flight = false;
+    let in_flight_callbacks: (() => void)[] = [];
+
+    function notify_in_flight(): void {
+        const callbacks = in_flight_callbacks;
+        in_flight_callbacks = [];
+        for (const callback of callbacks) {
+            callback();
+        }
+    }
+
     function server_request(): void {
+        if (in_flight) {
+            return;
+        }
+
+        if (queue.length === 0) {
+            return;
+        }
+
         // Wait for server IDs before sending flags
         const real_msgs = queue.filter((msg) => !msg.locally_echoed);
         const real_msg_ids = real_msgs.map((msg) => msg.id);
@@ -40,16 +59,24 @@ export const send_read = (function () {
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
 
+        in_flight = true;
         void channel.post({
             url: "/json/messages/flags",
             data: {messages: JSON.stringify(real_msg_ids_batch), op: "add", flag: "read"},
             success() {
+                in_flight = false;
                 const batch_set = new Set(real_msg_ids_batch);
                 queue = queue.filter((message) => !batch_set.has(message.id));
+
+                notify_in_flight();
 
                 if (queue.length > 0) {
                     start();
                 }
+            },
+            error() {
+                in_flight = false;
+                notify_in_flight();
             },
         });
     }
@@ -61,7 +88,24 @@ export const send_read = (function () {
         start();
     }
 
-    return add;
+    function remove_from_queue(message_ids: number[]): void {
+        const ids_to_remove = new Set(message_ids);
+        queue = queue.filter((msg) => !ids_to_remove.has(msg.id));
+    }
+
+    function is_in_flight(): boolean {
+        return in_flight;
+    }
+
+    function wait_for_in_flight(callback: () => void): void {
+        if (!in_flight) {
+            callback();
+            return;
+        }
+        in_flight_callbacks.push(callback);
+    }
+
+    return {add, remove_from_queue, is_in_flight, wait_for_in_flight};
 })();
 
 export function mark_as_read(message_ids: number[]): void {
