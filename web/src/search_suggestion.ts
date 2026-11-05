@@ -22,6 +22,7 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -225,8 +226,13 @@ export function rewire_max_num_of_search_results(value: typeof max_num_of_search
     max_num_of_search_results = value;
 }
 
-function channel_matches_query(channel_name: string, q: string): boolean {
-    return common.phrase_match(q, channel_name);
+function channel_matches_query(channel_name: string, q: string, boundary_chars: string): boolean {
+    const lower_name = channel_name.toLowerCase();
+    const lower_query = q.toLowerCase();
+    return (
+        lower_name.startsWith(lower_query) ||
+        [...boundary_chars].some((separator) => lower_name.includes(separator + lower_query))
+    );
 }
 
 function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): boolean {
@@ -306,10 +312,13 @@ function compare_by_direct_message_group(
     };
 }
 
-function sorted_channel_name_matches(query: string): string[] {
+function sorted_channel_name_matches(
+    query: string,
+    boundary_chars = typeahead.word_boundary_chars,
+): string[] {
     const unsorted = stream_data
         .subscribed_stream_names()
-        .filter((channel_name) => channel_matches_query(channel_name, query));
+        .filter((channel_name) => channel_matches_query(channel_name, query, boundary_chars));
     return typeahead_helper.sorter(query, unsorted, (x) => x);
 }
 
@@ -338,16 +347,19 @@ function get_channel_suggestions(
     // typed (keeping a digit-named "7th floor" reachable via
     // "channel:7"). Name first, so a real sibling outranks a channel
     // that merely starts with the operand's id digits.
-    const queries = [last.operand];
+    let queries = [{query: last.operand, boundary_chars: typeahead.word_boundary_chars}];
     if (last.operator === "channel") {
         const sub = stream_data.get_sub_by_id_string(last.operand);
         if (sub !== undefined) {
-            queries.unshift(sub.name);
+            queries = [
+                {query: sub.name, boundary_chars: typeahead.word_boundary_chars},
+                {query: last.operand, boundary_chars: " "},
+            ];
         }
     }
     const matching_channel_names = new Set<string>();
-    for (const channel_query of queries) {
-        for (const channel_name of sorted_channel_name_matches(channel_query)) {
+    for (const {query, boundary_chars} of queries) {
+        for (const channel_name of sorted_channel_name_matches(query, boundary_chars)) {
             matching_channel_names.add(channel_name);
         }
     }
@@ -362,11 +374,12 @@ function get_channel_suggestions(
 function get_channel_multi_word_matches(
     query: string,
     negated: boolean,
+    boundary_chars = typeahead.word_boundary_chars,
 ): {strong: Suggestion[]; weak: Suggestion[]} {
     const strong: Suggestion[] = [];
     const weak: Suggestion[] = [];
     const query_lower = query.toLowerCase();
-    for (const channel_name of sorted_channel_name_matches(query)) {
+    for (const channel_name of sorted_channel_name_matches(query, boundary_chars)) {
         const suggestion = channel_name_suggestion(channel_name, negated);
         if (channel_name.toLowerCase().startsWith(query_lower)) {
             strong.push(suggestion);
@@ -1453,7 +1466,7 @@ function get_suggestions_for_multi_word_channel_or_topic(
             // two interpretations rarely both match; the Attacher dedups.
             const literal_query = `${prev.operand} ${last.operand}`;
             if (literal_query !== merged_term.operand) {
-                const literal_matches = get_channel_multi_word_matches(literal_query, negated);
+                const literal_matches = get_channel_multi_word_matches(literal_query, negated, " ");
                 strong = [...strong, ...literal_matches.strong];
                 weak = [...weak, ...literal_matches.weak];
             }
