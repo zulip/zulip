@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
 "PO-Revision-Date: 2026-03-31 19:47+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Welsh <https://hosted.weblate.org/projects/zulip/django/cy/>\n"
@@ -364,6 +364,7 @@ msgid "Method not allowed (405)"
 msgstr "Ni chaniateir y dull (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Gwall gweinydd mewnol"
 
@@ -722,17 +723,14 @@ msgid "Open communities directory"
 msgstr "Agor cyfeiriadur cymunedau"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Hidlo yn ôl categori"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "I gyd"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Categorïau"
 
@@ -883,6 +881,31 @@ msgstr "Dolen"
 msgid "Ship wheel"
 msgstr ""
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+#, fuzzy
+#| msgid "Getting started"
+msgid "Get started"
+msgstr "Dechrau arni"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "A Zulip channel with conversations organized by topic"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -928,12 +951,6 @@ msgid ""
 msgstr ""
 "Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y <a href=\"/help/"
 "\">Canolfan gymorth Zulip</a>."
-
-#: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
-msgid "Get started"
-msgstr "Dechrau arni"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1027,13 +1044,14 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 
 #: templates/zerver/app/index.html
@@ -1553,11 +1571,6 @@ msgstr "Cau"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "Diweddariad"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3050,6 +3063,10 @@ msgid "Why Zulip"
 msgstr "Pam Zulip"
 
 #: templates/zerver/footer.html
+msgid "Switch from Slack"
+msgstr ""
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Nodweddion"
 
@@ -3233,51 +3250,6 @@ msgstr "Polisi preifatrwydd"
 
 #: templates/zerver/footer.html
 msgid "Website attributions"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Dros %(integrations_count_display)s integreiddiadau brodorol."
-
-#: templates/zerver/integrations/catalog.html
-#, fuzzy
-#| msgid ""
-#| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
-#| "and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"A channoedd yn fwy trwy <a href=\"/integrations/doc/zapier\">Zapier</a> ac "
-"<a href=\"/integrations/doc/ifttt\">IFTTT</a> ."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Chwilio am integreiddiadau"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Integreiddiadau personol"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Webhooks sy'n dod i mewn"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Bots rhyngweithiol"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
 msgstr ""
 
 #: templates/zerver/invalid_email.html
@@ -3626,6 +3598,22 @@ msgid ""
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may then close this window."
+msgid "You can now close this tab."
+msgstr "Yna gallwch chi gau'r ffenestr hon."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Ailosod eich cyfrinair"
@@ -3699,6 +3687,10 @@ msgid ""
 "instructions for the <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
+msgstr ""
+
+#: templates/zerver/slack_import.html
+msgid "Start over"
 msgstr ""
 
 #: templates/zerver/slack_import.html
@@ -3870,15 +3862,15 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "Derbyniodd {user} eich gwahoddiad i ymuno â Zulip!"
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
-msgstr ""
-
-#: zerver/actions/create_user.py
 #, fuzzy
 #| msgid "Cannot deactivate the only {entity}."
 msgid "Cannot reactivate a deleted user"
 msgstr "Methu dadactifadu'r unig {entity}."
+
+#: zerver/actions/create_user.py
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgstr ""
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -3981,7 +3973,9 @@ msgid "Direct messages cannot have topics."
 msgstr ""
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Propagate_mode annilys heb olygu pwnc"
 
 #: zerver/actions/message_edit.py
@@ -4055,6 +4049,12 @@ msgid ""
 "{user}."
 msgstr ""
 "{changed_messages_count} symudwyd negeseuon yma o {old_location} gan {user}."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message has passed"
+msgid "The time limit for moving this topic has passed."
+msgstr "Mae'r terfyn amser ar gyfer golygu'r neges hon wedi mynd heibio"
 
 #: zerver/actions/message_edit.py
 #, fuzzy
@@ -4137,10 +4137,6 @@ msgid ""
 msgstr ""
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr ""
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Anfonodd rhaglennydd API gynnwys JSON annilys"
 
@@ -4172,6 +4168,13 @@ msgstr "Mae emoji personol gyda'r enw hwn eisoes yn bodoli."
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
+msgstr ""
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zerver/actions/realm_linkifiers.py
@@ -4387,7 +4390,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Nid yw'r pwynt terfyn hwn yn derbyn ceisiadau bot."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "Rhaid bod yn weinyddwr gweinydd"
 
 #: zerver/decorator.py
@@ -4488,24 +4493,6 @@ msgstr ""
 "iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
-msgid "Challenges are not enabled."
-msgstr "Nid yw bots wedi'u hymgorffori yn cael eu galluogi."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Cyfrinair newydd"
 
@@ -4582,6 +4569,24 @@ msgstr "Digwyddodd gwall wrth ddileu'r atodiad. Rho gynnig Arni eto'n hwyrach."
 msgid "Message must have recipients!"
 msgstr "Rhaid bod gan y neges dderbynwyr!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Nid yw bots wedi'u hymgorffori yn cael eu galluogi."
+
 #: zerver/lib/channel_folders.py
 #, fuzzy
 #| msgid "Content can't be empty"
@@ -4602,6 +4607,19 @@ msgstr ""
 #| msgid "Invalid data export ID"
 msgid "Invalid channel folder ID"
 msgstr "ID allforio data annilys"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr ""
 
 #: zerver/lib/demo_organizations.py
 #, fuzzy
@@ -4692,7 +4710,15 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
+msgstr ""
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
 msgstr ""
 
 #: zerver/lib/email_notifications.py
@@ -5145,68 +5171,6 @@ msgstr ""
 msgid "Invalid external account type"
 msgstr "Math o gyfrif allanol annilys"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Fframweithiau integreiddio"
-
-#: zerver/lib/integrations.py
-#, fuzzy
-#| msgid "Billing"
-msgid "Video calling"
-msgstr "Bilio"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Integreiddio parhaus"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Cefnogaeth i gwsmeriaid"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Defnyddio"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Adloniant"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Cyfathrebu"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Ariannol"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Marchnata"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Amrywiol"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Rheoli prosiect"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Cynhyrchedd"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Rheoli fersiwn"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "Rhaid i'r neges beidio â bod yn wag"
@@ -5261,6 +5225,11 @@ msgstr ""
 #| msgid "{full_name} mentioned you:"
 msgid "{fullname} moderation"
 msgstr "Soniodd {full_name} amdanoch chi:"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -5657,10 +5626,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "Soniodd {full_name} am bawb:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Neges newydd"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr ""
 
@@ -5728,6 +5693,10 @@ msgstr "Nid yw '{email}' bellach yn defnyddio Zulip."
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
 #| msgid "{var_name} is too long (limit: {max_length} characters)"
@@ -5766,21 +5735,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -6188,6 +6144,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Enw bot gwreiddio annilys."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Data cyfluniad annilys!"
 
@@ -6208,7 +6168,7 @@ msgstr ""
 msgid "No such bot"
 msgstr "Dim bot o'r fath"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Dim defnyddiwr o'r fath"
 
@@ -6662,6 +6622,12 @@ msgstr "Nid oedd digwyddiad {event_id} yn y ciw hwn"
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Ni ddaethpwyd o hyd i sesiwn"
+
 #: zerver/views/antispam.py
 #, fuzzy
 #| msgid "Failed to create Zoom call"
@@ -6850,17 +6816,11 @@ msgstr ""
 msgid "Message reporting is not enabled in this organization."
 msgstr "Ni chaniateir adlewyrchu Zephyr yn y sefydliad hwn"
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Anfonwr ar goll"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Ni chaniateir adlewyrchu gydag IDau defnyddiwr sy'n eu derbyn"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Neges annilys wedi'i adlewyrchu"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Methu rhoi neges"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7118,6 +7078,27 @@ msgid "Invalid playground"
 msgstr "Maes chwarae annilys"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -7147,6 +7128,11 @@ msgstr ""
 
 #: zerver/views/registration.py
 msgid "Finalizing import…"
+msgstr ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
 msgstr ""
 
 #: zerver/views/registration.py
@@ -7202,10 +7188,6 @@ msgstr ""
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Dim byd i wneud. Nodwch o leiaf un o 'ychwanegu' neu 'dileu'."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7214,6 +7196,16 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr ""
 
 #: zerver/views/streams.py
@@ -7391,6 +7383,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr "Dim byd i wneud. Nodwch o leiaf un o 'ychwanegu' neu 'dileu'."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "Mae newidiadau Afatar yn anabl yn y sefydliad hwn."
@@ -7505,6 +7501,12 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr "Wedi methu newid perchennog, ni all bots fod yn berchen ar bots eraill"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Enw bot gwreiddio annilys."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7515,10 +7517,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Nid yw bots wedi'u hymgorffori yn cael eu galluogi."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Enw bot gwreiddio annilys."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -7641,13 +7639,6 @@ msgstr "Gwall: paramedr sianelau_map_to_topics heblaw 0 neu 1"
 #: zerver/webhooks/wordpress/view.py
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
-msgstr ""
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py
@@ -7799,6 +7790,89 @@ msgstr "OTP annilys"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Methu defnyddio mobile_flow_otp a desktop_flow_otp gyda'i gilydd."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Dros %(integrations_count_display)s integreiddiadau brodorol."
+
+#, fuzzy
+#~| msgid ""
+#~| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</"
+#~| "a> and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "A channoedd yn fwy trwy <a href=\"/integrations/doc/zapier\">Zapier</a> "
+#~ "ac <a href=\"/integrations/doc/ifttt\">IFTTT</a> ."
+
+#~ msgid "Search integrations"
+#~ msgstr "Chwilio am integreiddiadau"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Integreiddiadau personol"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Webhooks sy'n dod i mewn"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Bots rhyngweithiol"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Fframweithiau integreiddio"
+
+#, fuzzy
+#~| msgid "Billing"
+#~ msgid "Video calling"
+#~ msgstr "Bilio"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Integreiddio parhaus"
+
+#~ msgid "Customer support"
+#~ msgstr "Cefnogaeth i gwsmeriaid"
+
+#~ msgid "Deployment"
+#~ msgstr "Defnyddio"
+
+#~ msgid "Entertainment"
+#~ msgstr "Adloniant"
+
+#~ msgid "Communication"
+#~ msgstr "Cyfathrebu"
+
+#~ msgid "Financial"
+#~ msgstr "Ariannol"
+
+#~ msgid "Marketing"
+#~ msgstr "Marchnata"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Amrywiol"
+
+#~ msgid "Project management"
+#~ msgstr "Rheoli prosiect"
+
+#~ msgid "Productivity"
+#~ msgstr "Cynhyrchedd"
+
+#~ msgid "Version control"
+#~ msgstr "Rheoli fersiwn"
+
+#~ msgid "New message"
+#~ msgstr "Neges newydd"
+
+#~ msgid "Missing sender"
+#~ msgstr "Anfonwr ar goll"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Ni chaniateir adlewyrchu gydag IDau defnyddiwr sy'n eu derbyn"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Neges annilys wedi'i adlewyrchu"
 
 #, fuzzy
 #~| msgid "Already has an account."

@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
 "PO-Revision-Date: 2026-03-31 19:42+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Mongolian <https://hosted.weblate.org/projects/zulip/django/"
@@ -370,6 +370,7 @@ msgid "Method not allowed (405)"
 msgstr "Энэ аргыг зөвшөөрөөгүй (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Сервер дээрх алдаа"
 
@@ -735,17 +736,14 @@ msgid "Open communities directory"
 msgstr "Олон нийтийн лавлахыг нээх"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Ангилалаар нь шүүх"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "Бүгд"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Ангиллууд"
 
@@ -896,6 +894,33 @@ msgstr "Холбоос"
 msgid "Ship wheel"
 msgstr ""
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+#, fuzzy
+#| msgid "Getting started"
+msgid "Get started"
+msgstr "Эхлэх"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#, fuzzy
+#| msgid "Keep your conversations organized with topics"
+msgid "A Zulip channel with conversations organized by topic"
+msgstr "Хэлэлцэж байгаа санаануудаа эмх цэгцтэй байлгаарай"
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -941,12 +966,6 @@ msgid ""
 msgstr ""
 "Та байнга асуудаг асуултуудын хариултыг дараах хэсгээс олох боломжтой <a "
 "href=\"/help/\">Оффис чат тусламжийн төв</a>."
-
-#: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
-msgid "Get started"
-msgstr "Эхлэх"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1038,13 +1057,14 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 
 #: templates/zerver/app/index.html
@@ -1579,11 +1599,6 @@ msgstr "Хаах"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "Өөрчлөх"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3093,6 +3108,10 @@ msgid "Why Zulip"
 msgstr "Why Zulip"
 
 #: templates/zerver/footer.html
+msgid "Switch from Slack"
+msgstr ""
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Онцлог зүйлс"
 
@@ -3279,51 +3298,6 @@ msgstr "Нууцлалын дүрэм"
 #: templates/zerver/footer.html
 msgid "Website attributions"
 msgstr "Вэб сайтын аттрибутууд"
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "%(integrations_count_display)s гаруй интеграци."
-
-#: templates/zerver/integrations/catalog.html
-#, fuzzy
-#| msgid ""
-#| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
-#| "and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"Мөн өөр олон зуун <a href=\"/integrations/doc/zapier\">Zapier</a> болон <a "
-"href=\"/integrations/doc/ifttt\">IFTTT</a>."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Хайлтын нэгтгэлүүд"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Захиалгат интеграци"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Хүсэлт илгээж буй webhooks"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Интерактив ботууд"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
-msgstr ""
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3672,6 +3646,22 @@ msgid ""
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "Та энэ цонхыг хааж болно."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Нууц үгээ шинэчлэх"
@@ -3746,6 +3736,10 @@ msgid ""
 "instructions for the <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
+msgstr ""
+
+#: templates/zerver/slack_import.html
+msgid "Start over"
 msgstr ""
 
 #: templates/zerver/slack_import.html
@@ -3925,15 +3919,15 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} таны Zulip-д нэгдэх хүсэлтийг хүлээн авлаа!"
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
-msgstr ""
-
-#: zerver/actions/create_user.py
 #, fuzzy
 #| msgid "Cannot deactivate the only {entity}."
 msgid "Cannot reactivate a deleted user"
 msgstr "Зөвхөн {entity}-г идэвхгүй болгох боломжгүй."
+
+#: zerver/actions/create_user.py
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgstr ""
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4035,7 +4029,9 @@ msgid "Direct messages cannot have topics."
 msgstr "Хэрэглэгч рүү шууд бичсэн чат сэдэв болгон нэрлэх боломжгүй."
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Санааны засваргүйгээр түгээх_горим буруу байна"
 
 #: zerver/actions/message_edit.py
@@ -4108,6 +4104,12 @@ msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr "{changed_messages_count} мессежийг {old_location}-с {user} энд зөөсөн."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message has passed"
+msgid "The time limit for moving this topic has passed."
+msgstr "Энэ мессежийг засварлах хугацаа өнгөрсөн байна"
 
 #: zerver/actions/message_edit.py
 #, fuzzy
@@ -4193,10 +4195,6 @@ msgid ""
 msgstr ""
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr ""
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: API программист хүчингүй JSON контент илгээсэн"
 
@@ -4228,6 +4226,13 @@ msgstr "Адил нэртэй эможи аль хэдийн нэмэгдсэн 
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
+msgstr ""
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zerver/actions/realm_linkifiers.py
@@ -4445,7 +4450,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "БОТ-оос илгээсэн хүсэлтийг тухайн хэрэглэгч зөвшөөрсөнгүй."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "Серверийн администратор байх ёстой"
 
 #: zerver/decorator.py
@@ -4544,24 +4551,6 @@ msgstr ""
 "хүсээд дахин оролдоно уу."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
-msgid "Challenges are not enabled."
-msgstr "Суулгасан ботуудыг идэвхжүүлээгүй байна."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Шинэ нууц үг"
 
@@ -4638,6 +4627,24 @@ msgstr "Хавсралтыг устгах явцад алдаа гарлаа. Д
 msgid "Message must have recipients!"
 msgstr "Мессеж нь хүлээн авагчтай байх ёстой!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Суулгасан ботуудыг идэвхжүүлээгүй байна."
+
 #: zerver/lib/channel_folders.py
 #, fuzzy
 #| msgid "Content can't be empty"
@@ -4658,6 +4665,19 @@ msgstr ""
 #| msgid "Invalid data export ID"
 msgid "Invalid channel folder ID"
 msgstr "Дата экспортын ID буруу байна"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr ""
 
 #: zerver/lib/demo_organizations.py
 #, fuzzy
@@ -4755,7 +4775,15 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
+msgstr ""
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
 msgstr ""
 
 #: zerver/lib/email_notifications.py
@@ -5218,68 +5246,6 @@ msgstr ""
 msgid "Invalid external account type"
 msgstr "Буруу гадаад аккаунтын төрөл"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Integration frameworks"
-
-#: zerver/lib/integrations.py
-#, fuzzy
-#| msgid "Video call ended"
-msgid "Video calling"
-msgstr "Видео дуудлага дууссан"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Тасралтгүй интеграци"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Хэрэглэгчийн дэмжлэг"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Байршил"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Entertainment"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Communication"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Санхүү"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr "Хүний нөөц"
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Mаркетинг"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Бусад"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr "Ажиглалт"
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Төслийн менежмент"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Productivity"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Хувилбарын хяналт"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "Мессеж хоосон байж болохгүй"
@@ -5334,6 +5300,11 @@ msgstr ""
 #| msgid "{full_name} mentioned you:"
 msgid "{fullname} moderation"
 msgstr "{full_name} таныг дурдсан:"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -5737,10 +5708,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} хүн бүрийг дурдсан:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Шинэ мессеж"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr ""
 
@@ -5806,6 +5773,10 @@ msgstr "'{email}' нь Zulip ашиглахаа больсон."
 msgid "You can't send direct messages outside of your organization."
 msgstr "Та бүлгээс гадуур шууд мессежүүд илгээх боломжгүй."
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
 #| msgid "{var_name} is too long (limit: {max_length} characters)"
@@ -5844,21 +5815,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -6271,6 +6229,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Суулгасан ботын нэр буруу."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Буруу тохиргооны өгөгдөл!"
 
@@ -6291,7 +6253,7 @@ msgstr ""
 msgid "No such bot"
 msgstr "Ийм бот байхгүй"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Ийм хэрэглэгч байхгүй"
 
@@ -6752,6 +6714,12 @@ msgstr "{event_id} үйл ажиллагаа нь тухайн дараалал�
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Үйл явдлын дарааллын ID буруу байна: {queue_id}"
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Холболт салсан"
+
 #: zerver/views/antispam.py
 #, fuzzy
 #| msgid "Failed to create Zoom call"
@@ -6944,17 +6912,11 @@ msgstr "Бүлэг үүсгэх холбоос шаардлагатай"
 msgid "Message reporting is not enabled in this organization."
 msgstr "Zephyr mirroring нь энэхүү бүлэг зөвшөөрөгдөөгүй байна."
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Илгээгч алга байна"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Хүлээн авагчийн хэрэглэгчийн ID -г харахыг зөвшөөрөхгүй"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Мессеж хуулбарлахад алдаа гарлаа"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Мессежийг үзүүлэх боломжгүй"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7213,6 +7175,25 @@ msgid "Invalid playground"
 msgstr "Invalid playground"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -7242,6 +7223,11 @@ msgstr ""
 
 #: zerver/views/registration.py
 msgid "Finalizing import…"
+msgstr ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
 msgstr ""
 
 #: zerver/views/registration.py
@@ -7299,11 +7285,6 @@ msgstr ""
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr ""
-"Хийх зүйлгүй. \"Нэмэх\" эсвэл \"устгах\"-ын дор хаяж нэгийг зааж өгнө үү."
-
 #: zerver/views/streams.py
 #, fuzzy, python-brace-format
 #| msgid "{user_full_name} added you to the group {group_name}."
@@ -7314,6 +7295,18 @@ msgstr "{user_full_name} таныг {group_name} группд нэмсэн."
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
 msgstr ""
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} added you to the group {group_name}."
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr "{user_full_name} таныг {group_name} группд нэмсэн."
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} added you to the group {group_name}."
+msgid "{user_full_name} unsubscribed you from the following channels:"
+msgstr "{user_full_name} таныг {group_name} группд нэмсэн."
 
 #: zerver/views/streams.py
 #, python-brace-format
@@ -7490,6 +7483,11 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "{group_id} хэрэглэгчийн групп нь энэ группын дэд групп биш."
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr ""
+"Хийх зүйлгүй. \"Нэмэх\" эсвэл \"устгах\"-ын дор хаяж нэгийг зааж өгнө үү."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "Энэ байгууллагад \"аватар\" -ын өөрчлөлтийг идэвхгүй болгосон."
@@ -7607,6 +7605,12 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr "Эзэмшигчийг сольж чадсангүй, ботууд бусад ботуудыг эзэмших боломжгүй"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Суулгасан ботын нэр буруу."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7617,10 +7621,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Суулгасан ботуудыг идэвхжүүлээгүй байна."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Суулгасан ботын нэр буруу."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -7746,13 +7746,6 @@ msgstr "Алдаа: 0 эсвэл 1-ээс өөр channels_map_to_topics пара
 #: zerver/webhooks/wordpress/view.py
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
-msgstr ""
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py
@@ -7904,6 +7897,95 @@ msgstr "OTP буруу"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "mobile_flow_otp болон desktop_flow_otp -ийг хамт ашиглах боломжгүй."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "%(integrations_count_display)s гаруй интеграци."
+
+#, fuzzy
+#~| msgid ""
+#~| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</"
+#~| "a> and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "Мөн өөр олон зуун <a href=\"/integrations/doc/zapier\">Zapier</a> болон "
+#~ "<a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+
+#~ msgid "Search integrations"
+#~ msgstr "Хайлтын нэгтгэлүүд"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Захиалгат интеграци"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Хүсэлт илгээж буй webhooks"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Интерактив ботууд"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Integration frameworks"
+
+#, fuzzy
+#~| msgid "Video call ended"
+#~ msgid "Video calling"
+#~ msgstr "Видео дуудлага дууссан"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Тасралтгүй интеграци"
+
+#~ msgid "Customer support"
+#~ msgstr "Хэрэглэгчийн дэмжлэг"
+
+#~ msgid "Deployment"
+#~ msgstr "Байршил"
+
+#~ msgid "Entertainment"
+#~ msgstr "Entertainment"
+
+#~ msgid "Communication"
+#~ msgstr "Communication"
+
+#~ msgid "Financial"
+#~ msgstr "Санхүү"
+
+#~ msgid "Human resources"
+#~ msgstr "Хүний нөөц"
+
+#~ msgid "Marketing"
+#~ msgstr "Mаркетинг"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Бусад"
+
+#~ msgid "Monitoring"
+#~ msgstr "Ажиглалт"
+
+#~ msgid "Project management"
+#~ msgstr "Төслийн менежмент"
+
+#~ msgid "Productivity"
+#~ msgstr "Productivity"
+
+#~ msgid "Version control"
+#~ msgstr "Хувилбарын хяналт"
+
+#~ msgid "New message"
+#~ msgstr "Шинэ мессеж"
+
+#~ msgid "Missing sender"
+#~ msgstr "Илгээгч алга байна"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Хүлээн авагчийн хэрэглэгчийн ID -г харахыг зөвшөөрөхгүй"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Мессеж хуулбарлахад алдаа гарлаа"
 
 #, fuzzy
 #~| msgid "Already has an account."
