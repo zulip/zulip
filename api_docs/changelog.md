@@ -187,8 +187,18 @@ format used by the Zulip server that they are interacting with.
 
 No changes; start of Zulip 13.0 development branch.
 
-Feature level 501 reserved for future use in 12.x maintenance
-releases.
+## Changes in Zulip 12.4
+
+**Feature level 501**
+
+* `PATCH /bots/{bot_id}`: A bot's owner can no longer change the bot's
+  owner, unless they are an organization administrator. Backported change
+  from feature level 516.
+
+* [`POST /users/{user_id}/reactivate`](/api/reactivate-user): Reactivating
+  a bot whose owner is deactivated, which makes the acting user the bot's
+  owner, now also regenerates the bot's API key. Backported change from
+  feature level 516.
 
 ## Changes in Zulip 12.1
 
