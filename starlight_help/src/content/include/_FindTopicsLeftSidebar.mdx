@@ -1,0 +1,29 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import SearchIcon from "~icons/zulip-icon/search";
+
+<Tabs>
+  <TabItem label="In the left sidebar">
+    <Steps>
+      1. Type the name of the topic you are looking for in the **Filter left sidebar** box at the top of the left sidebar. Initially, this will match topics in your current channel.
+
+      1. Expand your search to topics in all of your channels by selecting **Search all topics for '...'** just below the filter.
+    </Steps>
+
+    <ZulipTip>
+      You can also start your search with `topic:` to return topic matches across all channels.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="In a specific channel">
+    <Steps>
+      1. Click the channel name in the left sidebar.
+
+      1. Click the search icon (<SearchIcon />) next to the channel name to access the **Filter topics** box.
+    </Steps>
+  </TabItem>
+</Tabs>
+
+You can also [filter topics by whether they are resolved](#filter-by-whether-topics-are-resolved) or [filter topics by whether they are followed](#filter-by-whether-topics-are-followed).
