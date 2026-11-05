@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:30+0000\n"
-"Last-Translator: Sjur N Moshagen <sjurnm@mac.com>\n"
+"PO-Revision-Date: 2026-08-30 12:51+0000\n"
+"Last-Translator: Victor Okpe <veokpe@pm.me>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/zulip/"
 "django/nb_NO/>\n"
 "Language: no\n"
@@ -17,27 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "Ikke tillatt for gjestebrukere"
 
 #: analytics/views/stats.py
 msgid "Invalid organization"
-msgstr ""
+msgstr "Ugyldig organisasjon"
 
 #: analytics/views/stats.py
 msgid "Public channels"
-msgstr ""
+msgstr "Offentlige kanaler"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "Private kanaler"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
-msgstr ""
+msgstr "Direktemeldinger"
 
 #: analytics/views/stats.py
 msgid "Group direct messages"
@@ -70,6 +70,10 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
+"Organisasjonen din har ingen gjenværende Zulip-lisenser og kan ikke lenger "
+"akseptere nye brukere. Vennligst [øk mengden lisenser]({billing_page_link}) "
+"eller [deaktiver inaktive bruker]({deactivate_user_help_page_link}) for å la "
+"nye brukere bli med."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -78,6 +82,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
+"Organisasjonen din har kun en gjenværende Zulip-lisens. Du kan [øke mengden "
+"lisenser]({billing_page_link}) eller [deaktivere inaktive brukere]("
+"{deactivate_user_help_page_link}) for å la mer enn en ny bruker bli med."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -86,6 +93,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
+"Organisasjonen din har kun to gjenværende Zulip-lisenser. Du kan [øke "
+"mengden lisenser]({billing_page_link}) eller [deaktivere inaktive brukere]("
+"{deactivate_user_help_page_link}) for å la mer enn to nye brukere bli med."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -94,6 +104,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
+"Organisasjonen din har kun tre gjenværende Zulip-lisenser. Du kan [øke "
+"mengden lisenser]({billing_page_link}) eller [deaktivere inaktive brukere]("
+"{deactivate_user_help_page_link}) for å la mer enn tre nye brukere bli med."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -103,22 +116,30 @@ msgid ""
 "[number of licenses for the current and next billing period]"
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
+"En ny bruker ({email}) kunne ikke bli med fordi organisasjonen din ikke har "
+"nok Zulip-lisenser. For å la nye brukere bli med, sørg for at [tallet på "
+"lisenser for den inneværende og neste faktureringsperioden]("
+"{billing_page_link}) er større en det nåværende antallet brukere."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
 msgstr ""
+"Organisasjonen din har ikke nok Zulip-lisenser. Invitasjonene ble ikke sendt "
+"ut."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"Organisasjonen din har ikke nok Zulip-lisenser til å endre en gjestebrukers "
+"rolle."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "Registrering er deaktivert"
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
@@ -130,6 +151,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"Du må kjøpe lisenser for alle aktive brukere i organisasjonen din (minst "
+"{min_licenses})."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -137,41 +160,45 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
+"Regninger med mer enn {max_licenses} lisenser kan ikke behandles fra denne "
+"siden. Kontakt {email} for å fullføre oppgraderingen."
 
 #: corporate/lib/stripe.py
 msgid "No payment method on file."
-msgstr ""
+msgstr "Ingen betalingsmetode angitt."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr ""
+msgstr "{brand} slutter om {last4}"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "Ukjent betalingsmetode. Vennligst kontakt {email}."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr ""
+msgstr "Noe gikk galt. Vennligst kontakt {email}."
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please reload the page."
-msgstr ""
+msgstr "Noe gikk galt. Vennligst last inn siden på nytt."
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "Noe gikk galt. Vennligst vent noen sekunder og prøv på nytt."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Vennligst legg til et betalingsmiddel før du begynner den gratis "
+"prøveperioden din."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Legg til et betalingsmiddel for å planlegge oppgraderingen."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -226,7 +253,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py
 msgid "Nothing to change."
-msgstr ""
+msgstr "Ingenting å endre."
 
 #: corporate/lib/stripe.py
 msgid "No customer for this organization!"
@@ -253,6 +280,11 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
+"Organisasjonen deres' søknad om sponset hosting har blitt innvilget! Dere "
+"har blitt oppgradert til {plan_name}, uten kostnad. {emoji}\n"
+"\n"
+"Hvis dere kan {begin_link}angi Zulip som sponsor på nettsiden deres"
+"{end_link} setter vi stor pris på det!"
 
 #: corporate/views/billing_page.py
 msgid "Parameter 'confirmed' is required"
@@ -275,11 +307,11 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Brukerkonto finnes ikke ennå."
 
 #: corporate/views/remote_billing_page.py
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Du må akseptere tjenestevilkårene for å fortsette."
 
 #: corporate/views/remote_billing_page.py
 msgid ""
@@ -297,11 +329,11 @@ msgstr ""
 #: templates/404.html templates/4xx.html
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html
 msgid "Error"
-msgstr ""
+msgstr "Feil"
 
 #: templates/404.html
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Side ikke funnet (404)"
 
 #: templates/404.html templates/4xx.html
 #, python-format
@@ -323,6 +355,7 @@ msgstr ""
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
 msgstr ""
+"Sørg for at nettleseren din tillater informasjonskapsler for denne nettsiden."
 
 #: templates/4xx.html
 msgid ""
@@ -336,7 +369,7 @@ msgstr ""
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
 msgid "Internal server error"
-msgstr ""
+msgstr "Intern serverfeil"
 
 #: templates/500.html
 msgid ""

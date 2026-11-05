@@ -24,8 +24,9 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-26 05:26+0000\n"
-"Last-Translator: Yidan Wang <wangyidan@westlake.edu.cn>\n"
+"PO-Revision-Date: 2026-08-13 11:01+0000\n"
+"Last-Translator: reducedradius "
+"<137701630+flytothehighest@users.noreply.github.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/zulip/django/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -865,13 +866,11 @@ msgstr "开源项目的Zulip指南"
 
 #: templates/corporate/role/engineers.html
 msgid "Dog in glasses with a laptop"
-msgstr ""
+msgstr "戴着眼镜并使用笔记本的狗"
 
 #: templates/corporate/role/engineers.html
-#, fuzzy
-#| msgid "Create your Zulip organization"
 msgid "Screenshot of Zulip conversation"
-msgstr "创建您的 Zulip 组织"
+msgstr "Zulip 对话的屏幕截图"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip conversation with sentry bot"
@@ -890,14 +889,12 @@ msgid "Two hands assembling puzzle"
 msgstr ""
 
 #: templates/corporate/role/engineers.html
-#, fuzzy
-#| msgid "Messages sent over time"
 msgid "Message with code"
-msgstr "信息发送时间"
+msgstr "包含代码的消息"
 
 #: templates/corporate/role/engineers.html
 msgid "Lightning"
-msgstr ""
+msgstr "闪电"
 
 #: templates/corporate/role/engineers.html
 #: zerver/models/custom_profile_fields.py
@@ -953,8 +950,6 @@ msgid ""
 msgstr "您可以在常见问题中找到答案。 <a href=\"/help/\">Zulip帮助中心</a>."
 
 #: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
 msgid "Get started"
 msgstr "入门"
 
@@ -1135,10 +1130,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/create_realm/create_demo_realm.html
-#, fuzzy
-#| msgid "Try Zulip now"
 msgid "Try Zulip"
-msgstr "现在尝试 Zulip"
+msgstr "尝试 Zulip"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid "Create a new organization"
@@ -3911,7 +3904,7 @@ msgstr ""
 
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
-msgstr "无效的命令映射"
+msgstr "无效的命令映射。"
 
 #: zerver/actions/create_realm.py
 msgid "Questions and discussion about using Zulip."
@@ -4030,11 +4023,11 @@ msgstr ""
 
 #: zerver/actions/invites.py
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "一些邮箱没有通过验证，因此我们没有发送邀请"
+msgstr "一些邮箱没有通过验证，因此我们没有发送邀请。"
 
 #: zerver/actions/invites.py
 msgid "We weren't able to invite anyone."
-msgstr "没有邀请任何人"
+msgstr "没有邀请任何人。"
 
 #: zerver/actions/message_edit.py zerver/views/scheduled_messages.py
 msgid "Nothing to change"
@@ -4234,7 +4227,7 @@ msgstr ""
 
 #: zerver/actions/realm_emoji.py zerver/views/realm_emoji.py
 msgid "A custom emoji with this name already exists."
-msgstr "自定义表情名称已经存在"
+msgstr "自定义表情名称已经存在。"
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
@@ -4511,7 +4504,7 @@ msgstr "已保留子域。请选择其他子域。"
 
 #: zerver/forms.py zerver/lib/email_validation.py zilencer/views.py
 msgid "Please use your real email address."
-msgstr "请使用真实的邮件地址注册"
+msgstr "请使用真实的邮件地址注册。"
 
 #: zerver/forms.py
 #, python-brace-format
@@ -4522,7 +4515,7 @@ msgstr "您尝试使用{email}加入的组织不存在。"
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "请查询来自组织管理员{email}的邀请"
+msgstr "请查询来自组织管理员{email}的邀请。"
 
 #: zerver/forms.py
 msgid "Can't join the organization: password authentication is not enabled."
@@ -4537,7 +4530,7 @@ msgstr "您的电子邮箱地址 {email} 不在允许在该组织中注册账号
 
 #: zerver/forms.py
 msgid "Email addresses containing + are not allowed in this organization."
-msgstr "在这个组织中电子邮件地址不能包含+"
+msgstr "在这个组织中电子邮件地址不能包含+。"
 
 #: zerver/forms.py
 msgid ""
@@ -4717,11 +4710,11 @@ msgstr "域名不能以点(.)为开始或结束"
 
 #: zerver/lib/domains.py
 msgid "Consecutive '.' are not allowed."
-msgstr "不允许连续的\".\"（dot）"
+msgstr "不允许连续的\".\"（dot）。"
 
 #: zerver/lib/domains.py
 msgid "Subdomains cannot start or end with a '-'."
-msgstr "子域名不能以“-”开头或结尾"
+msgstr "子域名不能以“-”开头或结尾。"
 
 #: zerver/lib/domains.py
 msgid "Domain can only have letters, numbers, '.' and '-'s."

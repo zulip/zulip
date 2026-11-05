@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:01+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2026-08-03 09:26+0000\n"
+"Last-Translator: Rookie Nguyễn <nguyenquocthang2004@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/zulip/django/"
 "vi/>\n"
 "Language: vi\n"
@@ -21,11 +21,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "Truy cập bị từ chối cho người dùng khách"
 
 #: analytics/views/stats.py
 msgid "Invalid organization"
@@ -33,11 +33,11 @@ msgstr "Nhóm đã ngừng hoạt động"
 
 #: analytics/views/stats.py
 msgid "Public channels"
-msgstr ""
+msgstr "Các kênh công cộng"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "Các kênh riêng tư"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
