@@ -567,6 +567,17 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
         checker("todo data", todo_data)
         return
 
+    if todo_data["type"] == "reorder_tasks":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+                ("after_key", check_none_or(check_string)),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
