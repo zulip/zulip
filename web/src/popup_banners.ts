@@ -47,6 +47,27 @@ const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     close_button: true,
     custom_classes: "connection-error-banner popup-banner",
 });
+const server_error_popup_banner = (status: number): Banner => ({
+    intent: "danger",
+    label: $t(
+        {
+            defaultMessage: "Server error ({status}). Please try again later.",
+        },
+        {status},
+    ),
+    buttons: [],
+    close_button: true,
+    custom_classes: "server-error-banner popup-banner",
+});
+export function open_server_error_popup_banner(status: number): void {
+    const $banner = $("#popup_banners_wrapper").find(".server-error-banner");
+
+    if ($banner.length > 0) {
+        return;
+    }
+
+    banners.append(server_error_popup_banner(status), $("#popup_banners_wrapper"));
+}
 
 const update_connection_error_banner = ($banner: JQuery, retry_delay_secs: number): void => {
     original_retry_delay_secs = retry_delay_secs;
