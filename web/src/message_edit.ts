@@ -60,6 +60,7 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
@@ -485,6 +486,10 @@ function update_inline_topic_edit_input_max_width(
 
 function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: number): void {
     const $inline_topic_edit_input = $(elem);
+
+    if (ui_util.truncate_input_to_max_code_points(elem, realm.max_topic_length)) {
+        $inline_topic_edit_input.addClass("input-validation-shake");
+    }
 
     update_inline_topic_edit_input_max_width($inline_topic_edit_input);
 
@@ -1059,7 +1064,6 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     assert(message?.type === "stream");
     const $form = $(
         render_topic_edit_form({
-            max_topic_length: realm.max_topic_length,
             is_mandatory_topics: !stream_data.can_use_empty_topic(message.stream_id),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
@@ -1083,6 +1087,10 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
 
     $inline_topic_edit_input.on("input", function (this: HTMLInputElement) {
         handle_inline_topic_edit_change(this, message.stream_id);
+    });
+
+    $inline_topic_edit_input.on("animationend", function () {
+        $(this).removeClass("input-validation-shake");
     });
 
     if (stream_data.can_use_empty_topic(message.stream_id)) {

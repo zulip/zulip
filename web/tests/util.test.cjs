@@ -587,6 +587,14 @@ run_test("is_topic_name_considered_empty", ({override}) => {
     assert.ok(util.is_topic_name_considered_empty("translated: general chat"));
 });
 
+run_test("truncate_to_max_code_points", () => {
+    assert.equal(util.truncate_to_max_code_points("abcdef", 3), "abc");
+    assert.equal(util.truncate_to_max_code_points("abc", 3), "abc");
+    assert.equal(util.truncate_to_max_code_points("abc", 5), "abc");
+    assert.equal(util.truncate_to_max_code_points("🐛🐛🐛", 2), "🐛🐛");
+    assert.equal(util.truncate_to_max_code_points("a🐛c", 2), "a🐛");
+});
+
 run_test("get_retry_backoff_seconds", () => {
     const xhr_500_error = {
         status: 500,
