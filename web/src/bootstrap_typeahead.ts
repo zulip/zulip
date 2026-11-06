@@ -776,6 +776,15 @@ export class Typeahead<ItemType extends string | object> {
         this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
             e.key,
         );
+        if ((e.key === "Enter" || e.key === "Tab") && !this.shown) {
+            // With fast typing, key rollover can deliver this keydown
+            // before the previous character's keyup has run lookup()
+            // to update `this.shown`. Catch up here so that callers
+            // checking `this.shown` (e.g. `move()`) see suggestions
+            // that already match the current query, rather than
+            // treating this as if there were none.
+            this.lookup(false);
+        }
         this.move(e);
     }
 
