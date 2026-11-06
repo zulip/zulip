@@ -296,6 +296,15 @@ function update_form_for_field_type_selection(): void {
             $("#profile_field_hint").val("").prop("disabled", true);
             break;
         }
+        case field_types.PHONE_NUMBER.id: {
+            const default_label = $t({defaultMessage: "Phone number"});
+            const default_hint = $t({
+                defaultMessage: "What is your phone number?",
+            });
+            $("#profile_field_name").val(default_label);
+            $("#profile_field_hint").val(default_hint);
+            break;
+        }
         case field_types.PRONOUNS.id: {
             const default_label = $t({defaultMessage: "Pronouns"});
             const default_hint = $t({
