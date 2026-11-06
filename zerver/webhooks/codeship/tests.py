@@ -31,3 +31,13 @@ class CodeshipHookTests(WebhookTestCase):
         """
         expected_message = "[Build](https://www.codeship.com/projects/10213/builds/973711) triggered by beanieboi on master branch has some_other_status status."
         self.check_webhook("other_status_build", self.TOPIC_NAME, expected_message)
+
+    def test_event_filtering(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["error"]'
+        self.test_codeship_build_in_error_status_message()
+
+        self.url = f'{self.build_webhook_url()}&only_events=["success"]'
+        self.check_webhook("error_build", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["error"]'
+        self.check_webhook("error_build", expect_noop=True)

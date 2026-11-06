@@ -15,6 +15,9 @@ from zerver.models import UserProfile
 COMMIT_INFO_TEMPLATE = """[`{commit_details}`]({commit_link}) on branch `{branch_name}`"""
 TOPIC_TEMPLATE = "{pipeline} / {stage}"
 
+# Stage states, lower-cased as in the message.
+ALL_EVENT_TYPES = ["building", "passed", "failed"]
+
 SCHEDULED_BODY_TEMPLATE = """
 **Pipeline {status}**: {pipeline} / {stage}
 - **Commit**: {commit_details}
@@ -29,7 +32,7 @@ COMPLETED_BODY_TEMPLATE = """
 """
 
 
-@webhook_view("Gocd")
+@webhook_view("Gocd", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_gocd_webhook(
     request: HttpRequest,
@@ -41,8 +44,13 @@ def api_gocd_webhook(
     if type == "stage":
         body = get_body(payload)
         topic_name = get_topic(payload)
-        check_send_webhook_message(request, user_profile, topic_name, body)
+        event = get_event_type(payload)
+        check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
+
+
+def get_event_type(payload: WildValue) -> str:
+    return payload["data"]["pipeline"]["stage"]["state"].tame(check_string).lower()
 
 
 def get_topic(payload: WildValue) -> str:

@@ -15,6 +15,16 @@ MESSAGE_TEMPLATE = """
 """.strip()
 
 
+ALL_EVENT_TYPES = [
+    "new_candidate_application",
+    "new_prospect_application",
+    "hire_candidate",
+    "reject_candidate",
+    "candidate_stage_change",
+    "update_candidate",
+]
+
+
 def dict_list_to_string(some_list: WildValue) -> str:
     response_chunks = []
     for item in some_list:
@@ -29,7 +39,7 @@ def dict_list_to_string(some_list: WildValue) -> str:
     return ", ".join(response_chunks)
 
 
-@webhook_view("Greenhouse")
+@webhook_view("Greenhouse", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_greenhouse_webhook(
     request: HttpRequest,
@@ -37,9 +47,11 @@ def api_greenhouse_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    action = payload["action"].tame(check_string)
-    if action == "ping":
+    event = payload["action"].tame(check_string)
+    if event == "ping":
         return json_success(request)
+
+    action = event
 
     if action == "update_candidate":
         candidate = payload["payload"]["candidate"]
@@ -60,5 +72,5 @@ def api_greenhouse_webhook(
 
     topic_name = "{} - {}".format(action, str(candidate["id"].tame(check_int)))
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
