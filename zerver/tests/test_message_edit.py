@@ -836,6 +836,13 @@ class EditMessageTest(ZulipTestCase):
         mention_user_ids = get_mentions_for_message_updates(message)
         self.assertEqual(mention_user_ids, {cordelia.id})
 
+        msg_id = self.send_stream_message(hamlet, "Denmark", content="no mention")
+        message = Message.objects.get(id=msg_id)
+
+        with self.assert_database_query_count(1):
+            mention_user_ids = get_mentions_for_message_updates(message)
+        self.assertEqual(mention_user_ids, set())
+
     def test_edit_and_moved_timestamps(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
