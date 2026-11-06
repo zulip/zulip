@@ -301,6 +301,72 @@ test("unexpected_403_response", () => {
         },
     });
 });
+test("rate_limited_429_no_handler", () => {
+    // No handler registered yet; a 429 must still reach the caller's
+    // error callback and not crash.
+    let orig_error_called = false;
+    test_with_mock_ajax({
+        xhr: {
+            status: 429,
+            responseJSON: {code: "RATE_LIMIT_HIT", "retry-after": 5},
+        },
+
+        run_code() {
+            channel.post({
+                url: "/json/endpoint",
+                error() {
+                    orig_error_called = true;
+                },
+            });
+        },
+
+        check_ajax_options(options) {
+            options.simulate_error();
+            assert.ok(orig_error_called);
+        },
+    });
+});
+
+test("rate_limited_429", () => {
+    function check_429(responseJSON, expected_handler_calls) {
+        const handler_calls = [];
+        let orig_error_called = false;
+        channel.set_rate_limited_handler((retry_after_secs) => {
+            handler_calls.push(retry_after_secs);
+        });
+
+        test_with_mock_ajax({
+            xhr: {status: 429, responseJSON},
+
+            run_code() {
+                channel.post({
+                    url: "/json/endpoint",
+                    error() {
+                        orig_error_called = true;
+                    },
+                });
+            },
+
+            check_ajax_options(options) {
+                options.simulate_error();
+                assert.deepEqual(handler_calls, expected_handler_calls);
+                // The caller's own error handling must still run.
+                assert.ok(orig_error_called);
+            },
+        });
+    }
+
+    // Normal case: handler gets the parsed seconds.
+    check_429({code: "RATE_LIMIT_HIT", "retry-after": 28.7}, [28.7]);
+
+    // retry-after missing or null: handler gets undefined.
+    check_429({code: "RATE_LIMIT_HIT"}, [undefined]);
+    check_429({code: "RATE_LIMIT_HIT", "retry-after": null}, [undefined]);
+
+    // Malformed or unrelated 429 body: handler is not called.
+    check_429({msg: "something else"}, []);
+    check_429(undefined, []);
+});
 
 test("xhr_error_message", () => {
     let xhr = {
@@ -396,4 +462,37 @@ test("error in callback", () => {
             assert.ok(error_called);
         },
     });
+});
+
+test("format_retry_delay", () => {
+    // Fractional seconds round up, so we never tell the user to retry too early.
+    const navbar_alerts = zrequire("navbar_alerts");
+    assert.equal(navbar_alerts.format_retry_delay(0.3), "translated: 1 second");
+    assert.equal(navbar_alerts.format_retry_delay(1), "translated: 1 second");
+    assert.equal(navbar_alerts.format_retry_delay(28.7), "translated: 29 seconds");
+
+    assert.equal(navbar_alerts.format_retry_delay(60), "translated: 1 minute");
+    assert.equal(navbar_alerts.format_retry_delay(61), "translated: 1 minute 1 second");
+    assert.equal(navbar_alerts.format_retry_delay(125), "translated: 2 minutes 5 seconds");
+    assert.equal(navbar_alerts.format_retry_delay(120), "translated: 2 minutes");
+    assert.equal(navbar_alerts.format_retry_delay(59.2), "translated: 1 minute");
+});
+test("rate_limit_banner", () => {
+    const navbar_alerts = zrequire("navbar_alerts");
+    const banner = navbar_alerts.rate_limit_exceeded_banner(30);
+
+    assert.equal(banner.process, "rate-limit-exceeded");
+    assert.equal(banner.intent, "danger");
+    assert.equal(banner.close_button, true);
+    assert.deepEqual(banner.buttons, []);
+    assert.equal(banner.custom_classes, "rate-limit-exceeded navbar-alert-banner");
+    assert.ok(banner.label.toString().includes("30 seconds"));
+
+    // Missing or non-positive retry time gives the generic message,
+    // never "try again after 0 seconds"
+    for (const secs of [undefined, 0, -1]) {
+        const label = navbar_alerts.rate_limit_exceeded_banner(secs).label;
+        assert.ok(label.includes("try again shortly"));
+        assert.ok(!label.includes("second"));
+    }
 });
