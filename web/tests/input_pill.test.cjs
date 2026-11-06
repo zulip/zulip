@@ -407,10 +407,6 @@ run_test("insert_remove", ({mock_template}) => {
     const yellow_pill = pills.find((pill) => pill.item.color_name === "YELLOW");
     $container.set_find_results(".pill:focus", yellow_pill.$element);
 
-    const $prev_pill_stub = $("<prev-stub>");
-    yellow_pill.$element.set_prev($prev_pill_stub);
-    yellow_pill.$element.set_next($("<next-stub>"));
-
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler.call(
         {},
@@ -421,21 +417,20 @@ run_test("insert_remove", ({mock_template}) => {
     );
     assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
-    assert.ok($prev_pill_stub.is(":focus"));
+    assert.ok($pill_input.is(":focus"));
     color_removed = undefined;
 
-    $prev_pill_stub.trigger("blur");
+    $pill_input.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const $focus_pill_stub = $(pill_html("RED"));
-    $focus_pill_stub.set_prev($prev_pill_stub);
-    $focus_pill_stub.set_next($("<next-stub>"));
-
-    $container.set_find_results(".pill:focus", $focus_pill_stub);
-
     const red_pill = pills.find((pill) => pill.item.color_name === "RED");
-    // Disabled pill should not be removed.
+    $container.set_find_results(".pill:focus", red_pill.$element);
+
+    // Disabled pill should not be removed, and focus moves to the
+    // previous pill instead of the input.
     red_pill.disabled = true;
+    const $prev_pill_stub = $("<prev-stub>");
+    red_pill.$element.set_prev($prev_pill_stub);
 
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler({
@@ -445,6 +440,7 @@ run_test("insert_remove", ({mock_template}) => {
 
     assert.equal(color_removed, undefined);
     assert.ok($prev_pill_stub.is(":focus"));
+    assert.ok(!$pill_input.is(":focus"));
 
     // We should be able to remove the pill after marking it as not
     // disabled.
@@ -457,7 +453,26 @@ run_test("insert_remove", ({mock_template}) => {
         preventDefault: noop,
     });
     assert.equal(color_removed, "RED");
-    assert.ok($prev_pill_stub.is(":focus"));
+    assert.ok($pill_input.is(":focus"));
+    assert.deepEqual(widget.items(), [items.blue]);
+    color_removed = undefined;
+
+    // A disabled first pill has no previous pill, so focus stays on it.
+    $pill_input.trigger("blur");
+    const blue_pill = pills.find((pill) => pill.item.color_name === "BLUE");
+    blue_pill.disabled = true;
+    blue_pill.$element[0].previousElementSibling = null;
+    blue_pill.$element.trigger("focus");
+    $container.set_find_results(".pill:focus", blue_pill.$element);
+
+    key_handler({
+        key: "Backspace",
+        preventDefault: noop,
+    });
+    assert.equal(color_removed, undefined);
+    assert.ok(blue_pill.$element.is(":focus"));
+    assert.ok(!$pill_input.is(":focus"));
+    assert.deepEqual(widget.items(), [items.blue]);
 });
 
 run_test("exit button on pill", ({mock_template}) => {

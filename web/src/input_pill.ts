@@ -455,13 +455,14 @@ export function create<ItemType extends {type: string}>(
                     $pill.next().trigger("focus");
                     break;
                 case "Backspace": {
-                    const $prev = $pill.prev();
-                    const $next = $pill.next();
-                    funcs.removePill(util.the($pill), "backspace");
-                    if ($prev.length > 0) {
-                        $prev.trigger("focus");
+                    if (funcs.removePill(util.the($pill), "backspace") !== undefined) {
+                        store.$input.trigger("focus");
                     } else {
-                        $next.trigger("focus");
+                        // Disabled pills can't be removed. Move focus to the
+                        // previous pill rather than the input, so that holding
+                        // Backspace still removes the pills before this one.
+                        // If this is the first pill, focus stays on it.
+                        $pill.prev().trigger("focus");
                     }
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
