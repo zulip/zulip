@@ -375,10 +375,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
+
+            // Integrations name the topic themselves unless the URL
+            // overrides it, so only a blank override can send
+            // notifications to a topic the channel does not allow.
+            const sets_disallowed_empty_topic =
+                params.get("topic")?.trim() === "" && !empty_topic_is_allowed();
             $dialog_submit_button.prop(
                 "disabled",
                 ($show_integration_events.is(":checked") && !selected_events) ||
-                    (!empty_topic_is_allowed() && topic_name === ""),
+                    sets_disallowed_empty_topic,
             );
         }
 
