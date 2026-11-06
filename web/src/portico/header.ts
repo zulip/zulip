@@ -94,6 +94,26 @@ $(() => {
         on_top_menu_tab_unselect_click();
     });
 
+    // Once a menu is open, resting the pointer on another menu's label
+    // switches to it, like a desktop menu bar. The delay avoids
+    // switching when the pointer only crosses a label on its way into
+    // the open menu. The width matches the breakpoint in navbar.css.
+    const HOVER_SWITCH_DELAY_MS = 150;
+    const wide_layout_with_hover = window.matchMedia("(width > 1100px) and (hover: hover)");
+    let hover_switch_timer: ReturnType<typeof setTimeout> | undefined;
+    $(".top-menu-tab > .nav-menu-label").on("mouseenter", function () {
+        const $menu_input = $(`#${CSS.escape($(this).attr("for")!)}`);
+        const is_another_menu_open = $(".top-menu-tab-input:checked").not($menu_input).length > 0;
+        if (wide_layout_with_hover.matches && is_another_menu_open) {
+            hover_switch_timer = setTimeout(() => {
+                $menu_input.trigger("click");
+            }, HOVER_SWITCH_DELAY_MS);
+        }
+    });
+    $(".top-menu-tab > .nav-menu-label").on("mouseleave", () => {
+        clearTimeout(hover_switch_timer);
+    });
+
     $("#top-menu-tab-close").on("change", () => {
         on_tab_menu_selection_change();
     });
