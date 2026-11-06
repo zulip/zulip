@@ -50,7 +50,19 @@ function _save_narrow_state(): void {
         narrow_pointer,
         narrow_offset,
     };
-    browser_history.update_current_history_state_data(narrow_data);
+
+    let url = window.location.href;
+
+    // By this time, if the our narrow is still a channel topic
+    // narrow, then that means we have locally available message
+    // of this narrow.
+    // Hence, we update the url to contain a `with` term, so that
+    // we can convert it to a topic permalink.
+    if (current_filter.has_exactly_channel_topic_operators()) {
+        url += `with/${narrow_pointer}`;
+    }
+
+    browser_history.update_current_history_state_data(narrow_data, url);
 }
 
 // Safari limits you to 100 replaceState calls in 30 seconds.
