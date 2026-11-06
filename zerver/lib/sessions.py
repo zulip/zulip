@@ -47,8 +47,12 @@ def delete_session(session: Session) -> None:
     session_engine.SessionStore(session.session_key).delete()
 
 
-def delete_user_sessions(user_profile: UserProfile) -> None:
+def delete_user_sessions(
+    user_profile: UserProfile, *, except_session_key: str | None = None
+) -> None:
     for session in Session.objects.all().iterator():
+        if session.session_key == except_session_key:
+            continue
         if get_session_user_id(session) == user_profile.id:
             delete_session(session)
 
