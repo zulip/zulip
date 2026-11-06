@@ -244,7 +244,11 @@ export class DropdownWidget {
             top_offset = this.tippy_props.offset[1];
         }
 
-        const window_height = window.innerHeight;
+        // On iOS, the on-screen keyboard covers the bottom of the window
+        // without resizing it, so only count the part that is visible.
+        const window_height = window.visualViewport
+            ? window.visualViewport.offsetTop + window.visualViewport.height
+            : window.innerHeight;
         let dropdown_search_box_and_padding_height = 50;
         if (this.hide_search_box) {
             dropdown_search_box_and_padding_height = 0;
