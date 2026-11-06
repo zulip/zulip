@@ -947,6 +947,7 @@ exports.fixtures = {
                 in_home_view: false,
                 is_muted: true,
                 pin_to_top: false,
+                left_sidebar_resolved_topics_order: 0,
                 push_notifications: false,
                 stream_weekly_traffic: 40,
                 wildcard_mentions_notify: false,
@@ -1367,6 +1368,13 @@ exports.fixtures = {
         op: "update",
         property: "web_inbox_show_channel_folders",
         value: false,
+    },
+
+    user_settings__web_left_sidebar_resolved_topics_order: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_resolved_topics_order",
+        value: 2,
     },
 
     user_settings__web_left_sidebar_show_channel_folders: {

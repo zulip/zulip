@@ -2839,6 +2839,26 @@ class NormalActionsTest(BaseAction):
                 value=pinned,
             )
 
+    def test_change_left_sidebar_resolved_topics_order(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+        for value in (2, 1, 0):
+            with self.verify_action() as events:
+                do_change_subscription_property(
+                    self.user_profile,
+                    sub,
+                    stream,
+                    "left_sidebar_resolved_topics_order",
+                    value,
+                    acting_user=None,
+                )
+            check_subscription_update(
+                "events[0]",
+                events[0],
+                property="left_sidebar_resolved_topics_order",
+                value=value,
+            )
+
     def test_mute_and_unmute_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
@@ -4923,6 +4943,7 @@ class RealmPropertyActionTest(BaseAction):
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             web_channel_default_view=UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES,
+            web_left_sidebar_resolved_topics_order=UserProfile.WEB_LEFT_SIDEBAR_RESOLVED_TOPICS_ORDER_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
@@ -5059,6 +5080,7 @@ class UserDisplayActionTest(BaseAction):
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
             web_channel_default_view=[2, 1, 3, 4],
+            web_left_sidebar_resolved_topics_order=[2, 1],
             user_list_style=[1, 2, 3],
             web_animate_image_previews=["always", "on_hover", "never"],
             web_stream_unreads_count_display_policy=[1, 2, 3],

@@ -69,7 +69,9 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
+const settings_labels_schema = z.keyof(
+    z.omit(stream_properties_schema, {color: true, left_sidebar_resolved_topics_order: true}),
+);
 
 const realm_labels_schema = z.enum([
     "push_notifications",
@@ -494,6 +496,8 @@ export function show_settings_for(node: HTMLElement): void {
         sub,
         notification_settings,
         other_settings,
+        left_sidebar_resolved_topics_order_options:
+            stream_settings_data.get_left_sidebar_resolved_topics_order_options(sub),
         stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
@@ -879,6 +883,22 @@ export function initialize(): void {
         ".sub_setting_checkbox input.sub_setting_control",
         function on_change(this: HTMLInputElement, _event: JQuery.Event) {
             stream_setting_changed(this);
+        },
+    );
+
+    $("#channels_overlay_container").on(
+        "change",
+        ".left_sidebar_resolved_topics_order_choice",
+        function on_change(this: HTMLInputElement, _event: JQuery.Event) {
+            const sub = get_sub_for_target(this);
+            const $status_element = $(this)
+                .closest(".subsection-parent")
+                .find(".alert-notification");
+            stream_settings_api.set_stream_property(
+                sub,
+                {property: "left_sidebar_resolved_topics_order", value: Number(this.value)},
+                $status_element,
+            );
         },
     );
 

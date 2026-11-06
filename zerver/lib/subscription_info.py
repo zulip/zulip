@@ -128,6 +128,7 @@ def get_web_public_subs(
         email_notifications = True
         in_home_view = True
         is_muted = False
+        left_sidebar_resolved_topics_order = Subscription.LEFT_SIDEBAR_RESOLVED_TOPICS_ORDER_INHERIT
         pin_to_top = False
         push_notifications = True
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -165,6 +166,7 @@ def get_web_public_subs(
             is_muted=is_muted,
             is_recently_active=is_recently_active,
             is_web_public=is_web_public,
+            left_sidebar_resolved_topics_order=left_sidebar_resolved_topics_order,
             message_retention_days=message_retention_days,
             name=name,
             pin_to_top=pin_to_top,
@@ -322,6 +324,7 @@ def build_stream_dict_for_sub(
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
     is_muted = sub_dict["is_muted"]
+    left_sidebar_resolved_topics_order = sub_dict["left_sidebar_resolved_topics_order"]
     pin_to_top = sub_dict["pin_to_top"]
     audible_notifications = sub_dict["audible_notifications"]
     desktop_notifications = sub_dict["desktop_notifications"]
@@ -364,6 +367,7 @@ def build_stream_dict_for_sub(
         is_archived=is_archived,
         is_muted=is_muted,
         is_web_public=is_web_public,
+        left_sidebar_resolved_topics_order=left_sidebar_resolved_topics_order,
         message_retention_days=message_retention_days,
         name=name,
         pin_to_top=pin_to_top,

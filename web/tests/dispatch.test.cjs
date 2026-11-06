@@ -103,6 +103,7 @@ const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
+const topic_list = mock_esm("../src/topic_list");
 const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
@@ -1404,6 +1405,13 @@ run_test("user_settings", ({override}) => {
     event = event_fixtures.user_settings__web_inbox_show_channel_folders;
     dispatch(event);
     assert_same(user_settings.web_inbox_show_channel_folders, false);
+
+    event = event_fixtures.user_settings__web_left_sidebar_resolved_topics_order;
+    override(user_settings, "web_left_sidebar_resolved_topics_order", 1);
+    override(topic_list, "update", noop);
+    override(stream_ui_updates, "update_left_sidebar_resolved_topics_order_widget", noop);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_resolved_topics_order, 2);
 
     event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
     override(stream_list, "build_stream_list", noop);
