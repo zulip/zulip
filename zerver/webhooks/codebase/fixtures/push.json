@@ -1,0 +1,21 @@
+{
+  "repository": {
+    "name": "zulip-terminal",
+    "url": "https://codebasehq.com/projects/zulip/repositories/zulip-terminal"
+  },
+  "user": {
+    "name": "Zulip Contributor",
+    "username": "zulip_dev"
+  },
+  "commits": [
+    {
+      "id": "1a2b3c4d5e",
+      "message": "Update webhook documentation",
+      "author": {
+        "name": "Zulip Contributor",
+        "email": "dev@zulip.com"
+      },
+      "url": "https://codebasehq.com/projects/zulip/repositories/zulip-terminal/commits/1a2b3c4d5e"
+    }
+  ]
+}
