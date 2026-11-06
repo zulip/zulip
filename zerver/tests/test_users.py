@@ -1858,6 +1858,7 @@ class UserProfileTest(ZulipTestCase):
             )
             return dict(
                 # bot-specific fields
+                avatar_source=user.avatar_source,
                 avatar_url=avatar_url,
                 date_joined=user.date_joined.isoformat(timespec="minutes"),
                 delivery_email=email,
