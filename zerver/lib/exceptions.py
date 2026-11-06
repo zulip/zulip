@@ -68,6 +68,7 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    REALM_MOVED = auto()
 
 
 class JsonableError(Exception):
@@ -372,13 +373,40 @@ class UserDeactivatedError(AuthenticationFailedError):
         return _("Account is deactivated")
 
 
-class RealmDeactivatedError(AuthenticationFailedError):
+class RealmDeactivatedAuthenticationError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
 
     @staticmethod
     @override
     def msg_format() -> str:
         return _("This organization has been deactivated")
+
+
+class RealmDeactivatedError(JsonableError):
+    code: ErrorCode = ErrorCode.REALM_DEACTIVATED
+    http_status_code = 404
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("This organization has been deactivated")
+
+
+class RealmMovedError(JsonableError):
+    code: ErrorCode = ErrorCode.REALM_MOVED
+    http_status_code = 404
+    data_fields = ["moved_to_url"]
+
+    def __init__(self, moved_to_url: str) -> None:
+        self.moved_to_url = moved_to_url
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("This organization has moved to {moved_to_url}")
 
 
 class RemoteServerDeactivatedError(AuthenticationFailedError):
