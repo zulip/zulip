@@ -11,6 +11,7 @@ troubleshooting
 management-commands
 settings
 system-configuration
+zulip-services
 mobile-push-notifications
 upgrade
 modify
