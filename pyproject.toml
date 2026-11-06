@@ -244,6 +244,8 @@ release-tools = [
    "PyGithub",
    # And also to chat.zulip.org
    "requests",
+   # Talks to the Claude API, for tools/triage_bot
+   "anthropic",
    # For building a CLI
    "typer",
 ]
