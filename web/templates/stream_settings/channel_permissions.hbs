@@ -51,6 +51,30 @@
         </div>
         {{/if}}
     {{/unless}}
+
+    {{#if is_stream_edit}}
+        {{#if is_admin}}
+        <div class="input-group default-color-setting-group">
+            <label class="settings-field-label" for="{{prefix}}default_color">
+                {{t "Default channel color" }}
+            </label>
+
+            <select name="default-color-setting"
+              class="default_color_setting_select prop-element settings_select bootstrap-focus-style"
+              id="{{prefix}}default_color"
+              data-setting-widget-type="default-color-setting">
+                <option value="none">{{t "No default color" }}</option>
+                <option value="custom">{{t "Custom color" }}</option>
+            </select>
+
+            <div class="dependent-settings-block default-color-dependent-input">
+                <input type="color" autocomplete="off"
+                  class="default-color-custom-input"
+                  id="{{prefix}}default_color_custom_input" />
+            </div>
+        </div>
+        {{/if}}
+    {{/if}}
 </div>
 
 <div id="channel-messaging-permissions" class="settings-subsection-parent">
