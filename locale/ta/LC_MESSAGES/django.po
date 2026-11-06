@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
 "PO-Revision-Date: 2026-03-31 19:08+0000\n"
 "Last-Translator: Anders Kaseorg <andersk@mit.edu>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/zulip/django/ta/>\n"
@@ -378,6 +378,7 @@ msgid "Method not allowed (405)"
 msgstr "முறை அனுமதிக்கப்படவில்லை (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "உள் சேவையக பிழை"
 
@@ -735,17 +736,14 @@ msgid "Open communities directory"
 msgstr "திறந்த சமூகங்கள் அடைவு"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "வகை மூலம் வடிகட்டவும்"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "அனைத்தும்"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "வகைகள்"
 
@@ -896,6 +894,33 @@ msgstr "இணைப்பு"
 msgid "Ship wheel"
 msgstr ""
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+#, fuzzy
+#| msgid "Getting started"
+msgid "Get started"
+msgstr "அமைப்புகள்"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#, fuzzy
+#| msgid "Keep your conversations organized with topics"
+msgid "A Zulip channel with conversations organized by topic"
+msgstr "உங்கள் உரையாடல்களை தலைப்புகளுடன் ஒழுங்கமைக்கவும்"
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "சுலிப்பு"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -939,12 +964,6 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-
-#: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
-msgid "Get started"
-msgstr "அமைப்புகள்"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1038,16 +1057,24 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
+#| "a> the page."
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 "இந்த செய்தி விலகிச் செல்லவில்லை என்றால், <a class=\"reload-lnk\">மீண்டும் ஏற்றுதல்</a> "
 "பக்கத்தை முயற்சிக்கவும்."
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr "சூலிப் ஏற்றுவதில் பிழை. <a class=\"reload-lnk\">மீண்டும் ஏற்றுதல்</a> பக்கம்."
 
 #: templates/zerver/app/index.html
@@ -1566,11 +1593,6 @@ msgstr "மூடு"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "புதுப்பிப்பு"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "சுலிப்பு"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3153,6 +3175,10 @@ msgid "Why Zulip"
 msgstr "ஏன் சூலிப்"
 
 #: templates/zerver/footer.html
+msgid "Switch from Slack"
+msgstr ""
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "நற்பொருத்தங்கள்"
 
@@ -3339,45 +3365,6 @@ msgstr "தனியுரிமைக் கொள்கை"
 #: templates/zerver/footer.html
 msgid "Website attributions"
 msgstr "வலைத்தள பண்புக்கூறுகள்"
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "மேல் %(integrations_count_display)s சொந்த ஒருங்கிணைப்புகள்."
-
-#: templates/zerver/integrations/catalog.html
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "ஒருங்கிணைப்புகளைத் தேடுங்கள்"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "தனிப்பயன் ஒருங்கிணைப்புகள்"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "உள்வரும் வெப்ஊக்குகள்"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "ஊடாடும் போட்கள்"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST பநிஇ"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
-msgstr ""
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3733,6 +3720,22 @@ msgid ""
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "நீங்கள் இப்போது இந்த சாளரத்தை மூடலாம்."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "உங்கள் கடவுச்சொல்லை மீட்டமைக்கவும்"
@@ -3807,6 +3810,12 @@ msgid ""
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
 msgstr ""
+
+#: templates/zerver/slack_import.html
+#, fuzzy
+#| msgid "start a conversation"
+msgid "Start over"
+msgstr "உரையாடலைத் தொடங்கவும்"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -3981,16 +3990,16 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} சூலிப்பில் சேர உங்கள் அழைப்பை ஏற்றுக்கொண்டார்!"
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
-msgstr ""
-"ஒதுக்கிடக் கணக்கை செயல்படுத்த முடியாது; அதற்கு பதிலாக பதிவுபெற பயனரிடம் கேளுங்கள்."
-
-#: zerver/actions/create_user.py
 #, fuzzy
 #| msgid "Cannot deactivate user group in use."
 msgid "Cannot reactivate a deleted user"
 msgstr "பயன்பாட்டில் உள்ள பயனர் குழுவை செயலிழக்க முடியாது."
+
+#: zerver/actions/create_user.py
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgstr ""
+"ஒதுக்கிடக் கணக்கை செயல்படுத்த முடியாது; அதற்கு பதிலாக பதிவுபெற பயனரிடம் கேளுங்கள்."
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4096,7 +4105,9 @@ msgid "Direct messages cannot have topics."
 msgstr "தனிப்பட்ட செய்தி"
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "தலைப்பு திருத்தம் இல்லாமல் தவறான பிரச்சாரம்_மோட்"
 
 #: zerver/actions/message_edit.py
@@ -4172,6 +4183,12 @@ msgid ""
 msgstr ""
 "{changed_messages_count} செய்திகள் {old_location} இலிருந்து {user} ஆல் இங்கே "
 "நகர்த்தப்பட்டன."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message's topic has passed."
+msgid "The time limit for moving this topic has passed."
+msgstr "இந்த செய்தியின் தலைப்பைத் திருத்துவதற்கான கால காலநீடிப்பு கடந்துவிட்டது."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4259,10 +4276,6 @@ msgstr ""
 "முயற்சித்தது. சேனல் உள்ளது, ஆனால் எந்த சந்தாதாரர்களும் இல்லை."
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr "பெறுநர்களில் சிலரை அணுக உங்களுக்கு இசைவு இல்லை."
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "விட்செட்டுகள்: பநிஇ புரோகிராமர் தவறான சாதொபொகு உள்ளடக்கத்தை அனுப்பினார்"
 
@@ -4296,6 +4309,13 @@ msgstr "இந்த பெயருடன் தனிப்பயன் ஈம
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
 msgstr ""
+
+#: zerver/actions/realm_export.py
+#, fuzzy, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
+msgstr "உங்கள் தரவு ஏற்றுமதி முடிந்தது. ."
 
 #: zerver/actions/realm_linkifiers.py
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4527,7 +4547,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "இந்த இறுதிப்புள்ளி போட் கோரிக்கைகளை ஏற்காது."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "சேவையக நிர்வாகியாக இருக்க வேண்டும்"
 
 #: zerver/decorator.py
@@ -4626,22 +4648,6 @@ msgstr ""
 "சொல்லுங்கள், பின்னர் மீண்டும் முயற்சிக்கவும்."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr ""
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "புதிய கடவுச்சொல்"
 
@@ -4724,6 +4730,22 @@ msgstr "இணைப்பை நீக்கும்போது பிழை 
 msgid "Message must have recipients!"
 msgstr "செய்தியில் பெறுநர்கள் இருக்க வேண்டும்!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr ""
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr ""
@@ -4739,6 +4761,19 @@ msgstr ""
 
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/demo_organizations.py
@@ -4831,8 +4866,16 @@ msgstr ""
 "{channel_name}"
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
 msgstr "எந்த விசயமும் இல்லாமல் மின்னஞ்சல்"
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
+msgstr ""
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5297,68 +5340,6 @@ msgstr ""
 msgid "Invalid external account type"
 msgstr "தவறான வெளிப்புற கணக்கு வகை"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "ஒருங்கிணைப்பு கட்டமைப்புகள்"
-
-#: zerver/lib/integrations.py
-#, fuzzy
-#| msgid "Video call ended"
-msgid "Video calling"
-msgstr "வீடியோ அழைப்பு முடிந்தது"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "தொடர்ச்சியான ஒருங்கிணைப்பு"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "வாடிக்கையாளர் உதவி"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "வரிசைப்படுத்தல்"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "பொழுதுபோக்கு"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "தொடர்பு"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "பொருள்"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr "மனித வளங்கள்"
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "சந்தைப்படுத்தல்"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "மற்றவை"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr "கண்காணிப்பு"
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "திட்ட மேலாண்மை"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "உற்பத்தித்திறன்"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "பதிப்பு கட்டுப்பாடு"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "செய்தி காலியாக இருக்கக்கூடாது"
@@ -5412,6 +5393,11 @@ msgstr ""
 #, fuzzy, python-brace-format
 msgid "{fullname} moderation"
 msgstr "{full_name you நீங்கள் குறிப்பிட்டுள்ளார்:"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -5946,10 +5932,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} அனைவரையும் குறிப்பிட்டுள்ளார்:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "புதிய செய்தி"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr ""
 
@@ -6019,6 +6001,10 @@ msgstr "'{email}' இனி சூலிப்பைப் பயன்படு
 msgid "You can't send direct messages outside of your organization."
 msgstr "உங்கள் நிறுவனத்திற்கு வெளியே நேரடி செய்திகளை அனுப்ப முடியாது."
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr "பெறுநர்களில் சிலரை அணுக உங்களுக்கு இசைவு இல்லை."
+
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
 #| msgid "Channel name too long (limit: {max_length} characters)."
@@ -6057,21 +6043,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -6474,6 +6447,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "தவறான உட்பொதிக்கப்பட்ட போட் பெயர்."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "தவறான உள்ளமைவு தரவு!"
 
@@ -6494,7 +6471,7 @@ msgstr ""
 msgid "No such bot"
 msgstr "அத்தகைய போட் இல்லை"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "அத்தகைய பயனர் இல்லை"
 
@@ -6951,6 +6928,12 @@ msgstr "நிகழ்வு {event_id} இந்த வரிசையில�
 msgid "Bad event queue ID: {queue_id}"
 msgstr "மோசமான நிகழ்வு வரிசை ஐடி: {queue_id}"
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "அமர்வு காணப்படவில்லை"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr ""
@@ -7135,17 +7118,11 @@ msgstr ""
 msgid "Message reporting is not enabled in this organization."
 msgstr ""
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "அனுப்புநர் காணவில்லை"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "பெறுநர் பயனர் ஐடிகளுடன் அனுமதிக்கப்படவில்லை"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "தவறான பிரதிபலித்த செய்தி"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "செய்தியை வழங்க முடியவில்லை"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7405,6 +7382,25 @@ msgid "Invalid playground"
 msgstr ""
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -7433,6 +7429,13 @@ msgstr ""
 #: zerver/views/registration.py
 msgid "Finalizing import…"
 msgstr ""
+
+#: zerver/views/registration.py
+#, fuzzy
+#| msgid "Subdomain is already in use. Please choose a different one."
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
+msgstr "துணை டொமைன் ஏற்கனவே பயன்பாட்டில் உள்ளது. வேறு ஒன்றைத் தேர்வுசெய்க."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7488,10 +7491,6 @@ msgstr "சேனல் உள்ளடக்க அணுகல் தேவை
 msgid "Channel already has that name."
 msgstr "சேனலுக்கு ஏற்கனவே அந்த பெயர் உள்ளது."
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "செய்ய எதுவும் இல்லை. குறைந்தபட்சம் \"சேர்\" அல்லது \"நீக்கு\" ஒன்றைக் குறிப்பிடவும்."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7500,6 +7499,18 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr "{user_full_name} பின்வரும் சேனல்களுக்கு உங்களை சந்தா செலுத்தியது:"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to the following channels:"
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr "{user_full_name} பின்வரும் சேனல்களுக்கு உங்களை சந்தா செலுத்தியது:"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to the following channels:"
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr "{user_full_name} பின்வரும் சேனல்களுக்கு உங்களை சந்தா செலுத்தியது:"
 
 #: zerver/views/streams.py
@@ -7685,6 +7696,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "பயனர் குழு {group_id} இந்த குழுவின் துணைக்குழு அல்ல."
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr "செய்ய எதுவும் இல்லை. குறைந்தபட்சம் \"சேர்\" அல்லது \"நீக்கு\" ஒன்றைக் குறிப்பிடவும்."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "இந்த அமைப்பில் அவதார் மாற்றங்கள் முடக்கப்பட்டுள்ளன."
@@ -7802,6 +7817,12 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr "உரிமையாளரை மாற்றத் தவறிவிட்டது, போட்ச் மற்ற போட்களை சொந்தமாக்க முடியாது"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "தவறான உட்பொதிக்கப்பட்ட போட் பெயர்."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7812,10 +7833,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "உட்பொதிக்கப்பட்ட போட்கள் இயக்கப்படவில்லை."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "தவறான உட்பொதிக்கப்பட்ட போட் பெயர்."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -7939,13 +7956,6 @@ msgstr "பிழை: 0 அல்லது 1 ஐத் தவிர வேறு
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr "அறியப்படாத வேர்ட்பிரச் வெப்ஊக் செயல்: {hook}"
-
-#: zerver/worker/deferred_work.py
-#, fuzzy, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
-msgstr "உங்கள் தரவு ஏற்றுமதி முடிந்தது. ."
 
 #: zilencer/auth.py
 msgid "The verification secret has expired"
@@ -8103,6 +8113,84 @@ msgstr "தவறான OTP"
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 "மொபைல்_ஃப்ளோ_ஓடிபி மற்றும் டெச்க்டாப்_ஃப்ளோ_ஓடிபி இரண்டையும் ஒன்றாகப் பயன்படுத்த முடியாது."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "மேல் %(integrations_count_display)s சொந்த ஒருங்கிணைப்புகள்."
+
+#~ msgid "Search integrations"
+#~ msgstr "ஒருங்கிணைப்புகளைத் தேடுங்கள்"
+
+#~ msgid "Custom integrations"
+#~ msgstr "தனிப்பயன் ஒருங்கிணைப்புகள்"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "உள்வரும் வெப்ஊக்குகள்"
+
+#~ msgid "Interactive bots"
+#~ msgstr "ஊடாடும் போட்கள்"
+
+#~ msgid "REST API"
+#~ msgstr "REST பநிஇ"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "ஒருங்கிணைப்பு கட்டமைப்புகள்"
+
+#, fuzzy
+#~| msgid "Video call ended"
+#~ msgid "Video calling"
+#~ msgstr "வீடியோ அழைப்பு முடிந்தது"
+
+#~ msgid "Continuous integration"
+#~ msgstr "தொடர்ச்சியான ஒருங்கிணைப்பு"
+
+#~ msgid "Customer support"
+#~ msgstr "வாடிக்கையாளர் உதவி"
+
+#~ msgid "Deployment"
+#~ msgstr "வரிசைப்படுத்தல்"
+
+#~ msgid "Entertainment"
+#~ msgstr "பொழுதுபோக்கு"
+
+#~ msgid "Communication"
+#~ msgstr "தொடர்பு"
+
+#~ msgid "Financial"
+#~ msgstr "பொருள்"
+
+#~ msgid "Human resources"
+#~ msgstr "மனித வளங்கள்"
+
+#~ msgid "Marketing"
+#~ msgstr "சந்தைப்படுத்தல்"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "மற்றவை"
+
+#~ msgid "Monitoring"
+#~ msgstr "கண்காணிப்பு"
+
+#~ msgid "Project management"
+#~ msgstr "திட்ட மேலாண்மை"
+
+#~ msgid "Productivity"
+#~ msgstr "உற்பத்தித்திறன்"
+
+#~ msgid "Version control"
+#~ msgstr "பதிப்பு கட்டுப்பாடு"
+
+#~ msgid "New message"
+#~ msgstr "புதிய செய்தி"
+
+#~ msgid "Missing sender"
+#~ msgstr "அனுப்புநர் காணவில்லை"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "பெறுநர் பயனர் ஐடிகளுடன் அனுமதிக்கப்படவில்லை"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "தவறான பிரதிபலித்த செய்தி"
 
 #~ msgid "X (Twitter)"
 #~ msgstr "ஃச் (ட்விட்டர்)"

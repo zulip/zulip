@@ -15,16 +15,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:22+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"PO-Revision-Date: 2026-11-05 03:59+0000\n"
+"Last-Translator: Mateusz Mandera <mateusz.mandera@users.noreply.hosted."
+"weblate.org>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/zulip/django/hi/>\n"
 "Language: hi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.1.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -32,7 +33,7 @@ msgstr "अतिथि उपयोगकर्ताओं के लिए �
 
 #: analytics/views/stats.py
 msgid "Invalid organization"
-msgstr "अमान्य संगठन"
+msgstr "अवैध संगठन"
 
 #: analytics/views/stats.py
 msgid "Public channels"
@@ -40,34 +41,34 @@ msgstr "सार्वजनिक चैनल"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "निजी चैनल"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
-msgstr ""
+msgstr "सीधे संदेश"
 
 #: analytics/views/stats.py
 msgid "Group direct messages"
-msgstr ""
+msgstr "सीधे संदेशों को समूहबद्ध करें"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "चार्ट के लिए अनुपलब्ध चैनल: {chart_name}"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "अज्ञात चार्ट नाम: {chart_name}"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr ""
+msgstr "प्रारंभ समय समाप्ति समय से बाद का है। प्रारंभ: {start}, अंत: {end}"
 
 #: analytics/views/stats.py
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr "कोई एनालिटिक्स डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -77,6 +78,10 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
+"आपके संगठन के पास कोई ज़ूलिप लाइसेंस शेष नहीं है और वह अब नए उपयोगकर्ताओं को स्वीकार नहीं "
+"कर सकता है। नए उपयोगकर्ताओं को शामिल होने की अनुमति देने के लिए कृपया [लाइसेंस की संख्या "
+"बढ़ाएँ] ({billing_page_link}) या [निष्क्रिय उपयोगकर्ताओं को निष्क्रिय करें] "
+"({deactivate_user_help_page_link})।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -85,6 +90,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
+"आपके संगठन के पास केवल एक ज़ूलिप लाइसेंस शेष है। आप एक से अधिक यूज़र को शामिल होने की "
+"अनुमति देने के लिए [लाइसेंस की संख्या बढ़ा सकते हैं] ({billing_page_link}) या [निष्क्रिय "
+"उपयोगकर्ताओं को निष्क्रिय करें] ({deactivate_user_help_page_link})।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -93,6 +101,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
+"आपके संगठन के पास केवल दो ज़ूलिप लाइसेंस शेष हैं। आप दो से अधिक उपयोगकर्ताओं को शामिल होने "
+"की अनुमति देने के लिए [लाइसेंस की संख्या बढ़ा सकते हैं] ({billing_page_link}) या "
+"[निष्क्रिय उपयोगकर्ताओं को निष्क्रिय करें] ({deactivate_user_help_page_link})।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -101,6 +112,9 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
+"आपके संगठन के पास केवल तीन ज़ूलिप लाइसेंस शेष हैं। आप तीन से अधिक उपयोगकर्ताओं को शामिल "
+"होने की अनुमति देने के लिए [लाइसेंस की संख्या बढ़ा सकते हैं] ({billing_page_link}) या "
+"[निष्क्रिय उपयोगकर्ताओं को निष्क्रिय करें] ({deactivate_user_help_page_link})।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -110,26 +124,31 @@ msgid ""
 "[number of licenses for the current and next billing period]"
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
+"एक नया उपयोगकर्ता ({email}) शामिल नहीं हो पाया क्योंकि आपके संगठन के पास पर्याप्त "
+"Zulip लाइसेंस नहीं हैं। नए उपयोगकर्ताओं को शामिल होने की अनुमति देने के लिए, सुनिश्चित करें "
+"कि [वर्तमान और अगली बिलिंग अवधि के लिए लाइसेंस की संख्या] ({billing_page_link}) "
+"उपयोगकर्ताओं की वर्तमान संख्या से अधिक है।"
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr ""
+msgstr "आपके संगठन के पास पर्याप्त ज़ूलिप लाइसेंस नहीं हैं। आमंत्रण नहीं भेजे गए थे।"
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"आपके संगठन के पास अतिथि उपयोगकर्ता की भूमिका बदलने के लिए पर्याप्त ज़ूलिप लाइसेंस नहीं हैं।"
 
 #: corporate/lib/remote_billing_util.py
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "रजिस्ट्रेशन निष्क्रिय किया गया है"
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
-msgstr ""
+msgstr "अमान्य रिमोट सर्वर।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -137,6 +156,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"आपको अपने संगठन के सभी सक्रिय उपयोगकर्ताओं (न्यूनतम {min_licenses}) के लिए लाइसेंस "
+"खरीदना होगा।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -144,15 +165,17 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
+"{max_licenses} से अधिक लाइसेंस वाले इनवॉइस को इस पेज से प्रोसेस नहीं किया जा सकता है। "
+"अपग्रेड पूरा करने के लिए, कृपया {email} से संपर्क करें।"
 
 #: corporate/lib/stripe.py
 msgid "No payment method on file."
-msgstr ""
+msgstr "फ़ाइल पर कोई भुगतान विधि नहीं है।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr ""
+msgstr "{brand} {last4} में समाप्त हो रहा है"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -162,60 +185,63 @@ msgstr "अज्ञात भुगतान विधि। कृपया {e
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr ""
+msgstr "कुछ गड़बड़ हो गई। कृपया {email} से संपर्क करें।"
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please reload the page."
-msgstr "कुछ गलत हो गया। कृपया पृष्ठ को फिर से लोड करें।"
+msgstr "कुछ गड़बड़ हो गई। कृपया पेज को फिर से लोड करें।"
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "कुछ गलत हो गया। कृपया कुछ सेकंड प्रतीक्षा करें और पुनः प्रयास करें।"
+msgstr "कुछ गड़बड़ हो गई। कृपया कुछ सेकंड प्रतीक्षा करें और फिर से कोशिश करें।"
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "कृपया अपना निःशुल्क परीक्षण शुरू करने से पहले एक क्रेडिट कार्ड जोड़ें।"
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "अपग्रेड शेड्यूल करने के लिए कृपया क्रेडिट कार्ड जोड़ें।"
 
 #: corporate/lib/stripe.py
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
+"योजना अपडेट करने में असमर्थ। योजना की समय सीमा समाप्त हो गई है और इसे एक नई योजना के "
+"साथ बदल दिया गया है।"
 
 #: corporate/lib/stripe.py
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "योजना को अपडेट करने में असमर्थ। योजना समाप्त हो गई है।"
 
 #: corporate/lib/stripe.py
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr ""
+msgstr "निःशुल्क परीक्षण योजना के लिए मौजूदा बिलिंग अवधि में लाइसेंस अपडेट नहीं कर सकता।"
 
 #: corporate/lib/stripe.py
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
+"लाइसेंस मैन्युअल रूप से अपडेट करने में असमर्थ। आपकी योजना स्वचालित लाइसेंस प्रबंधन पर है।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr ""
+msgstr "मौजूदा बिलिंग अवधि में आपकी योजना पहले से ही {licenses} लाइसेंस पर है।"
 
 #: corporate/lib/stripe.py
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
+msgstr "आप मौजूदा बिलिंग अवधि में लाइसेंस घटा नहीं सकते हैं।"
 
 #: corporate/lib/stripe.py
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr ""
+msgstr "डाउनग्रेड की जा रही योजना के लिए अगले बिलिंग चक्र के लाइसेंस नहीं बदल सकते हैं।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -223,6 +249,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
+"आपकी योजना पहले से ही {licenses_at_next_renewal} लाइसेंस के साथ नवीनीकृत होने वाली "
+"है।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -230,26 +258,27 @@ msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
+"आपने अगली बिलिंग अवधि के लिए {licenses_at_next_renewal} लाइसेंस पहले ही खरीद लिए हैं।"
 
 #: corporate/lib/stripe.py
 msgid "Nothing to change."
-msgstr ""
+msgstr "बदलने के लिए कुछ भी नहीं।"
 
 #: corporate/lib/stripe.py
 msgid "No customer for this organization!"
-msgstr ""
+msgstr "इस संगठन के लिए कोई ग्राहक नहीं!"
 
 #: corporate/lib/stripe.py
 msgid "Session not found"
-msgstr ""
+msgstr "सत्र नहीं मिला"
 
 #: corporate/lib/stripe.py
 msgid "Payment intent not found"
-msgstr ""
+msgstr "भुगतान का इरादा नहीं मिला"
 
 #: corporate/lib/stripe.py
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "stripe_session_id या stripe_invoice_id पास करें"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -260,18 +289,23 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
+"प्रायोजित होस्टिंग के लिए आपके संगठन के अनुरोध को मंजूरी दे दी गई है! आपको {plan_name} में "
+"निःशुल्क अपग्रेड किया गया है। {emoji}\n"
+"\n"
+"यदि आप {begin_link} अपनी वेबसाइट {end_link} पर प्रायोजक के रूप में ज़ूलिप को सूचीबद्ध "
+"कर सकते हैं, तो हम वास्तव में इसकी सराहना करेंगे!"
 
 #: corporate/views/billing_page.py
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "पैरामीटर 'पुष्टि' आवश्यक है"
 
 #: corporate/views/remote_billing_page.py
 msgid "Billing access token expired."
-msgstr ""
+msgstr "बिलिंग ऐक्सेस टोकन की समय सीमा समाप्त हो गई है।"
 
 #: corporate/views/remote_billing_page.py
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "अमान्य बिलिंग ऐक्सेस टोकन।"
 
 #: corporate/views/remote_billing_page.py zilencer/views.py
 #, python-brace-format
@@ -279,36 +313,38 @@ msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
 "{support_email}"
 msgstr ""
+"सर्वर और क्षेत्र के बीच बिलिंग डेटा का मिलान नहीं किया जा सका। कृपया {support_email} "
+"से संपर्क करें"
 
 #: corporate/views/remote_billing_page.py
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "उपयोगकर्ता खाता अभी तक मौजूद नहीं है।"
 
 #: corporate/views/remote_billing_page.py
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "आगे बढ़ने के लिए आपको सेवा की शर्तें स्वीकार करनी होंगी।"
 
 #: corporate/views/remote_billing_page.py
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "यह zulip_org_id Zulip के बिलिंग प्रबंधन प्रणाली के साथ पंजीकृत नहीं है।"
 
 #: corporate/views/remote_billing_page.py
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "इस zulip_org_id के लिए अमान्य zulip_org_key।"
 
 #: corporate/views/remote_billing_page.py
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "आपका सर्वर पंजीकरण निष्क्रिय कर दिया गया है।"
 
 #: templates/404.html templates/4xx.html
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html
 msgid "Error"
-msgstr ""
+msgstr "एरर"
 
 #: templates/404.html
 msgid "Page not found (404)"
-msgstr ""
+msgstr "पृष्ठ नहीं मिला (404)"
 
 #: templates/404.html templates/4xx.html
 #, python-format
@@ -316,40 +352,49 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
+"यदि यह त्रुटि अप्रत्याशित है, तो आप <a href=\"mailto:%(support_email)s\"> समर्थन </"
+"a> से संपर्क कर सकते हैं।"
 
 #: templates/4xx.html
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "प्रवेश वर्जित (403)"
 
 #: templates/4xx.html
 msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
+"आपका अनुरोध पूरा नहीं किया जा सका क्योंकि आपके ब्राउज़र ने आपकी पहुंच को प्रमाणित करने के "
+"लिए आवश्यक क्रेडेंशियल्स नहीं भेजे थे। इस समस्या को हल करने के लिए:"
 
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
-msgstr ""
+msgstr "सुनिश्चित करें कि आपका ब्राउज़र इस साइट के लिए कुकीज़ की अनुमति देता है।"
 
 #: templates/4xx.html
 msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"किसी भी ब्राउज़र गोपनीयता सेटिंग्स या एक्सटेंशन की जाँच करें जो रेफ़र हेडर को ब्लॉक करते हैं, "
+"और उन्हें इस साइट के लिए अक्षम करें।"
 
 #: templates/4xx.html
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "विधि की अनुमति नहीं है (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
-msgstr ""
+msgstr "आंतरिक सर्वर त्रुटि"
 
 #: templates/500.html
 msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"कुछ गड़बड़ हो गई। इस बारे में क्षमा करें! हम समस्या से अवगत हैं और इसे ठीक करने के लिए काम "
+"कर रहे हैं। एक बार फिर से काम करने के बाद ज़ूलिप अपने आप लोड हो जाएगा।"
 
 #: templates/500.html
 #, python-format
@@ -358,12 +403,17 @@ msgid ""
 "information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
 "a> with any questions."
 msgstr ""
+"कृपया अधिक जानकारी के लिए <a href=\"%(status_url)s\"> ज़ूलिप क्लाउड स्थिति </a> "
+"देखें, और <a href=\"mailto:%(support_email)s\"> किसी भी प्रश्न के लिए Zulip समर्थन "
+"</a> से संपर्क करें।"
 
 #: templates/500.html
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"कुछ गड़बड़ हो गई। इस बारे में क्षमा करें! एक बार फिर से काम करने के बाद ज़ूलिप अपने आप लोड "
+"हो जाएगा।"
 
 #: templates/500.html
 #, python-format
@@ -371,6 +421,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
+"<a href=\"mailto:%(support_email)s\"> समर्थन के लिए इस सर्वर के व्यवस्थापकों </a> से "
+"संपर्क करें।"
 
 #: templates/500.html
 #, python-format
@@ -378,49 +430,50 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
+"यदि आप इस सर्वर को प्रशासित करते हैं, तो आप <a href=\"%(troubleshooting_url)s\"> "
+"Zulip सर्वर समस्या निवारण मार्गदर्शिका </a> को देखना चाह सकते हैं।"
 
 #: templates/analytics/stats.html
-#, fuzzy, python-format
-#| msgid "Zulip analytics for %(target_name)s"
+#, python-format
 msgid "Analytics for %(target_name)s | Zulip"
-msgstr "के लिए जूलिप एनालिटिक्स %(target_name)s"
+msgstr "%(target_name)s के लिए एनालिटिक्स | Zulip"
 
 #: templates/analytics/stats.html
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr ""
+msgstr "संगठन निर्माण के 24 घंटे बाद एनालिटिक्स पूरी तरह से उपलब्ध हैं।"
 
 #: templates/analytics/stats.html
 #, python-format
 msgid "Zulip analytics for %(target_name)s"
-msgstr "के लिए जूलिप एनालिटिक्स %(target_name)s"
+msgstr "%(target_name)s के लिए ज़ूलिप एनालिटिक्स"
 
 #: templates/analytics/stats.html
 msgid "Organization summary"
-msgstr ""
+msgstr "संगठन का सारांश"
 
 #: templates/analytics/stats.html
 msgid "Number of users"
-msgstr ""
+msgstr "यूज़र की संख्या"
 
 #: templates/analytics/stats.html
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "पिछले 15 दिनों में सक्रिय यूज़र"
 
 #: templates/analytics/stats.html
 msgid "Number of guests"
-msgstr ""
+msgstr "मेहमानों की संख्या"
 
 #: templates/analytics/stats.html
 msgid "Total number of messages"
-msgstr ""
+msgstr "संदेशों की कुल संख्या"
 
 #: templates/analytics/stats.html
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "पिछले 30 दिनों में संदेशों की संख्या"
 
 #: templates/analytics/stats.html
 msgid "File storage in use"
-msgstr ""
+msgstr "फ़ाइल संग्रहण उपयोग में है"
 
 #: templates/analytics/stats.html
 msgid "Active users"
@@ -512,10 +565,12 @@ msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
+"सभी ग्राफ़ का पूरा अपडेट दिन में एक बार होता है। “समय के साथ भेजे गए संदेश” ग्राफ़ को घंटे में "
+"एक बार अपडेट किया जाता है।"
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed"
-msgstr ""
+msgstr "ईमेल बदला गया"
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed!"
@@ -527,19 +582,21 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
+"यह पुष्टि करता है कि आपके Zulip खाते का ईमेल पता %(old_email_html_tag)s से "
+"%(new_email_html_tag)s में बदल गया है"
 
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
 msgid "Confirming your email address"
-msgstr ""
+msgstr "आपके ईमेल पते की पुष्टि करना"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "पुष्टि लिंक मौजूद नहीं है"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "ओह। हमें सिस्टम में आपका पुष्टिकरण लिंक नहीं मिला।"
 
 #: templates/confirmation/link_does_not_exist.html
 #: templates/confirmation/link_malformed.html
@@ -548,32 +605,35 @@ msgid ""
 "Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this "
 "resolved shortly."
 msgstr ""
+"वैसे भी, %(support_email_html_tag)s पर कॉल करें और हम जल्द ही इसका समाधान कर लेंगे।"
 
 #: templates/confirmation/link_expired.html
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "पुष्टिकरण लिंक की समय सीमा समाप्त या निष्क्रिय"
 
 #: templates/confirmation/link_expired.html
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "ओह। पुष्टि लिंक की समय सीमा समाप्त हो गई है या उसे निष्क्रिय कर दिया गया है।"
 
 #: templates/confirmation/link_expired.html
 msgid "Please contact your organization administrator for a new link."
-msgstr ""
+msgstr "नए लिंक के लिए कृपया अपने संगठन व्यवस्थापक से संपर्क करें।"
 
 #: templates/confirmation/link_malformed.html
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "पुष्टिकरण लिंक विकृत"
 
 #: templates/confirmation/link_malformed.html
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "ओह। पुष्टिकरण लिंक विकृत है।"
 
 #: templates/confirmation/link_malformed.html
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
+"सुनिश्चित करें कि आपने अपने ब्राउज़र में लिंक को सही तरीके से कॉपी किया है। यदि आप अभी भी "
+"इस पेज का सामना कर रहे हैं, तो शायद यह हमारी गलती है। हमें खेद है।"
 
 #: templates/corporate/billing/billing.html
 msgid "Billing"
@@ -584,15 +644,15 @@ msgstr "बिलिंग"
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #: templates/zerver/development/email_log.html
 msgid "Close modal"
-msgstr ""
+msgstr "मोडल बंद करें"
 
 #: templates/corporate/billing/billing.html
 msgid "Never mind"
-msgstr ""
+msgstr "कोई बात नहीं"
 
 #: templates/corporate/billing/billing.html
 msgid "Downgrade"
-msgstr ""
+msgstr "डाउनग्रेड"
 
 #: templates/corporate/billing/billing.html
 #: templates/corporate/billing/upgrade.html
@@ -604,24 +664,24 @@ msgstr "रद्द करना"
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #: templates/zerver/realm_import_post_process.html
 msgid "Confirm"
-msgstr ""
+msgstr "पुष्टि करें"
 
 #: templates/corporate/billing/billing.html
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "अपग्रेड रद्द करें"
 
 #: templates/corporate/billing/event_status.html
 msgid "Billing status"
-msgstr ""
+msgstr "बिलिंग स्थिति"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "सर्वर पंजीकरण निष्क्रिय करें?"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 msgid "Plan management not available"
-msgstr ""
+msgstr "प्लान प्रबंधन उपलब्ध नहीं है"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #, python-format
@@ -633,18 +693,27 @@ msgid ""
 "management\">log in instructions</a> to administer the plan for your Zulip "
 "server."
 msgstr ""
+"इस संगठन के लिए योजना प्रबंधन उपलब्ध नहीं है, क्योंकि आपका Zulip सर्वर पहले से ही "
+"%(server_plan_name)s योजना पर है, जो इस सर्वर पर सभी संगठनों को शामिल करता है। "
+"अपने Zulip सर्वर के लिए योजना को प्रशासित करने के लिए <a href=\"https://zulip.com/"
+"help/self-hosted-billing#log-in-to-billing-management\"> लॉग इन निर्देशों </a> "
+"के <b> सर्वर-स्तरीय बिलिंग </b> टैब को देखें।"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 msgid ""
 "To move the plan from the server to this organization, or for other "
 "questions, <a href=\"mailto:{{ support_email }}\">contact support</a>."
 msgstr ""
+"योजना को सर्वर से इस संगठन में स्थानांतरित करने के लिए, या अन्य प्रश्नों के लिए, <a "
+"href=\"mailto:{{ support_email }}\"> समर्थन </a> से संपर्क करें।"
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 msgid ""
 "Plan management for this server is not available because at least one "
 "organization hosted on this server already has an active plan."
 msgstr ""
+"इस सर्वर के लिए योजना प्रबंधन उपलब्ध नहीं है क्योंकि इस सर्वर पर होस्ट किए गए कम से कम "
+"एक संगठन के पास पहले से ही एक सक्रिय योजना है।"
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 #, python-format
@@ -657,63 +726,60 @@ msgstr ""
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "दर सीमा पार हो गई"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 msgid "Rate limit exceeded."
-msgstr ""
+msgstr "दर सीमा पार हो गई।"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 msgid ""
 "Your server has exceeded the limit for how often this action can be "
 "performed."
-msgstr ""
+msgstr "आपके सर्वर ने यह सीमा पार कर ली है कि यह क्रिया कितनी बार की जा सकती है।"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 #, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr ""
+msgstr "आप %(retry_after_string)s में फिर से कोशिश कर सकते हैं।"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Upgrade"
-msgstr ""
+msgstr "अपग्रेड करें"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "इनवॉइस भेजें और फ्री ट्रायल शुरू करें"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice"
-msgstr ""
+msgstr "इनवॉइस भेजें"
 
 #: templates/corporate/communities.html
 msgid "Open communities directory"
-msgstr ""
+msgstr "समुदाय निर्देशिका खोलें"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
-msgstr ""
+msgstr "श्रेणी के अनुसार फ़िल्टर करें"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
-msgstr ""
+msgstr "सभी"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
-msgstr ""
+msgstr "श्रेणियां"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "10,000 messages"
-msgstr ""
+msgstr "10,000 संदेश"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Unlimited"
-msgstr ""
+msgstr "अनलिमिटेड"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 10 MB"
@@ -721,11 +787,11 @@ msgstr ""
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "1 जीबी तक की फाइलें"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Supported"
-msgstr ""
+msgstr "समर्थित"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Self-managed"
@@ -832,10 +898,8 @@ msgid "Two hands assembling puzzle"
 msgstr ""
 
 #: templates/corporate/role/engineers.html
-#, fuzzy
-#| msgid "Messages sent over time"
 msgid "Message with code"
-msgstr "समय के साथ भेजे गए संदेश"
+msgstr "कोड के साथ संदेश"
 
 #: templates/corporate/role/engineers.html
 msgid "Lightning"
@@ -848,6 +912,29 @@ msgstr ""
 
 #: templates/corporate/role/engineers.html
 msgid "Ship wheel"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+msgid "Get started"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "A Zulip channel with conversations organized by topic"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
 msgstr ""
 
 #: templates/corporate/support/support_request.html
@@ -892,10 +979,6 @@ msgstr ""
 msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
-msgstr ""
-
-#: templates/corporate/zulip-cloud.html
-msgid "Get started"
 msgstr ""
 
 #: templates/corporate/zulipchat_migration_tos.html
@@ -985,13 +1068,14 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 
 #: templates/zerver/app/index.html
@@ -1054,10 +1138,8 @@ msgid "Continue to registration"
 msgstr ""
 
 #: templates/zerver/create_realm/create_demo_realm.html
-#, fuzzy
-#| msgid "Create a new organization"
 msgid "Try Zulip in a demo organization"
-msgstr "एक नया संगठन बनाएं"
+msgstr "एक डेमो संगठन में Zulip का प्रयास करें"
 
 #: templates/zerver/create_realm/create_demo_realm.html
 #, python-format
@@ -1492,11 +1574,6 @@ msgstr "बंद करे"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "अद्यतन करें"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr ""
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -2717,10 +2794,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/realm_reactivation.subject.txt
-#, fuzzy
-#| msgid "Create a new organization"
 msgid "Reactivate your Zulip demo organization"
-msgstr "एक नया संगठन बनाएं"
+msgstr "अपने Zulip डेमो संगठन को फिर से सक्रिय करें"
 
 #: templates/zerver/emails/realm_reactivation.subject.txt
 msgid "Reactivate your Zulip organization"
@@ -2884,6 +2959,10 @@ msgstr ""
 
 #: templates/zerver/footer.html
 msgid "Why Zulip"
+msgstr ""
+
+#: templates/zerver/footer.html
+msgid "Switch from Slack"
 msgstr ""
 
 #: templates/zerver/footer.html
@@ -3068,45 +3147,6 @@ msgstr "गोपनीयता नीति"
 
 #: templates/zerver/footer.html
 msgid "Website attributions"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
 msgstr ""
 
 #: templates/zerver/invalid_email.html
@@ -3360,10 +3400,8 @@ msgid "Account is deactivated"
 msgstr ""
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Invalid organization"
 msgid "Finalize organization import"
-msgstr "अमान्य संगठन"
+msgstr "संगठन आयात को अंतिम रूप दें"
 
 #: templates/zerver/realm_import_post_process.html
 msgid "Organization import completed!"
@@ -3382,10 +3420,8 @@ msgid "Select your account"
 msgstr ""
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Create a new organization"
 msgid "Create new account"
-msgstr "एक नया संगठन बनाएं"
+msgstr "नया अकाउंट बनाएं"
 
 #: templates/zerver/realm_reactivation.html
 msgid "Organization successfully reactivated"
@@ -3440,6 +3476,20 @@ msgstr ""
 msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid "You can now close this tab."
 msgstr ""
 
 #: templates/zerver/reset.html
@@ -3511,6 +3561,10 @@ msgid ""
 "instructions for the <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
+msgstr ""
+
+#: templates/zerver/slack_import.html
+msgid "Start over"
 msgstr ""
 
 #: templates/zerver/slack_import.html
@@ -3678,12 +3732,12 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr ""
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgid "Cannot reactivate a deleted user"
 msgstr ""
 
 #: zerver/actions/create_user.py
-msgid "Cannot reactivate a deleted user"
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
@@ -3784,7 +3838,7 @@ msgid "Direct messages cannot have topics."
 msgstr ""
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr ""
 
 #: zerver/actions/message_edit.py
@@ -3854,6 +3908,10 @@ msgstr ""
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py
+msgid "The time limit for moving this topic has passed."
 msgstr ""
 
 #: zerver/actions/message_edit.py
@@ -3934,10 +3992,6 @@ msgid ""
 msgstr ""
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr ""
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
@@ -3969,6 +4023,13 @@ msgstr ""
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
+msgstr ""
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zerver/actions/realm_linkifiers.py
@@ -4182,7 +4243,7 @@ msgid "This endpoint does not accept bot requests."
 msgstr ""
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr ""
 
 #: zerver/decorator.py
@@ -4276,22 +4337,6 @@ msgid ""
 msgstr ""
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr ""
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr ""
 
@@ -4366,6 +4411,22 @@ msgstr "कुर्की हटाते समय एक त्रुटि �
 msgid "Message must have recipients!"
 msgstr ""
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr ""
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr ""
@@ -4381,6 +4442,19 @@ msgstr ""
 
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/demo_organizations.py
@@ -4467,7 +4541,15 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
+msgstr ""
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
 msgstr ""
 
 #: zerver/lib/email_notifications.py
@@ -4796,10 +4878,8 @@ msgid "Server is not configured to use push notification service."
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Find accounts"
 msgid "Atlassian account ID"
-msgstr "खाते ढूंढे"
+msgstr "एटलसियन अकाउंट आईडी"
 
 #: zerver/lib/external_accounts.py
 msgid "Behance username"
@@ -4834,10 +4914,8 @@ msgid "GitHub username"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "GitLab username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "GitLab उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
 msgid "Instagram username"
@@ -4852,20 +4930,16 @@ msgid "Mastodon profile"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "Medium username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "मध्यम उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
 msgid "Pinterest username"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "Reddit username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "Reddit उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
 msgid "Snapchat username"
@@ -4876,22 +4950,16 @@ msgid "Threads username"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "TikTok username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "टिकटोक उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "Twitch username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "Twitch उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "X username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "X उपयोगकर्ता नाम"
 
 #: zerver/lib/external_accounts.py
 msgid "YouTube handle"
@@ -4899,68 +4967,6 @@ msgstr ""
 
 #: zerver/lib/external_accounts.py
 msgid "Invalid external account type"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr ""
-
-#: zerver/lib/integrations.py
-#, fuzzy
-#| msgid "Billing"
-msgid "Video calling"
-msgstr "बिलिंग"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Version control"
 msgstr ""
 
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
@@ -5015,6 +5021,11 @@ msgstr ""
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "{fullname} moderation"
+msgstr ""
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
 msgstr ""
 
 #: zerver/lib/narrow.py
@@ -5408,10 +5419,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr ""
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "नया संदेश"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr ""
 
@@ -5475,6 +5482,10 @@ msgstr ""
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
@@ -5512,21 +5523,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -5922,6 +5920,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr ""
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr ""
 
@@ -5942,7 +5944,7 @@ msgstr ""
 msgid "No such bot"
 msgstr ""
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr ""
 
@@ -6393,6 +6395,12 @@ msgstr ""
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "सत्र नहीं मिला"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr ""
@@ -6570,21 +6578,11 @@ msgid "An explanation is required."
 msgstr ""
 
 #: zerver/views/message_report.py
-#, fuzzy
-#| msgid "Email address changes are disabled in this organization."
 msgid "Message reporting is not enabled in this organization."
-msgstr "इस संगठन में ईमेल पता परिवर्तन अक्षम हैं।"
+msgstr "इस संगठन में संदेश रिपोर्टिंग सक्षम नहीं है।"
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr ""
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr ""
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
+#: zerver/views/message_report.py
+msgid "Failed to send the message report."
 msgstr ""
 
 #: zerver/views/message_summary.py
@@ -6775,11 +6773,9 @@ msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr ""
 
 #: zerver/views/realm_export.py
-#, fuzzy
-#| msgid "Email address changes are disabled in this organization."
 msgid ""
 "Exports of all public and private data are not enabled for this organization."
-msgstr "इस संगठन में ईमेल पता परिवर्तन अक्षम हैं।"
+msgstr "इस संगठन के लिए सभी सार्वजनिक और निजी डेटा का निर्यात सक्षम नहीं है।"
 
 #: zerver/views/realm_export.py
 msgid "Exceeded rate limit."
@@ -6835,6 +6831,25 @@ msgid "Invalid playground"
 msgstr ""
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -6862,6 +6877,11 @@ msgstr ""
 
 #: zerver/views/registration.py
 msgid "Finalizing import…"
+msgstr ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
 msgstr ""
 
 #: zerver/views/registration.py
@@ -6916,10 +6936,6 @@ msgstr ""
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr ""
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -6928,6 +6944,16 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr ""
 
 #: zerver/views/streams.py
@@ -7105,6 +7131,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr ""
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr ""
@@ -7187,13 +7217,13 @@ msgid "New email value error: {message}"
 msgstr ""
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid ""
-#| "No analytics data available. Please contact your server administrator."
 msgid ""
 "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"जब तक FAKE_EMAIL_DOMAIL_DOMAIN ठीक से कॉन्फ़िगर नहीं किया जाता है, तब तक बॉट ईमेल "
+"नहीं बदल सकते।\n"
+"कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: zerver/views/users.py
 msgid "Email address already in use"
@@ -7212,6 +7242,10 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 
 #: zerver/views/users.py
+msgid "Only embedded bots have config_data."
+msgstr ""
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7219,10 +7253,6 @@ msgstr ""
 
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
-msgstr ""
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
 msgstr ""
 
 #: zerver/views/users.py
@@ -7280,7 +7310,7 @@ msgstr ""
 
 #: zerver/views/video_calls.py
 msgid "Unknown Zoom user email"
-msgstr ""
+msgstr "अज्ञात Zoom यूज़र ईमेल"
 
 #: zerver/views/video_calls.py
 #, python-brace-format
@@ -7336,13 +7366,6 @@ msgstr ""
 #: zerver/webhooks/wordpress/view.py
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
-msgstr ""
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py
@@ -7492,3 +7515,9 @@ msgstr "अमान्य OTP"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
+
+#~ msgid "Video calling"
+#~ msgstr "वीडियो कॉलिंग"
+
+#~ msgid "New message"
+#~ msgstr "नया संदेश"

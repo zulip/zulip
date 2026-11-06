@@ -509,7 +509,7 @@ run_test("check_and_validate_custom_time_input", () => {
     assert.equal(util.validate_custom_time_input(input_is_integer), true);
 });
 
-run_test("the", () => {
+run_test("the", ({override}) => {
     const list_with_one_item = ["foo"];
     assert.equal(util.the(list_with_one_item), "foo");
 
@@ -519,11 +519,32 @@ run_test("the", () => {
     // unnecessarily breaking the app.
     assert.equal(util.the(list_with_more_items), "foo");
 
-    blueslip.expect("error", "the: expected only 1 item, got none");
+    blueslip.expect("error", "the: expected only 1 item, got none", 2);
     // Error is thrown, but we still return the "first" item to avoid
     // unnecessarily breaking the app for places we refactored this that
     // were previously typed wrong but not breaking the app.
     assert.equal(util.the([]), undefined);
+    assert.deepEqual(blueslip.get_test_logs("error").at(-1).more_info, {
+        ready_state: undefined,
+    });
+
+    // When the body exists, the error reports its state.
+    override(document, "readyState", "complete");
+    override(document, "body", {
+        childElementCount: 2,
+        children: [
+            {tagName: "DIV", id: "app-loading", classList: []},
+            {tagName: "DIV", id: "", classList: ["app", "hidden"]},
+        ],
+        querySelector: (selector) => (selector === ".app" ? {} : null),
+    });
+    assert.equal(util.the([]), undefined);
+    assert.deepEqual(blueslip.get_test_logs("error").at(-1).more_info, {
+        ready_state: "complete",
+        body_child_count: 2,
+        has_app_container: true,
+        body_children: ["div#app-loading", "div.app.hidden"],
+    });
 });
 
 run_test("compare_a_b", () => {

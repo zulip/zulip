@@ -16,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 19:30+0000\n"
-"Last-Translator: Buzási Róbert <drbuzasi@gmail.com>\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"PO-Revision-Date: 2026-10-18 16:22+0000\n"
+"Last-Translator: Keller Mónika <kmoni2026@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/zulip/django/"
 "hu/>\n"
 "Language: hu\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -38,19 +38,19 @@ msgstr "Hibás szervezet"
 
 #: analytics/views/stats.py
 msgid "Public channels"
-msgstr ""
+msgstr "Nyilvános csatornák"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "Privát csatornák"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
-msgstr ""
+msgstr "Közvetlen üzenetek"
 
 #: analytics/views/stats.py
 msgid "Group direct messages"
-msgstr ""
+msgstr "Csoport üzenetek"
 
 #: analytics/views/stats.py
 #, python-brace-format
@@ -81,10 +81,9 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
-"A szerveződéseteknek már semennyi Zulip licensze sem maradt. Kérjük [növeld "
-"a licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
-"felhasználókat]({deactivate_user_help_page_link}), hogy tudjatok új tagokat "
-"hívni."
+"A szervezetednek már nincs Z ulip licensze. Kérjük [növeld a licenszeid "
+"számát]({billing_page_link}) vagy [függessz fel passzív felhasználókat]"
+"({deactivate_user_help_page_link}), hogy tudjatok új tagokat hívni."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -93,7 +92,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
-"A szerveződéseteknek már csak egy Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetednek már csak egy Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy egynél több tagot is "
 "meghívhassatok."
@@ -105,7 +104,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
-"A szerveződéseteknek már csak kettő Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetednek már csak kettő Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy kettőnél több tagot "
 "is meghívhassatok."
@@ -117,7 +116,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
-"A szerveződéseteknek már csak három Zulip licensze maradt. Kérjük [növeld a "
+"A szervezetefnek már csak három Zulip licensze maradt. Kérjük [növeld a "
 "licenszeid számát]({billing_page_link}) vagy [deaktiválj passzív "
 "felhasználókat]({deactivate_user_help_page_link}), hogy háromnál több tagot "
 "is meghívhassatok."
@@ -136,20 +135,24 @@ msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
 msgstr ""
+"A szervezetednek nincs elegendő Zulip-licence. A meghívók nem kerültek "
+"kiküldésre."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"A szervezetednek nincs elegendő Zulip-licence a vendégfelhasználó "
+"szerepkörének módosításához."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "A regisztráció jelenleg nem érhető el."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Érvénytelen távoli kiszolgáló."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -196,10 +199,11 @@ msgstr "Valami gond van. Várj pár másodpercet és próbáld újra."
 #: corporate/lib/stripe.py
 msgid "Please add a credit card before starting your free trial."
 msgstr ""
+"Kérjük, adjon meg egy bankkártyát az ingyenes próbaidőszak megkezdése előtt."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Kérjük, adjon meg egy bankkártyát a csomagfrissítés ütemezéséhez."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -217,6 +221,8 @@ msgstr "Szerződésmódosítás nem lehetséges. A szerződés lejárt."
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Ingyenes próbaverziós csomag esetén az aktuális számlázási időszakban nem "
+"frissíthetők a licencek."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -243,6 +249,8 @@ msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"Nem módosíthatók a licencek a következő számlázási ciklusra olyan előfizetés "
+"esetén, amelynél a csomag szintjének csökkentése (downgrade) történik."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -277,7 +285,7 @@ msgstr "Fizetési szándék nem található"
 
 #: corporate/lib/stripe.py
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "Adja meg a stripe_session_id vagy stripe_invoice_id értéket"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -291,7 +299,7 @@ msgstr ""
 
 #: corporate/views/billing_page.py
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "A „confirmed” paraméter kötelező"
 
 #: corporate/views/remote_billing_page.py
 msgid "Billing access token expired."
@@ -314,20 +322,20 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "A folytatáshoz el kell fogadnia a Szolgáltatási feltételeket."
 
 #: corporate/views/remote_billing_page.py
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "Ez a zulip_org_id nincs regisztrálva a Zulip számlázási rendszerében."
 
 #: corporate/views/remote_billing_page.py
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "Érvénytelen zulip_org_key ehhez a zulip_org_id-hez."
 
 #: corporate/views/remote_billing_page.py
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "A szerverregisztrációdat érvénytelenítették."
 
 #: templates/404.html templates/4xx.html
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html
@@ -336,7 +344,7 @@ msgstr "Hiba"
 
 #: templates/404.html
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Az oldal nem található (404)"
 
 #: templates/404.html templates/4xx.html
 #, python-format
@@ -347,29 +355,37 @@ msgstr ""
 
 #: templates/4xx.html
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "Hozzáférés megtagadva (403)"
 
 #: templates/4xx.html
 msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
+"A kérés nem teljesíthető, mivel a böngészője nem küldte el a hozzáférés "
+"hitelesítéséhez szükséges adatokat. A probléma megoldása érdekében:"
 
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
 msgstr ""
+"Győződjön meg arról, hogy böngészője engedélyezi a cookie-kat ezen az "
+"oldalon."
 
 #: templates/4xx.html
 msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"Ellenőrizze, hogy vannak-e olyan böngésző-adatvédelmi beállítások vagy "
+"bővítmények, amelyek blokkolják a Referer fejléceket, és kapcsolja ki őket "
+"erre az oldalra vonatkozóan."
 
 #: templates/4xx.html
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "A metódus nem engedélyezett (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Belső kiszolgáló hiba"
 
@@ -378,6 +394,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Valami hiba történt. Elnézést kérünk! Tudunk a problémáról, és dolgozunk a "
+"megoldásán. Amint a rendszer újra működik, a Zulip automatikusan betöltődik."
 
 #: templates/500.html
 #, python-format
@@ -392,6 +410,8 @@ msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Valami hiba történt. Elnézést kérünk! Amint minden újra működik, a Zulip "
+"automatikusan betöltődik."
 
 #: templates/500.html
 #, python-format
@@ -425,27 +445,27 @@ msgstr "Zulip analitika %(target_name)s számára"
 
 #: templates/analytics/stats.html
 msgid "Organization summary"
-msgstr ""
+msgstr "Szervezeti összefoglaló"
 
 #: templates/analytics/stats.html
 msgid "Number of users"
-msgstr ""
+msgstr "Felhasználók száma"
 
 #: templates/analytics/stats.html
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Az elmúlt 15 napban aktív felhasználók"
 
 #: templates/analytics/stats.html
 msgid "Number of guests"
-msgstr ""
+msgstr "Vendégek száma"
 
 #: templates/analytics/stats.html
 msgid "Total number of messages"
-msgstr ""
+msgstr "Üzenetek teljes száma"
 
 #: templates/analytics/stats.html
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Üzenetek száma az elmúlt 30 napban"
 
 #: templates/analytics/stats.html
 msgid "File storage in use"
@@ -730,17 +750,14 @@ msgid "Open communities directory"
 msgstr ""
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Szűrés kategória szerint"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "Mindenki"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Kategóriák"
 
@@ -891,6 +908,31 @@ msgstr "Link"
 msgid "Ship wheel"
 msgstr ""
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+#, fuzzy
+#| msgid "Getting started"
+msgid "Get started"
+msgstr "Kezdőlépések"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "A Zulip channel with conversations organized by topic"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -934,12 +976,6 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-
-#: templates/corporate/zulip-cloud.html
-#, fuzzy
-#| msgid "Getting started"
-msgid "Get started"
-msgstr "Kezdőlépések"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1028,13 +1064,14 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 
 #: templates/zerver/app/index.html
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 
 #: templates/zerver/app/index.html
@@ -1551,11 +1588,6 @@ msgstr "Bezár"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "Frissítés"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3041,6 +3073,10 @@ msgid "Why Zulip"
 msgstr "Miért a Zulip"
 
 #: templates/zerver/footer.html
+msgid "Switch from Slack"
+msgstr ""
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Jellemzők"
 
@@ -3224,51 +3260,6 @@ msgstr "Magánszféra védelme"
 
 #: templates/zerver/footer.html
 msgid "Website attributions"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Több, mint %(integrations_count_display)s natív integráció."
-
-#: templates/zerver/integrations/catalog.html
-#, fuzzy
-#| msgid ""
-#| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
-#| "and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"És száz meg száz, hála a <a href=\"/integrations/doc/zapier\">Zapier</a> és "
-"<a href=\"/integrations/doc/ifttt\">IFTTT</a> appoknak."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Kereső integrációk"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Egyedi integrációk"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Bejövő webhookok"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Csevegő robotok"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
 msgstr ""
 
 #: templates/zerver/invalid_email.html
@@ -3611,6 +3602,22 @@ msgid ""
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may then close this window."
+msgid "You can now close this tab."
+msgstr "Ekkor bezárhatod ezt az ablakot."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Jelszó visszaállítása"
@@ -3681,6 +3688,10 @@ msgid ""
 "instructions for the <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
+msgstr ""
+
+#: templates/zerver/slack_import.html
+msgid "Start over"
 msgstr ""
 
 #: templates/zerver/slack_import.html
@@ -3851,15 +3862,15 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} elfogadta a Zulip meghívódat!"
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
-msgstr ""
-
-#: zerver/actions/create_user.py
 #, fuzzy
 #| msgid "Cannot deactivate the only {entity}."
 msgid "Cannot reactivate a deleted user"
 msgstr "Ez az egyetlen {entity}, ezért nem tiltható le."
+
+#: zerver/actions/create_user.py
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgstr ""
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -3962,7 +3973,9 @@ msgid "Direct messages cannot have topics."
 msgstr ""
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Érvénytelen propagate_mode a téma szerkesztése nélkül"
 
 #: zerver/actions/message_edit.py
@@ -4033,6 +4046,12 @@ msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr ""
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message has passed"
+msgid "The time limit for moving this topic has passed."
+msgstr "Az üzenet módosítására rendelkezésre álló időkorlát letelt"
 
 #: zerver/actions/message_edit.py
 #, fuzzy
@@ -4116,10 +4135,6 @@ msgid ""
 msgstr ""
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr ""
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgetek: az API programozó érvénytelen JSON tartalmat küldött"
 
@@ -4151,6 +4166,13 @@ msgstr "Ilyen nevű egyedi hangulatjel már létezik."
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
+msgstr ""
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zerver/actions/realm_linkifiers.py
@@ -4366,7 +4388,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Ez a végpont nem fogad el robotoktól érkező kéréseket."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "Szerver adminisztrátornak kell lenned"
 
 #: zerver/decorator.py
@@ -4467,24 +4491,6 @@ msgstr ""
 "növeljék a lincenszek számát, majd próbálkozz újra."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-#, fuzzy
-#| msgid "Embedded bots are not enabled."
-msgid "Challenges are not enabled."
-msgstr "Beágyazott robotok használata nem engedélyezett."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Új jelszó"
 
@@ -4561,6 +4567,24 @@ msgstr "Hiba történt a csatolmány törlése közben. Próbáld újra később
 msgid "Message must have recipients!"
 msgstr "Az üzenethez tartoznia kell címzettnek!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+#, fuzzy
+#| msgid "Embedded bots are not enabled."
+msgid "Challenges are not enabled."
+msgstr "Beágyazott robotok használata nem engedélyezett."
+
 #: zerver/lib/channel_folders.py
 #, fuzzy
 #| msgid "Content can't be empty"
@@ -4581,6 +4605,19 @@ msgstr ""
 #| msgid "Invalid data export ID"
 msgid "Invalid channel folder ID"
 msgstr "Érvénytelen adat export ID"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr ""
 
 #: zerver/lib/demo_organizations.py
 #, fuzzy
@@ -4671,7 +4708,15 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
+msgstr ""
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
 msgstr ""
 
 #: zerver/lib/email_notifications.py
@@ -5121,68 +5166,6 @@ msgstr ""
 msgid "Invalid external account type"
 msgstr "Érvénytelen külső fiók típus"
 
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Integrációs keretrendszerek"
-
-#: zerver/lib/integrations.py
-#, fuzzy
-#| msgid "Billing"
-msgid "Video calling"
-msgstr "Számlázás"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Folyamatos integráció"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Ügyfélszolgálat"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Telepítés"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Szórakoztatás"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Kommunikáció"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Gazdasági"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Marketing"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Egyéb"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Projekt menedzsment"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Hatékonyság"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Verziókezelés"
-
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
 msgstr "Az üzenet nem lehet üres"
@@ -5237,6 +5220,11 @@ msgstr ""
 #| msgid "{full_name} mentioned you:"
 msgid "{fullname} moderation"
 msgstr "{full_name} kihívott téged:"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -5633,10 +5621,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} kihívott mindenkit:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Új üzenet"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr ""
 
@@ -5702,6 +5686,10 @@ msgstr "'{email}' már nem használja a Zulip-et."
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
 #: zerver/lib/reminders.py
 #, fuzzy, python-brace-format
 #| msgid "{var_name} is too long (limit: {max_length} characters)"
@@ -5740,21 +5728,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -6163,6 +6138,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Érvénytelen beágyazott robot név."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Érvénytelen konfigurációs adat!"
 
@@ -6183,7 +6162,7 @@ msgstr ""
 msgid "No such bot"
 msgstr "Nincs ilyen robot"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Nincs ilyen felhasználó"
 
@@ -6639,6 +6618,12 @@ msgstr "Az esemény {event_id} ebben a sorban nem található"
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Böngészési folyamat nem található"
+
 #: zerver/views/antispam.py
 #, fuzzy
 #| msgid "Failed to create Zoom call"
@@ -6828,17 +6813,11 @@ msgstr ""
 msgid "Message reporting is not enabled in this organization."
 msgstr "Zephyr tükrözés nem engedélyezett ebben a szervezetben."
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Hiányzó küldő"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Tükrözés nem engedélyezett a címzett felhasználó azonosítókkal"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Érvénytelen tükrözött üzenet"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Az üzenet megjelenítése nem sikerült"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7095,6 +7074,25 @@ msgid "Invalid playground"
 msgstr "Érvénytelen homokozó"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -7122,6 +7120,11 @@ msgstr ""
 
 #: zerver/views/registration.py
 msgid "Finalizing import…"
+msgstr ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
 msgstr ""
 
 #: zerver/views/registration.py
@@ -7178,12 +7181,6 @@ msgstr ""
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr ""
-"Nincs teendő meghatározva. Legalább az \"add\" vagy a \"delete\" megadása "
-"szükséges."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7192,6 +7189,16 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr ""
 
 #: zerver/views/streams.py
@@ -7369,6 +7376,12 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr ""
+"Nincs teendő meghatározva. Legalább az \"add\" vagy a \"delete\" megadása "
+"szükséges."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "A profilkép változtatások ebben a szervezetben le vannak tiltva."
@@ -7488,6 +7501,12 @@ msgstr ""
 "megváltoztatása sikertelen"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Érvénytelen beágyazott robot név."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7499,10 +7518,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Beágyazott robotok használata nem engedélyezett."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Érvénytelen beágyazott robot név."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -7626,13 +7641,6 @@ msgstr "Hiba: channels_map_to_topics paraméter más, mint 0 vagy 1"
 #: zerver/webhooks/wordpress/view.py
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
-msgstr ""
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py
@@ -7784,6 +7792,89 @@ msgstr "Érvénytelen OTP"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Egyszerre nem használható a mobile_flow_otp és a desktop_flow_otp."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Több, mint %(integrations_count_display)s natív integráció."
+
+#, fuzzy
+#~| msgid ""
+#~| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</"
+#~| "a> and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "És száz meg száz, hála a <a href=\"/integrations/doc/zapier\">Zapier</a> "
+#~ "és <a href=\"/integrations/doc/ifttt\">IFTTT</a> appoknak."
+
+#~ msgid "Search integrations"
+#~ msgstr "Kereső integrációk"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Egyedi integrációk"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Bejövő webhookok"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Csevegő robotok"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Integrációs keretrendszerek"
+
+#, fuzzy
+#~| msgid "Billing"
+#~ msgid "Video calling"
+#~ msgstr "Számlázás"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Folyamatos integráció"
+
+#~ msgid "Customer support"
+#~ msgstr "Ügyfélszolgálat"
+
+#~ msgid "Deployment"
+#~ msgstr "Telepítés"
+
+#~ msgid "Entertainment"
+#~ msgstr "Szórakoztatás"
+
+#~ msgid "Communication"
+#~ msgstr "Kommunikáció"
+
+#~ msgid "Financial"
+#~ msgstr "Gazdasági"
+
+#~ msgid "Marketing"
+#~ msgstr "Marketing"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Egyéb"
+
+#~ msgid "Project management"
+#~ msgstr "Projekt menedzsment"
+
+#~ msgid "Productivity"
+#~ msgstr "Hatékonyság"
+
+#~ msgid "Version control"
+#~ msgstr "Verziókezelés"
+
+#~ msgid "New message"
+#~ msgstr "Új üzenet"
+
+#~ msgid "Missing sender"
+#~ msgstr "Hiányzó küldő"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Tükrözés nem engedélyezett a címzett felhasználó azonosítókkal"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Érvénytelen tükrözött üzenet"
 
 #, fuzzy
 #~| msgid "Already has an account."

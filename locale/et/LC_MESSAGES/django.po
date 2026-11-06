@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-03-31 18:58+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"PO-Revision-Date: 2026-07-20 12:19+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/zulip/django/et/"
 ">\n"
@@ -16,50 +16,52 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
-msgstr ""
+msgstr "Pole külaliskasutajatele lubatud"
 
 #: analytics/views/stats.py
 msgid "Invalid organization"
-msgstr ""
+msgstr "Vigane organisatsioon"
 
 #: analytics/views/stats.py
 msgid "Public channels"
-msgstr ""
+msgstr "Avalikud kanalid"
 
 #: analytics/views/stats.py
 msgid "Private channels"
-msgstr ""
+msgstr "Privaatsed kanalid"
 
 #: analytics/views/stats.py
 msgid "Direct messages"
-msgstr ""
+msgstr "Otsevestlused"
 
 #: analytics/views/stats.py
 msgid "Group direct messages"
-msgstr ""
+msgstr "Grupi otsesõnumid"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "Kanal on diagrammilt puudu: {chart_name}"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "Diagrammi tundmatu nimi: {chart_name}"
 
 #: analytics/views/stats.py
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr ""
+msgstr "Algusaeg on hilisem kui lõpuaeg. Algus: {start}, Lõpp: {end}"
 
 #: analytics/views/stats.py
 msgid "No analytics data available. Please contact your server administrator."
 msgstr ""
+"Analüütilisi andmeid pole saadaval. Palun pöördu oma serveri peakasutaja "
+"poole."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -69,6 +71,10 @@ msgid ""
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
 msgstr ""
+"Sinu organisatsioonil pole Zulipi litsentse alles jäänud ja seega ei saa "
+"enam uusi kasutajaid vastu võtta. Uute kasutajate liitumiseks palun "
+"[suurenda litsentside arvu]({billing_page_link}) või [deaktiveeri "
+"mitteaktiivsed kasutajad]({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -77,6 +83,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
+"Sinu organisatsioonil on alles jäänud üks Zulipi litsents. Kui tahad "
+"võimaldada enamate kasutajate liitumist, siis võid [suurenda litsentside "
+"arvu]({billing_page_link}) või [deaktiveeri mitteaktiivsed kasutajad]"
+"({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -85,6 +95,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
+"Sinu organisatsioonil on alles jäänud kaks Zulipi litsentsi. Kui tahad "
+"võimaldada kahest enama kasutaja liitumist, siis võid [suurenda litsentside "
+"arvu]({billing_page_link}) või [deaktiveeri mitteaktiivsed kasutajad]"
+"({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -93,6 +107,10 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive users]"
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
+"Sinu organisatsioonil on alles jäänud kolm Zulipi litsentsi. Kui tahad "
+"võimaldada kolmest enama kasutaja liitumist, siis võid [suurenda litsentside "
+"arvu]({billing_page_link}) või [deaktiveeri mitteaktiivsed kasutajad]"
+"({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -102,26 +120,35 @@ msgid ""
 "[number of licenses for the current and next billing period]"
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
+"Uus kasutaja ({email}) ei saanud liituda, kuna sinu organisatsioonil pole "
+"alles jäänud piisavalt Zulipi litsentse. Kui tahad võimaldada uute "
+"kasutajate liitumist, siis taga, et [praeguse ja järgmise arveldusperioodi "
+"litsentside arv]({billing_page_link}) oleks suurem kui praegune kasutajate "
+"arv."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
 msgstr ""
+"Sinu organisatsioonil pole piisavalt Zulipi litsentse. Kutseid jäid seega "
+"saatmata."
 
 #: corporate/lib/registration.py
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"Sinu organisatsioonil ei ole piisavalt Zulipi litsentse külaliskasutaja "
+"rolli muutmiseks."
 
 #: corporate/lib/remote_billing_util.py
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "Registreerimine on kasutuselt eemaldatud"
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
-msgstr ""
+msgstr "Vigane või vale kaugserver."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -129,6 +156,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"Sa pead ostma litsentsid kõigile oma organisatsiooni aktiivsetele "
+"kasutajatele (vähemalt {min_licenses})."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -136,6 +165,8 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
+"Sellel lehel ei saa töödelda arveid, millel on rohkem kui {max_licenses} "
+"litsentsi. Uuenduse lõpuleviimiseks palun kirjuta e-posti aadressile {email}."
 
 #: corporate/lib/stripe.py
 msgid "No payment method on file."
@@ -144,64 +175,71 @@ msgstr ""
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "{brand} ending in {last4}"
-msgstr ""
+msgstr "{brand}, mis lõppeb {last4}"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr ""
+msgstr "Tundmatu maksemeetod. Palun kirjuta e-posti aadressile {email}."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr ""
+msgstr "Midagi läks valesti. Palun kirjuta e-posti aadressile {email}."
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please reload the page."
-msgstr ""
+msgstr "Midagi läks valesti. Palun laadi leht uuesti."
 
 #: corporate/lib/stripe.py
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr ""
+msgstr "Midagi läks valesti. Palun oota paar sekundit ja proovi uuesti."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "Palun lisa krediitkaart enne tasuta prooviperioodi alustamist."
 
 #: corporate/lib/stripe.py
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "Uuendamise ajastamiseks palun lisa krediitkaart."
 
 #: corporate/lib/stripe.py
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
 msgstr ""
+"Teenuse paketti ei saa uuendada. See pakett on aegunud ja asendatud uuega."
 
 #: corporate/lib/stripe.py
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "Teenuse paketti ei saa uuendada. Selle paketi kehtivus on lõppenud."
 
 #: corporate/lib/stripe.py
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"Proovimiseks mõeldud tasuta teenusepaketi jaoks ei saa praegusel "
+"arveldusperioodil litsentse uuendada."
 
 #: corporate/lib/stripe.py
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
 msgstr ""
+"Litsentside käsitsi uuendamine ei õnnestu. Sinu teenusepakett kasutab "
+"automaatset litsentsihaldust."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
+"Sinu teenusepaketi puhul juba leidub antud arveldusperioodi jaoks {licenses} "
+"litsentsi."
 
 #: corporate/lib/stripe.py
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
+msgstr "Praeguse arveldusperioodi jaoks sa ei saa litsentside arvu vähendada."
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -225,19 +263,19 @@ msgstr ""
 
 #: corporate/lib/stripe.py
 msgid "Nothing to change."
-msgstr ""
+msgstr "Pole midagi muudetavat."
 
 #: corporate/lib/stripe.py
 msgid "No customer for this organization!"
-msgstr ""
+msgstr "Selle organisatsiooni jaoks ei leidu klienti!"
 
 #: corporate/lib/stripe.py
 msgid "Session not found"
-msgstr ""
+msgstr "Sessiooni ei leidu"
 
 #: corporate/lib/stripe.py
 msgid "Payment intent not found"
-msgstr ""
+msgstr "Maksealgatust ei leidu"
 
 #: corporate/lib/stripe.py
 msgid "Pass stripe_session_id or stripe_invoice_id"
@@ -274,11 +312,11 @@ msgstr ""
 
 #: corporate/views/remote_billing_page.py
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "Kasutajakontot pole veel olemas."
 
 #: corporate/views/remote_billing_page.py
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "Jätkamiseks pead nõustuma kasutustingimustega."
 
 #: corporate/views/remote_billing_page.py
 msgid ""
@@ -296,11 +334,11 @@ msgstr ""
 #: templates/404.html templates/4xx.html
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html
 msgid "Error"
-msgstr ""
+msgstr "Viga"
 
 #: templates/404.html
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Lehekülge ei leidu (404)"
 
 #: templates/404.html templates/4xx.html
 #, python-format
@@ -308,10 +346,12 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
+"Kui see viga on ootamatu, võid <a href=\"mailto:%(support_email)s\">võtta "
+"ühendust kasutajatoega</a>."
 
 #: templates/4xx.html
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "Juurdepääs on keelatud (403)"
 
 #: templates/4xx.html
 msgid ""
@@ -322,6 +362,7 @@ msgstr ""
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
 msgstr ""
+"Palun kontrolli, et sinu veebibrauser lubab selle saidi küpsiseid salvestada."
 
 #: templates/4xx.html
 msgid ""
@@ -331,17 +372,21 @@ msgstr ""
 
 #: templates/4xx.html
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Meetod pole lubatud (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
-msgstr ""
+msgstr "Serveri sisemine viga"
 
 #: templates/500.html
 msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Midagi läks valesti. Vabandust selle pärast! Oleme probleemist teadlikud ja "
+"töötame selle lahendamise nimel. Zulip laadib vaate automaatselt uuesti, kui "
+"ta on töökorras."
 
 #: templates/500.html
 #, python-format
@@ -350,12 +395,17 @@ msgid ""
 "information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
 "a> with any questions."
 msgstr ""
+"Lisateabe saamiseks vaata <a href=\"%(status_url)s\">Zulip Cloudi "
+"olekuteavet</a> ja <a href=\"mailto:%(support_email)s\">küsimuste korral "
+"võta ühendust Zulipi tugiteenusega</a>."
 
 #: templates/500.html
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Midagi läks valesti. Vabandust selle pärast! Zulip laadib vaata automaatselt "
+"uuesti, kui ta on töökorras."
 
 #: templates/500.html
 #, python-format
@@ -363,6 +413,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
+"<a href=\"mailto:%(support_email)s\">Kasutajatoe kontekstis pöördu selle "
+"serveri peakasutajate poole</a>."
 
 #: templates/500.html
 #, python-format
@@ -370,147 +422,152 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
+"Kui haldad seda serverit, võid näiteks vaadata <a "
+"href=\"%(troubleshooting_url)s\">Zulipi serveri veatuvastuse juhendit</a>."
 
 #: templates/analytics/stats.html
 #, python-format
 msgid "Analytics for %(target_name)s | Zulip"
-msgstr ""
+msgstr "Analüütika | %(target_name)s | Zulip"
 
 #: templates/analytics/stats.html
 msgid "Analytics are fully available 24 hours after organization creation."
 msgstr ""
+"Analüütika on täies mahus saadaval 24 tundi peale organisatsiooni loomist."
 
 #: templates/analytics/stats.html
 #, python-format
 msgid "Zulip analytics for %(target_name)s"
-msgstr ""
+msgstr "Zulipi analüütika: %(target_name)s"
 
 #: templates/analytics/stats.html
 msgid "Organization summary"
-msgstr ""
+msgstr "Organisatsiooni kokkuvõte"
 
 #: templates/analytics/stats.html
 msgid "Number of users"
-msgstr ""
+msgstr "Kasutajate arv"
 
 #: templates/analytics/stats.html
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Aktiivseid kasutajaid viimase 15 päeva jooksul"
 
 #: templates/analytics/stats.html
 msgid "Number of guests"
-msgstr ""
+msgstr "Külaliste arv"
 
 #: templates/analytics/stats.html
 msgid "Total number of messages"
-msgstr ""
+msgstr "Sõnumeid kokku"
 
 #: templates/analytics/stats.html
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Sõnumeid viimase 30 päeva jooksul"
 
 #: templates/analytics/stats.html
 msgid "File storage in use"
-msgstr ""
+msgstr "Kasutusel andmeruum"
 
 #: templates/analytics/stats.html
 msgid "Active users"
-msgstr ""
+msgstr "Aktiivseid kasutajaid"
 
 #: templates/analytics/stats.html
 msgid "Daily actives"
-msgstr ""
+msgstr "Igapäevaseid aktiivseid kasutajaid"
 
 #: templates/analytics/stats.html
 msgid "15 day actives"
-msgstr ""
+msgstr "Aktiivseid kasutajaid 15 päeva jooksul"
 
 #: templates/analytics/stats.html
 msgid "Total users"
-msgstr ""
+msgstr "Kasutajaid kokku"
 
 #: templates/analytics/stats.html zerver/models/custom_profile_fields.py
 msgid "Users"
-msgstr ""
+msgstr "Kasutajad"
 
 #: templates/analytics/stats.html
 msgid "Messages sent by recipient type"
-msgstr ""
+msgstr "Saatja tüübi järgi saadetud sõnumeid"
 
 #: templates/analytics/stats.html
 msgid "Me"
-msgstr ""
+msgstr "Mina"
 
 #: templates/analytics/stats.html zerver/models/groups.py
 #: zerver/views/registration.py
 msgid "Everyone"
-msgstr ""
+msgstr "Kõik"
 
 #: templates/analytics/stats.html
 msgid "Last week"
-msgstr ""
+msgstr "Eelmisel nädalal"
 
 #: templates/analytics/stats.html
 msgid "Last month"
-msgstr ""
+msgstr "Eelmisel kuul"
 
 #: templates/analytics/stats.html
 msgid "Last year"
-msgstr ""
+msgstr "Eelmisel aastal"
 
 #: templates/analytics/stats.html
 msgid "All time"
-msgstr ""
+msgstr "Läbi aegade"
 
 #: templates/analytics/stats.html
 msgid "Messages sent over time"
-msgstr ""
+msgstr "Läbi aegade saadetud sõnumeid"
 
 #: templates/analytics/stats.html
 msgid "Daily"
-msgstr ""
+msgstr "Kord päevas"
 
 #: templates/analytics/stats.html
 msgid "Weekly"
-msgstr ""
+msgstr "Iga nädal"
 
 #: templates/analytics/stats.html
 msgid "Cumulative"
-msgstr ""
+msgstr "Kumulatiivne"
 
 #: templates/analytics/stats.html
 msgid "Humans"
-msgstr ""
+msgstr "Inimesed"
 
 #: templates/analytics/stats.html
 msgid "Bots"
-msgstr ""
+msgstr "Robotid"
 
 #: templates/analytics/stats.html
 msgid "Messages read over time"
-msgstr ""
+msgstr "Loetud sõnumeid läbi aegade"
 
 #: templates/analytics/stats.html
 msgid "Messages sent by client"
-msgstr ""
+msgstr "Kliendi saadetud sõnumeid"
 
 #: templates/analytics/stats.html
 msgid "Last update"
-msgstr ""
+msgstr "Viimane uuendus"
 
 #: templates/analytics/stats.html
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
+"Kõikide graafikute täismahuline uuendus toimub korda päevas. Diagrammi „Läbi "
+"aegade saadetud sõnumeid“ uuendatakse kord tunnis."
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed"
-msgstr ""
+msgstr "E-posti aadress on muudetud"
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed!"
-msgstr ""
+msgstr "E-posti aadress on muudetud!"
 
 #: templates/confirmation/confirm_email_change.html
 #, python-format
@@ -518,19 +575,22 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
+"See kinnitab, et sinu Zulipi konto e-posti aadress on muutunud: "
+"%(old_email_html_tag)s → %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Kinnitan sinu e-posti aadressi"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "Kinnituslinki pole olemas"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Whoops. We couldn't find your confirmation link in the system."
 msgstr ""
+"Vaat, kus lops. Me ei suutnud oma süsteemist sinu kinnituslinki tuvastada."
 
 #: templates/confirmation/link_does_not_exist.html
 #: templates/confirmation/link_malformed.html
@@ -542,77 +602,79 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "Kinnituslink on kas aegunud või kasutuselt eemaldatud"
 
 #: templates/confirmation/link_expired.html
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "Vaat kus lops. Kinnituslink on kas aegunud või kasutuselt eemaldatud."
 
 #: templates/confirmation/link_expired.html
 msgid "Please contact your organization administrator for a new link."
-msgstr ""
+msgstr "Palun küsi oma organisatsiooni peakasutajalt või haldajalt uut linki."
 
 #: templates/confirmation/link_malformed.html
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "Kinnituslingi vorming on vigane"
 
 #: templates/confirmation/link_malformed.html
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "Vaat kus lops. Kinnituslingi vorming on vigane."
 
 #: templates/confirmation/link_malformed.html
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
+"Veendu, et oled lingi oma veebibrauserisse õigesti kopeerinud. Kui sa seda "
+"lehte ühtevalu näed, on see tõenäoliselt meie süü. Vabandust."
 
 #: templates/corporate/billing/billing.html
 msgid "Billing"
-msgstr ""
+msgstr "Arveldamine"
 
 #: templates/corporate/billing/billing.html
 #: templates/corporate/billing/upgrade.html
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #: templates/zerver/development/email_log.html
 msgid "Close modal"
-msgstr ""
+msgstr "Sulge modaalne vaade"
 
 #: templates/corporate/billing/billing.html
 msgid "Never mind"
-msgstr ""
+msgstr "Ahh, pole vahet"
 
 #: templates/corporate/billing/billing.html
 msgid "Downgrade"
-msgstr ""
+msgstr "Taasta varasem versioon"
 
 #: templates/corporate/billing/billing.html
 #: templates/corporate/billing/upgrade.html
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 msgid "Cancel"
-msgstr ""
+msgstr "Katkesta"
 
 #: templates/corporate/billing/billing.html
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #: templates/zerver/realm_import_post_process.html
 msgid "Confirm"
-msgstr ""
+msgstr "Kinnita"
 
 #: templates/corporate/billing/billing.html
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "Katkesta uuendamine"
 
 #: templates/corporate/billing/event_status.html
 msgid "Billing status"
-msgstr ""
+msgstr "Arvelduse olek"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "Kas deaktiveerid serveri registreerimise?"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 msgid "Plan management not available"
-msgstr ""
+msgstr "Teenusepaketi haldamine pole saadaval"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #, python-format
@@ -648,107 +710,106 @@ msgstr ""
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "Kasutuse ja/või päringute ülempiir on käes"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 msgid "Rate limit exceeded."
-msgstr ""
+msgstr "Kasutuse ja/või päringute ülempiir on käes."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 msgid ""
 "Your server has exceeded the limit for how often this action can be "
 "performed."
 msgstr ""
+"Sinu server on ületanud piirmäära, kui sageli seda toimingut on võimalik "
+"teha."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 #, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr ""
+msgstr "Võid proovida uuesti %(retry_after_string)s."
 
 #: templates/corporate/billing/upgrade.html
 msgid "Upgrade"
-msgstr ""
+msgstr "Uuenda"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "Saada arve ja alusta tasuta prooviperioodi"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice"
-msgstr ""
+msgstr "Saada arve"
 
 #: templates/corporate/communities.html
 msgid "Open communities directory"
-msgstr ""
+msgstr "Ava kogukondade kataloog"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
-msgstr ""
+msgstr "Filtreeri kategooria järgi"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
-msgstr ""
+msgstr "Kõik"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
-msgstr ""
+msgstr "Kategooriad"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "10,000 messages"
-msgstr ""
+msgstr "10000 sõnumit"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Unlimited"
-msgstr ""
+msgstr "Piiramatu"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "Kuni 10 MB suured failid"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "Kuni 1 GB suured failid"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Supported"
-msgstr ""
+msgstr "Toetatud"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Self-managed"
-msgstr ""
+msgstr "Haldus omas serveris"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "Kuni 10 kasutajaga organisatsiooni jaoks"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "25 users minimum"
-msgstr ""
+msgstr "Vähemalt 25 kasutajat"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Not available"
-msgstr ""
+msgstr "Pole saadaval"
 
 #: templates/corporate/development-community.html
 msgid "The Zulip development community"
-msgstr ""
+msgstr "Zulipi arenduse kogukond"
 
 #: templates/corporate/development-community.html
 msgid "Join as a user"
-msgstr ""
+msgstr "Liitu kasutajana"
 
 #: templates/corporate/development-community.html
 msgid "Join as a self-hoster"
-msgstr ""
+msgstr "Liitu oma serveri kasutajana"
 
 #: templates/corporate/development-community.html
 msgid "Join as a contributor"
-msgstr ""
+msgstr "Liitu kaasautorina"
 
 #: templates/corporate/for/business.html
 #: templates/corporate/for/communities.html
@@ -758,13 +819,13 @@ msgstr ""
 #: templates/corporate/role/engineers.html templates/corporate/why-zulip.html
 #: templates/zerver/create_realm/create_realm.html
 msgid "Create organization"
-msgstr ""
+msgstr "Loo organisatsioon"
 
 #: templates/corporate/for/business.html templates/corporate/self-hosting.html
 #: templates/corporate/why-zulip.html templates/corporate/zulip-cloud.html
 #: templates/zerver/footer.html
 msgid "Get a demo"
-msgstr ""
+msgstr "Vaata näidislahendust"
 
 #: templates/corporate/for/business.html
 #: templates/corporate/for/communities.html
@@ -773,119 +834,140 @@ msgstr ""
 #: templates/corporate/for/research.html templates/corporate/for/use-cases.html
 #: templates/corporate/role/engineers.html
 msgid "Self-host Zulip"
-msgstr ""
+msgstr "Halda Zulipit omas serveris"
 
 #: templates/corporate/for/communities.html templates/corporate/for/events.html
 #: templates/corporate/for/open-source.html
 #: templates/corporate/for/research.html
 msgid "Request sponsorship"
-msgstr ""
+msgstr "Küsi sponsorluse võimalust"
 
 #: templates/corporate/for/education.html
 msgid "Education pricing"
-msgstr ""
+msgstr "Hinnastamine hariduskasutuseks"
 
 #: templates/corporate/for/use-cases.html
 msgid "View pricing"
-msgstr ""
+msgstr "Vaata hindu"
 
 #: templates/corporate/role/engineers.html
 #: templates/corporate/self-hosting.html
 msgid "Zulip for business"
-msgstr ""
+msgstr "Zulip ärikasutuse jaoks"
 
 #: templates/corporate/role/engineers.html
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Zulip avatud lähtekoodiga projektide jaoks"
 
 #: templates/corporate/role/engineers.html
 msgid "Dog in glasses with a laptop"
-msgstr ""
+msgstr "Prillidega koer sülearvutiga"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip conversation"
-msgstr ""
+msgstr "Zulipi vestluse ekraanipilt"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip conversation with sentry bot"
-msgstr ""
+msgstr "Ekraanipilt Zulipi vestlusest Sentry-liidestuse robotiga"
 
 #: templates/corporate/role/engineers.html
 msgid "Screenshot of Zulip inbox"
-msgstr ""
+msgstr "Zulipi sisendpostkasti ekraanipilt"
 
 #: templates/corporate/role/engineers.html
 msgid "Open laptop with book inside"
-msgstr ""
+msgstr "Avatud sülearvuti, mille sees on raamat"
 
 #: templates/corporate/role/engineers.html
 msgid "Two hands assembling puzzle"
-msgstr ""
+msgstr "Kaks kätt puslet kokku panemas"
 
 #: templates/corporate/role/engineers.html
 msgid "Message with code"
-msgstr ""
+msgstr "Sõnum koos koodiga"
 
 #: templates/corporate/role/engineers.html
 msgid "Lightning"
-msgstr ""
+msgstr "Välk"
 
 #: templates/corporate/role/engineers.html
 #: zerver/models/custom_profile_fields.py
 msgid "Link"
-msgstr ""
+msgstr "Link"
 
 #: templates/corporate/role/engineers.html
 msgid "Ship wheel"
+msgstr "Laeva rool"
+
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+msgid "Get started"
+msgstr "Alustame siis"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
 msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "A Zulip channel with conversations organized by topic"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
 
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
-msgstr ""
+msgstr "Võta ühendust kasutajatoega"
 
 #: templates/corporate/support/support_request.html
 msgid "From"
-msgstr ""
+msgstr "Saatja"
 
 #: templates/corporate/support/support_request.html
 msgid "Organization"
-msgstr ""
+msgstr "Organisatsioon"
 
 #: templates/corporate/support/support_request.html
 msgid "Subject"
-msgstr ""
+msgstr "Kirja pealkiri"
 
 #: templates/corporate/support/support_request.html
 msgid "Message"
-msgstr ""
+msgstr "Kirja sisu"
 
 #: templates/corporate/support/support_request.html
 #: templates/zerver/slack_import.html
 msgid "Submit"
-msgstr ""
+msgstr "Saada"
 
 #: templates/corporate/support/support_request_thanks.html
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Täname, et võtsid meiega ühendust"
 
 #: templates/corporate/support/support_request_thanks.html
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Täname, et võtsid meiega ühendust!"
 
 #: templates/corporate/support/support_request_thanks.html
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Võtame sinuga õige pea ühendust."
 
 #: templates/corporate/support/support_request_thanks.html
 msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-
-#: templates/corporate/zulip-cloud.html
-msgid "Get started"
-msgstr ""
+"Vastused korduma kippuvatele küsimustele leiad <a href=\"/help/\">Zulipi "
+"abikeskusest</a>."
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -893,47 +975,49 @@ msgid ""
 "href=\"https://zulip.com/policies/terms\">Zulip Terms of Service</a> to "
 "continue."
 msgstr ""
+"See tiimisuhtlus toimib nüüd Zulip Cloudis. Jätkamiseks pead nõustuma <a "
+"href=\"https://zulip.com/policies/terms\">Zulipi kasutustingimustega</a>."
 
 #: templates/two_factor/_wizard_forms.html
 msgid "Or, alternatively, use one of your backup phones:"
-msgstr ""
+msgstr "Või alternatiivina, kasuta mõnda oma tagavaratelefoni:"
 
 #: templates/two_factor/_wizard_forms.html
 msgid "As a last resort, you can use a backup token:"
-msgstr ""
+msgstr "Viimase abinõuna saad kasutada varuvariandiks mõeldud tunnusluba:"
 
 #: templates/two_factor/_wizard_forms.html
 msgid "Use backup token"
-msgstr ""
+msgstr "Kasuta varuvariandiks mõeldud tunnusluba"
 
 #: templates/zerver/accounts_accept_terms.html
 msgid "Accept the Terms of Service"
-msgstr ""
+msgstr "Nõustu teenuse- ja kasutustingimustega"
 
 #: templates/zerver/accounts_accept_terms.html
 msgid "Welcome to Zulip"
-msgstr ""
+msgstr "Tere tulemast, see on Zulip"
 
 #: templates/zerver/accounts_accept_terms.html
 #: templates/zerver/create_user/accounts_home.html
 #: templates/zerver/create_user/register.html templates/zerver/login.html
 #: templates/zerver/reset.html templates/zerver/reset_confirm.html
 msgid "Email"
-msgstr ""
+msgstr "E-post"
 
 #: templates/zerver/accounts_accept_terms.html
 #: templates/zerver/create_user/register.html
 #: templates/zerver/reset_confirm.html
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr ""
+msgstr "Telli mulle Zulipi vähese liiklusega uudiskiri (paar e-kirja aastas)."
 
 #: templates/zerver/accounts_accept_terms.html
 msgid "Continue"
-msgstr ""
+msgstr "Jätka"
 
 #: templates/zerver/accounts_send_confirm.html
 msgid "Confirm your email address"
-msgstr ""
+msgstr "Kinnita oma e-posti aadress"
 
 #: templates/zerver/accounts_send_confirm.html
 #, python-format
@@ -942,28 +1026,36 @@ msgid ""
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
 msgstr ""
+"Registreerimise lõpuleviimiseks vaata, kas Zulipi kinnituskiri jõudis sinu e-"
+"posti kontoni (<span class=\"user_email semi-bold\">%(email)s</span>)."
 
 #: templates/zerver/accounts_send_confirm.html
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
+"Kui sa ei näe oma postkastis või rämpsposti kaustas kinnituskirja, saame "
+"selle <a href=\"#\" id=\"resend_email_link\">uuesti saata</a>."
 
 #: templates/zerver/app/index.html
 #, python-brace-format
 msgid "Public view of {org_name} | Zulip team chat"
-msgstr ""
+msgstr "Avalik vaade: {org_name} | Zulipi tiimi vestlus"
 
 #: templates/zerver/app/index.html
 #, python-brace-format
 msgid ""
 "Browse the publicly accessible channels in {org_name} without logging in."
 msgstr ""
+"Sirvi avalikult juurdepääsetavaid kanaleid „{org_name}“ organisatsiooni "
+"sisselogimata viisil."
 
 #: templates/zerver/app/index.html
 msgid ""
 "Because you're using an unsupported or very old browser, Zulip may not load."
 msgstr ""
+"Kuna kasutad toetamata või väga vana veebibrauserit, ei pruugi Zulipi leht "
+"laadida."
 
 #: templates/zerver/app/index.html
 msgid ""
@@ -971,41 +1063,56 @@ msgid ""
 "load. <a href=\"https://zulip.com/apps/\" target=\"_blank\" rel=\"noopener "
 "noreferrer\">Download the latest version.</a>"
 msgstr ""
+"Kuna kasutad toetamata või väga vana veebibrauserit, ei pruugi Zulipi leht "
+"laadida. <a href=\"https://zulip.com/apps/\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Laadi alla viimane versioon.</a>"
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
+#| "a> the page."
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
+"Kui see teade ei kao, proovi <a class=\"reload-lnk\">lehte</a> uuesti "
+"laadida."
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
+"Viga Zulipi laadimisel. Proovi <a class=\"reload-lnk\">lehte</a> uuesti "
+"laadida."
 
 #: templates/zerver/app/index.html
 msgid "No conversations match your filters."
-msgstr ""
+msgstr "Sinu filtritele ei vasta mitte ainsamgi vestlus."
 
 #: templates/zerver/app/index.html
 msgid "This view is still loading messages."
-msgstr ""
+msgstr "Selle vaate sõnumid on jätkuvalt laadimisel."
 
 #: templates/zerver/app/index.html
 msgid "Load more"
-msgstr ""
+msgstr "Laadi veel"
 
 #: templates/zerver/close_window.html
 msgid "Video call ended"
-msgstr ""
+msgstr "Videokõne lõppes"
 
 #: templates/zerver/close_window.html
 msgid "You may now close this window."
-msgstr ""
+msgstr "Nüüd võid selle akna sulgeda."
 
 #: templates/zerver/config_error/container.html
 msgid "Configuration error"
-msgstr ""
+msgstr "Seadistusviga"
 
 #: templates/zerver/config_error/ldap.html
 msgid ""
@@ -1023,28 +1130,28 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Account not found"
-msgstr ""
+msgstr "Kasutajakontot ei leidu"
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Zulip account not found."
-msgstr ""
+msgstr "Zulipi kasutajakontot ei leidu."
 
 #: templates/zerver/confirm_continue_registration.html
 #, python-format
 msgid "No account found for %(email)s."
-msgstr ""
+msgstr "%(email)s aadressi kasutajakontot ei leidu."
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Log in with another account"
-msgstr ""
+msgstr "Logi sisse teise kasutajakontoga"
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Continue to registration"
-msgstr ""
+msgstr "Jätka registreerumist"
 
 #: templates/zerver/create_realm/create_demo_realm.html
 msgid "Try Zulip in a demo organization"
-msgstr ""
+msgstr "Proovi Zulipi näidisorganisatsiooni"
 
 #: templates/zerver/create_realm/create_demo_realm.html
 #, python-format
@@ -1052,18 +1159,20 @@ msgid ""
 "No email required. Or <a class=\"registration-lead-subtitle-link\" "
 "href=\"%(root_domain_url)s/new/\">create a permanent organization</a>."
 msgstr ""
+"E-posti aadressi pole vaja. Või <a class=\"registration-lead-subtitle-link\" "
+"href=\"%(root_domain_url)s/new/\">loo püsiv organisatsioon</a>."
 
 #: templates/zerver/create_realm/create_demo_realm.html
 msgid "Try Zulip"
-msgstr ""
+msgstr "Proovi Zulipit"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid "Create a new organization"
-msgstr ""
+msgstr "Loo uus organisatsioon"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid "Create a new Zulip organization"
-msgstr ""
+msgstr "Loo uus Zulipi organisatsioon"
 
 #: templates/zerver/create_realm/create_realm.html
 #, python-format
@@ -1071,14 +1180,16 @@ msgid ""
 "Or <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)s/"
 "new/demo/\">create a demo organization</a> — no email required!"
 msgstr ""
+"Või <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)s/"
+"new/demo/\">loo näidisorganisatsioon</a> - e-posti aadressi pole vaja!"
 
 #: templates/zerver/create_realm/create_realm.html templates/zerver/reset.html
 msgid "Enter your email address"
-msgstr ""
+msgstr "Sisesta e-posti aadress"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid "Your email"
-msgstr ""
+msgstr "Sinu e-post"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid ""
@@ -1086,50 +1197,55 @@ msgid ""
 "help/import-from-mattermost\">Mattermost</a>, or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
+"Või impordi <a href=\"/help/import-from-slack\">Slackist</a>, <a href=\"/"
+"help/import-from-mattermost\">Mattermostist</a> või <a href=\"/help/import-"
+"from-rocketchat\">Rocket.Chat'ist</a>."
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "How did you first hear about Zulip?"
-msgstr ""
+msgstr "Kuidas sa esimest korda Zulipist kuulsid?"
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid ""
 "This value is used only if you sign up for a plan, in which case it will be "
 "sent to the Zulip team."
 msgstr ""
+"Seda väärtust kasutatakse ainult siis, kui asud kasutama teensuepaketti, sel "
+"juhul saadetakse see Zulipi tiimile."
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "Select an option"
-msgstr ""
+msgstr "Vali üks selgitus"
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "Please describe"
-msgstr ""
+msgstr "Palun kirjelda"
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "Where did you see the ad?"
-msgstr ""
+msgstr "Kus sa reklaami nägid?"
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "Which organization?"
-msgstr ""
+msgstr "Milline organisatsioon?"
 
 #: templates/zerver/create_realm/found_zulip_form_field.html
 msgid "Which one?"
-msgstr ""
+msgstr "Milline neist?"
 
 #: templates/zerver/create_realm/realm_creation_base_form_fields.html
 msgid "Select one"
-msgstr ""
+msgstr "Vali üks"
 
 #: templates/zerver/create_realm/realm_creation_base_form_fields.html
 #: templates/zerver/create_user/register.html
 msgid "Organization type"
-msgstr ""
+msgstr "Organisatsiooni tüüp"
 
 #: templates/zerver/create_realm/realm_creation_base_form_fields.html
 #: templates/zerver/create_user/register.html
 msgid "Organization language"
-msgstr ""
+msgstr "Organisatsiooni keel"
 
 #: templates/zerver/create_realm/realm_creation_import_form_field.html
 msgid ""
@@ -1137,54 +1253,57 @@ msgid ""
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
+"Siit saad teada, kuidas importida <a href=\"/help/import-from-"
+"mattermost\">Mattermostist</a> või <a href=\"/help/import-from-"
+"rocketchat\">Rocket.Chat'ist</a>."
 
 #: templates/zerver/create_realm/realm_creation_import_form_field.html
 msgid "Import chat history?"
-msgstr ""
+msgstr "Kas impordid vestluste ajaloo?"
 
 #: templates/zerver/create_realm/realm_creation_name_form_field.html
 #: templates/zerver/create_user/register.html
 msgid "Organization name"
-msgstr ""
+msgstr "Organisatsiooni nimi"
 
 #: templates/zerver/create_realm/realm_creation_subdomain_form_field.html
 #: templates/zerver/create_user/register.html
 #: templates/zerver/realm_redirect.html
 msgid "Organization URL"
-msgstr ""
+msgstr "Organisatsiooni võrguaadress"
 
 #: templates/zerver/create_realm/realm_creation_subdomain_form_field.html
 #, python-format
 msgid "Use %(external_host)s"
-msgstr ""
+msgstr "Kasuta: %(external_host)s"
 
 #: templates/zerver/create_realm/realm_creation_subdomain_form_field.html
 #: templates/zerver/create_user/accounts_home.html templates/zerver/login.html
 msgid "OR"
-msgstr ""
+msgstr "VÕI"
 
 #: templates/zerver/create_user/accounts_home.html
 #: templates/zerver/create_user/register.html templates/zerver/login.html
 #: templates/zerver/portico-header.html
 msgid "Sign up"
-msgstr ""
+msgstr "Registreeru"
 
 #: templates/zerver/create_user/accounts_home.html
 msgid "Sign up for Zulip"
-msgstr ""
+msgstr "Registreeru Zulipi kasutajaks"
 
 #: templates/zerver/create_user/accounts_home.html
 msgid "You need an invitation to join this organization."
-msgstr ""
+msgstr "Selle organisatsiooniga liitumiseks vajad sa kutset."
 
 #: templates/zerver/create_user/accounts_home.html
 #, python-format
 msgid "Sign up with %(identity_provider)s"
-msgstr ""
+msgstr "Registreeru kasutades teenusepakkujat %(identity_provider)s"
 
 #: templates/zerver/create_user/accounts_home.html
 msgid "Already have an account?"
-msgstr ""
+msgstr "Kas sul juba on kasutajakonto olemas?"
 
 #: templates/zerver/create_user/accounts_home.html
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html
@@ -1193,17 +1312,19 @@ msgstr ""
 #: templates/zerver/log_into_subdomain_token_invalid.html
 #: templates/zerver/login.html templates/zerver/portico-header.html
 msgid "Log in"
-msgstr ""
+msgstr "Logi sisse"
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 msgid "Configure email address privacy"
-msgstr ""
+msgstr "Seadista e-posti aadressi privaatsust"
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
 msgstr ""
+"Zulip võimaldab sul kontrollida, millised organisatsiooni liikmete rollid "
+"saavad sinu e-posti aadressi vaadata."
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 msgid ""
@@ -1213,7 +1334,7 @@ msgstr ""
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 msgid "Who can access your email address"
-msgstr ""
+msgstr "Kellel on ligipääs sinu e-posti aadressile"
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #, python-format
@@ -1222,77 +1343,88 @@ msgid ""
 "configure-email-visibility\" target=\"_blank\" rel=\"noopener "
 "noreferrer\">after you join</a>."
 msgstr ""
+"Sa võid seda seadistust muuta <a href=\"%(root_domain_url)s/help/configure-"
+"email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">ka peale "
+"liitumist</a>."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
 msgstr ""
+"Selle Zulipi organisatsiooni peakasutajad võivad näha seda e-posti aadressi."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Administrators and moderators of this Zulip organization will be able to see "
 "this email address."
 msgstr ""
+"Selle Zulipi organisatsiooni peakasutajad ja moderaatorid võivad näha seda e-"
+"posti aadressi."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Nobody in this Zulip organization will be able to see this email address."
 msgstr ""
+"Mitte keegi sellest Zulipi organisatsioonist ei saa näha seda e-posti "
+"aadressi."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Other users in this Zulip organization will be able to see this email "
 "address."
 msgstr ""
+"Muud selle Zulipi organisatsiooni kasutajad võivad näha seda e-posti "
+"aadressi."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid "Change"
-msgstr ""
+msgstr "Muuda"
 
 #: templates/zerver/create_user/register.html
 msgid "Registration"
-msgstr ""
+msgstr "Registreerumine"
 
 #: templates/zerver/create_user/register.html
 msgid "Create your organization"
-msgstr ""
+msgstr "Loo oma organisatsioon"
 
 #: templates/zerver/create_user/register.html
 msgid "Create your account"
-msgstr ""
+msgstr "Loo oma kasutajakonto"
 
 #: templates/zerver/create_user/register.html
 msgid "<p>Enter your account details to complete registration.</p>"
 msgstr ""
+"<p>Registreerimise lõpuleviimiseks sisesta oma kasutajakonto andmed.</p>"
 
 #: templates/zerver/create_user/register.html
 msgid "Your organization"
-msgstr ""
+msgstr "Sinu organisatsioon"
 
 #: templates/zerver/create_user/register.html
 msgid "Your account"
-msgstr ""
+msgstr "Sinu kasutajakonto"
 
 #: templates/zerver/create_user/register.html
 msgid "Don&rsquo;t import settings"
-msgstr ""
+msgstr "Ära impordi seadistusi"
 
 #: templates/zerver/create_user/register.html
 msgid "Import settings from existing Zulip account"
-msgstr ""
+msgstr "Impordi seadistused olemasolevalt Zulipi kontolt"
 
 #: templates/zerver/create_user/register.html
 msgid "Your full name"
-msgstr ""
+msgstr "Sinu täisnimi"
 
 #: templates/zerver/create_user/register.html
 msgid "Name"
-msgstr ""
+msgstr "Nimi"
 
 #: templates/zerver/create_user/register.html
 msgid "This is how your account is displayed in Zulip."
-msgstr ""
+msgstr "Nii kuvatakse Zulipis sinu kasutajakontot."
 
 #: templates/zerver/create_user/register.html templates/zerver/login.html
 #: templates/zerver/reset_confirm.html
@@ -1301,20 +1433,22 @@ msgstr "Salasõna"
 
 #: templates/zerver/create_user/register.html
 msgid "Enter your LDAP/Active Directory password."
-msgstr ""
+msgstr "Sisesta oma LDAP/Active Directory salasõna."
 
 #: templates/zerver/create_user/register.html
 msgid ""
 "This is used for mobile applications and other tools that require a password."
 msgstr ""
+"Seda kasutatakse mobiilirakenduste ja muude tarvikute jaoks, mis nõuavad "
+"salasõna."
 
 #: templates/zerver/create_user/register.html
 msgid "Password strength"
-msgstr ""
+msgstr "Salasõna tugevus"
 
 #: templates/zerver/create_user/register.html
 msgid "What are you interested in?"
-msgstr ""
+msgstr "Mis sind huvitab?"
 
 #: templates/zerver/create_user/terms_of_service_form_field.html
 #, python-format
@@ -1322,14 +1456,16 @@ msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
+"Nõustun <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">teenuse kasutustingimustega</a>."
 
 #: templates/zerver/deactivated.html
 msgid "Deactivated organization"
-msgstr ""
+msgstr "Kasutuselt eemaldatud organisatsioon"
 
 #: templates/zerver/deactivated.html
 msgid "Organization moved"
-msgstr ""
+msgstr "Organisatsioon leidub uues kohas"
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1337,6 +1473,8 @@ msgid ""
 "This organization has moved to <a "
 "href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
 msgstr ""
+"See organisatsioon leidub nüüd uues kohas <a "
+"href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1345,12 +1483,17 @@ msgid ""
 "href=\"%(auto_redirect_to)s\" id=\"deactivated-org-auto-redirect\">new URL</"
 "a> in <span id=\"deactivated-org-auto-redirect-countdown\">5</span> seconds."
 msgstr ""
+"See leht suunatakse <span id=\"deactivated-org-auto-redirect-countdown\">5</"
+"span> sekundi möödumisel automaatselt ümber <a href=\"%(auto_redirect_to)s\" "
+"id=\"deactivated-org-auto-redirect\">uuele võrguaadressile</a>."
 
 #: templates/zerver/deactivated.html
 msgid ""
 "This organization has been deactivated, and all organization data has been "
 "deleted."
 msgstr ""
+"See organisatsioon on kasutuselt eemaldatud ja kõik organisatsiooni andmed "
+"on kustutatud."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1358,6 +1501,9 @@ msgid ""
 "You can <a href=\"mailto:%(support_email)s\">contact Zulip support</a> to "
 "inquire about reusing this URL for a new organization."
 msgstr ""
+"Sa võid võtta ühendust <a href=\"mailto:%(support_email)s\">Zulipi "
+"kasutajatoega</a> ja küsida võimalust kasutada seda võrguaadressi uue "
+"organisatsiooni jaoks."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1365,10 +1511,13 @@ msgid ""
 "You can <a href=\"mailto:%(support_email)s\">contact this Zulip server's "
 "administrators</a> to inquire about reusing this URL for a new organization."
 msgstr ""
+"Sa võid võtta ühendust <a href=\"mailto:%(support_email)s\">Zulipi serveri "
+"peakasutajatega</a> ja küsida võimalust kasutada seda võrguaadressi uue "
+"organisatsiooni jaoks."
 
 #: templates/zerver/deactivated.html
 msgid "This organization has been deactivated."
-msgstr ""
+msgstr "See organisatsioon on eemaldatud kasutuselt."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1376,6 +1525,9 @@ msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
+"Kui oled selle organisatsiooni omanik, siis võid <a href=\"mailto:"
+"%(support_email)s\">võtta ühendust Zulipi kasutajatoega</a> ja küsida "
+"võimalust tema uuesti kasutuselevõtmiseks."
 
 #: templates/zerver/deactivated.html
 msgid ""
@@ -1394,100 +1546,99 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html
 msgid "Finish desktop app login"
-msgstr ""
+msgstr "Lõpeta töölauarakendusega sisselogimine"
 
 #: templates/zerver/desktop_login.html
 msgid "Finish desktop login"
-msgstr ""
+msgstr "Lõpeta töölaualahendusega sisselogimine"
 
 #: templates/zerver/desktop_login.html
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
 msgstr ""
+"Kasuta veebibrauserit sisselogimise lõpetamiseks ja aseta oma sisselogimise "
+"tunnusluba siia."
 
 #: templates/zerver/desktop_login.html
 msgid "Paste token here"
-msgstr ""
+msgstr "Aseta tunnusluba siia"
 
 #: templates/zerver/desktop_login.html
 msgid "Finish"
-msgstr ""
+msgstr "Lõpeta"
 
 #: templates/zerver/desktop_login.html
 msgid "Incorrect token."
-msgstr ""
+msgstr "Vigane tunnusluba."
 
 #: templates/zerver/desktop_login.html
 msgid "Token accepted.  Logging you in…"
-msgstr ""
+msgstr "Tunnusluba sobib. Alustame sisselogimist…"
 
 #: templates/zerver/desktop_redirect.html
 msgid "Log in to desktop app"
-msgstr ""
+msgstr "Logi sisse töölauarakendusse"
 
 #: templates/zerver/desktop_redirect.html
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
 msgstr ""
+"Kopeeri see sisselogimise tunnusluba ja naase sisselogimise lõpetamiseks oma "
+"Zulipi rakendusse:"
 
 #: templates/zerver/desktop_redirect.html
 msgid "Copy"
-msgstr ""
+msgstr "Kopeeri"
 
 #: templates/zerver/desktop_redirect.html
 msgid "You may then close this window."
-msgstr ""
+msgstr "Seejärel võid selle akna sulgeda."
 
 #: templates/zerver/desktop_redirect.html
 msgid "Or, continue in your browser."
-msgstr ""
+msgstr "Või jätka oma veebibrauseris."
 
 #: templates/zerver/development/dev_login.html
 msgid "Anonymous user"
-msgstr ""
+msgstr "Anonüümne kasutaja"
 
 #: templates/zerver/development/dev_login.html zerver/models/groups.py
 msgid "Owners"
-msgstr ""
+msgstr "Omanikud"
 
 #: templates/zerver/development/dev_login.html zerver/models/groups.py
 msgid "Administrators"
-msgstr ""
+msgstr "Peakasutajad"
 
 #: templates/zerver/development/dev_login.html zerver/models/groups.py
 msgid "Moderators"
-msgstr ""
+msgstr "Moderaatorid"
 
 #: templates/zerver/development/dev_login.html
 msgid "Guest users"
-msgstr ""
+msgstr "Külaliskasutajad"
 
 #: templates/zerver/development/dev_login.html
 msgid "Normal users"
-msgstr ""
+msgstr "Tavakasutajad"
 
 #: templates/zerver/development/email_log.html
 msgid "Forward emails to an email account"
-msgstr ""
+msgstr "Edasta e-kirjad e-posti kontole"
 
 #: templates/zerver/development/email_log.html
 msgid "Close"
-msgstr ""
+msgstr "Sulge"
 
 #: templates/zerver/development/email_log.html
 #: templates/zerver/slack_import.html
 msgid "Update"
-msgstr ""
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr ""
+msgstr "Uuenda"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
-msgstr ""
+msgstr "Kokkuvõte"
 
 #: templates/zerver/emails/account_registered.html
 #, python-format
@@ -1495,16 +1646,17 @@ msgid ""
 "Congratulations, you have created a new Zulip organization: "
 "<b>%(realm_name)s</b>."
 msgstr ""
+"Õnitlused, oled loonud uue Zulipi organisatsiooni: <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
 msgid "Welcome to Zulip!"
-msgstr ""
+msgstr "Tere tulemast, see on Zulip!"
 
 #: templates/zerver/emails/account_registered.html
 #, python-format
 msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr ""
+msgstr "Oled liitunud Zulipi organisatsiooniga <b>%(realm_name)s</b>."
 
 #: templates/zerver/emails/account_registered.html
 #, python-format
@@ -1512,6 +1664,8 @@ msgid ""
 "You will use the following info to log into the Zulip web, <a "
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
 msgstr ""
+"Kasuta Zulipi veebi-, <a href=\"%(apps_page_link)s\">mobiili- ja "
+"töölauarakendustesse</a> sisselogimiseks järgmist teavet:"
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
@@ -1519,28 +1673,28 @@ msgstr ""
 #: templates/zerver/emails/confirm_registration.txt
 #, python-format
 msgid "Organization URL: %(organization_url)s"
-msgstr ""
+msgstr "Organisatsiooni võrguaadress: %(organization_url)s"
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
 #, python-format
 msgid "Your username: %(ldap_username)s"
-msgstr ""
+msgstr "Sinu kasutajanimi: %(ldap_username)s"
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
 msgid "Use your LDAP account to log in"
-msgstr ""
+msgstr "Kasuta sisselogimiseks oma LDAP-i kontot"
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
 #, python-format
 msgid "Your account email: %(email)s"
-msgstr ""
+msgstr "Sinu kasutajakonto e-posti aadress: %(email)s"
 
 #: templates/zerver/emails/account_registered.html
 msgid "Go to organization"
-msgstr ""
+msgstr "Ava organisatsiooni vaade"
 
 #: templates/zerver/emails/account_registered.html
 #, python-format
@@ -1630,7 +1784,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.html
 #: templates/zerver/emails/notify_change_in_email.txt
 msgid "Hi,"
-msgstr ""
+msgstr "Tere,"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html
 #: templates/zerver/emails/confirm_demo_organization_email.txt
@@ -1652,10 +1806,12 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
 msgstr ""
+"Kui sa seda muudatust ei soovinud, saada meile kohe kiri e-posti aadressile "
+"%(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt
 msgid "Verify your email address for your Zulip demo organization"
-msgstr ""
+msgstr "Kinnita oma e-posti aadress oma Zulipi demoorganisatsiooni jaoks"
 
 #: templates/zerver/emails/confirm_demo_organization_email.txt
 #: templates/zerver/emails/confirm_new_email.txt
@@ -1664,6 +1820,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
 msgstr ""
+"Kui sa seda muudatust ei soovinud, saada meile kohe kiri e-posti aadressile "
+"<%(support_email)s>."
 
 #: templates/zerver/emails/confirm_new_email.html
 #: templates/zerver/emails/confirm_new_email.txt
@@ -1718,15 +1876,15 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.subject.txt
 msgid "Create your Zulip organization"
-msgstr ""
+msgstr "Loo oma Zulipi organisatsioon"
 
 #: templates/zerver/emails/confirm_registration.subject.txt
 msgid "Activate your Zulip account"
-msgstr ""
+msgstr "Aktiveeri oma Zulipi konto"
 
 #: templates/zerver/emails/confirm_registration.txt
 msgid "Click the link below to complete registration."
-msgstr ""
+msgstr "Registreerimise lõpuleviimiseks klõpsa alloleval lingil."
 
 #: templates/zerver/emails/confirm_registration.txt
 #: templates/zerver/emails/invitation.txt
@@ -1738,18 +1896,20 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
+"Kas sul on küsimusi või tagasisidet, mida tahaksid jagada? Võta meiega "
+"ühendust e-posti aadressil %(support_email)s - me aitame hea meelega!"
 
 #: templates/zerver/emails/custom_email_base.pre.html
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/notify_new_login.html
 msgid "Manage email preferences"
-msgstr ""
+msgstr "Halda e-posti eelistusi"
 
 #: templates/zerver/emails/custom_email_base.pre.html
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt
 msgid "Unsubscribe from marketing emails"
-msgstr ""
+msgstr "Loobu turundusteemalistest e-kirjadest"
 
 #: templates/zerver/emails/deactivate.html
 #: templates/zerver/portico_error_pages/user_deactivated.html
@@ -1758,16 +1918,18 @@ msgid ""
 "Your Zulip account on <a href=\"%(realm_url)s\">%(realm_url)s</a> has been "
 "deactivated, and you will no longer be able to log in."
 msgstr ""
+"Sinu Zulipi kasutajakonto aadressil <a href=\"%(realm_url)s\">%(realm_url)s</"
+"a> on kasutusest eemaldatud ja sa ei saa enam sisse logida."
 
 #: templates/zerver/emails/deactivate.html
 #: templates/zerver/emails/deactivate.txt
 msgid "The administrators provided the following comment:"
-msgstr ""
+msgstr "Peakasutajad lisasid selle kohta järgmise kommentaari:"
 
 #: templates/zerver/emails/deactivate.subject.txt
 #, python-format
 msgid "Notification of account deactivation on %(realm_name)s"
-msgstr ""
+msgstr "Teade konto kasutusest eemaldamisest aadressil %(realm_name)s"
 
 #: templates/zerver/emails/deactivate.txt
 #, python-format
@@ -1775,10 +1937,12 @@ msgid ""
 "Your Zulip account on %(realm_url)s has been deactivated, and you will no "
 "longer be able to log in."
 msgstr ""
+"Sinu Zulipi konto aadressil %(realm_url)s on kasutusest eemaldatud ja sa ei "
+"saa enam sisse logida."
 
 #: templates/zerver/emails/digest.html templates/zerver/emails/digest.txt
 msgid "New channels"
-msgstr ""
+msgstr "Uued kanalid"
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -1787,6 +1951,8 @@ msgid ""
 "%(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Sinu jaoks leidub <a href=\"%(realm_url)s\">%(realm_name)s</a> aadressil "
+"%(new_messages_count)s uut sõnumit ja %(new_streams_count)s uut kanalit."
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -1794,6 +1960,8 @@ msgid ""
 "You have %(new_messages_count)s new messages in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Sinu jaoks leidub <a href=\"%(realm_url)s\">%(realm_name)s</a> aadressil "
+"%(new_messages_count)s uut sõnumit."
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -1801,6 +1969,8 @@ msgid ""
 "There are %(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Sinu jaoks leidub <a href=\"%(realm_url)s\">%(realm_name)s</a> aadressil "
+"%(new_streams_count)s uut kanalit."
 
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/missed_message.html
@@ -1941,15 +2111,15 @@ msgstr ""
 
 #: templates/zerver/emails/find_team.subject.txt
 msgid "Your Zulip accounts"
-msgstr ""
+msgstr "Sinu Zulipi kasutajakontod"
 
 #: templates/zerver/emails/find_team.subject.txt
 msgid "No Zulip accounts found"
-msgstr ""
+msgstr "Ühtegi Zulipi kasutajakontot ei leidunud"
 
 #: templates/zerver/emails/find_team.txt
 msgid "If you have trouble logging in, you can reset your password."
-msgstr ""
+msgstr "Kui sisselogimine ei toimi, siis võid oma salasõna lähtestada."
 
 #: templates/zerver/emails/find_team.txt
 #, python-format
@@ -2173,7 +2343,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.html
 #: templates/zerver/emails/notify_change_in_email.txt
 msgid "Best,"
-msgstr ""
+msgstr "Patimate soovidega,"
 
 #: templates/zerver/emails/notify_change_in_email.html
 #: templates/zerver/emails/notify_change_in_email.txt
@@ -2207,36 +2377,36 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.html
 #, python-format
 msgid "Organization: %(organization_link)s"
-msgstr ""
+msgstr "Organisatsioon: %(organization_link)s"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 #, python-format
 msgid "Email: %(user_email)s"
-msgstr ""
+msgstr "E-posti aadress: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 #, python-format
 msgid "Time: %(login_time)s"
-msgstr ""
+msgstr "Aeg: %(login_time)s"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 #, python-format
 msgid "Device: %(device_browser)s on %(device_os)s."
-msgstr ""
+msgstr "Seade: %(device_browser)s, operatsioonisüsteem %(device_os)s."
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 #, python-format
 msgid "IP address: %(device_ip)s"
-msgstr ""
+msgstr "IP-aadress: %(device_ip)s"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr ""
+msgstr "Kui see olid sina, siis kõik on hea! Midagi muud ei pea sa tegema."
 
 #: templates/zerver/emails/notify_new_login.html
 #, python-format
@@ -2249,7 +2419,7 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
 msgid "Thanks,"
-msgstr ""
+msgstr "Suur tänu,"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
@@ -2857,87 +3027,91 @@ msgstr ""
 
 #: templates/zerver/find_account.html
 msgid "Email address"
-msgstr ""
+msgstr "E-posti aadress"
 
 #: templates/zerver/find_account.html templates/zerver/footer.html
 msgid "Find accounts"
-msgstr ""
+msgstr "Otsi kasutajakontosid"
 
 #: templates/zerver/footer.html
 msgid "Product"
-msgstr ""
+msgstr "Toode"
 
 #: templates/zerver/footer.html
 msgid "Why Zulip"
+msgstr "Miks Zulip"
+
+#: templates/zerver/footer.html
+msgid "Switch from Slack"
 msgstr ""
 
 #: templates/zerver/footer.html
 msgid "Features"
-msgstr ""
+msgstr "Funktsionaalsused"
 
 #: templates/zerver/footer.html
 msgid "Plans & pricing"
-msgstr ""
+msgstr "Teenusepaketid ja hinnad"
 
 #: templates/zerver/footer.html
 msgid "Zulip Cloud"
-msgstr ""
+msgstr "Zulipi pilveteenus"
 
 #: templates/zerver/footer.html
 msgid "Self-hosting"
-msgstr ""
+msgstr "Omahallatud server"
 
 #: templates/zerver/footer.html
 msgid "Security"
-msgstr ""
+msgstr "Turvalisus"
 
 #: templates/zerver/footer.html
 msgid "Integrations"
-msgstr ""
+msgstr "Lõimingud"
 
 #: templates/zerver/footer.html
 msgid "Desktop & mobile apps"
-msgstr ""
+msgstr "Töölaua- ja mobiilirakendused"
 
 #: templates/zerver/footer.html templates/zerver/portico-header.html
 msgid "New organization"
-msgstr ""
+msgstr "Uus organisatsioon"
 
 #: templates/zerver/footer.html
 msgid "Solutions"
-msgstr ""
+msgstr "Lahendused"
 
 #: templates/zerver/footer.html
 msgid "Business"
-msgstr ""
+msgstr "Ettevõtlus"
 
 #: templates/zerver/footer.html
 msgid "Education"
-msgstr ""
+msgstr "Haridus"
 
 #: templates/zerver/footer.html
 msgid "Research"
-msgstr ""
+msgstr "Teadusuuringud"
 
 #: templates/zerver/footer.html
 msgid "Events & conferences"
-msgstr ""
+msgstr "Üritused ja konverentsid"
 
 #: templates/zerver/footer.html
 msgid "Open source projects"
-msgstr ""
+msgstr "Avatud lähtekoodiga projektid"
 
 #: templates/zerver/footer.html
 msgid "Communities"
-msgstr ""
+msgstr "Kogukonnad"
 
 #: templates/zerver/footer.html
 msgid "Engineers"
-msgstr ""
+msgstr "Insenerid"
 
 #: templates/zerver/footer.html
 msgid "Customer stories"
-msgstr ""
+msgstr "Klientide lood"
 
 #: templates/zerver/footer.html
 msgid "Open communities"
@@ -2945,153 +3119,114 @@ msgstr ""
 
 #: templates/zerver/footer.html
 msgid "Resources"
-msgstr ""
+msgstr "Ressursid"
 
 #: templates/zerver/footer.html
 msgid "Getting started"
-msgstr ""
+msgstr "Esmane ülevaade"
 
 #: templates/zerver/footer.html
 msgid "Help center"
-msgstr ""
+msgstr "Abiteabe keskus"
 
 #: templates/zerver/footer.html
 msgid "Community chat"
-msgstr ""
+msgstr "Kogukonna vestlus"
 
 #: templates/zerver/footer.html
 msgid "Partners"
-msgstr ""
+msgstr "Partnerid"
 
 #: templates/zerver/footer.html
 msgid "Zulip Cloud status"
-msgstr ""
+msgstr "Zulipi pilveteenuse olek"
 
 #: templates/zerver/footer.html
 msgid "Moving to Zulip"
-msgstr ""
+msgstr "Kolimine muudest teenustest Zulipisse"
 
 #: templates/zerver/footer.html
 msgid "Installing a Zulip server"
-msgstr ""
+msgstr "Zulipi serveri paigaldamine"
 
 #: templates/zerver/footer.html
 msgid "Upgrading a Zulip server"
-msgstr ""
+msgstr "Zulipi serveri uuendamine"
 
 #: templates/zerver/footer.html
 msgid "Contributing"
-msgstr ""
+msgstr "Kaastöö"
 
 #: templates/zerver/footer.html
 msgid "Contributing guide"
-msgstr ""
+msgstr "Kaastöö juhend"
 
 #: templates/zerver/footer.html
 msgid "Development community"
-msgstr ""
+msgstr "Arendajate kogukond"
 
 #: templates/zerver/footer.html
 msgid "Translation"
-msgstr ""
+msgstr "Tõlge"
 
 #: templates/zerver/footer.html
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 #: templates/zerver/footer.html
 msgid "About us"
-msgstr ""
+msgstr "Rakenduse teave"
 
 #: templates/zerver/footer.html
 msgid "Team"
-msgstr ""
+msgstr "Tiim"
 
 #: templates/zerver/footer.html
 msgid "History"
-msgstr ""
+msgstr "Ajalugu"
 
 #: templates/zerver/footer.html
 msgid "Values"
-msgstr ""
+msgstr "Väärtused"
 
 #: templates/zerver/footer.html
 msgid "Jobs"
-msgstr ""
+msgstr "Töökohad"
 
 #: templates/zerver/footer.html
 msgid "Blog"
-msgstr ""
+msgstr "Ajaveeb"
 
 #: templates/zerver/footer.html
 msgid "Support Zulip"
-msgstr ""
+msgstr "Toeta Zulipit"
 
 #: templates/zerver/footer.html
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodon"
 
 #: templates/zerver/footer.html
 msgid "LinkedIn"
-msgstr ""
+msgstr "LinkedIn"
 
 #: templates/zerver/footer.html
 msgid "Bluesky"
-msgstr ""
+msgstr "Bluesky"
 
 #: templates/zerver/footer.html
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
-msgstr ""
+msgstr "Siin töötab <a href=\"https://zulip.com\">Zulip</a>"
 
 #: templates/zerver/footer.html
 msgid "Terms of Service"
-msgstr ""
+msgstr "Kasutustingimused"
 
 #: templates/zerver/footer.html
 msgid "Privacy policy"
-msgstr ""
+msgstr "Andmekaitse- ja privaatsusreeglid"
 
 #: templates/zerver/footer.html
 msgid "Website attributions"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr ""
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
 msgstr ""
 
 #: templates/zerver/invalid_email.html
@@ -3188,11 +3323,11 @@ msgstr ""
 
 #: templates/zerver/login.html
 msgid "Email or username"
-msgstr ""
+msgstr "E-posti aadress või kasutajanimi"
 
 #: templates/zerver/login.html
 msgid "Username"
-msgstr ""
+msgstr "Kasutajanimi"
 
 #: templates/zerver/login.html
 msgid "Forgot your password?"
@@ -3201,20 +3336,22 @@ msgstr "Kas oled oma salasõna unustanud?"
 #: templates/zerver/login.html
 #, python-format
 msgid "Log in with %(identity_provider)s"
-msgstr ""
+msgstr "Logi sisse teenusepakkujaga %(identity_provider)s"
 
 #: templates/zerver/login.html
 msgid "View without an account"
-msgstr ""
+msgstr "Vaata ilma kasutajakontota"
 
 #: templates/zerver/login.html
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
 msgstr ""
+"Kas sul pole veel kasutajakontot? Sa vajad selle organisatsiooniga "
+"liitumiseks kutset."
 
 #: templates/zerver/no_spare_licenses.html
 msgid "No licenses available"
-msgstr ""
+msgstr "Litsentse pole saadaval"
 
 #: templates/zerver/no_spare_licenses.html
 msgid "Organization cannot accept new members right now"
@@ -3390,7 +3527,7 @@ msgstr ""
 
 #: templates/zerver/realm_redirect.html
 msgid "your-organization"
-msgstr ""
+msgstr "sinu-organisatsioon"
 
 #: templates/zerver/realm_redirect.html
 msgid "Don't know your organization URL?"
@@ -3402,7 +3539,7 @@ msgstr ""
 
 #: templates/zerver/realm_redirect.html
 msgid "Next"
-msgstr ""
+msgstr "Edasi"
 
 #: templates/zerver/realm_redirect.html
 #, python-format
@@ -3422,6 +3559,25 @@ msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
+"<a target=\"_blank\" rel=\"noopener noreferrer\" "
+"href=\"%(self_hosted_login_help)s\">Teenusepakettide ja arvelduste "
+"haldamiseks </a> saad logida sisse."
+
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "Nüüd võid selle akna sulgeda."
 
 #: templates/zerver/reset.html
 msgid "Reset your password"
@@ -3432,14 +3588,16 @@ msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
 msgstr ""
+"Kas unustasid oma salasõna? Pole muret, me saadame registreerumisel "
+"kasutatud aadressile e-kirja salasõna lähtestamise lingiga."
 
 #: templates/zerver/reset.html
 msgid "Send reset link"
-msgstr ""
+msgstr "Saada lähtestamise link"
 
 #: templates/zerver/reset_confirm.html
 msgid "Set a new password"
-msgstr ""
+msgstr "Sisesta uus salasõna"
 
 #: templates/zerver/reset_confirm.html
 msgid "Confirm password"
@@ -3451,11 +3609,11 @@ msgstr ""
 
 #: templates/zerver/reset_done.html
 msgid "New password successfully set"
-msgstr ""
+msgstr "Uus salasõna lisamine õnnestus"
 
 #: templates/zerver/reset_done.html
 msgid "You've set a new password!"
-msgstr ""
+msgstr "Sa oled lisanud uue salasõna!"
 
 #: templates/zerver/reset_done.html
 #, python-format
@@ -3464,11 +3622,11 @@ msgstr ""
 
 #: templates/zerver/reset_emailed.html
 msgid "Password reset email sent"
-msgstr ""
+msgstr "Salasõna lähtestamise e-kiri on saadetud"
 
 #: templates/zerver/reset_emailed.html
 msgid "Password reset sent!"
-msgstr ""
+msgstr "Salasõna lähtestamise e-kiri on saadetud!"
 
 #: templates/zerver/reset_emailed.html
 msgid "Check your email in a few minutes to finish the process."
@@ -3492,6 +3650,10 @@ msgid ""
 "instructions for the <a href=\"https://zulip.com/help/import-from-"
 "slack#import-your-data-into-zulip\"> Zulip Cloud (via support) import "
 "process </a> to complete your import."
+msgstr ""
+
+#: templates/zerver/slack_import.html
+msgid "Start over"
 msgstr ""
 
 #: templates/zerver/slack_import.html
@@ -3646,7 +3808,7 @@ msgstr ""
 
 #: zerver/actions/create_user.py
 msgid "signups"
-msgstr ""
+msgstr "registreerumised"
 
 #: zerver/actions/create_user.py
 #, python-brace-format
@@ -3659,12 +3821,12 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr ""
 
 #: zerver/actions/create_user.py
-msgid ""
-"Cannot activate a placeholder account; ask the user to sign up, instead."
+msgid "Cannot reactivate a deleted user"
 msgstr ""
 
 #: zerver/actions/create_user.py
-msgid "Cannot reactivate a deleted user"
+msgid ""
+"Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
@@ -3763,7 +3925,7 @@ msgid "Direct messages cannot have topics."
 msgstr ""
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr ""
 
 #: zerver/actions/message_edit.py
@@ -3833,6 +3995,10 @@ msgstr ""
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py
+msgid "The time limit for moving this topic has passed."
 msgstr ""
 
 #: zerver/actions/message_edit.py
@@ -3913,10 +4079,6 @@ msgid ""
 msgstr ""
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr ""
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
@@ -3948,6 +4110,13 @@ msgstr ""
 
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
+msgstr ""
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
 msgstr ""
 
 #: zerver/actions/realm_linkifiers.py
@@ -4073,7 +4242,7 @@ msgstr ""
 
 #: zerver/actions/streams.py
 msgid "Forever"
-msgstr ""
+msgstr "Igavesti"
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4104,7 +4273,7 @@ msgstr ""
 
 #: zerver/actions/streams.py
 msgid "Automatic"
-msgstr ""
+msgstr "Automaatne"
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4161,8 +4330,10 @@ msgid "This endpoint does not accept bot requests."
 msgstr ""
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
-msgstr ""
+#, fuzzy
+#| msgid "Must be an organization administrator"
+msgid "Must be a server administrator"
+msgstr "Peab olema organisatsiooni peakasutaja"
 
 #: zerver/decorator.py
 msgid "This endpoint requires HTTP basic authentication."
@@ -4182,7 +4353,7 @@ msgstr ""
 
 #: zerver/forms.py
 msgid "Incorrect email or password."
-msgstr ""
+msgstr "Vigane e-posti aadress või salasõna."
 
 #: zerver/forms.py
 #, python-brace-format
@@ -4253,22 +4424,6 @@ msgid ""
 msgstr ""
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr ""
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr ""
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr ""
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr ""
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Uus salasõna"
 
@@ -4291,7 +4446,7 @@ msgstr ""
 
 #: zerver/forms.py
 msgid "Token"
-msgstr ""
+msgstr "Tunnusluba"
 
 #: zerver/forms.py
 msgid "Tip: You can enter multiple email addresses with commas between them."
@@ -4343,6 +4498,22 @@ msgstr ""
 msgid "Message must have recipients!"
 msgstr ""
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr ""
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr ""
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr ""
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr ""
@@ -4358,6 +4529,19 @@ msgstr ""
 
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/demo_organizations.py
@@ -4444,7 +4628,15 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
+msgstr ""
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
 msgstr ""
 
 #: zerver/lib/email_notifications.py
@@ -4571,7 +4763,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py
 msgid "user"
-msgstr ""
+msgstr "kasutaja"
 
 #: zerver/lib/exceptions.py
 #, python-brace-format
@@ -4596,15 +4788,15 @@ msgstr ""
 
 #: zerver/lib/exceptions.py zerver/views/invite.py
 msgid "Must be an organization administrator"
-msgstr ""
+msgstr "Peab olema organisatsiooni peakasutaja"
 
 #: zerver/lib/exceptions.py
 msgid "Must be an organization owner"
-msgstr ""
+msgstr "Peab olema organisatsiooni omanik"
 
 #: zerver/lib/exceptions.py
 msgid "Must be a bot user"
-msgstr ""
+msgstr "Peab olema robotkasutaja"
 
 #: zerver/lib/exceptions.py
 msgid "Your username or password is incorrect"
@@ -4612,29 +4804,31 @@ msgstr "Sinu kasutajanimi või salasõna on vigased"
 
 #: zerver/lib/exceptions.py
 msgid "This organization has been deactivated"
-msgstr ""
+msgstr "See organisatsioon on deaktiveeritud"
 
 #: zerver/lib/exceptions.py
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
 msgstr ""
+"Sinu serveri mobiilse tõuketeavituse teenuse registreerimine on eemaldatud "
+"kasutuselt"
 
 #: zerver/lib/exceptions.py
 msgid "Password authentication is disabled in this organization"
-msgstr ""
+msgstr "Salasõnapõhine autentimine on selles organisatsioonis keelatud"
 
 #: zerver/lib/exceptions.py
 msgid "Your password has been disabled and needs to be reset"
-msgstr ""
+msgstr "Sinu salasõna on keelatud ja sa pead ta lähtestama"
 
 #: zerver/lib/exceptions.py
 msgid "Invalid API key"
-msgstr ""
+msgstr "Vigane API võti"
 
 #: zerver/lib/exceptions.py
 msgid "Malformed API key"
-msgstr ""
+msgstr "Vales vormis API võti"
 
 #: zerver/lib/exceptions.py
 #, python-brace-format
@@ -4650,15 +4844,15 @@ msgstr ""
 
 #: zerver/lib/exceptions.py
 msgid "User not authenticated"
-msgstr ""
+msgstr "Kasutaja ei ole tuvastatud"
 
 #: zerver/lib/exceptions.py zerver/views/auth.py
 msgid "Invalid subdomain"
-msgstr ""
+msgstr "Vigane alamdomeen"
 
 #: zerver/lib/exceptions.py
 msgid "You do not have permission to initiate direct message conversations."
-msgstr ""
+msgstr "Sul pole õigusi otsevestluste alustamiseks."
 
 #: zerver/lib/exceptions.py
 #, python-brace-format
@@ -4750,27 +4944,27 @@ msgstr ""
 
 #: zerver/lib/exceptions.py
 msgid "Email is already in use."
-msgstr ""
+msgstr "E-posti aadress on juba kasutusel."
 
 #: zerver/lib/exceptions.py
 msgid "Scheduled delivery time must be in the future."
-msgstr ""
+msgstr "Ajastatud saatmisaeg peab olema tulevikus."
 
 #: zerver/lib/exceptions.py
 msgid "Invalid bouncer_public_key"
-msgstr ""
+msgstr "Vigane „bouncer_public_key“ võti"
 
 #: zerver/lib/exceptions.py
 msgid "Request expired"
-msgstr ""
+msgstr "Päring on aegunud"
 
 #: zerver/lib/exceptions.py
 msgid "Invalid encrypted_push_registration"
-msgstr ""
+msgstr "Vigane „encrypted_push_registration“ väärtus"
 
 #: zerver/lib/exceptions.py
 msgid "Server is not configured to use push notification service."
-msgstr ""
+msgstr "See server pole seadistatud kasutama tõuketeenuseid."
 
 #: zerver/lib/external_accounts.py
 msgid "Atlassian account ID"
@@ -4778,169 +4972,109 @@ msgstr ""
 
 #: zerver/lib/external_accounts.py
 msgid "Behance username"
-msgstr ""
+msgstr "Behance'i kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Bitbucket username"
-msgstr ""
+msgstr "Bitbucketi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Bluesky handle"
-msgstr ""
+msgstr "Bluesky kasutajatunnus"
 
 #: zerver/lib/external_accounts.py
 msgid "Codeberg username"
-msgstr ""
+msgstr "Codebergi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Discord tag"
-msgstr ""
+msgstr "Discordi silt"
 
 #: zerver/lib/external_accounts.py
 msgid "Dribbble username"
-msgstr ""
+msgstr "Dribbble'i kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Facebook username"
-msgstr ""
+msgstr "Facebooki kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "GitHub username"
-msgstr ""
+msgstr "GitHubi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "GitLab username"
-msgstr ""
+msgstr "GitLabi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Instagram username"
-msgstr ""
+msgstr "Instagrami kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "LinkedIn profile name"
-msgstr ""
+msgstr "LinkedIni profiilinimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Mastodon profile"
-msgstr ""
+msgstr "Mastodoni profiil"
 
 #: zerver/lib/external_accounts.py
 msgid "Medium username"
-msgstr ""
+msgstr "Mediumi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Pinterest username"
-msgstr ""
+msgstr "Pinteresti kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Reddit username"
-msgstr ""
+msgstr "Redditi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Snapchat username"
-msgstr ""
+msgstr "Snapchati kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Threads username"
-msgstr ""
+msgstr "Threadsi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "TikTok username"
-msgstr ""
+msgstr "TikToki kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Twitch username"
-msgstr ""
+msgstr "Twitchi kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "X username"
-msgstr ""
+msgstr "X-i kasutajanimi"
 
 #: zerver/lib/external_accounts.py
 msgid "YouTube handle"
-msgstr ""
+msgstr "YouTube'i kasutajatunnus"
 
 #: zerver/lib/external_accounts.py
 msgid "Invalid external account type"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Video calling"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr ""
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr ""
+msgstr "Vigane välise konto tüüp"
 
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
-msgstr ""
+msgstr "Sõnum ei tohi olla tühi"
 
 #: zerver/lib/message.py
 msgid "Message must not contain null bytes"
-msgstr ""
+msgstr "Sõnum ei tohi sisaldada nullbaite"
 
 #: zerver/lib/message.py
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
-msgstr ""
+msgstr "Sa ei tohi manida „{user_group_name}“ kasutajagruppi."
 
 #: zerver/lib/message.py
 #, python-brace-format
 msgid "{other_users} and {last_user}"
-msgstr ""
+msgstr "{other_users} ja {last_user}"
 
 #: zerver/lib/message_report.py
 #, python-brace-format
@@ -4976,6 +5110,11 @@ msgstr ""
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "{fullname} moderation"
+msgstr ""
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
 msgstr ""
 
 #: zerver/lib/narrow.py
@@ -5313,7 +5452,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py
 msgid "experiments"
-msgstr ""
+msgstr "katsed"
 
 #: zerver/lib/onboarding.py
 msgid "start a conversation"
@@ -5321,7 +5460,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py
 msgid "greetings"
-msgstr ""
+msgstr "tervitused"
 
 #: zerver/lib/outgoing_webhook.py
 msgid "Invalid JSON in response"
@@ -5366,10 +5505,6 @@ msgstr ""
 #: zerver/lib/push_notifications.py
 #, python-brace-format
 msgid "{full_name} mentioned everyone:"
-msgstr ""
-
-#: zerver/lib/push_notifications.py
-msgid "New message"
 msgstr ""
 
 #: zerver/lib/push_notifications.py
@@ -5436,6 +5571,10 @@ msgstr ""
 msgid "You can't send direct messages outside of your organization."
 msgstr ""
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr ""
+
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
@@ -5473,21 +5612,8 @@ msgstr ""
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr ""
-
-#: zerver/lib/reminders.py
-#, python-brace-format
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
 msgstr ""
 
 #: zerver/lib/reminders.py
@@ -5883,6 +6009,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr ""
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr ""
 
@@ -5903,7 +6033,7 @@ msgstr ""
 msgid "No such bot"
 msgstr ""
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr ""
 
@@ -6062,47 +6192,47 @@ msgstr ""
 #: zerver/models/custom_profile_fields.py
 #, python-brace-format
 msgid "User with ID {user_id} is a bot"
-msgstr ""
+msgstr "Kasutaja tunnusega {user_id} on robotkasutaja"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Dropdown"
-msgstr ""
+msgstr "Rippmenüü"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Short text"
-msgstr ""
+msgstr "Lühitekst"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Paragraph"
-msgstr ""
+msgstr "Lõik"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Date"
-msgstr ""
+msgstr "Kuupäev"
 
 #: zerver/models/custom_profile_fields.py
 msgid "External account"
-msgstr ""
+msgstr "Väline kasutajakonto"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Pronouns"
-msgstr ""
+msgstr "Asesõnad"
 
 #: zerver/models/groups.py zerver/models/users.py
 msgid "Nobody"
-msgstr ""
+msgstr "Mitte keegi"
 
 #: zerver/models/groups.py
 msgid "Full members"
-msgstr ""
+msgstr "Täisliikmed"
 
 #: zerver/models/groups.py
 msgid "Members"
-msgstr ""
+msgstr "Liikmed"
 
 #: zerver/models/groups.py
 msgid "Everyone on the internet"
-msgstr ""
+msgstr "Kõik internetis"
 
 #: zerver/models/linkifiers.py
 msgid "Invalid auto-conversion field: missing '}' character."
@@ -6354,6 +6484,12 @@ msgstr ""
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Sessiooni ei leidu"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr ""
@@ -6532,16 +6668,8 @@ msgstr ""
 msgid "Message reporting is not enabled in this organization."
 msgstr ""
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr ""
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr ""
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
+#: zerver/views/message_report.py
+msgid "Failed to send the message report."
 msgstr ""
 
 #: zerver/views/message_summary.py
@@ -6790,6 +6918,25 @@ msgid "Invalid playground"
 msgstr ""
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr ""
 
@@ -6817,6 +6964,11 @@ msgstr ""
 
 #: zerver/views/registration.py
 msgid "Finalizing import…"
+msgstr ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
 msgstr ""
 
 #: zerver/views/registration.py
@@ -6871,10 +7023,6 @@ msgstr ""
 msgid "Channel already has that name."
 msgstr ""
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr ""
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -6883,6 +7031,16 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr ""
 
 #: zerver/views/streams.py
@@ -7060,6 +7218,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr ""
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr ""
@@ -7164,6 +7326,10 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 
 #: zerver/views/users.py
+msgid "Only embedded bots have config_data."
+msgstr ""
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -7171,10 +7337,6 @@ msgstr ""
 
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
-msgstr ""
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
 msgstr ""
 
 #: zerver/views/users.py
@@ -7288,13 +7450,6 @@ msgstr ""
 #: zerver/webhooks/wordpress/view.py
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
-msgstr ""
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
 msgstr ""
 
 #: zilencer/auth.py
@@ -7444,3 +7599,59 @@ msgstr ""
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Enam kui %(integrations_count_display)s oma lõimingut."
+
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "Ja veel sadu <a href=\"/integrations/zapier\">Zapieri</a> ja <a href=\"/"
+#~ "integrations/ifttt\">IFTTT</a> abil."
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Lõimingute raamlahendused"
+
+#~ msgid "Video calling"
+#~ msgstr "Videokõned"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Pidev ja läbiv lõiming"
+
+#~ msgid "Customer support"
+#~ msgstr "Kasutajatugi"
+
+#~ msgid "Deployment"
+#~ msgstr "Kasutuselevõtmine"
+
+#~ msgid "Entertainment"
+#~ msgstr "Meelelahutus"
+
+#~ msgid "Communication"
+#~ msgstr "Suhtlus"
+
+#~ msgid "Financial"
+#~ msgstr "Rahandus"
+
+#~ msgid "Human resources"
+#~ msgstr "Personalihaldus"
+
+#~ msgid "Marketing"
+#~ msgstr "Turundus"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Varia"
+
+#~ msgid "Monitoring"
+#~ msgstr "Monitooring"
+
+#~ msgid "Project management"
+#~ msgstr "Projektijuhtimine"
+
+#~ msgid "Productivity"
+#~ msgstr "Tootlikkus"
+
+#~ msgid "Version control"
+#~ msgstr "Versioonihaldus"

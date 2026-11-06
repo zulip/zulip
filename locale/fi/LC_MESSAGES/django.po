@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-27 18:51+0000\n"
-"PO-Revision-Date: 2026-04-27 14:57+0000\n"
+"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"PO-Revision-Date: 2026-05-27 15:13+0000\n"
 "Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
 ">\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -401,6 +401,7 @@ msgid "Method not allowed (405)"
 msgstr "Menetelmä ei sallittu (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
+#: zerver/tornado/views.py
 msgid "Internal server error"
 msgstr "Palvelimen sisäinen virhe"
 
@@ -779,17 +780,14 @@ msgid "Open communities directory"
 msgstr "Avaa yhteisöhakemisto"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Filter by category"
 msgstr "Suodata kategorioittain"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "All"
 msgstr "Kaikki"
 
 #: templates/corporate/communities.html
-#: templates/zerver/integrations/catalog.html
 msgid "Categories"
 msgstr "Kategoriat"
 
@@ -934,6 +932,31 @@ msgstr "Linkki"
 msgid "Ship wheel"
 msgstr "Laivan ratas"
 
+#: templates/corporate/slack-alternative.html
+#: templates/corporate/zulip-cloud.html
+msgid "Get started"
+msgstr "Aloita"
+
+#: templates/corporate/slack-alternative.html
+msgid "See the comparison"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#, fuzzy
+#| msgid "Keep your conversations organized with topics"
+msgid "A Zulip channel with conversations organized by topic"
+msgstr "Pidä keskustelut järjestyksessä aiheilla"
+
+#: templates/corporate/slack-alternative.html
+msgid "The Zulip inbox, listing each conversation with unread messages"
+msgstr ""
+
+#: templates/corporate/slack-alternative.html
+#: templates/zerver/development/integrations_dev_panel.html
+#: templates/zerver/portico-header.html zerver/models/realms.py
+msgid "Zulip"
+msgstr "Zulip"
+
 #: templates/corporate/support/support_request.html
 #: templates/zerver/footer.html
 msgid "Contact support"
@@ -979,10 +1002,6 @@ msgid ""
 msgstr ""
 "Lisätietoja on yleisissä kysymyksissä <a href=\"/help/\">Zulipin "
 "ohjekeskuksessa</a>."
-
-#: templates/corporate/zulip-cloud.html
-msgid "Get started"
-msgstr "Aloita"
 
 #: templates/corporate/zulipchat_migration_tos.html
 msgid ""
@@ -1083,15 +1102,23 @@ msgstr ""
 "noreferrer\">Lataa uusin versio.</a>"
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
+#| "a> the page."
 msgid ""
-"If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
-"the page."
+"If this message does not go away, try <a class=\"reload-lnk\" "
+"href=\"\">reloading</a> the page."
 msgstr ""
 "Jos tämä viesti ei häviä, <a class=\"reload-lnk\">lataa sivu uudelleen</a>."
 
 #: templates/zerver/app/index.html
+#, fuzzy
+#| msgid ""
+#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
-"Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
+"Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
+"page."
 msgstr ""
 "Virhe ladattaessa. Kokeile <a class=\"reload-lnk\">ladata sivu uudelleen</a>."
 
@@ -1647,11 +1674,6 @@ msgstr "Sulje"
 #: templates/zerver/slack_import.html
 msgid "Update"
 msgstr "Päivitä"
-
-#: templates/zerver/development/integrations_dev_panel.html
-#: templates/zerver/portico-header.html zerver/models/realms.py
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/digest_base.html
 msgid "Digest"
@@ -3269,6 +3291,12 @@ msgid "Why Zulip"
 msgstr "Miksi Zulip"
 
 #: templates/zerver/footer.html
+#, fuzzy
+#| msgid "Import from Slack"
+msgid "Switch from Slack"
+msgstr "Tuo Slackistä"
+
+#: templates/zerver/footer.html
 msgid "Features"
 msgstr "Ominaisuudet"
 
@@ -3433,10 +3461,8 @@ msgid "LinkedIn"
 msgstr "LinkedIn"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Values"
 msgid "Bluesky"
-msgstr "Arvot"
+msgstr "Bluesky"
 
 #: templates/zerver/footer.html
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
@@ -3453,51 +3479,6 @@ msgstr "Tietosuojakäytäntö"
 #: templates/zerver/footer.html
 msgid "Website attributions"
 msgstr "Verkkosivuattribuutioita"
-
-#: templates/zerver/integrations/catalog.html
-#, python-format
-msgid "Over %(integrations_count_display)s native integrations."
-msgstr "Yli %(integrations_count_display)s natiivia integraatiota."
-
-#: templates/zerver/integrations/catalog.html
-#, fuzzy
-#| msgid ""
-#| "And hundreds more through <a href=\"/integrations/doc/zapier\">Zapier</a> "
-#| "and <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-msgid ""
-"And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
-"href=\"/integrations/ifttt\">IFTTT</a>."
-msgstr ""
-"Ja satoja lisää seuraavista palveluista: <a href=\"/integrations/doc/"
-"zapier\">Zapier</a> ja <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
-
-#: templates/zerver/integrations/catalog.html
-msgid "Search integrations"
-msgstr "Etsi integraatioita"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Custom integrations"
-msgstr "Mukautetut integraatiot"
-
-#: templates/zerver/integrations/catalog.html
-msgid "Incoming webhooks"
-msgstr "Saapuvat webhookit"
-
-#: templates/zerver/integrations/catalog.html zerver/lib/integrations.py
-msgid "Interactive bots"
-msgstr "Interaktiiviset botit"
-
-#: templates/zerver/integrations/catalog.html
-msgid "REST API"
-msgstr "REST API"
-
-#: templates/zerver/integrations/doc.html
-msgid "Back to list"
-msgstr ""
-
-#: templates/zerver/integrations/doc.html
-msgid "Back"
-msgstr ""
 
 #: templates/zerver/invalid_email.html
 msgid "Invalid email"
@@ -3877,6 +3858,22 @@ msgstr ""
 "href=\"%(self_hosted_login_help)s\">kirjautua sisään hallitatksesi "
 "suunnitelmia ja laskutusta.</a>"
 
+#: templates/zerver/reauth_success.html
+msgid "You have logged in successfully!"
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+msgid ""
+"A confirmation email has been sent to your new address. Check your inbox to "
+"complete the change."
+msgstr ""
+
+#: templates/zerver/reauth_success.html
+#, fuzzy
+#| msgid "You may now close this window."
+msgid "You can now close this tab."
+msgstr "Voit sulkea tämän ikkunan."
+
 #: templates/zerver/reset.html
 msgid "Reset your password"
 msgstr "Aseta uusi salasanasi"
@@ -3954,6 +3951,12 @@ msgstr ""
 "Odottamaton virhe tuontiprosessissa. Seuraa ohjeita <a href=\"https://zulip."
 "com/help/import-from-slack#import-your-data-into-zulip\">Zulip-pilven (tuen "
 "kautta) tuomiseksi</a> viimeistelläksesi tuomisen."
+
+#: templates/zerver/slack_import.html
+#, fuzzy
+#| msgid "Start import"
+msgid "Start over"
+msgstr "Aloita tuonti"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -4150,15 +4153,15 @@ msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} hyväksyi kutsusi liittyä Zulipiin!"
 
 #: zerver/actions/create_user.py
+msgid "Cannot reactivate a deleted user"
+msgstr "Poistettua käyttäjää ei voi reaktivoida."
+
+#: zerver/actions/create_user.py
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
 "Ei voitu aktivoida paikanpitäjätiliä, pyydä käyttäjää kirjautumaan sen "
 "sijaan."
-
-#: zerver/actions/create_user.py
-msgid "Cannot reactivate a deleted user"
-msgstr "Poistettua käyttäjää ei voi reaktivoida."
 
 #: zerver/actions/custom_profile_fields.py zerver/lib/users.py
 msgid ""
@@ -4262,7 +4265,9 @@ msgid "Direct messages cannot have topics."
 msgstr "Suorilla viesteillä ei voi olla aiheita."
 
 #: zerver/actions/message_edit.py
-msgid "Invalid propagate_mode without topic edit"
+#, fuzzy
+#| msgid "Invalid propagate_mode without topic edit"
+msgid "Invalid propagate_mode without topic or channel edit"
 msgstr "Virheellinen propagate_mode ilman aiheen muokkausta"
 
 #: zerver/actions/message_edit.py
@@ -4343,6 +4348,12 @@ msgid ""
 msgstr ""
 "{changed_messages_count} viestiä on siirretty tänne paikasta {old_location} "
 "käyttäjän {user} toimesta."
+
+#: zerver/actions/message_edit.py
+#, fuzzy
+#| msgid "The time limit for editing this message's topic has passed."
+msgid "The time limit for moving this topic has passed."
+msgstr "Tämän viestin aiheen muokkaamisen aikaraja on ohitettu."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4431,10 +4442,6 @@ msgstr ""
 "Kanava on olemassa mutta sillä ei ole yhtään tilaajaa."
 
 #: zerver/actions/message_send.py
-msgid "You do not have permission to access some of the recipients."
-msgstr "Sinulla ei ole lupaa nähdä joitain vastaanottajista."
-
-#: zerver/actions/message_send.py
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgetit: API-ohjelmoija lähetti virheellisen JSON-sisällön"
 
@@ -4470,6 +4477,15 @@ msgstr "Samanniminen mukautettu emoji on jo olemassa."
 #: zerver/actions/realm_emoji.py zerver/lib/upload/__init__.py
 msgid "Invalid image format"
 msgstr "Viallinen kuvamuoto"
+
+#: zerver/actions/realm_export.py
+#, python-brace-format
+msgid ""
+"Your data export is complete. [View and download exports]"
+"({export_settings_link})."
+msgstr ""
+"Datojen vienti on valmis [Katsele ja lataa viedyt datat]"
+"({export_settings_link})."
 
 #: zerver/actions/realm_linkifiers.py
 msgid "The ordered list must not contain duplicated linkifiers"
@@ -4511,10 +4527,8 @@ msgid "Scheduled message was already sent"
 msgstr "Ajastettu viesti oli jo lähetetty"
 
 #: zerver/actions/scheduled_messages.py
-#, fuzzy
-#| msgid "Reminder does not exist"
 msgid "Reminder could not be sent."
-msgstr "Muistutus ei ole olemassa"
+msgstr "Muistutusta ei voitu lähettää."
 
 #: zerver/actions/scheduled_messages.py
 msgid "Message could not be sent at the scheduled time."
@@ -4702,7 +4716,9 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Tämä päätepiste ei hyväksy bottipyyntöjä."
 
 #: zerver/decorator.py
-msgid "Must be an server administrator"
+#, fuzzy
+#| msgid "Must be an server administrator"
+msgid "Must be a server administrator"
 msgstr "On oltava järjestelmänvalvoja"
 
 #: zerver/decorator.py
@@ -4806,22 +4822,6 @@ msgstr ""
 "lisenssien määrää ja yritä sitten uudelleen."
 
 #: zerver/forms.py
-msgid "Verified that you're a human user!"
-msgstr "Vahvistettiin että olet ihmiskäyttäjä."
-
-#: zerver/forms.py
-msgid "Verifying that you're not a bot…"
-msgstr "Vahvistetaan ettet ole botti…"
-
-#: zerver/forms.py zerver/views/antispam.py
-msgid "Challenges are not enabled."
-msgstr "Haasteet botit eivät ole käytössä."
-
-#: zerver/forms.py
-msgid "Validation failed, please try again."
-msgstr "Vahvistus epäonnistui, yritä uudestaan."
-
-#: zerver/forms.py
 msgid "New password"
 msgstr "Uusi salasana"
 
@@ -4902,6 +4902,22 @@ msgstr "Virhe tapahtui liitettä poistettaessa. Yritä myöhemmin uudelleen."
 msgid "Message must have recipients!"
 msgstr "Viestillä tulee olla vastaanottajiat!"
 
+#: zerver/lib/captcha.py
+msgid "Verified that you're a human user!"
+msgstr "Vahvistettiin että olet ihmiskäyttäjä."
+
+#: zerver/lib/captcha.py
+msgid "Verifying that you're not a bot…"
+msgstr "Vahvistetaan ettet ole botti…"
+
+#: zerver/lib/captcha.py
+msgid "Validation failed, please try again."
+msgstr "Vahvistus epäonnistui, yritä uudestaan."
+
+#: zerver/lib/captcha.py zerver/views/antispam.py
+msgid "Challenges are not enabled."
+msgstr "Haasteet botit eivät ole käytössä."
+
 #: zerver/lib/channel_folders.py
 msgid "Channel folder name can't be empty."
 msgstr "Kanavakansion nimi ei voi olla tyhjä."
@@ -4918,6 +4934,23 @@ msgstr "Kanavakansion nimi on jo käytössä"
 #: zerver/lib/channel_folders.py
 msgid "Invalid channel folder ID"
 msgstr "Viallinen kanavakansion tunnus"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
+msgstr ""
+"{user_silent_mention} [sanoi]({conversation_url}) kohteessa "
+"{topic_pretty_link}:"
+
+#: zerver/lib/compose_reply.py
+#, python-brace-format
+msgid ""
+"{user_silent_mention} [said]({conversation_url}) to "
+"{list_of_recipient_mentions}:"
+msgstr ""
+"{user_silent_mention} [sanoi]({conversation_url}) käyttäjille "
+"{list_of_recipient_mentions}:"
 
 #: zerver/lib/demo_organizations.py
 msgid "Configure owner account email address."
@@ -4942,10 +4975,8 @@ msgid "{var_name} is not Base64 encoded"
 msgstr "{var_name} ei ole Base64-koodattu"
 
 #: zerver/lib/devices.py
-#, fuzzy
-#| msgid "Invalid emoji code."
 msgid "Invalid `device_id`"
-msgstr "Virheellinen emojin koodi."
+msgstr "Virheellinen `device_id`"
 
 #: zerver/lib/digest.py
 #, python-brace-format
@@ -5014,8 +5045,16 @@ msgstr ""
 "{error_message}"
 
 #: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this channel message email."
+msgstr ""
+
+#: zerver/lib/email_mirror.py
 msgid "Email with no subject"
 msgstr "Sähköpostiviesti ilman aihetta"
+
+#: zerver/lib/email_mirror.py
+msgid "Sending user is not active. Ignoring this message notification email."
+msgstr ""
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5135,7 +5174,7 @@ msgstr "Parametriyhdistelmää ei tueta: {parameters}"
 #: zerver/lib/exceptions.py
 #, python-brace-format
 msgid "{required_parameter} is required when {set_parameter} is set."
-msgstr ""
+msgstr "{required_parameter} tarvitaan kun {set_parameter} on asetettu."
 
 #: zerver/lib/exceptions.py
 msgid "organization owner"
@@ -5160,6 +5199,8 @@ msgid ""
 "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-"
 "limiting-response-headers"
 msgstr ""
+"APIn käyttöraja ylitetty; katso https://zulip.com/api/http-headers#rate-"
+"limiting-response-headers"
 
 #: zerver/lib/exceptions.py zerver/lib/typed_endpoint.py
 #: zerver/lib/validator.py
@@ -5175,10 +5216,8 @@ msgid "Must be an organization owner"
 msgstr "On oltava organisaation omistaja"
 
 #: zerver/lib/exceptions.py
-#, fuzzy
-#| msgid "Must be an organization owner"
 msgid "Must be a bot user"
-msgstr "On oltava organisaation omistaja"
+msgstr "On oltava botti"
 
 #: zerver/lib/exceptions.py
 msgid "Your username or password is incorrect"
@@ -5358,190 +5397,96 @@ msgid "Server is not configured to use push notification service."
 msgstr "Palvelin ei ole asetettu käyttämään push-ilmoituspalvelua"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Already has an account."
 msgid "Atlassian account ID"
-msgstr "Omistaa jo tilin."
+msgstr "Atlassian-tilin ID"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Behance username"
-msgstr "Sopimaton nimi tai käyttäjätunnus"
+msgstr "Behance-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "Bitbucket username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Bitbucket-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Bluesky handle"
-msgstr ""
+msgstr "Bluesky-tunnus"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "Codeberg username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "Codeberg-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Discord tag"
-msgstr ""
+msgstr "Discord-tägi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "Dribbble username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Dribble-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Facebook username"
-msgstr "Sopimaton nimi tai käyttäjätunnus"
+msgstr "Facebook-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
 msgid "GitHub username"
 msgstr "Githubkäyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "GitLab username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Gitlab-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "Instagram username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "Instagram-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
 msgid "LinkedIn profile name"
-msgstr ""
+msgstr "Linkedin-profiilinimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Mastodon"
 msgid "Mastodon profile"
-msgstr "Mastodon"
+msgstr "Mastodon-profiili"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "Medium username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Medium-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "Pinterest username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "Pinterest-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "Reddit username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Reddit-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "GitHub username"
 msgid "Snapchat username"
-msgstr "Githubkäyttäjänimi"
+msgstr "Snapchat-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "Threads username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "Threads-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "TikTok username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "TikTok-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Twitter username"
 msgid "Twitch username"
-msgstr "Twitterkäyttäjänimi"
+msgstr "Twitch-käyttäjänimi"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "X username"
-msgstr "Käyttäjätunnus"
+msgstr "X-käyttäjätunnus"
 
 #: zerver/lib/external_accounts.py
 msgid "YouTube handle"
-msgstr ""
+msgstr "Youtube-nimi"
 
 #: zerver/lib/external_accounts.py
 msgid "Invalid external account type"
 msgstr "Virheellinen ulkoinen tilityyppi"
-
-#: zerver/lib/integrations.py
-msgid "Integration frameworks"
-msgstr "Integraatio frameworkit"
-
-#: zerver/lib/integrations.py
-msgid "Video calling"
-msgstr "Videopuhelu"
-
-#: zerver/lib/integrations.py
-msgid "Continuous integration"
-msgstr "Jatkuva integraatio"
-
-#: zerver/lib/integrations.py
-msgid "Customer support"
-msgstr "Asiakastuki"
-
-#: zerver/lib/integrations.py
-msgid "Deployment"
-msgstr "Käyttöönotto"
-
-#: zerver/lib/integrations.py
-msgid "Entertainment"
-msgstr "Viihde"
-
-#: zerver/lib/integrations.py
-msgid "Communication"
-msgstr "Kommunikaatio"
-
-#: zerver/lib/integrations.py
-msgid "Financial"
-msgstr "Talous"
-
-#: zerver/lib/integrations.py
-msgid "Human resources"
-msgstr "Ihmisresurssit"
-
-#: zerver/lib/integrations.py
-msgid "Marketing"
-msgstr "Markkinointi"
-
-#: zerver/lib/integrations.py
-msgid "Miscellaneous"
-msgstr "Sekalaiset"
-
-#: zerver/lib/integrations.py
-msgid "Monitoring"
-msgstr "Monitorointi"
-
-#: zerver/lib/integrations.py
-msgid "Project management"
-msgstr "Projektinhallinta"
-
-#: zerver/lib/integrations.py
-msgid "Productivity"
-msgstr "Tuottavuus"
-
-#: zerver/lib/integrations.py
-msgid "Version control"
-msgstr "Versionhallinta"
 
 #: zerver/lib/message.py zerver/views/welcome_bot_custom_message.py
 msgid "Message must not be empty"
@@ -5559,58 +5504,56 @@ msgstr "Sinulla ei ole lupaa mainita käyttäjäryhmää {user_group_name}."
 #: zerver/lib/message.py
 #, python-brace-format
 msgid "{other_users} and {last_user}"
-msgstr ""
+msgstr "{other_users} ja {last_user}"
 
 #: zerver/lib/message_report.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "{reporting_user_mention} reported a DM sent by {reported_user_mention} to "
-#| "{recipient_mentions}, and {last_user_mention}."
+#, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a message sent by {reported_user_mention} "
 "at {reported_message_date_sent}."
 msgstr ""
-"{reporting_user_mention} ilmoitti YV:t jotka lähetti {reported_user_mention} "
-"käyttäjille {recipient_mentions}, ja {last_user_mention}."
+"{reporting_user_mention} ilmoitti viestejä jotka lähetti "
+"{reported_user_mention} ajalla {reported_message_date_sent}."
 
 #: zerver/lib/message_report.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "{reporting_user_mention} reported a DM sent by {reported_user_mention} to "
-#| "{recipient_mentions}, and {last_user_mention}."
+#, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a message sent by {reported_user_mention} "
 "to {recipient_user} at {reported_message_date_sent}."
 msgstr ""
-"{reporting_user_mention} ilmoitti YV:t jotka lähetti {reported_user_mention} "
-"käyttäjille {recipient_mentions}, ja {last_user_mention}."
+"{reporting_user_mention} ilmoitti viestejä jotka lähetti "
+"{reported_user_mention} käyttäjille {recipient_user} ajalla "
+"{reported_message_date_sent}."
 
 #: zerver/lib/message_report.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "{reporting_user_mention} reported a DM sent by {reported_user_mention} to "
-#| "{recipient_mentions}, and {last_user_mention}."
+#, python-brace-format
 msgid ""
 "{reporting_user_mention} reported a message sent by {reported_user_mention} "
 "to {list_of_direct_message_recipients} at {reported_message_date_sent}."
 msgstr ""
-"{reporting_user_mention} ilmoitti YV:t jotka lähetti {reported_user_mention} "
-"käyttäjille {recipient_mentions}, ja {last_user_mention}."
+"{reporting_user_mention} ilmoitti viestejä jotka lähetti "
+"{reported_user_mention} käyttäjille {list_of_direct_message_recipients} "
+"ajalla {reported_message_date_sent}."
 
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "Original message at {channel_message_link}"
-msgstr ""
+msgstr "Alkupereäinen viesti {channel_message_link}"
 
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "[Original message]({direct_message_link})"
-msgstr ""
+msgstr "[Alkuperäinen viesti]({direct_message_link})"
 
 #: zerver/lib/message_report.py
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{fullname} moderation"
 msgstr "moderaatiopyynnöt käyttäjälle {fullname}"
+
+#: zerver/lib/message_report.py
+#, python-brace-format
+msgid "You reported [a message]({message_url}) for {reason}."
+msgstr ""
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -5635,10 +5578,8 @@ msgid "Missing 'anchor' argument."
 msgstr "Puuttuva 'anchor' argumentti."
 
 #: zerver/lib/narrow.py
-#, fuzzy
-#| msgid "Missing 'anchor' argument."
 msgid "Missing 'anchor_date' argument."
-msgstr "Puuttuva 'anchor' argumentti."
+msgstr "Puuttuva 'anchor_date' -argumentti."
 
 #: zerver/lib/narrow.py
 msgid "Invalid anchor"
@@ -5705,14 +5646,7 @@ msgstr ""
 "({organization_setup_url})\n"
 
 #: zerver/lib/onboarding.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Note that this is a [demo organization]({demo_organization_help_url}) "
-#| "and\n"
-#| "will be **automatically deleted** in 30 days, unless it's [converted "
-#| "into\n"
-#| "a permanent organization]({convert_demo_organization_help_url}).\n"
+#, python-brace-format
 msgid ""
 "\n"
 "This [demo organization]({demo_organization_help_url}) will be "
@@ -5721,9 +5655,9 @@ msgid ""
 "a permanent organization]({convert_demo_organization_help_url}).\n"
 msgstr ""
 "\n"
-"Huomaathan että tämä on [demo-organisaatio]({demo_organization_help_url}) "
-"ja \n"
-"**poistetaan  automaattisesti** 30 päivässä, jolle sitä [muunneta\n"
+"Tämä [demo-organisaatio]({demo_organization_help_url})\n"
+"**poistetaan automaattisesti** {deletion_global_time}, jollei sitä "
+"[muunneta\n"
 "pysyväksi]({convert_demo_organization_help_url}).\n"
 
 #: zerver/lib/onboarding.py
@@ -6146,10 +6080,6 @@ msgid "{full_name} mentioned everyone:"
 msgstr "{full_name} mainitisi kaikki:"
 
 #: zerver/lib/push_notifications.py
-msgid "New message"
-msgstr "Uusi viesti"
-
-#: zerver/lib/push_notifications.py
 msgid "Test notification"
 msgstr "Testi-ilmoitus"
 
@@ -6188,17 +6118,15 @@ msgstr ""
 "uudestaan mylhemmin."
 
 #: zerver/lib/push_registration.py
-#, fuzzy
-#| msgid "Invalid API key"
 msgid "Invalid `push_key`"
-msgstr "Virheellinen API-avain"
+msgstr "Virheellinen `push_key`"
 
 #: zerver/lib/rate_limiter.py
 #, python-brace-format
 msgid "{secs}{nbsp}second"
 msgid_plural "{secs}{nbsp}seconds"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{secs}{nbsp}sekunti"
+msgstr[1] "{secs}{nbsp}sekuntia"
 
 #: zerver/lib/recipient_parsing.py
 msgid "Invalid data type for channel ID"
@@ -6218,28 +6146,27 @@ msgstr "'{email}' ei enää käytä Zulipia."
 msgid "You can't send direct messages outside of your organization."
 msgstr "Et voi lähettää suoria viestejä organisaatiosi ulkopuolelle."
 
+#: zerver/lib/recipient_users.py
+msgid "You do not have permission to access some of the recipients."
+msgstr "Sinulla ei ole lupaa nähdä joitain vastaanottajista."
+
 #: zerver/lib/reminders.py
 #, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
 msgstr "Muistutksen pituusyläraja: {max_length} merkkiä."
 
 #: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "You requested a reminder for the following direct message. Note:\n"
-#| " > {note}"
+#, python-brace-format
 msgid ""
 "You requested a reminder for the following message. Note:\n"
 " > {note}"
 msgstr ""
-"Pyysit muistutusta yksityisviestistä. Viesti:\n"
+"Pyysit muistutusta tästä viestistä. Viesti:\n"
 "> {note}"
 
 #: zerver/lib/reminders.py
-#, fuzzy
-#| msgid "You requested a reminder for the following direct message."
 msgid "You requested a reminder for the following message."
-msgstr "Pyysit muistutusta yksityisviestistsä."
+msgstr "Pyysit muistutusta tästä viestistsä."
 
 #: zerver/lib/reminders.py
 #, python-brace-format
@@ -6255,47 +6182,32 @@ msgid "You requested a reminder for the following direct message."
 msgstr "Pyysit muistutusta yksityisviestistsä."
 
 #: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} in "
 "{topic_pretty_link}."
-msgstr "{user_silent_mention} [lähetti]({conversation_url}) todo-listan."
+msgstr ""
+"{user_silent_mention} [lähetti]({conversation_url}) kohteen {widget} "
+"kohteessa {topic_pretty_link}."
 
 #: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr "{user_silent_mention} [sanoi]({conversation_url}):"
-
-#: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid ""
 "{user_silent_mention} [sent]({conversation_url}) a {widget} to "
 "{list_of_recipient_mentions}."
-msgstr "{user_silent_mention} [lähetti]({conversation_url}) todo-listan."
+msgstr ""
+"{user_silent_mention} [lähetti]({conversation_url}) kohteen {widget} "
+"käyttäjille {list_of_recipient_mentions}."
 
 #: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [said]({conversation_url}):"
-msgid ""
-"{user_silent_mention} [said]({conversation_url}) to "
-"{list_of_recipient_mentions}:"
-msgstr "{user_silent_mention} [sanoi]({conversation_url}):"
-
-#: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid "You [sent]({conversation_url}) yourself a {widget}."
-msgstr "{user_silent_mention} [lähetti]({conversation_url}) todo-listan."
+msgstr "Sinä [lähetit]({conversation_url}) itsellesi kohteen {widget}."
 
 #: zerver/lib/reminders.py
-#, fuzzy, python-brace-format
-#| msgid "{user_silent_mention} [sent]({conversation_url}) a todo list."
+#, python-brace-format
 msgid "You [sent]({conversation_url}) a note to yourself:"
-msgstr "{user_silent_mention} [lähetti]({conversation_url}) todo-listan."
+msgstr "Sinä [lähetit]({conversation_url}) itsellesi viestin:"
 
 #: zerver/lib/reminders.py
 msgid "Reminder does not exist"
@@ -6348,10 +6260,8 @@ msgid "Not authorized to send to channel '{channel_name}'"
 msgstr "Ei lupaa lähettää viestiä kanavalle {channel_name}"
 
 #: zerver/lib/streams.py
-#, fuzzy
-#| msgid "You don't have permission to resolve topics in this channel."
 msgid "You do not have permission to create new topics in this channel."
-msgstr "Sinulla ei ole oikeuksia ratkaista viestiä tällä kanavalla."
+msgstr "Sinulla ei ole oikeuksia luoda aihetta tällä kanavalla."
 
 #: zerver/lib/streams.py zerver/views/user_topics.py
 msgid "Invalid channel ID"
@@ -6497,16 +6407,14 @@ msgid "{var_name} is not length {length}"
 msgstr "{var_name} pitäisi olla {length} pitkä"
 
 #: zerver/lib/typed_endpoint.py
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is too long (limit: {max_length} characters)"
+#, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} items)"
-msgstr "{var_name} on liian pitkä (rajoitus: {max_length} merkkiä)"
+msgstr "{var_name} on liian pitkä (rajoitus: {max_length} esinettä)"
 
 #: zerver/lib/typed_endpoint.py
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is too long (limit: {max_length} characters)"
+#, python-brace-format
 msgid "{var_name} is too short (minimum {min_length} items)"
-msgstr "{var_name} on liian pitkä (rajoitus: {max_length} merkkiä)"
+msgstr "{var_name} on liian lyhyt (rajoitus: {min_length} esinettä)"
 
 #: zerver/lib/typed_endpoint.py
 #, python-brace-format
@@ -6552,7 +6460,7 @@ msgstr "Virheellinen {setting_name}"
 
 #: zerver/lib/typed_endpoint_validators.py
 msgid "Not a valid unsigned 32-bit integer"
-msgstr ""
+msgstr "Virheellinen etumerkitön 32-bittinen kokonaisluku"
 
 #: zerver/lib/upload/__init__.py
 msgid "Upload would exceed your organization's upload quota."
@@ -6571,10 +6479,9 @@ msgid "Invalid user group"
 msgstr "Virheellinen käyttäjäryhmä"
 
 #: zerver/lib/user_groups.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid user group ID: {group_id}"
+#, python-brace-format
 msgid "Invalid user group ID: {user_group_id}"
-msgstr "Virheellinen ryhmän tunnus: {group_id}"
+msgstr "Virheellinen käyttäjäryhmän tunnus: {user_group_id}"
 
 #: zerver/lib/user_groups.py
 msgid "Invalid system group name."
@@ -6625,12 +6532,17 @@ msgid ""
 "'{setting_name}' must be restricted to organization administrators for "
 "groups used in 'workplace_users_group'."
 msgstr ""
+"'{setting_name}'-asetuksen ptiää olla rajattu organisaation "
+"järjestelmänvalvojille ryhmissä jotka ovat 'workplace_users_groups'."
 
 #: zerver/lib/user_groups.py
 msgid ""
 "'can_manage_all_groups' must be restricted to organization administrators "
 "when 'workplace_users_group' includes user-defined groups."
 msgstr ""
+"'can_maange_all_groups'-asetuksen pitää olla rajattu organisaation "
+"järjestelmänvalvojille kun 'workplace_users_groups' sisältää käyttäjien "
+"määrittelemiä ryhmiä."
 
 #: zerver/lib/user_status.py
 msgid "Client did not pass any new values."
@@ -6687,6 +6599,10 @@ msgid "Invalid {key} value {value} ({error})"
 msgstr "Virheellinen {key} arvo {value} ({error})"
 
 #: zerver/lib/users.py
+msgid "Invalid embedded bot name."
+msgstr "Virheellinen sulautetun botin nimi."
+
+#: zerver/lib/users.py
 msgid "Invalid configuration data!"
 msgstr "Virheellinen konfiguraatiotieto!"
 
@@ -6707,7 +6623,7 @@ msgstr "Virheelllinen käyttäjätunnus {user_id}"
 msgid "No such bot"
 msgstr "Ei kyseistä bottia"
 
-#: zerver/lib/users.py zerver/views/presence.py
+#: zerver/lib/users.py zerver/views/message_send.py zerver/views/presence.py
 msgid "No such user"
 msgstr "Ei kyseistä käyttäjää"
 
@@ -6727,10 +6643,9 @@ msgstr ""
 "{var_name} on liian vähän merkkejä {length}; pitäisi olla {target_length}"
 
 #: zerver/lib/validator.py
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is not a string"
+#, python-brace-format
 msgid "{var_name} is not an ISO 8601 datetime string"
-msgstr "{var_name} ei ole merkkijono"
+msgstr "{var_name} ei ole ISO 8601 datetime -merkkijono"
 
 #: zerver/lib/validator.py
 #, python-brace-format
@@ -6831,6 +6746,8 @@ msgid ""
 "'workplace_users_group' must be a group whose membership can only be managed "
 "by organization administrators."
 msgstr ""
+"'workplace_users_group'-asetuksen täytyy olla ryhmä jonka jäsenyyksiä "
+"hallitsee vain organisaation järjestelmänvalvojat."
 
 #: zerver/lib/zcommand.py
 msgid "There should be a leading slash in the zcommand."
@@ -6873,15 +6790,15 @@ msgstr "Käyttäjätunnus {user_id} on botti"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Dropdown"
-msgstr ""
+msgstr "Pudotusvalikko"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Short text"
-msgstr ""
+msgstr "Lyhyt teksti"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Paragraph"
-msgstr ""
+msgstr "Kappale"
 
 #: zerver/models/custom_profile_fields.py
 msgid "Date"
@@ -6913,20 +6830,17 @@ msgstr "Kaikki internetissä"
 
 #: zerver/models/linkifiers.py
 msgid "Invalid auto-conversion field: missing '}' character."
-msgstr ""
+msgstr "Virheellinen autokonversionkenttä: } puuttuu."
 
 #: zerver/models/linkifiers.py
-#, fuzzy
-#| msgid "Invalid characters in emoji name"
 msgid "Invalid auto-conversion field: empty field name."
-msgstr "Virheellinen merkki emojin nimessä"
+msgstr "Virheellinen autokonversionkenttä: kentän nimi on tyhjä."
 
 #: zerver/models/linkifiers.py
-#, fuzzy, python-format
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
+#, python-format
 msgid ""
 "Group %(name)r in auto-conversion field is not present in linkifier pattern."
-msgstr "Ryhmä %(name)r URL-mallineessa ei ole linkittimen kuviossa."
+msgstr "Ryhmä %(name)r autokonversiokentässä ei ole linkittimen kuviossa."
 
 #: zerver/models/linkifiers.py
 #, python-brace-format
@@ -6942,14 +6856,12 @@ msgid "Invalid URL template."
 msgstr "Virheellinen URL-malline."
 
 #: zerver/models/linkifiers.py
-#, fuzzy
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
 msgid "Example input does not match the linkifier pattern."
-msgstr "Ryhmä %(name)r URL-mallineessa ei ole linkittimen kuviossa."
+msgstr "Esimerkkisyötettä ei ole linkittimen kuviossa."
 
 #: zerver/models/linkifiers.py
 msgid "Example text does not match auto-conversion field."
-msgstr ""
+msgstr "Esimerkkiteksti ei täsmää autokonversiokenttään."
 
 #: zerver/models/linkifiers.py
 #, python-format
@@ -6963,27 +6875,27 @@ msgstr "Ryhmä %(name)r linkittimen kuviosssa ei ole URLin mallineessa."
 
 #: zerver/models/linkifiers.py
 msgid "An alternative URL template cannot be the same as the URL template."
-msgstr ""
+msgstr "Vaihtoehtoinen URL-malline ei voi olla sama kuin URL-malline."
 
 #: zerver/models/linkifiers.py
 msgid "Alternative URL templates must be unique."
-msgstr ""
+msgstr "Vaihtoehtoisen URL-mallineen pitää olla ainutlaatuinen."
 
 #: zerver/models/linkifiers.py
-#, fuzzy, python-format
-#| msgid "Group %(name)r in URL template is not present in linkifier pattern."
+#, python-format
 msgid ""
 "Group %(name)r in alternative URL template is not present in linkifier "
 "pattern."
-msgstr "Ryhmä %(name)r URL-mallineessa ei ole linkittimen kuviossa."
+msgstr ""
+"Ryhmä %(name)r vaihtoehtoisessa URL-mallineessa ei ole linkittimen kuviossa."
 
 #: zerver/models/linkifiers.py
-#, fuzzy, python-format
-#| msgid "Group %(name)r in linkifier pattern is not present in URL template."
+#, python-format
 msgid ""
 "Group %(name)r in linkifier pattern is not present in alternative URL "
 "template."
-msgstr "Ryhmä %(name)r linkittimen kuviosssa ei ole URLin mallineessa."
+msgstr ""
+"Ryhmä %(name)r linkittimen kuviosssa ei ole vaihtoehtoisen URLin mallineessa."
 
 #: zerver/models/messages.py
 msgid "Unicode emoji"
@@ -7059,7 +6971,7 @@ msgstr "Saatavilla Zulip Cloud Plussassa. Päivitä käyttääksesi."
 
 #: zerver/models/realms.py
 msgid "Disabled"
-msgstr ""
+msgstr "Pois käytöstä"
 
 #: zerver/models/realms.py
 msgid "Allow GIFs rated G (General audience)"
@@ -7170,6 +7082,12 @@ msgstr "Tapahtuma {event_id} ei ollut tässä jonossa"
 msgid "Bad event queue ID: {queue_id}"
 msgstr "Virheellinen tapahtumajonotunnus: {queue_id}"
 
+#: zerver/tornado/views.py
+#, fuzzy
+#| msgid "Session not found"
+msgid "Not found"
+msgstr "Istuntoa ei löytynyt"
+
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
 msgstr "Haasteen luonti epäonnistui"
@@ -7219,10 +7137,8 @@ msgid "Field type not supported for display in profile summary."
 msgstr "Kentän tyyppiä ei tueta näytettäväksi profiilin yhteenvedossa."
 
 #: zerver/views/custom_profile_fields.py
-#, fuzzy
-#| msgid "Field type not supported for display in profile summary."
 msgid "Field type not supported for use for user matching."
-msgstr "Kentän tyyppiä ei tueta näytettäväksi profiilin yhteenvedossa."
+msgstr "Kentän tyyppiä ei tueta käyttäjien hakemisessa."
 
 #: zerver/views/custom_profile_fields.py
 msgid "Invalid field type."
@@ -7286,10 +7202,8 @@ msgid "No such invitation"
 msgstr "Ei kyseistä kutsua"
 
 #: zerver/views/invite.py
-#, fuzzy
-#| msgid "Invitation has already been revoked"
 msgid "Invitation already used or deactivated."
-msgstr "kutsu on jo poistettu käytöstä"
+msgstr "kutsu on jo käytetty tai poistettu käytöstä"
 
 #: zerver/views/invite.py
 msgid "Invitation has already been revoked"
@@ -7354,17 +7268,11 @@ msgstr "Selitys tarvitaan."
 msgid "Message reporting is not enabled in this organization."
 msgstr "Viestien raportointi on poistettu käytöstä tässä organisaatiossa."
 
-#: zerver/views/message_send.py
-msgid "Missing sender"
-msgstr "Puuttuva lähettäjä"
-
-#: zerver/views/message_send.py
-msgid "Mirroring not allowed with recipient user IDs"
-msgstr "Peilaus ei ole sallittu vastaanottajan käyttäjätunnukselle"
-
-#: zerver/views/message_send.py
-msgid "Invalid mirrored message"
-msgstr "Virheellinen toistettu viesti"
+#: zerver/views/message_report.py
+#, fuzzy
+#| msgid "Unable to render message"
+msgid "Failed to send the message report."
+msgstr "Viestiä ei kyetä esittämään"
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7433,10 +7341,8 @@ msgid "Invalid status: {status}"
 msgstr "Virheellinen tila: {status}"
 
 #: zerver/views/push_notifications.py
-#, fuzzy
-#| msgid "You do not have permission to change default channels."
 msgid "You do not have permission to manage plans and billing."
-msgstr "Sinulla ei ole oikeuksia vaihtaa oletuskanavaa."
+msgstr "Sinulla ei ole oikeuksia muuttaa suunnitelmia ja laskutusta."
 
 #: zerver/views/push_notifications.py
 msgid "Server doesn't use the push notification service"
@@ -7456,18 +7362,20 @@ msgid ""
 "Missing parameters: must provide either all push key fields, all token "
 "fields, or both."
 msgstr ""
+"Puuttuvat parametrit: tarvitaan joko kaikki push-avaimet, token-kentät tai "
+"molemmat."
 
 #: zerver/views/push_notifications.py
 msgid "No push registration exists to rotate key for."
-msgstr ""
+msgstr "Ei olemassaolevia rekisteröintejä avaimen kierratystä varten."
 
 #: zerver/views/push_notifications.py
 msgid "A registration for the device already in progress."
-msgstr ""
+msgstr "Laitteen rekisteröinti on jo menneillään."
 
 #: zerver/views/push_notifications.py
 msgid "No push registration exists to rotate token for."
-msgstr ""
+msgstr "Ei push-rekisteröintejä tokenin kierrätystä varten."
 
 #: zerver/views/reactions.py
 msgid ""
@@ -7495,21 +7403,22 @@ msgid "Invalid video_chat_provider {video_chat_provider}"
 msgstr "virheellinen video_chat_provider {video_chat_provider}"
 
 #: zerver/views/realm.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid giphy_rating {giphy_rating}"
+#, python-brace-format
 msgid "Invalid gif_rating_policy {gif_rating_policy}"
-msgstr "Virheellinen giphy_rating {giphy_rating}"
+msgstr "Virheellinen gif_rating_policy {gif_rating_policy}"
 
 #: zerver/views/realm.py
 msgid ""
 "Organization is not eligible for discounted pricing for non workplace users."
-msgstr ""
+msgstr "Organisaatio ei ole oikeutettu alennushintaan ei-työpaikkaköyttöön."
 
 #: zerver/views/realm.py
 msgid ""
 "Discounted pricing for workplace users cannot be enabled with current "
 "discounted plan."
 msgstr ""
+"Alennushintaa työpaikkakäyttäjille ei voi ottaa käyttöön tällä alennetulla "
+"suunnitelmalla."
 
 #: zerver/views/realm.py
 msgid "Must be a demo organization."
@@ -7517,7 +7426,7 @@ msgstr "On oltava demo-organisaatio."
 
 #: zerver/views/realm.py
 msgid "Invalid data deletion time for demo organization."
-msgstr ""
+msgstr "Virheellinen tiedonpoistoika demo-organisaatiolle."
 
 #: zerver/views/realm.py
 #, python-brace-format
@@ -7565,11 +7474,10 @@ msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr "Ladattu tiedosto on suurempi kuin sallittu {max_size} Mt."
 
 #: zerver/views/realm_export.py
-#, fuzzy
-#| msgid "JWT authentication is not enabled for this organization"
 msgid ""
 "Exports of all public and private data are not enabled for this organization."
-msgstr "JWT-varmennus ei ole käytössä tässä organisaatiossa"
+msgstr ""
+"Julkisen ja ytksityisen datan vienti ei ole käytössä tässä organisaatiossa"
 
 #: zerver/views/realm_export.py
 msgid "Exceeded rate limit."
@@ -7581,6 +7489,8 @@ msgid ""
 "The export you requested is too large for automatic processing. Please "
 "request a manual export by contacting {email}."
 msgstr ""
+"Pyydetty vienti on liian iso automaattisesti käsiteltäväksi. Hae manuaalista "
+"vientiä sähköpostitse: {email}."
 
 #: zerver/views/realm_export.py
 msgid "Invalid data export ID"
@@ -7627,6 +7537,25 @@ msgid "Invalid playground"
 msgstr "Virheellinen leikkikenttä"
 
 #: zerver/views/registration.py
+#, python-brace-format
+msgid ""
+"{count} Slack user has an invalid email address. Correct it in Slack, then "
+"start the import again. If you can't correct it, contact {support_email} for "
+"help. Invalid address: {emails}"
+msgid_plural ""
+"{count} Slack users have invalid email addresses. Correct them in Slack, "
+"then start the import again. If you can't correct them, contact "
+"{support_email} for help. Invalid addresses: {emails}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: zerver/views/registration.py
+msgid ""
+"This organization URL is no longer available. Please start over and choose a "
+"different URL."
+msgstr ""
+
+#: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
 msgstr "Vientiä ei voi perua aloittamisen jälkeen."
 
@@ -7655,6 +7584,13 @@ msgstr "Tuodaan konvertoitua Slack-dataa…"
 #: zerver/views/registration.py
 msgid "Finalizing import…"
 msgstr "Viimeistellään tuontia…"
+
+#: zerver/views/registration.py
+#, fuzzy
+#| msgid "Subdomain is already in use. Please choose a different one."
+msgid ""
+"This organization URL is no longer available. Please choose a different URL."
+msgstr "Alidomain on jo käytössä, valitse joku toinen."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7710,10 +7646,6 @@ msgstr "Kanavan sisällön saanti on vaadittu."
 msgid "Channel already has that name."
 msgstr "Kanavalla on jo tämä nimi."
 
-#: zerver/views/streams.py zerver/views/user_groups.py
-msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Ei mitään tehtävää. Määritä vähintään joko \"add\" tai \"delete\"."
-
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
@@ -7722,6 +7654,18 @@ msgstr "{user_full_name} tilasi kanavan {channel_name} sinulle."
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following channels:"
+msgstr "{user_full_name} tilasi kanavia sinulle:"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to {channel_name}."
+msgid "{user_full_name} unsubscribed you from {channel_name}."
+msgstr "{user_full_name} tilasi kanavan {channel_name} sinulle."
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{user_full_name} subscribed you to the following channels:"
+msgid "{user_full_name} unsubscribed you from the following channels:"
 msgstr "{user_full_name} tilasi kanavia sinulle:"
 
 #: zerver/views/streams.py
@@ -7908,6 +7852,10 @@ msgstr ""
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr "Käyttäjäryhmä {group_id} ei ole tämän ryhmän aliryhmä."
 
+#: zerver/views/user_groups.py
+msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
+msgstr "Ei mitään tehtävää. Määritä vähintään joko \"add\" tai \"delete\"."
+
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
 msgstr "Tämä organisaatio ei salli avatarmuutoksia."
@@ -8027,6 +7975,12 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr "Omistajan vaihto epäonnistui, botit eivät voi omistaa toisia botteja"
 
 #: zerver/views/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Virheellinen sulautetun botin nimi."
+
+#: zerver/views/users.py
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
@@ -8037,10 +7991,6 @@ msgstr ""
 #: zerver/views/users.py
 msgid "Embedded bots are not enabled."
 msgstr "Sulautetut botit eivät ole käytössä."
-
-#: zerver/views/users.py
-msgid "Invalid embedded bot name."
-msgstr "Virheellinen sulautetun botin nimi."
 
 #: zerver/views/users.py
 msgid "User not authorized to create users"
@@ -8166,15 +8116,6 @@ msgstr "Virhe: channels_map_to_topics parametri on muuta kuin 0 tai 1"
 #, python-brace-format
 msgid "Unknown WordPress webhook action: {hook}"
 msgstr "Tuntematon WordPress-webhooktoiminto: {hook}"
-
-#: zerver/worker/deferred_work.py
-#, python-brace-format
-msgid ""
-"Your data export is complete. [View and download exports]"
-"({export_settings_link})."
-msgstr ""
-"Datojen vienti on valmis [Katsele ja lataa viedyt datat]"
-"({export_settings_link})."
 
 #: zilencer/auth.py
 msgid "The verification secret has expired"
@@ -8331,6 +8272,95 @@ msgstr "Virheellinen OTP"
 #: zproject/backends.py
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ei voi käyttää yhtäaikaisesti mobile_flow_otp ja desktop_flow_otp."
+
+#, python-format
+#~ msgid "Over %(integrations_count_display)s native integrations."
+#~ msgstr "Yli %(integrations_count_display)s natiivia integraatiota."
+
+#~ msgid ""
+#~ "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and "
+#~ "<a href=\"/integrations/ifttt\">IFTTT</a>."
+#~ msgstr ""
+#~ "Ja satoja lisää seuraavista palveluista: <a href=\"/integration/"
+#~ "zapier\">Zapier</a> ja <a href=\"/integrations/ifttt\">IFTTT</a>."
+
+#~ msgid "Search integrations"
+#~ msgstr "Etsi integraatioita"
+
+#~ msgid "Custom integrations"
+#~ msgstr "Mukautetut integraatiot"
+
+#~ msgid "Incoming webhooks"
+#~ msgstr "Saapuvat webhookit"
+
+#~ msgid "Interactive bots"
+#~ msgstr "Interaktiiviset botit"
+
+#~ msgid "REST API"
+#~ msgstr "REST API"
+
+#~ msgid "Back to list"
+#~ msgstr "Takaisin listaan"
+
+#~ msgid "Back"
+#~ msgstr "Takaisin"
+
+#~ msgid "Integration frameworks"
+#~ msgstr "Integraatio frameworkit"
+
+#~ msgid "Video calling"
+#~ msgstr "Videopuhelu"
+
+#~ msgid "Continuous integration"
+#~ msgstr "Jatkuva integraatio"
+
+#~ msgid "Customer support"
+#~ msgstr "Asiakastuki"
+
+#~ msgid "Deployment"
+#~ msgstr "Käyttöönotto"
+
+#~ msgid "Entertainment"
+#~ msgstr "Viihde"
+
+#~ msgid "Communication"
+#~ msgstr "Kommunikaatio"
+
+#~ msgid "Financial"
+#~ msgstr "Talous"
+
+#~ msgid "Human resources"
+#~ msgstr "Ihmisresurssit"
+
+#~ msgid "Marketing"
+#~ msgstr "Markkinointi"
+
+#~ msgid "Miscellaneous"
+#~ msgstr "Sekalaiset"
+
+#~ msgid "Monitoring"
+#~ msgstr "Monitorointi"
+
+#~ msgid "Project management"
+#~ msgstr "Projektinhallinta"
+
+#~ msgid "Productivity"
+#~ msgstr "Tuottavuus"
+
+#~ msgid "Version control"
+#~ msgstr "Versionhallinta"
+
+#~ msgid "New message"
+#~ msgstr "Uusi viesti"
+
+#~ msgid "Missing sender"
+#~ msgstr "Puuttuva lähettäjä"
+
+#~ msgid "Mirroring not allowed with recipient user IDs"
+#~ msgstr "Peilaus ei ole sallittu vastaanottajan käyttäjätunnukselle"
+
+#~ msgid "Invalid mirrored message"
+#~ msgstr "Virheellinen toistettu viesti"
 
 #~ msgid "X (Twitter)"
 #~ msgstr "X (Twitter)"
