@@ -177,6 +177,22 @@ run_test("is_mobile", () => {
 
     window.navigator = {userAgent: "Not mobile"};
     assert.ok(!util.is_mobile());
+
+    window.navigator = {
+        platform: "MacIntel",
+        maxTouchPoints: 5,
+        userAgent:
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    };
+    assert.ok(util.is_mobile());
+
+    window.navigator = {
+        platform: "MacIntel",
+        maxTouchPoints: 0,
+        userAgent:
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    };
+    assert.ok(!util.is_mobile());
 });
 
 run_test("array_compare", () => {
