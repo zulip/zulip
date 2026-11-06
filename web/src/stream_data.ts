@@ -1186,7 +1186,8 @@ export function create_sub_from_server_data(
 
     assert(server_attrs.subscriber_count !== undefined);
     peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
-
+    //console.log("SERVER DEFAULT COLOR:", server_attrs.default_color);
+    //console.log("SERVER DEFAULT COLOR TYPE:", typeof server_attrs.default_color);
     sub = {
         newly_subscribed: false,
         is_muted: false,

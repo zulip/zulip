@@ -19,7 +19,10 @@ async function visual_test(page: Page): Promise<void> {
     await page.waitForSelector(".color-picker-popover", {visible: true});
     await page.click('.color-picker-popover .color-swatch-label[data-swatch-color="#53a063"]');
     await page.waitForFunction(
-        (stream_name) => zulip_test.get_sub(stream_name)?.default_color === "#53a063",
+        (stream_name) => {
+            const sub = zulip_test.get_sub(stream_name);
+            return sub?.default_color === "#53a063" && sub.color === "#53a063";
+        },
         {},
         stream_name,
     );

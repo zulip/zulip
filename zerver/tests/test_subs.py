@@ -2482,6 +2482,16 @@ class StreamAdminTest(ZulipTestCase):
         stream.refresh_from_db()
         self.assertEqual(stream.default_color, "#123456")
 
+        admin_subscription = Subscription.objects.get(
+            user_profile=admin, recipient=stream.recipient
+        )
+        self.assertIsNone(admin_subscription.color)
+        serialized_admin_sub = next(
+            item for item in gather_subscriptions(admin)[0] if item["stream_id"] == stream.id
+        )
+        self.assertEqual(serialized_admin_sub["color"], "#123456")
+        self.assertTrue(serialized_admin_sub["color_is_default"])
+
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         result = self.client_post(

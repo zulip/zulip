@@ -66,12 +66,16 @@
                 {{#if is_admin}}
                     <div class="input-group stream-default-color-setting">
                         <label class="settings-field-label">{{t "Default channel color"}}</label>
-                        <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_default_stream_color" data-stream-id="{{sub.stream_id}}">
-                            <span class="stream-settings-color-preview stream-default-color-preview" style="background: {{sub.default_color}};"></span>
-                            <span>{{t "Change default color"}}</span>
+                        <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_default_stream_color" data-stream-id="{{sub.stream_id}}" aria-label="{{t 'Change default channel color'}}">
+                            <span class="stream-settings-color-preview stream-default-color-preview"
+                                {{#if sub.default_color}}
+                                    style="background: {{sub.default_color}};"
+                                {{/if}}
+                            ></span>
+                            <span>{{t "Change color"}}</span>
                         </button>
                         {{> ../components/action_button
-                          label=(t "Clear default color")
+                          label=(t "Use automatic color")
                           variant="subtle"
                           intent="neutral"
                           type="button"
