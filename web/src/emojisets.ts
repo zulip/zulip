@@ -21,9 +21,21 @@ const emojisets = new Map<string, EmojiSet>([
     ["twitter", {css: twitter_css, sheet: twitter_sheet}],
 ]);
 
-// For `text` emoji set we fallback to `google` emoji set
-// for displaying emojis in emoji picker and typeahead.
+// With the `text` emoji set, emoji in the emoji picker, typeahead, and
+// user statuses are still displayed as images; see
+// get_emojiset_for_images. If the organization's default is `text` as
+// well, we fall back to the `google` emoji set.
 emojisets.set("text", emojisets.get("google")!);
+
+export function get_emojiset_for_images(
+    user_emojiset: string,
+    realm_default_emojiset: string,
+): string {
+    if (user_emojiset === "text") {
+        return realm_default_emojiset;
+    }
+    return user_emojiset;
+}
 
 let current_emojiset: EmojiSet | undefined;
 

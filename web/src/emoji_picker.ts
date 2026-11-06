@@ -27,7 +27,6 @@ import * as scroll_util from "./scroll_util.ts";
 import * as spectators from "./spectators.ts";
 import * as typeahead from "./typeahead.ts";
 import * as ui_util from "./ui_util.ts";
-import {user_settings} from "./user_settings.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as util from "./util.ts";
 
@@ -131,13 +130,7 @@ class UserStatusSession {
 
     update_the_status_emoji_for_our_user(emoji_name: string): void {
         // THIS IS THE MAIN POINT OF THE EXERCISE!
-        let emoji_info = {
-            emoji_name,
-            emoji_alt_code: user_settings.emojiset === "text",
-        };
-        if (!emoji_info.emoji_alt_code) {
-            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
-        }
+        const emoji_info = emoji.get_emoji_details_by_name(emoji_name);
         user_status_ui.set_selected_emoji_info(emoji_info);
         user_status_ui.update_button();
         user_status_ui.toggle_clear_status_button();
