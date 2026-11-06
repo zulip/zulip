@@ -1,0 +1,46 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772112471.400529",
+    "client_msg_id": "d9639f19-8840-4758-8d8b-0116ecaf41a4",
+    "text": "<@U06NU4E26M9> test user mention <@U074VRHQ11T>",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "pYfWB",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "user",
+                            "user_id": "U06NU4E26M9"
+                        },
+                        {
+                            "type": "text",
+                            "text": " test user mention "
+                        },
+                        {
+                            "type": "user",
+                            "user_id": "U074VRHQ11T"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
