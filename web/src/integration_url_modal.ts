@@ -80,7 +80,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let slack_topics_dropdown_widget: DropdownWidget;
         let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
-        let channel_allows_empty_topic = true;
+        let topic_is_required = false;
 
         const slack_topics_dropdown_widget_id = "slack-topics-dropdown";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
@@ -95,7 +95,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $topic_input.on("input focus", () => {
             $topic_placeholder.toggleClass(
                 "visible",
-                $topic_input.val() === "" && channel_allows_empty_topic,
+                $topic_input.val() === "" && !topic_is_required,
             );
         });
 
@@ -310,7 +310,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     }
                 }
 
-                if (!channel_allows_empty_topic && topic_name === "") {
+                if (topic_is_required && topic_name === "") {
                     params.delete("topic");
                 }
             }
@@ -372,7 +372,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
             if (
                 ($show_integration_events.prop("checked") && !selected_events) ||
-                (!channel_allows_empty_topic && topic_name === "")
+                (topic_is_required && topic_name === "")
             ) {
                 $dialog_submit_button.prop("disabled", true);
             }
@@ -504,6 +504,13 @@ export function show_generate_integration_url_modal(api_key: string): void {
             return options;
         }
 
+        function does_selection_require_topic(selected_id: number): boolean {
+            if (selected_id === direct_messages_option.unique_id) {
+                return false;
+            }
+            return !stream_data.can_use_empty_topic(selected_id);
+        }
+
         function stream_item_click_callback(
             event: JQuery.ClickEvent,
             dropdown: tippy.Instance,
@@ -512,9 +519,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $(".integration-url-stream-wrapper").trigger("input");
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
-            channel_allows_empty_topic = stream_data.can_use_empty_topic(
-                Number(user_selected_option),
-            );
+            const selected_option_id = Number(user_selected_option);
+            topic_is_required = does_selection_require_topic(selected_option_id);
             if (user_selected_option === direct_messages_option.unique_id) {
                 update_topic_ui({
                     disable_topic_config_inputs: true,
