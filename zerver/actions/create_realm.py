@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -15,6 +15,7 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
 )
 from zerver.lib.bulk_create import create_users
+from zerver.lib.exceptions import RealmSubdomainUnavailableError
 from zerver.lib.push_notifications import sends_notifications_directly
 from zerver.lib.realm_description import render_realm_description
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
@@ -209,8 +210,6 @@ def do_create_realm(
         raise AssertionError(
             "Creating a realm on SOCIAL_AUTH_SUBDOMAIN or SELF_HOSTING_MANAGEMENT_SUBDOMAIN is not allowed!"
         )
-    if Realm.objects.filter(string_id=string_id).exists():
-        raise AssertionError(f"Realm {string_id} already exists!")
     if not server_initialized():
         logging.info("Server not yet initialized. Creating the internal realm first.")
         create_internal_realm()
@@ -266,77 +265,82 @@ def do_create_realm(
     # is required to do so correctly.
     kwargs["push_notifications_enabled"] = sends_notifications_directly()
 
-    with transaction.atomic(durable=True):
-        realm = Realm(string_id=string_id, name=name, **kwargs)
-        if is_demo_organization:
-            assert settings.DEMO_ORG_DEADLINE_DAYS is not None
-            realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
-                days=settings.DEMO_ORG_DEADLINE_DAYS
+    try:
+        with transaction.atomic(durable=True):
+            realm = Realm(string_id=string_id, name=name, **kwargs)
+            if is_demo_organization:
+                assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+                realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
+                    days=settings.DEMO_ORG_DEADLINE_DAYS
+                )
+
+            # For now a dummy value of -1 is given to groups fields which
+            # is changed later before the transaction is committed.
+            for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+                setattr(realm, setting_name + "_id", -1)
+
+            realm.save()
+
+            RealmAuditLog.objects.create(
+                # acting_user will be set as the initial realm owner inside
+                # do_create_user(..., realm_creation=True).
+                acting_user=None,
+                realm=realm,
+                event_type=AuditLogEventType.REALM_CREATED,
+                event_time=realm.date_created,
+                extra_data={
+                    "how_realm_creator_found_zulip": how_realm_creator_found_zulip,
+                    "how_realm_creator_found_zulip_extra_context": how_realm_creator_found_zulip_extra_context,
+                },
             )
 
-        # For now a dummy value of -1 is given to groups fields which
-        # is changed later before the transaction is committed.
-        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-            setattr(realm, setting_name + "_id", -1)
+            RealmUserDefault.objects.create(
+                realm=realm,
+                email_address_visibility=get_email_address_visibility_default(realm.org_type),
+            )
 
-        realm.save()
+            create_system_user_groups_for_realm(realm)
 
-        RealmAuditLog.objects.create(
-            # acting_user will be set as the initial realm owner inside
-            # do_create_user(..., realm_creation=True).
-            acting_user=None,
-            realm=realm,
-            event_type=AuditLogEventType.REALM_CREATED,
-            event_time=realm.date_created,
-            extra_data={
-                "how_realm_creator_found_zulip": how_realm_creator_found_zulip,
-                "how_realm_creator_found_zulip_extra_context": how_realm_creator_found_zulip_extra_context,
-            },
-        )
+            group_settings_defaults_for_org_types = {
+                "can_add_subscribers_group": {
+                    Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                    Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+                },
+                "can_create_public_channel_group": {
+                    Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                    Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
+                },
+                "can_create_groups": {
+                    Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                    Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+                },
+                "can_invite_users_group": {
+                    Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
+                    Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
+                },
+                "can_move_messages_between_channels_group": {
+                    Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
+                    Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
+                },
+            }
+            set_default_for_realm_permission_group_settings(
+                realm, group_settings_defaults_for_org_types
+            )
 
-        RealmUserDefault.objects.create(
-            realm=realm,
-            email_address_visibility=get_email_address_visibility_default(realm.org_type),
-        )
+            RealmAuthenticationMethod.objects.bulk_create(
+                [
+                    RealmAuthenticationMethod(name=backend_name, realm=realm)
+                    for backend_name in all_default_backend_names()
+                ]
+            )
 
-        create_system_user_groups_for_realm(realm)
+            PresenceSequence.objects.create(realm=realm, last_update_id=0)
 
-        group_settings_defaults_for_org_types = {
-            "can_add_subscribers_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
-                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
-            },
-            "can_create_public_channel_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
-                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
-            },
-            "can_create_groups": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
-                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
-            },
-            "can_invite_users_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.ADMINISTRATORS,
-                Realm.ORG_TYPES["education"]["id"]: SystemGroups.ADMINISTRATORS,
-            },
-            "can_move_messages_between_channels_group": {
-                Realm.ORG_TYPES["education_nonprofit"]["id"]: SystemGroups.MODERATORS,
-                Realm.ORG_TYPES["education"]["id"]: SystemGroups.MODERATORS,
-            },
-        }
-        set_default_for_realm_permission_group_settings(
-            realm, group_settings_defaults_for_org_types
-        )
-
-        RealmAuthenticationMethod.objects.bulk_create(
-            [
-                RealmAuthenticationMethod(name=backend_name, realm=realm)
-                for backend_name in all_default_backend_names()
-            ]
-        )
-
-        PresenceSequence.objects.create(realm=realm, last_update_id=0)
-
-        maybe_enqueue_audit_log_upload(realm)
+            maybe_enqueue_audit_log_upload(realm)
+    except IntegrityError:
+        if Realm.objects.filter(string_id=string_id).exists():
+            raise RealmSubdomainUnavailableError(string_id)
+        raise
 
     # Create channels once Realm object has been saved
     with override_language(realm.default_language):

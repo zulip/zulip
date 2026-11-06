@@ -534,6 +534,12 @@ class InvalidSubdomainError(JsonableError):
         return _("Invalid subdomain")
 
 
+class RealmSubdomainUnavailableError(Exception):
+    def __init__(self, string_id: str) -> None:
+        self.string_id = string_id
+        super().__init__(f"Realm {string_id} already exists!")
+
+
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = [
