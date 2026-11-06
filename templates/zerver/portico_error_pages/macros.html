@@ -1,0 +1,18 @@
+{# Illustration sizes, so the page reserves space before the art loads. #}
+{% set error_page_art_sizes = {
+  "not-found": (261, 199),
+  "rate-limit": (200, 258),
+  "no-access": (272, 206),
+  "expired": (350, 199),
+  "server-error": (355, 199),
+  "update-needed": (292, 199),
+  "self-hosted": (161, 232),
+  } %}
+
+{% macro error_page_art(name) -%}
+    {% set width, height = error_page_art_sizes[name] %}
+    <picture>
+        <source srcset="{{ static('images/errors/' + name + '-dark.svg') }}" media="(prefers-color-scheme: dark)"/>
+        <img src="{{ static('images/errors/' + name + '-light.svg') }}" width="{{ width }}" height="{{ height }}" alt=""/>
+    </picture>
+{%- endmacro %}
