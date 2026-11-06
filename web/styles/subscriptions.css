@@ -650,7 +650,11 @@
     border-radius: 4px;
     padding: 0;
     width: 97%;
-    position: relative;
+    /* Center the container in the overlay on both axes, including
+       when its max-height is smaller than the available height. */
+    position: absolute;
+    inset: 0;
+    margin: auto;
     overflow: hidden;
     max-width: 1200px;
     max-height: var(--overlay-container-max-height);
@@ -1186,7 +1190,7 @@
     }
 }
 
-#settings_page,
+#settings_page .overlay-container,
 .two-pane-settings-overlay {
     container: settings-overlay / inline-size;
 }
@@ -1690,7 +1694,6 @@
    in settings.css, using shared classnames. */
 @container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
     .two-pane-settings-container {
-        position: relative;
         overflow: hidden;
 
         /* This variable allows JavaScript to detect whether we are showing both
