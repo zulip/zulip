@@ -8,7 +8,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, format_spoiler
 from zerver.models import UserProfile
 
 
@@ -22,44 +22,50 @@ def api_alertmanager_webhook(
     name_field: Annotated[str, ApiParamConfig("name")] = "instance",
     desc_field: Annotated[str, ApiParamConfig("desc")] = "alertname",
 ) -> HttpResponse:
-    topics: dict[str, dict[str, list[str]]] = {}
+    topics: dict[str, list[str]] = {}
 
     for alert in payload["alerts"]:
         labels = alert.get("labels", {})
         annotations = alert.get("annotations", {})
+        status = alert.get("status", "firing").tame(check_string)
 
         name = labels.get(name_field, annotations.get(name_field, "(unknown)")).tame(check_string)
-        desc = labels.get(
-            desc_field, annotations.get(desc_field, f"<missing field: {desc_field}>")
-        ).tame(check_string)
+        severity = labels.get("severity", "unknown").tame(check_string)
+        summary = annotations.get("summary", labels.get("alertname", "")).tame(check_string)
+        description = annotations.get("description", labels.get("alertname", "")).tame(check_string)
+
+        if status == "firing":
+            icon = ":alert:"
+            title = severity.upper()
+        else:
+            icon = ":squared_ok:"
+            title = "RESOLVED"
 
         if "generatorURL" in alert:
             url = alert["generatorURL"].tame(check_string).replace("tab=1", "tab=0")
-            body = f"{desc} ([source]({url}))"
+            header = f"{summary} ([source]({url}))"
         else:
-            body = desc
+            header = summary
+
+        details = ["**Description:**", description]
+        if labels:
+            details.append("\n**Labels:**")
+            for key, value in sorted(labels.items()):
+                details.append(f"- {key}: {value.tame(check_string)}")
+        if annotations:
+            details.append("\n**Annotations:**")
+            for key, value in sorted(annotations.items()):
+                details.append(f"- {key}: {value.tame(check_string)}")
+
+        spoiler = format_spoiler("Details", "\n".join(details))
+        body = f"{icon} **{title}: {header}**\n{spoiler}"
+
         if name not in topics:
-            topics[name] = {"firing": [], "resolved": []}
-        topics[name][alert["status"].tame(check_string)].append(body)
+            topics[name] = []
+        topics[name].append(body)
 
-    for topic_name, statuses in topics.items():
-        for status, messages in statuses.items():
-            if len(messages) == 0:
-                continue
-
-            if status == "firing":
-                icon = ":alert:"
-                title = "FIRING"
-            else:
-                title = "Resolved"
-                icon = ":squared_ok:"
-
-            if len(messages) == 1:
-                body = f"{icon} **{title}** {messages[0]}"
-            else:
-                message_list = "\n".join(f"* {m}" for m in messages)
-                body = f"{icon} **{title}**\n{message_list}"
-
+    for topic_name, messages in topics.items():
+        for body in messages:
             check_send_webhook_message(request, user_profile, topic_name, body)
 
     return json_success(request)
