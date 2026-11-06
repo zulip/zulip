@@ -685,7 +685,6 @@ export function initialize(): void {
         "mouseenter",
         ".user_sidebar_entry",
         function (this: HTMLElement, e) {
-            e.stopPropagation();
             const $elem = $(this);
 
             const is_compact_mode =
@@ -711,12 +710,17 @@ export function initialize(): void {
                 return Array.prototype.includes.call(mutation.removedNodes, instance.reference);
             }
 
-            do_render_buddy_list_tooltip(
-                $elem,
-                title_data,
-                get_target_node,
-                check_reference_removed,
-            );
+            // If the pointer entered the row directly onto the status emoji, only
+            // the emoji's own tooltip should show. The mouseleave handler below
+            // shows the main tooltip when the pointer moves off the emoji.
+            if ($(e.target).closest(".status-emoji-name").length === 0) {
+                do_render_buddy_list_tooltip(
+                    $elem,
+                    title_data,
+                    get_target_node,
+                    check_reference_removed,
+                );
+            }
 
             /*
             The following implements a little tooltip giving the name for status emoji

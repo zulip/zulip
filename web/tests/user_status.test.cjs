@@ -12,7 +12,8 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {emojiset: "google", web_animate_image_previews: "on_hover"};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -55,6 +56,8 @@ run_test("basics", () => {
     initialize();
 
     assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_code: "992",
         emoji_name: "deactivated_realm_emoji",
         reaction_type: "realm_emoji",
@@ -74,6 +77,7 @@ run_test("basics", () => {
 
     assert.deepEqual(user_status.get_status_emoji(5), {
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
@@ -114,6 +118,7 @@ run_test("basics", () => {
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
     });
 
     user_status.set_status_emoji({
@@ -187,4 +192,36 @@ run_test("defensive checks", () => {
             message: "Cannot find realm emoji for code 'fake_code'.",
         },
     );
+});
+
+run_test("emoji_alt_code follows the current emojiset", ({override}) => {
+    // The `text` emojiset renders a status emoji as `:name:` text
+    // rather than an image, which status_emoji.hbs decides from
+    // emoji_alt_code; this has to track the emojiset setting both at
+    // page load and after it changes.
+    initialize();
+    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, false);
+
+    override(user_settings, "emojiset", "text");
+    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, true);
+    assert.equal(user_status.get_status_emoji(4).emoji_alt_code, true);
+
+    override(user_settings, "emojiset", "google");
+    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, false);
+});
+
+run_test("emoji_animation_setting follows the current setting", ({override}) => {
+    // realm_emoji.hbs decides whether to show the animated or still
+    // image from emoji_animation_setting; this has to track the
+    // web_animate_image_previews setting both at page load and after
+    // it changes.
+    initialize();
+    assert.equal(user_status.get_status_emoji(5).emoji_animation_setting, "on_hover");
+
+    override(user_settings, "web_animate_image_previews", "always");
+    assert.equal(user_status.get_status_emoji(5).emoji_animation_setting, "always");
+    assert.equal(user_status.get_status_emoji(4).emoji_animation_setting, "always");
+
+    override(user_settings, "web_animate_image_previews", "never");
+    assert.equal(user_status.get_status_emoji(5).emoji_animation_setting, "never");
 });

@@ -11,7 +11,7 @@ import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
-import type {UserStatusEmojiInfo} from "./user_status.ts";
+import type {EmojiAnimationSetting} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 const stored_messages = new Map<number, ProcessedMessage>();
@@ -158,15 +158,21 @@ export type MessageWithBooleans = RawMessageWithBooleans | LocalMessageWithBoole
 export type MessageCleanReaction = {
     class: string;
     count: number;
-    emoji_alt_code: boolean;
     emoji_code: string;
     emoji_name: string;
     is_realm_emoji: boolean;
     label: string;
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
+    still_url?: string | null;
+    url?: string;
     user_ids: number[];
     vote_text: string;
+};
+
+export type MessageCleanReactionWithDisplaySettings = MessageCleanReaction & {
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
 };
 
 export type Message = (
@@ -194,7 +200,7 @@ export type Message = (
     // These properties are set and used in `message_list_view.ts`.
     // TODO: It would be nice if we could not store these on the message
     // object and only reference them within `message_list_view`.
-    message_reactions?: MessageCleanReaction[];
+    message_reactions?: MessageCleanReactionWithDisplaySettings[];
     url?: string;
 
     // Used in `markdown.js`, `server_events.js`, and
@@ -204,10 +210,6 @@ export type Message = (
     // Used in `message_avatar.hbs` to render sender avatar in
     // message list.
     small_avatar_url?: string | null;
-
-    // Used in `message_body.hbs` to show sender status emoji alongside
-    // their name in message list.
-    status_emoji_info?: UserStatusEmojiInfo | undefined;
 
     // Used for edited messages to show their last edit time.
     local_edit_timestamp?: number;
@@ -414,18 +416,6 @@ export function update_stream_name(stream_id: number, new_name: string): void {
         const message = message_data.message;
         if (message.type === "stream" && message.stream_id === stream_id) {
             message.display_recipient = new_name;
-        }
-    }
-}
-
-export function update_status_emoji_info(
-    user_id: number,
-    new_info: UserStatusEmojiInfo | undefined,
-): void {
-    for (const message_data of stored_messages.values()) {
-        const message = message_data.message;
-        if (message.sender_id && message.sender_id === user_id) {
-            message.status_emoji_info = new_info;
         }
     }
 }
