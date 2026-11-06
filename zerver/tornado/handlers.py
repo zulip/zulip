@@ -67,6 +67,7 @@ def finish_handler(handler_id: int, event_queue_id: str, contents: list[dict[str
         async_request_timer_restart(request)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
+
         if len(contents) != 1:
             log_data["extra"] = f"[{event_queue_id}/1]"
         else:
