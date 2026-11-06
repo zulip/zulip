@@ -51,8 +51,8 @@ Some important code entities for the widget implementation are:
 
 - `SubMessage` database table
 - `/json/submessage` API endpoint
-- `web/src/submessage.js`
-- `web/src/poll_widget.js`
+- `web/src/submessage.ts`
+- `web/src/poll_widget.ts`
 - `web/src/widgetize.ts`
 - `web/src/zform.ts`
 - `web/templates/widgets/`
@@ -78,7 +78,7 @@ appropriate widgets.
 
 The web app client will next collect poll options and votes
 from users. The web app client has
-code in `submessage.js` that dispatches events
+code in `submessage.ts` that dispatches events
 to `widgetize.ts`, which in turn sends events to
 individual widgets. The widgets know how to render
 themselves and set up click/input handlers to collect
@@ -108,7 +108,7 @@ jQuery and template.render, and the developer can create
 new templates in `web/templates/widgets/`.
 
 A good way to learn the system is to read the code
-in `web/src/poll_widget.js`. It is worth noting that
+in `web/src/poll_widget.ts`. It is worth noting that
 writing a new widget requires only minor backend
 changes in the current architecture. This could change
 in the future, but for now, a frontend developer mostly

@@ -54,7 +54,7 @@ all of this (would be a good project to add them to the
 [Puppeteer suite][testing-with-puppeteer]) and there's enough complexity
 that it's easy to accidentally break something.
 
-The main external API lives in `web/src/browser_history.js`:
+The main external API lives in `web/src/browser_history.ts`:
 
 - `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
