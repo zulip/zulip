@@ -693,7 +693,7 @@ def oauth_redirect_to_root(
     multiuse_object_key: str = "",
     next: str | None = None,
 ) -> HttpResponse:
-    main_site_url = settings.ROOT_DOMAIN_URI + url
+    main_site_url = settings.ROOT_DOMAIN_URL + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
         main_site_url = (
             settings.EXTERNAL_URI_SCHEME
