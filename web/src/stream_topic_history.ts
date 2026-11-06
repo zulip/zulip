@@ -221,7 +221,10 @@ export class PerStreamHistory {
         }
     }
 
-    get_recent_topic_names(): string[] {
+    get_recent_topics(): {
+        local_echo_topics: {pretty_name: string; message_id: number}[];
+        server_topics: {pretty_name: string; message_id: number}[];
+    } {
         // Combines several data sources to produce a complete picture
         // of topics the client knows about.
         //
@@ -244,12 +247,25 @@ export class PerStreamHistory {
             local_echo_topics.map((message_topic) => message_topic.pretty_name.toLowerCase()),
         );
 
-        // We first sort the topics without locally echoed messages,
-        // and then prepend topics with locally echoed messages.
         const server_topics = [...my_recents, ...missing_topics].filter(
             (message_topic) => !local_echo_set.has(message_topic.pretty_name.toLowerCase()),
         );
+        return {local_echo_topics, server_topics};
+    }
+
+    get_recent_topic_names(): string[] {
+        const {local_echo_topics, server_topics} = this.get_recent_topics();
+        // We first sort the topics without locally echoed messages,
+        // and then prepend topics with locally echoed messages.
         server_topics.sort((a, b) => b.message_id - a.message_id);
+        return [...local_echo_topics, ...server_topics].map((obj) => obj.pretty_name);
+    }
+
+    // Same topic names as `get_recent_topic_names`, but without the
+    // recency sort.  Callers that filter to a few matches and re-sort
+    // those use this to avoid sorting a channel's full topic history.
+    get_recent_topic_names_unsorted(): string[] {
+        const {local_echo_topics, server_topics} = this.get_recent_topics();
         return [...local_echo_topics, ...server_topics].map((obj) => obj.pretty_name);
     }
 
@@ -376,6 +392,16 @@ export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
+}
+
+export function get_recent_topic_names_unsorted(stream_id: number): string[] {
+    // Not `find_or_create`: a missing history acts like an empty one,
+    // and caching one per channel would grow `stream_dict` without bound.
+    // This is called for every channel on each keystroke of a `#`
+    // typeahead, so that growth would be real.
+    const history = stream_dict.get(stream_id) ?? new PerStreamHistory(stream_id);
+
+    return history.get_recent_topic_names_unsorted();
 }
 
 export function get_max_message_id(stream_id: number): number {
