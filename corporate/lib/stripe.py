@@ -53,6 +53,7 @@ from zerver.lib.send_email import (
     send_email_to_users_with_billing_access_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.user_counts import realm_user_count, realm_workplace_user_count
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -981,15 +982,15 @@ class BillingSession(ABC):
         plan: CustomerPlan,
         is_renewal: bool,
         event_time: datetime,
-        licenses: int,
-        licenses_at_next_renewal: int,
+        workplace_licenses: int,
+        workplace_licenses_at_next_renewal: int,
     ) -> LicenseLedger:
         return LicenseLedger.objects.create(
             plan=plan,
             is_renewal=is_renewal,
             event_time=event_time,
-            workplace_licenses=licenses,
-            workplace_licenses_at_next_renewal=licenses_at_next_renewal,
+            workplace_licenses=workplace_licenses,
+            workplace_licenses_at_next_renewal=workplace_licenses_at_next_renewal,
         )
 
     # Customer plan offers are always for negotiated, annual, fixed-price plans.
@@ -2196,8 +2197,8 @@ class BillingSession(ABC):
                 plan=plan,
                 is_renewal=True,
                 event_time=billing_cycle_anchor,
-                licenses=licenses,
-                licenses_at_next_renewal=licenses,
+                workplace_licenses=licenses,
+                workplace_licenses_at_next_renewal=licenses,
             )
             plan.invoiced_through = ledger_entry
             plan.save(update_fields=["invoiced_through"])
@@ -2217,8 +2218,8 @@ class BillingSession(ABC):
                         plan=plan,
                         is_renewal=False,
                         event_time=billing_cycle_anchor,
-                        licenses=billable_licenses,
-                        licenses_at_next_renewal=billable_licenses,
+                        workplace_licenses=billable_licenses,
+                        workplace_licenses_at_next_renewal=billable_licenses,
                     )
                     # Creates due today invoice for additional licenses.
                     self.invoice_plan(plan, billing_cycle_anchor)
@@ -2229,8 +2230,8 @@ class BillingSession(ABC):
                         plan=plan,
                         is_renewal=False,
                         event_time=billing_cycle_anchor,
-                        licenses=licenses,
-                        licenses_at_next_renewal=billable_licenses,
+                        workplace_licenses=licenses,
+                        workplace_licenses_at_next_renewal=billable_licenses,
                     )
                     # Send internal billing notice about license discrepancy.
                     context = {
@@ -2418,8 +2419,8 @@ class BillingSession(ABC):
             plan=new_free_trial_plan,
             is_renewal=True,
             event_time=plan.billing_cycle_anchor,
-            licenses=licenses_at_next_renewal,
-            licenses_at_next_renewal=licenses_at_next_renewal,
+            workplace_licenses=licenses_at_next_renewal,
+            workplace_licenses_at_next_renewal=licenses_at_next_renewal,
         )
 
         new_free_trial_plan.invoiced_through = ledger_entry
@@ -2498,8 +2499,8 @@ class BillingSession(ABC):
                     plan=plan,
                     is_renewal=True,
                     event_time=next_billing_cycle,
-                    licenses=licenses_at_next_renewal,
-                    licenses_at_next_renewal=licenses_at_next_renewal,
+                    workplace_licenses=licenses_at_next_renewal,
+                    workplace_licenses_at_next_renewal=licenses_at_next_renewal,
                 )
             if plan.is_free_trial():
                 is_renewal = True
@@ -2557,8 +2558,8 @@ class BillingSession(ABC):
                     plan=plan,
                     is_renewal=is_renewal,
                     event_time=next_billing_cycle,
-                    licenses=licenses_at_next_renewal,
-                    licenses_at_next_renewal=licenses_at_next_renewal,
+                    workplace_licenses=licenses_at_next_renewal,
+                    workplace_licenses_at_next_renewal=licenses_at_next_renewal,
                 )
 
             if plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:  # nocoverage
@@ -2579,8 +2580,8 @@ class BillingSession(ABC):
                     plan=new_plan,
                     is_renewal=True,
                     event_time=next_billing_cycle,
-                    licenses=licenses_at_next_renewal,
-                    licenses_at_next_renewal=licenses_at_next_renewal,
+                    workplace_licenses=licenses_at_next_renewal,
+                    workplace_licenses_at_next_renewal=licenses_at_next_renewal,
                 )
 
             if plan.status == CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE:
@@ -2613,8 +2614,8 @@ class BillingSession(ABC):
                     plan=new_annual_plan,
                     is_renewal=True,
                     event_time=next_billing_cycle,
-                    licenses=licenses_at_next_renewal,
-                    licenses_at_next_renewal=licenses_at_next_renewal,
+                    workplace_licenses=licenses_at_next_renewal,
+                    workplace_licenses_at_next_renewal=licenses_at_next_renewal,
                 )
 
                 self.write_to_audit_log(
@@ -2658,8 +2659,8 @@ class BillingSession(ABC):
                     plan=new_monthly_plan,
                     is_renewal=True,
                     event_time=next_billing_cycle,
-                    licenses=licenses_at_next_renewal,
-                    licenses_at_next_renewal=licenses_at_next_renewal,
+                    workplace_licenses=licenses_at_next_renewal,
+                    workplace_licenses_at_next_renewal=licenses_at_next_renewal,
                 )
 
                 self.write_to_audit_log(
@@ -3420,8 +3421,8 @@ class BillingSession(ABC):
             plan=new_tier_plan,
             is_renewal=True,
             event_time=new_plan_billing_cycle_anchor,
-            licenses=licenses_for_new_plan,
-            licenses_at_next_renewal=licenses_for_new_plan,
+            workplace_licenses=licenses_for_new_plan,
+            workplace_licenses_at_next_renewal=licenses_for_new_plan,
         )
 
     def create_stripe_invoice_for_plan(self, plan: CustomerPlan) -> stripe.Invoice:
@@ -3985,8 +3986,8 @@ class BillingSession(ABC):
             plan=plan,
             is_renewal=True,
             event_time=event_time,
-            licenses=licenses,
-            licenses_at_next_renewal=licenses,
+            workplace_licenses=licenses,
+            workplace_licenses_at_next_renewal=licenses,
         )
 
         # Update the last sent invoice with the new licenses. We just need to update `quantity` in
@@ -4061,8 +4062,8 @@ class BillingSession(ABC):
                 plan=plan,
                 is_renewal=False,
                 event_time=event_time,
-                licenses=licenses,
-                licenses_at_next_renewal=licenses,
+                workplace_licenses=licenses,
+                workplace_licenses_at_next_renewal=licenses,
             )
         elif licenses_at_next_renewal is not None:
             assert (
@@ -4075,8 +4076,8 @@ class BillingSession(ABC):
                 plan=plan,
                 is_renewal=False,
                 event_time=event_time,
-                licenses=plan.licenses(),
-                licenses_at_next_renewal=licenses_at_next_renewal,
+                workplace_licenses=plan.licenses(),
+                workplace_licenses_at_next_renewal=licenses_at_next_renewal,
             )
         else:
             raise AssertionError("Pass licenses or licenses_at_next_renewal")
@@ -4137,8 +4138,8 @@ class BillingSession(ABC):
             plan=plan,
             is_renewal=False,
             event_time=event_time,
-            licenses=licenses,
-            licenses_at_next_renewal=licenses_at_next_renewal,
+            workplace_licenses=licenses,
+            workplace_licenses_at_next_renewal=licenses_at_next_renewal,
         )
 
         # Returning plan is particularly helpful for 'sync_license_ledger_if_needed'.
@@ -4185,8 +4186,8 @@ class BillingSession(ABC):
             plan=complimentary_access_plan,
             is_renewal=True,
             event_time=renewal_date,
-            licenses=billed_licenses,
-            licenses_at_next_renewal=billed_licenses,
+            workplace_licenses=billed_licenses,
+            workplace_licenses_at_next_renewal=billed_licenses,
         )
         complimentary_access_plan.invoiced_through = ledger_entry
         complimentary_access_plan.save(update_fields=["invoiced_through"])
@@ -4231,8 +4232,8 @@ class BillingSession(ABC):
             plan=community_plan,
             is_renewal=True,
             event_time=now,
-            licenses=billed_licenses,
-            licenses_at_next_renewal=billed_licenses,
+            workplace_licenses=billed_licenses,
+            workplace_licenses_at_next_renewal=billed_licenses,
         )
         community_plan.invoiced_through = ledger_entry
         community_plan.save(update_fields=["invoiced_through"])
@@ -4386,8 +4387,17 @@ class RealmBillingSession(BillingSession):
     def current_counts_for_billed_users(
         self, event_time: datetime | None = None
     ) -> BillingUserCounts:
-        workplace_users = get_latest_seat_count(self.realm)
-        return BillingUserCounts(workplace_users, non_workplace_users=0)
+        plan = get_current_plan_by_realm(self.realm)
+        if plan is None or plan.price_per_external_license is None:
+            return BillingUserCounts(get_latest_seat_count(self.realm), non_workplace_users=0)
+
+        # The discounted rate for users outside workplace_users_group replaces
+        # the discount for guests, so every user counts as one license here.
+        workplace_users = realm_workplace_user_count(self.realm)
+        return BillingUserCounts(
+            workplace_users,
+            non_workplace_users=realm_user_count(self.realm) - workplace_users,
+        )
 
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
