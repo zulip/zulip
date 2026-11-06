@@ -17,6 +17,7 @@ import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as muted_users from "./muted_users.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as padded_widget from "./padded_widget.ts";
 import {page_params} from "./page_params.ts";
@@ -66,6 +67,46 @@ function get_total_human_subscriber_count(
     return 0;
 }
 
+// Muted users are hidden from the buddy list, so the section counts
+// leave them out. In large channels, a muted user who isn't loaded
+// stays counted, since fetching every subscriber isn't worth it for
+// a header count.
+function get_muted_humans_sections_count(
+    current_sub: StreamSubscription | undefined,
+    pm_ids_set: Set<number>,
+): {
+    matching_view: number;
+    others: number;
+} {
+    let matching_view = 0;
+    let others = 0;
+    for (const user_id of muted_users.get_muted_user_ids()) {
+        if (people.is_valid_bot_user(user_id)) {
+            continue;
+        }
+        // Deactivated users are shown in direct message views.
+        if (pm_ids_set.has(user_id)) {
+            matching_view += 1;
+            continue;
+        }
+        if (!people.is_active_user(user_id)) {
+            continue;
+        }
+        if (
+            current_sub !== undefined &&
+            peer_data.is_user_loaded_and_subscribed(current_sub.stream_id, user_id)
+        ) {
+            matching_view += 1;
+        } else if (
+            current_sub === undefined ||
+            peer_data.has_full_subscriber_data(current_sub.stream_id)
+        ) {
+            others += 1;
+        }
+    }
+    return {matching_view, others};
+}
+
 function should_hide_headers(
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
@@ -84,7 +125,6 @@ type BuddyListRenderData = {
     // some counting bugs in the headers. This shouldn't show up in
     // production.
     total_human_subscribers_count: number;
-    other_users_count: number;
     hide_headers: boolean;
     // Might include unsubscribed participants
     get_all_participant_ids: () => Set<number>;
@@ -95,7 +135,6 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
-    const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
 
@@ -103,7 +142,6 @@ function get_render_data(): BuddyListRenderData {
         current_sub,
         pm_ids_set,
         total_human_subscribers_count,
-        other_users_count,
         hide_headers,
         get_all_participant_ids,
     };
@@ -191,6 +229,7 @@ export class BuddyList extends BuddyListConf {
             await this.non_participant_users_matching_view_count();
         const total_human_subscribers_count = (): number =>
             this.render_data.total_human_subscribers_count;
+        const other_users_count = (): number => this.other_users_count();
 
         async function set_tooltip_text(instance: tippy.Instance): Promise<void> {
             let tooltip_text;
@@ -285,14 +324,12 @@ export class BuddyList extends BuddyListConf {
                             // Set the tooltip without awaiting for the async function to return.
                             void set_tooltip_text(instance);
                         } else {
-                            const other_users_count =
-                                people.get_active_human_count() - total_human_subscribers_count();
                             const tooltip_text = $t(
                                 {
                                     defaultMessage:
                                         "{N, plural, one {# other user} other {# other users}}",
                                 },
-                                {N: other_users_count},
+                                {N: other_users_count()},
                             );
                             instance.setContent(tooltip_text);
                         }
@@ -327,12 +364,19 @@ export class BuddyList extends BuddyListConf {
     }
 
     async non_participant_users_matching_view_count(): Promise<number | null> {
-        const {current_sub, get_all_participant_ids} = this.render_data;
+        const {current_sub, pm_ids_set, get_all_participant_ids} = this.render_data;
         // We don't show "participants" for DMs, we just show the
         // "in this narrow" section (i.e. everyone in the conversation).
         // Confusingly, we do call this "participants" in the UI.
         if (current_sub === undefined) {
-            return this.render_data.total_human_subscribers_count;
+            const muted_humans_sections_count = get_muted_humans_sections_count(
+                current_sub,
+                pm_ids_set,
+            );
+            return (
+                this.render_data.total_human_subscribers_count -
+                muted_humans_sections_count.matching_view
+            );
         }
         const participant_ids_list = [...get_all_participant_ids()];
         const subscribed_human_participant_ids = [];
@@ -350,8 +394,38 @@ export class BuddyList extends BuddyListConf {
                 subscribed_human_participant_ids.push(user_id);
             }
         }
+        const muted_humans_sections_count = get_muted_humans_sections_count(
+            current_sub,
+            pm_ids_set,
+        );
         return (
-            this.render_data.total_human_subscribers_count - subscribed_human_participant_ids.length
+            this.render_data.total_human_subscribers_count -
+            subscribed_human_participant_ids.length -
+            muted_humans_sections_count.matching_view
+        );
+    }
+
+    other_users_count(): number {
+        const {current_sub, pm_ids_set, total_human_subscribers_count} = this.render_data;
+        const muted_humans_sections_count = get_muted_humans_sections_count(
+            current_sub,
+            pm_ids_set,
+        );
+        // Deactivated users are shown in direct message views, so they
+        // are in total_human_subscribers_count but not in the active
+        // user count.
+        let deactivated_recipient_count = 0;
+        if (current_sub === undefined) {
+            for (const user_id of pm_ids_set) {
+                if (!people.is_active_user(user_id) && !people.is_valid_bot_user(user_id)) {
+                    deactivated_recipient_count += 1;
+                }
+            }
+        }
+        return (
+            people.get_active_human_count() -
+            (total_human_subscribers_count - deactivated_recipient_count) -
+            muted_humans_sections_count.others
         );
     }
 
@@ -508,7 +582,7 @@ export class BuddyList extends BuddyListConf {
     }
 
     async update_section_header_counts(): Promise<void> {
-        const {other_users_count, current_sub} = this.render_data;
+        const {current_sub} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
 
         // Hide the counts until we have the data
@@ -523,6 +597,9 @@ export class BuddyList extends BuddyListConf {
         if (non_participant_users_matching_view_count === null) {
             return;
         }
+        // The fetch above may have loaded the full subscriber list,
+        // which this count depends on.
+        const other_users_count = this.other_users_count();
         const formatted_matching_users_count = get_formatted_user_count(
             non_participant_users_matching_view_count,
         );
@@ -751,14 +828,14 @@ export class BuddyList extends BuddyListConf {
         // `hide_headers === true` means that we're only showing one section, like
         // for Inbox view. We hide all headers and show only users from the "others"
         // section and should hide the other two sections.
-        const {hide_headers, other_users_count, get_all_participant_ids} = this.render_data;
+        const {hide_headers, get_all_participant_ids} = this.render_data;
 
         const hide_participants = hide_headers || get_all_participant_ids().size === 0;
         // We always show the users matching view section, even if there's nobody in it,
         // since it can be confusing to see "others" out of context of the main population
         // of that narrow.
         const hide_users_matching_view = hide_headers;
-        const hide_other_users = other_users_count === 0;
+        const hide_other_users = this.other_users_count() === 0;
 
         $("#buddy-list-users-matching-view-container").toggleClass(
             "no-display",
@@ -777,7 +854,7 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const {current_sub, other_users_count} = this.render_data;
+        const {current_sub} = this.render_data;
         const non_participant_users_matching_view_count =
             await this.non_participant_users_matching_view_count();
         // This means a request failed and we can't calculate the counts. We choose
@@ -785,6 +862,9 @@ export class BuddyList extends BuddyListConf {
         if (non_participant_users_matching_view_count === null) {
             return;
         }
+        // The fetch above may have loaded the full subscriber list,
+        // which this count depends on.
+        const other_users_count = this.other_users_count();
         const has_inactive_users_matching_view =
             non_participant_users_matching_view_count >
             this.users_matching_view_section.user_ids.length;

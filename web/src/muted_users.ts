@@ -48,6 +48,10 @@ export function filter_muted_users<T extends {user_id: number}>(persons: T[]): T
     return base_users.filter((person) => !is_user_muted(person.user_id));
 }
 
+export function get_muted_user_ids(): number[] {
+    return muted_users.keys().toArray();
+}
+
 export function get_muted_users(): MutedUser[] {
     const users = [];
     for (const [id, date_muted] of muted_users) {
