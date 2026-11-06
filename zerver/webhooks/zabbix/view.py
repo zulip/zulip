@@ -28,6 +28,15 @@ ZABBIX_MESSAGE_TEMPLATE = """
 * {item}
 """.strip()
 
+ZABBIX_SEVERITY_EMOJI = {
+    "Not classified": ":grey_question:",
+    "Information": ":info:",
+    "Warning": ":warning:",
+    "Average": ":orange_square:",
+    "High": ":rotating_light:",
+    "Disaster": ":sos:",
+}
+
 
 @webhook_view("Zabbix")
 @typed_endpoint
@@ -73,4 +82,9 @@ def get_body_for_http_request(payload: WildValue) -> str:
         "trigger": trigger,
         "link": link,
     }
-    return ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    message = ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    severity_emoji = (
+        f"{ZABBIX_SEVERITY_EMOJI[severity]} " if severity in ZABBIX_SEVERITY_EMOJI else ""
+    )
+    message = f"{severity_emoji}{message}"
+    return message
