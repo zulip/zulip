@@ -156,6 +156,22 @@ class RemindersTest(ZulipTestCase):
         result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
+    def test_schedule_reminder_with_out_of_range_timestamp(self) -> None:
+        self.login("hamlet")
+        message_id = self.send_channel_message_for_hamlet("Test message")
+        timestamp_in_milliseconds = int(time.time() * 1000)
+
+        for scheduled_delivery_timestamp, expected_error in [
+            (timestamp_in_milliseconds, "scheduled_delivery_timestamp is too large"),
+            (2**63, "scheduled_delivery_timestamp is too large"),
+            (-(10**11), "scheduled_delivery_timestamp is too small"),
+        ]:
+            result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+            self.assert_json_error(result, expected_error)
+        self.assertFalse(
+            ScheduledMessage.objects.filter(delivery_type=ScheduledMessage.REMIND).exists()
+        )
+
     def test_schedule_reminder_with_bad_message_id(self) -> None:
         self.login("hamlet")
         scheduled_delivery_timestamp = int(time.time() + 86400)
