@@ -76,6 +76,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
+    BotConfigData,
     Draft,
     GroupGroupMembership,
     NamedUserGroup,
@@ -847,9 +848,18 @@ def do_update_outgoing_webhook_service(
 
 
 @transaction.atomic(durable=True)
-def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
+def do_update_bot_config_data(
+    bot_profile: UserProfile, config_data: dict[str, str], *, replace: bool = False
+) -> None:
+    if replace:
+        BotConfigData.objects.filter(bot_profile=bot_profile).delete()
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
+    if bot_profile.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        # Incoming-webhook bots don't expose a services dict in
+        # realm_bot events, so there is nothing to emit.
+        return
+
     updated_config_data = get_bot_config(bot_profile)
     [service] = get_bot_services(bot_profile.id)
     send_event_on_commit(
@@ -881,16 +891,19 @@ def get_services_for_bot(
             for service in services
         ]
     elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
+        if not services:
+            return []
         try:
-            return [
-                BotServicesEmbedded(
-                    config_data=get_bot_config(user_profile),
-                    service_name=services[0].name,
-                )
-            ]
+            config_data = get_bot_config(user_profile)
         # A ConfigError just means that there are no config entries for user_profile.
         except ConfigError:
-            return []
+            config_data = {}
+        return [
+            BotServicesEmbedded(
+                config_data=config_data,
+                service_name=services[0].name,
+            )
+        ]
     else:
         return []
 
@@ -923,11 +936,10 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
-            bot_config = embedded_bot_configs[bot_profile_id]
+        elif bot_type == UserProfile.EMBEDDED_BOT and services:
             service_dicts = [
                 {
-                    "config_data": bot_config,
+                    "config_data": embedded_bot_configs.get(bot_profile_id, {}),
                     "service_name": services[0].name,
                 }
             ]
