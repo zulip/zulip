@@ -3,7 +3,7 @@ from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import AfterValidator
+from pydantic import AfterValidator, StringConstraints
 
 from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import do_set_realm_property
@@ -47,18 +47,20 @@ def add_realm_playground(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    name: str,
+    name: Annotated[str, StringConstraints(strip_whitespace=True)],
     pygments_language: Annotated[
-        str, AfterValidator(lambda x: check_pygments_language("pygments_language", x))
+        str,
+        StringConstraints(strip_whitespace=True),
+        AfterValidator(lambda x: check_pygments_language("pygments_language", x)),
     ],
-    url_template: str,
+    url_template: Annotated[str, StringConstraints(strip_whitespace=True)],
 ) -> HttpResponse:
     playground_id = check_add_realm_playground(
         realm=user_profile.realm,
         acting_user=user_profile,
-        name=name.strip(),
-        pygments_language=pygments_language.strip(),
-        url_template=url_template.strip(),
+        name=name,
+        pygments_language=pygments_language,
+        url_template=url_template,
     )
     return json_success(request, data={"id": playground_id})
 
