@@ -97,7 +97,7 @@ rolled back after each of the tests complete. For more details on how the
 fixture data gets set up, refer to `tools/setup/generate-fixtures`.)
 
 The fixture data includes a few users that are named after
-Shakesepeare characters, and they are part of the "zulip.com" realm.
+Shakespeare characters, and they are part of the "zulip.com" realm.
 
 Generally, you will also do some explicit data setup of your own. Here
 are a couple useful methods in ZulipTestCase:
