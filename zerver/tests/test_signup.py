@@ -990,6 +990,12 @@ class LoginTest(ZulipTestCase):
             result = self.login_with_return(email)
             self.assert_in_success_response(["Try again in 5 seconds"], result)
 
+        # Half a second later, the remaining wait is fractional; we round
+        # it up, since retrying after 4 seconds would just be blocked again.
+        with patch("time.time", return_value=start_time + 0.5):
+            result = self.login_with_return(email)
+            self.assert_in_success_response(["Try again in 5 seconds"], result)
+
         # After time passes, we should be able to log in.
         with patch("time.time", return_value=start_time + 11):
             self.login_with_return(email)

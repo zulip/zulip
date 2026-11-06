@@ -275,6 +275,20 @@ class ChangeSettingsTest(ZulipTestCase):
                 result, "You're making too many attempts! Try again in 5 seconds."
             )
 
+        # Half a second later, the remaining wait is fractional; we round
+        # it up, since retrying after 4 seconds would just be blocked again.
+        with mock.patch("time.time", return_value=start_time + 0.5):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ),
+            )
+            self.assert_json_error(
+                result, "You're making too many attempts! Try again in 5 seconds."
+            )
+
         # After time passes, we should be able to succeed if we give the correct password.
         with mock.patch("time.time", return_value=start_time + 11):
             json_result = self.client_patch(
