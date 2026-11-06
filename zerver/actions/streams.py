@@ -472,6 +472,7 @@ def send_subscription_add_events(
                 desktop_notifications=subscription.desktop_notifications,
                 email_notifications=subscription.email_notifications,
                 is_muted=subscription.is_muted,
+                left_sidebar_resolved_topics_order=subscription.left_sidebar_resolved_topics_order,
                 pin_to_top=subscription.pin_to_top,
                 push_notifications=subscription.push_notifications,
                 wildcard_mentions_notify=subscription.wildcard_mentions_notify,

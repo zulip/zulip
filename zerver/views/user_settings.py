@@ -364,6 +364,11 @@ def json_change_settings(
     web_font_size_px: Json[int] | None = None,
     web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
     web_inbox_show_channel_folders: Json[bool] | None = None,
+    web_left_sidebar_resolved_topics_order: Annotated[
+        Json[int],
+        check_int_in_validator(UserProfile.WEB_LEFT_SIDEBAR_RESOLVED_TOPICS_ORDER_CHOICES),
+    ]
+    | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
