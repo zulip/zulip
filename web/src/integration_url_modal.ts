@@ -367,14 +367,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
-            $dialog_submit_button.prop("disabled", false);
-
-            if (
-                ($show_integration_events.prop("checked") && !selected_events) ||
-                (!channel_allows_empty_topic && topic_name === "")
-            ) {
-                $dialog_submit_button.prop("disabled", true);
-            }
+            $dialog_submit_button.prop(
+                "disabled",
+                ($show_integration_events.is(":checked") && !selected_events) ||
+                    (!channel_allows_empty_topic && topic_name === ""),
+            );
         }
 
         integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
