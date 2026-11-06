@@ -870,7 +870,7 @@ function extract_range_html(range: Range, preserve_ancestors = false): string {
     return temp_div.innerHTML;
 }
 
-function get_range_intersection_with_element(range: Range, element: Node): Range {
+export function get_range_intersection_with_element(range: Range, element: Node): Range {
     // Returns a new range that is a subset of range and is inside element.
     const intersection = document.createRange();
     intersection.selectNodeContents(element);
