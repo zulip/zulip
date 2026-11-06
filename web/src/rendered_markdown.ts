@@ -81,14 +81,17 @@ export function update_topic_or_message_link_element(
     narrow_url: string,
     message?: Message,
 ): void {
+    let channel_name_html = _.escape(stream_info.name);
     let topic_display_name = _.escape(util.get_final_topic_display_name(topic_name));
 
     if (message?.alerted) {
         topic_display_name = alert_words.highlight_alert_words(topic_display_name);
+        channel_name_html = alert_words.highlight_alert_words(channel_name_html);
     }
 
     const context = {
         channel_name: stream_info.name,
+        channel_name_html,
         topic_display_name_html: topic_display_name,
         is_empty_string_topic: topic_name === "",
         href: narrow_url,
