@@ -1,0 +1,29 @@
+{
+    "type": "REPLICATION",
+    "occur_at": 1571334982,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:d72f37f783ed6a8d58ac70b4db052707d1ec9d4ea010ef5ccd84652faf9ed844",
+                "tag": "latest",
+                "resource_url": "harbor.example.com/library/alpine:latest"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "alpine",
+            "namespace": "library",
+            "repo_full_name": "library/alpine",
+            "repo_type": "public"
+        },
+        "replication": {
+            "status": "succeeded",
+            "artifact_type": "image",
+            "dest_resource": {
+                "endpoint": "harbor-backup.example.com",
+                "namespace": "library"
+            }
+        }
+    },
+    "operator": "admin"
+}

@@ -1,0 +1,21 @@
+{
+    "type": "SCANNING_STOPPED",
+    "occur_at": 1571334978,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:b50334049354ed01330403212605dce2f4676a4e787ed113506861d9cf3c5424",
+                "tag": "v1.0",
+                "resource_url": "harbor.example.com/library/nginx:v1.0"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "nginx",
+            "namespace": "library",
+            "repo_full_name": "library/nginx",
+            "repo_type": "public"
+        }
+    },
+    "operator": "admin"
+}

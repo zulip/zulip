@@ -1,0 +1,21 @@
+{
+    "type": "SCANNING_FAILED",
+    "occur_at": 1571334979,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:c50334049354ed01330403212605dce2f4676a4e787ed113506861d9cf3c5424",
+                "tag": "v2.0",
+                "resource_url": "harbor.example.com/library/redis:v2.0"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "redis",
+            "namespace": "library",
+            "repo_full_name": "library/redis",
+            "repo_type": "public"
+        }
+    },
+    "operator": "system"
+}
