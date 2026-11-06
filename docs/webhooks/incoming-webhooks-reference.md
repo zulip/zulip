@@ -95,7 +95,7 @@ These URL options can be declared as follows:
         url_options=[
           WebhookUrlOption(
             name='ignore_private_repositories',
-            label='Exclude notifications from private repositories',
+            label=gettext_lazy('Exclude notifications from private repositories'),
             input_type='checkbox',
           ),
         ],
@@ -108,7 +108,10 @@ offer when generating the integration URL:
 - `name`: The parameter name that is used to encode the user input in the
   integration's webhook URL.
 - `label`: A short descriptive label for this URL parameter in the web
-  app UI.
+  app UI. Since this string is displayed to users, mark it for
+  translation with `gettext_lazy` from `django.utils.translation`,
+  which is resolved in the user's language when the web app fetches
+  its initial state.
 - `input_type`: The type of input field this option maps to in the UI.
   The web app UI currently supports the following input types:
   - `checkbox`: A checkbox input for presence-only values (true or absent),
