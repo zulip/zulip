@@ -27,6 +27,13 @@ instance of Jitsi Meet.
 
 {end_tabs}
 
+## Configure a self-hosted instance of Jitsi Meet with JWT authentication
+
+If you are self-hosting Zulip, you can configure JSON Web Token (JWT)
+authentication for your self-hosted
+[Jitsi Meet](https://zulip.readthedocs.io/en/latest/production/video-calls.html#jitsi)
+server.
+
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)

@@ -162,6 +162,7 @@ export function build_page(): void {
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
+        server_jitsi_jwt_configured: realm.server_jitsi_jwt_configured,
         gif_rating_policy_options: realm.gif_rating_policy_options,
         gif_api_key_empty,
         realm_description_text: realm.realm_description,

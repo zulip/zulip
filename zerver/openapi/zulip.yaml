@@ -5731,8 +5731,9 @@ paths:
                                         The URL of the custom Jitsi Meet server configured in this organization's
                                         settings.
 
-                                        `null`, the default, means that the organization is using the server-level
-                                        configuration, `server_jitsi_server_url`.
+                                        A `null` value, the default, means that the organization is using the
+                                        server-level configuration, `server_jitsi_server_url`, which can be
+                                        found in the [`POST /register`](/api/register-queue) response.
 
                                         **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                                         available as a server-level configuration, and required a server restart to
@@ -21377,14 +21378,29 @@ paths:
                           The URL of the custom Jitsi Meet server configured in this organization's
                           settings.
 
-                          `null`, the default, means that the organization is using the server-level
-                          configuration, `server_jitsi_server_url`. A correct client supporting only
-                          the modern API should use `realm_jitsi_server_url ?? server_jitsi_server_url`
-                          to create calls.
+                          A `null` value , the default, means that the organization is using the
+                          server-level configuration, `server_jitsi_server_url`.
 
-                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
+                          A client should use this field, `server_jitsi_server_url` and
+                          `server_jitsi_jwt_configured` to determine how to generate a Jitsi Meet
+                          call URL.
+
+                          If `server_jitsi_jwt_configured` is `true` and this field is `null`, then
+                          the [`GET /calls/jitsi/create`](/api/create-jitsi-video-call) endpoint
+                          should be used to obtain a JSON Web Token (JWT) authenticated Jitsi Meet
+                          call URL.
+
+                          Otherwise, a client should use
+                          `realm_jitsi_server_url ?? server_jitsi_server_url` to construct Jitsi
+                          Meet call URL directly.
+
+                          **Changes**: Before Zulip 13.0 (feature level ZF-c876d2), clients always
+                          constructed Jitsi Meet call URLs from this field and
+                          `server_jitsi_server_url` field directly.
+
+                          New in Zulip 8.0 (feature level 212). Previously, this was only
                           available as a server-level configuration, which was available via the
-                          `jitsi_server_url` field.
+                          now-deprecated `jitsi_server_url` field.
                       realm_gif_rating_policy:
                         type: integer
                         description: |
@@ -22222,8 +22238,45 @@ paths:
                           default; the organization-level setting `realm_jitsi_server_url` takes
                           precedence over this setting when both are set.
 
-                          **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
+                          A client should use this field, `realm_jitsi_server_url` and
+                          `server_jitsi_jwt_configured` to determine how to generate a Jitsi Meet
+                          call URL.
+
+                          If `server_jitsi_jwt_configured` is `true` and `realm_jitsi_server_url`
+                          is `null`, then the [`GET /calls/jitsi/create`](/api/create-jitsi-video-call)
+                          endpoint should be used to obtain a JSON Web Token (JWT) authenticated
+                          Jitsi Meete call URL.
+
+                          Otherwise, a client should use
+                          `realm_jitsi_server_url ?? server_jitsi_server_url` to construct a Jitsi
+                          Meet call URL directly.
+
+                          **Changes**: Before Zulip 13.0 (feature level ZF-c876d2), clients always
+                          constructed Jitsi Meet call URLs from this field and
+                          `realm_jitsi_server_url` directly.
+
+                          New in Zulip 8.0 (feature level 212). Previously, this value
                           was available as the now-deprecated `jitsi_server_url`.
+                      server_jitsi_jwt_configured:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the Zulip server has JSON Web Token (JWT) credentials configured
+                          for the default Jitsi Meet server, `server_jitsi_server_url`. This field
+                          will always be `false` when `server_jitsi_server_url` is `null`.
+
+                          When `true` and `realm_jitsi_server_url` is `null`, the
+                          [`GET /calls/jitsi/create`](/api/create-jitsi-video-call) endpoint should
+                          be used to generate Jitsi Meet call URLs, rather than constructing them
+                          client-side.
+
+                          The organization-level setting `realm_jitsi_server_url` always takes
+                          precedence over this setting, and a non-null value for that setting
+                          indicates that any server-side JWT authentication is disabled for the
+                          organization's configured custom Jitsi Meet server.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
                       server_can_summarize_topics:
                         type: boolean
                         description: |
@@ -27585,6 +27638,64 @@ paths:
                     "bot_email": "outgoing-bot@localhost",
                     "bot_full_name": "Outgoing webhook test",
                   }
+
+  /calls/jitsi/create:
+    get:
+      tags: ["channels"]
+      operationId: create-jitsi-video-call
+      summary: Create JWT Jitsi Meet video call
+      description: |
+        Create a video call URL for a Jitsi Meet video call using JSON Web Token
+        (JWT) authentication. Requires [Jitsi Meet](/integrations/jitsi) to be
+        configured with JWT authentication on the Zulip server.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
+      parameters:
+        - in: query
+          name: meeting_name
+          schema:
+            type: string
+          required: true
+          description: |
+            Meeting name for the Jitsi video call.
+          example: "general meeting"
+        - in: query
+          name: voice_only
+          schema:
+            type: boolean
+            default: false
+          required: false
+          description: |
+            Whether the call is voice-only. If true, cameras are
+            disabled for all participants. Only the call
+            creator/moderator can edit this configuration.
+          example: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          A relative URL to join the Jitsi Meet video call.
+                          Visiting this URL while logged in will redirect
+                          users to the Jitsi Meet server with a signed JWT.
+                        type: string
+                        example: "/calls/jitsi/join?jitsi=SIGNED_DATA"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/jitsi/join?jitsi=SIGNED_DATA",
+                      }
 
   /calls/bigbluebutton/create:
     get:
