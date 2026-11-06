@@ -6,12 +6,11 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
-from django.utils.timezone import now as timezone_now
 
 from zerver.actions.user_settings import (
     do_change_tos_version,
-    do_change_user_date_joined,
     do_change_user_setting,
+    do_set_date_joined_on_first_login,
 )
 from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
@@ -46,13 +45,13 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            first_time_login = (
-                request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
-            )
             assert (
                 settings.TERMS_OF_SERVICE_VERSION is not None
                 or request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
             )
+            # This needs the user's tos_version from before they accept
+            # the terms of service.
+            do_set_date_joined_on_first_login(request.user)
             do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
 
             email_address_visibility = form.cleaned_data["email_address_visibility"]
@@ -81,9 +80,6 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
             if request.user.is_imported_stub:
                 do_change_is_imported_stub(request.user)
-
-            if first_time_login:
-                do_change_user_date_joined(request.user, timezone_now())
 
             return redirect(home)
     else:

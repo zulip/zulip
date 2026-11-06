@@ -409,6 +409,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                 realm=realm,
                 is_active=True,
                 is_bot=False,
+                is_imported_stub=False,
                 enable_digest_emails=True,
             )
         )
@@ -458,7 +459,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         num_queued_users = call_enqueue_emails(get_realm("zulipinternal"))
         self.assertEqual(num_queued_users, 0)
         num_queued_users = call_enqueue_emails(get_realm("zulip"))
-        self.assertEqual(num_queued_users, 11)
+        self.assertEqual(num_queued_users, 10)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:
@@ -564,6 +565,20 @@ class TestDigestEmailMessages(ZulipTestCase):
             user_ids = arg[0][0]
             for user_id in user_ids:
                 self.assertNotEqual(user_id, bot.id)
+
+    def test_no_email_digest_for_imported_stubs(self) -> None:
+        cutoff = timezone_now() - timedelta(days=5)
+
+        realm = get_realm("zulip")
+
+        with mock.patch("zerver.lib.digest.queue_digest_user_ids") as queue_mock:
+            _enqueue_emails_for_realm(realm, cutoff)
+
+        queued_user_ids = {
+            user_id for call_args in queue_mock.call_args_list for user_id in call_args[0][0]
+        }
+        self.assertIn(self.example_user("hamlet").id, queued_user_ids)
+        self.assertNotIn(self.example_user("imported_user").id, queued_user_ids)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self) -> None:

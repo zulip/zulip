@@ -115,6 +115,8 @@ as follows:
   - The user-level settings for whether email/mobile notifications are
     disabled are rechecked, as the user may have disabled one of these
     settings during the queuing period.
+  - The email queue processor skips imported users who haven't logged
+    in yet (`is_imported_stub`).
   - The **Email notifications queue processor**, `MissedMessageWorker`,
     takes care to wait for 2 minutes (hopefully in the future this will be a
     configuration setting) and starts a thread to batch together multiple
