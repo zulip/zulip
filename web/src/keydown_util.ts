@@ -2,6 +2,8 @@
     See hotkey.ts for handlers that are more app-wide.
 */
 
+import * as common from "./common.ts";
+
 export const vim_left = "h";
 export const vim_down = "j";
 export const vim_up = "k";
@@ -28,6 +30,34 @@ export function handle(opts: {
             e.stopPropagation();
         }
     });
+}
+
+export function get_mac_ctrl_navigation_key(
+    event: JQuery.KeyboardEventBase,
+): "ArrowUp" | "ArrowDown" | undefined {
+    const is_mac_ctrl_without_other_modifiers =
+        common.has_mac_keyboard() &&
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey;
+
+    if (!is_mac_ctrl_without_other_modifiers) {
+        return undefined;
+    }
+
+    // Respect Latin layouts such as Colemak; use physical keys only when
+    // the layout does not produce printable ASCII, as in get_keydown_hotkey.
+    const key = common.is_printable_ascii(event.key) ? event.key.toLowerCase() : event.code;
+    if (key === "n" || key === "KeyN") {
+        return "ArrowDown";
+    }
+
+    if (key === "p" || key === "KeyP") {
+        return "ArrowUp";
+    }
+
+    return undefined;
 }
 
 export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {
