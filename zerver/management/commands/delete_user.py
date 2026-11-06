@@ -6,7 +6,10 @@ from typing_extensions import override
 
 from zerver.actions.users import do_delete_user
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.users import get_active_bots_owned_by_user
+from zerver.lib.users import (
+    check_group_permission_updates_for_deactivating_user,
+    get_active_bots_owned_by_user,
+)
 
 
 class Command(ZulipBaseCommand):
@@ -64,5 +67,17 @@ This will:
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
         for user_profile in user_profiles:
-            do_delete_user(user_profile, acting_user=None)
+            # Deletion via this management command always succeeds; any
+            # permission setting left with no one is reset to its
+            # replacement group instead of blocking the deletion.
+            group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                user_profile, ignore_objections=True
+            )
+
+            do_delete_user(
+                user_profile,
+                group_setting_updates=group_setting_updates,
+                acting_user=None,
+                ignore_objections=True,
+            )
             print(f"Successfully deleted user {user_profile.delivery_email}.")
