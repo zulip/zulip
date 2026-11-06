@@ -1,11 +1,13 @@
 import logging
+import os
 from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import BrokenExecutor, Future, ProcessPoolExecutor
 from contextlib import contextmanager
-from multiprocessing import current_process
+from multiprocessing import current_process, forkserver, get_context
 from typing import Any, TypeVar
 
 import bmemcached
+from django.apps import apps
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
@@ -17,9 +19,9 @@ ParallelRecordType = TypeVar("ParallelRecordType")
 
 
 def _disconnect() -> None:
-    # Close our database, cache, and RabbitMQ connections, so our
-    # forked children do not share them.  Django will transparently
-    # re-open them as needed.
+    # Close the database, cache, and RabbitMQ connections, so that
+    # processes forked from this one do not share them.  Django will
+    # transparently re-open them as needed.
     connection.close()
     _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
     if isinstance(_cache, bmemcached.Client):  # nocoverage
@@ -30,6 +32,10 @@ def _disconnect() -> None:
         rabbitmq_client = get_queue_client()
         if rabbitmq_client.connection and rabbitmq_client.connection.is_open:
             rabbitmq_client.close()
+
+
+def _worker_has_django_loaded() -> bool:  # nocoverage
+    return apps.ready
 
 
 def func_with_catch(func: Callable[[ParallelRecordType], None], item: ParallelRecordType) -> None:
@@ -96,13 +102,51 @@ def run_parallel_queue(
         return
 
     else:  # nocoverage
-        _disconnect()
+        # Workers are forked from the multiprocessing "forkserver,"
+        # not from this process, so they do not inherit -- and thus
+        # share -- this process's database, cache, and RabbitMQ
+        # connections; concurrent use of a shared connection corrupts
+        # its wire protocol.  The preload module sets up Django in
+        # the forkserver, and then drops any connections that doing
+        # so opened.
+        forkserver.set_forkserver_preload(["zerver.lib.parallel_preload"])
+
+        # Python 3.10's forkserver does not inherit sys.path from
+        # this process, so it would (silently!) fail to import the
+        # preload module when run from outside the deployment root;
+        # see https://github.com/python/cpython/issues/90876, fixed
+        # in Python 3.11.  Provide the path via PYTHONPATH while
+        # starting the forkserver.
+        old_pythonpath = os.environ.get("PYTHONPATH")
+        os.environ["PYTHONPATH"] = os.pathsep.join(
+            [settings.DEPLOY_ROOT] + ([old_pythonpath] if old_pythonpath is not None else [])
+        )
+        try:
+            forkserver.ensure_running()
+        finally:
+            if old_pythonpath is None:
+                del os.environ["PYTHONPATH"]
+            else:
+                os.environ["PYTHONPATH"] = old_pythonpath
 
         exceptions = []
         try:
             with ProcessPoolExecutor(
-                max_workers=processes, initializer=initializer, initargs=initargs
+                max_workers=processes,
+                mp_context=get_context("forkserver"),
+                initializer=initializer,
+                initargs=initargs,
             ) as executor:
+                # The forkserver ignores failures to import the
+                # preload module, so verify, before starting on any
+                # real work, that Django is set up in the workers --
+                # most work items cannot even be unpickled without
+                # their Django models.
+                if not executor.submit(_worker_has_django_loaded).result():
+                    raise Exception(
+                        "forkserver failed to preload zerver.lib.parallel_preload, "
+                        "so workers cannot load Django"
+                    )
 
                 def report_callback(future: Future[None]) -> None:
                     if exc := future.exception():
