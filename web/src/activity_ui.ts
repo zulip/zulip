@@ -47,22 +47,40 @@ function set_pm_count(user_ids_string: string, count: number): void {
     }
 }
 
+// Users with unread direct messages, so we can move them in the
+// buddy list when that changes. Undefined until the first update.
+let user_ids_with_unread_dms: Set<number> | undefined;
+
 export function update_dom_with_unread_counts(counts: FullUnreadCountsData): void {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
 
+    const new_user_ids_with_unread_dms = new Set<number>();
     for (const [user_ids_string, count] of counts.pm_count) {
         // TODO: just use user_ids_string in our markup
         const is_pm = !user_ids_string.includes(",");
         if (is_pm) {
             set_pm_count(user_ids_string, count);
+            if (count > 0) {
+                new_user_ids_with_unread_dms.add(Number.parseInt(user_ids_string, 10));
+            }
         }
     }
+
+    if (user_ids_with_unread_dms !== undefined) {
+        const changed_user_ids =
+            new_user_ids_with_unread_dms.symmetricDifference(user_ids_with_unread_dms);
+        for (const user_id of changed_user_ids) {
+            redraw_user(user_id);
+        }
+    }
+    user_ids_with_unread_dms = new_user_ids_with_unread_dms;
 }
 
 export function clear_for_testing(): void {
     user_cursor = undefined;
     user_filter = undefined;
+    user_ids_with_unread_dms = undefined;
 }
 
 let user_card_is_open = false;

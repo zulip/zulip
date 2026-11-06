@@ -187,7 +187,13 @@ test("presence_list_full_update", ({override}) => {
     assert.equal(args.items[0].user_id, me.user_id);
 });
 
-test("direct_message_update_dom_counts", () => {
+test("direct_message_update_dom_counts", ({override}) => {
+    const moved_user_ids = [];
+    override(buddy_list, "insert_or_move", (user_ids) => {
+        moved_user_ids.push(...user_ids);
+    });
+    override(buddy_list_presence, "update_indicators", noop);
+
     const $count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
     const $li = $.create("alice stub");
@@ -198,13 +204,28 @@ test("direct_message_update_dom_counts", () => {
     const counts = new Map([[pm_key, 5]]);
     $li.addClass("user_sidebar_entry");
 
+    // First update before the buddy list is built, so nobody is moved.
     activity_ui.update_dom_with_unread_counts({pm_count: counts});
     assert.equal($count.text(), "5");
+    assert.deepEqual(moved_user_ids, []);
 
     counts.set(pm_key, 0);
 
     activity_ui.update_dom_with_unread_counts({pm_count: counts});
     assert.equal($count.text(), "");
+    assert.deepEqual(moved_user_ids, [alice.user_id]);
+
+    // Alice is moved again when she has unread messages.
+    counts.set(pm_key, 2);
+    activity_ui.update_dom_with_unread_counts({pm_count: counts});
+    assert.equal($count.text(), "2");
+    assert.deepEqual(moved_user_ids, [alice.user_id, alice.user_id]);
+
+    // Alice isn't moved if she still has unread messages.
+    counts.set(pm_key, 3);
+    activity_ui.update_dom_with_unread_counts({pm_count: counts});
+    assert.equal($count.text(), "3");
+    assert.deepEqual(moved_user_ids, [alice.user_id, alice.user_id]);
 });
 
 test("handlers", ({override, override_rewire}) => {
