@@ -42,7 +42,7 @@ def send_bot_owner_update_events(
         send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_bot_owner(
     user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile | None
 ) -> None:
@@ -65,7 +65,7 @@ def do_change_bot_owner(
     send_bot_owner_update_events(user_profile, bot_owner, previous_owner)
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_sending_stream(
     user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
@@ -101,7 +101,7 @@ def do_change_default_sending_stream(
         )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_events_register_stream(
     user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
@@ -140,7 +140,7 @@ def do_change_default_events_register_stream(
         )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_all_public_streams(
     user_profile: UserProfile, value: bool, *, acting_user: UserProfile | None
 ) -> None:

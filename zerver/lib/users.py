@@ -131,22 +131,24 @@ def validate_short_name_and_construct_bot_email(
     return short_name, email
 
 
-def check_valid_incoming_webhook_bot_config(
-    service_name: str, config_data: Mapping[str, str]
-) -> None:
+def check_valid_incoming_webhook_bot_config(config_data: Mapping[str, str]) -> None:
     from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
+
+    integration_id = config_data.get("integration_id")
+    if integration_id is None:
+        return
 
     integration = next(
         (
             integration
             for integration in INCOMING_WEBHOOK_INTEGRATIONS
-            if integration.name == service_name
+            if integration.name == integration_id
         ),
         None,
     )
     if integration is None:
         raise JsonableError(
-            _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
+            _("Invalid integration '{integration_name}'.").format(integration_name=integration_id)
         )
 
     missing_keys = {option.name for option in integration.config_options} - config_data.keys()
