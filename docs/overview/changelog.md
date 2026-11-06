@@ -104,6 +104,8 @@ _Released 2026-10-30_
 - Reporting a message now sends the reporter a confirmation message.
 - The OpenID Connect integration can now synchronize users' names,
   roles, custom profile fields, and group memberships when they log in.
+  It can also optionally update users' email addresses when they change
+  at the identity provider.
 - Redesigned the buttons in modals across the app, and the compose
   box's **Send** button to match. Irreversible deletions (e.g., deleting
   a topic) now use a red button labeled with the action.
@@ -157,6 +159,9 @@ _Released 2026-10-30_
   (crediting the editor of an issue). Fixed
   Buildbot and TeamCity integrations failing on unrecognized events or
   build results.
+- Fixed the Azure DevOps, Linear, OpenProject, Redmine, and RhodeCode
+  integrations ignoring the `only_events` and `exclude_events` event
+  filters.
 - Improved the Slack data import tool: each thread's first message now
   stays in the channel's main topic, with a link to the thread's own
   topic, and thread topic names are cleaner.
@@ -238,8 +243,8 @@ _Released 2026-10-30_
   anything.
 - Fixed background jobs that take longer than 30 minutes (e.g., large
   Slack imports) being run a second time.
-- Improved the reliability of connections to memcached and Apple's
-  push notification service.
+- Improved the reliability of connections to memcached, RabbitMQ, and
+  Apple's push notification service.
 - Reduced the memory usage of the thumbnailing worker on larger
   servers, especially those with many CPU cores.
 - Implemented several performance optimizations, including for
