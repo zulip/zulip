@@ -1463,6 +1463,54 @@ class MarkdownEmbedsTest(ZulipTestCase):
             f"""<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a><br>\n<a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="{get_camo_url("https://i.ytimg.com/vi/0c46YHS3RY8/mqdefault.jpg")}"></a></div><div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="{get_camo_url("https://i.ytimg.com/vi/lXFO2ULktEI/mqdefault.jpg")}"></a></div>""",
         )
 
+    def render_with_removed_previews(self, content: str, removed_preview_urls: list[str]) -> str:
+        message = Message(sender=self.example_user("othello"), sending_client=get_client("test"))
+        message.removed_preview_urls = removed_preview_urls
+        return markdown_convert(
+            content=content,
+            message_realm=get_realm("zulip"),
+            message=message,
+        ).rendered_content
+
+    def test_removed_preview_urls_suppresses_youtube(self) -> None:
+        url = "https://www.youtube.com/watch?v=hx1mjT73xYE"
+        content = f"Check out: {url}"
+
+        rendered = self.render_with_removed_previews(content, [])
+        self.assertIn("youtube-video", rendered)
+
+        rendered = self.render_with_removed_previews(content, [url])
+        self.assertNotIn("youtube-video", rendered)
+        self.assertNotIn("message_inline_image", rendered)
+        self.assertIn(url, rendered)
+
+    def test_removed_preview_urls_matches_rewritten_url(self) -> None:
+        # Some previews link to a rewritten form of the URL written in the
+        # message, and that is the form a removal is recorded under.
+        cases = [
+            # Wikipedia "File:" pages are corrected to point at the image.
+            (
+                "https://en.wikipedia.org/wiki/File:Example.jpg",
+                "https://en.wikipedia.org/wiki/Special:FilePath/File:Example.jpg",
+            ),
+            # Dropbox media links are rewritten to the raw media.
+            (
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg",
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg?raw=1",
+            ),
+        ]
+        for url, rewritten_url in cases:
+            with self.subTest(url=url):
+                content = f"Check out: {url}"
+
+                rendered = self.render_with_removed_previews(content, [])
+                self.assertIn("message_inline_image", rendered)
+                self.assertIn(rewritten_url, rendered)
+
+                rendered = self.render_with_removed_previews(content, [rewritten_url])
+                self.assertNotIn("message_inline_image", rendered)
+                self.assertIn(url, rendered)
+
 
 class MarkdownEmojiTest(ZulipTestCase):
     def test_content_has_emoji(self) -> None:
