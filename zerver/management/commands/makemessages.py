@@ -102,7 +102,7 @@ def apply_i18n_trimmed_policy(src: str, env: Environment) -> str:
     return trans_block_re.sub(r"\1 trimmed \2", src)
 
 
-# Matches idInterpolationPattern in babel.config.js
+# Matches idInterpolationPattern in babel.config.js and rspack.config.ts
 formatjs_id_pattern = "[content]"
 
 
