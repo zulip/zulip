@@ -2294,7 +2294,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(messages, 1)
         expected_notification = (
             f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
-            "* **Old retention period**: Forever\n"
+            "* **Old retention period**: Forever (organization default)\n"
             "* **New retention period**: 2 days\n\n"
             "Messages in this channel will now be automatically deleted 2 days after they are sent."
         )
@@ -2338,7 +2338,7 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
             "* **Old retention period**: 8 days\n"
-            "* **New retention period**: Forever\n\n"
+            "* **New retention period**: Forever (organization default)\n\n"
             "Messages in this channel will now be retained forever."
         )
         self.assertEqual(messages[2].content, expected_notification)
@@ -2351,6 +2351,87 @@ class StreamAdminTest(ZulipTestCase):
             RealmAuditLog.NEW_VALUE: None,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Go from realm default (forever) to forever
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("unlimited").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assert_length(messages, 4)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
+            "* **Old retention period**: Forever (organization default)\n"
+            "* **New retention period**: Forever\n\n"
+            "Messages in this channel will now be retained forever."
+        )
+        self.assertEqual(messages[3].content, expected_notification)
+
+        # Go from forever to realm default (forever)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("realm_default").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assert_length(messages, 5)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
+            "* **Old retention period**: Forever\n"
+            "* **New retention period**: Forever (organization default)\n\n"
+            "Messages in this channel will now be retained forever."
+        )
+        self.assertEqual(messages[4].content, expected_notification)
+
+        do_set_realm_property(realm, "message_retention_days", 10, acting_user=None)
+
+        # Go from realm default (10 days) to 10 days
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(10).decode()}
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assert_length(messages, 6)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
+            "* **Old retention period**: 10 days (organization default)\n"
+            "* **New retention period**: 10 days\n\n"
+            "Messages in this channel will now be automatically deleted 10 days after they are sent."
+        )
+        self.assertEqual(messages[5].content, expected_notification)
+
+        # Go from 10 days to realm default (10 days)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("realm_default").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assert_length(messages, 7)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
+            "* **Old retention period**: 10 days\n"
+            "* **New retention period**: 10 days (organization default)\n\n"
+            "Messages in this channel will now be automatically deleted 10 days after they are sent."
+        )
+        self.assertEqual(messages[6].content, expected_notification)
+
+        # Go from realm default (10 days) to forever
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps("unlimited").decode()},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assert_length(messages, 8)
+        expected_notification = (
+            f"@_**Desdemona|{user_profile.id}** has changed the [message retention period](/help/message-retention-policy) for this channel:\n"
+            "* **Old retention period**: 10 days (organization default)\n"
+            "* **New retention period**: Forever\n\n"
+            "Messages in this channel will now be retained forever."
+        )
+        self.assertEqual(messages[7].content, expected_notification)
 
         # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
         do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
