@@ -80,7 +80,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let slack_topics_dropdown_widget: DropdownWidget;
         let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
-        let channel_allows_empty_topic = true;
 
         const slack_topics_dropdown_widget_id = "slack-topics-dropdown";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
@@ -95,7 +94,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         $topic_input.on("input focus", () => {
             $topic_placeholder.toggleClass(
                 "visible",
-                $topic_input.val() === "" && channel_allows_empty_topic,
+                $topic_input.val() === "" && empty_topic_is_allowed(),
             );
         });
 
@@ -146,6 +145,19 @@ export function show_generate_integration_url_modal(api_key: string): void {
                 .prop("disabled", disable)
                 .closest(".input-group")
                 .toggleClass("control-label-disabled", disable);
+        }
+
+        function empty_topic_is_allowed(): boolean {
+            const selected_option = stream_input_dropdown_widget.value();
+            if (selected_option === direct_messages_option.unique_id) {
+                return true;
+            }
+            if (selected_option === map_channels_option.unique_id) {
+                // The channels that notifications are mapped to are only
+                // known when a notification is received.
+                return false;
+            }
+            return stream_data.can_use_empty_topic(Number(selected_option));
         }
 
         function update_topic_ui({
@@ -285,7 +297,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
-            if (stream_id !== -1) {
+            if (stream_id !== direct_messages_option.unique_id) {
                 params.set("stream", stream_id!.toString());
 
                 // These are Slack-specific settings.
@@ -309,10 +321,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         params.set("topic", topic_name);
                     }
                 }
-
-                if (!channel_allows_empty_topic && topic_name === "") {
-                    params.delete("topic");
-                }
             }
 
             const selected_events = set_events_param(params);
@@ -322,8 +330,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     const {key, input_type} = option;
 
                     if (key === PresetUrlOption.CHANNEL_MAPPING) {
-                        const stream_input = stream_input_dropdown_widget.value();
-                        if (stream_input === map_channels_option?.unique_id) {
+                        if (stream_id === map_channels_option.unique_id) {
                             params.delete("stream");
                             params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                             params.set("topic", topic_name);
@@ -368,14 +375,17 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const realm_url = realm.realm_url;
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
-            $dialog_submit_button.prop("disabled", false);
 
-            if (
-                ($show_integration_events.prop("checked") && !selected_events) ||
-                (!channel_allows_empty_topic && topic_name === "")
-            ) {
-                $dialog_submit_button.prop("disabled", true);
-            }
+            // Integrations name the topic themselves unless the URL
+            // overrides it, so only a blank override can send
+            // notifications to a topic the channel does not allow.
+            const sets_disallowed_empty_topic =
+                params.get("topic")?.trim() === "" && !empty_topic_is_allowed();
+            $dialog_submit_button.prop(
+                "disabled",
+                ($show_integration_events.is(":checked") && !selected_events) ||
+                    sets_disallowed_empty_topic,
+            );
         }
 
         integration_input_dropdown_widget = new dropdown_widget.DropdownWidget({
@@ -512,9 +522,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $(".integration-url-stream-wrapper").trigger("input");
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
-            channel_allows_empty_topic = stream_data.can_use_empty_topic(
-                Number(user_selected_option),
-            );
             if (user_selected_option === direct_messages_option.unique_id) {
                 update_topic_ui({
                     disable_topic_config_inputs: true,
