@@ -115,6 +115,45 @@ class RealmPlaygroundTests(ZulipTestCase):
         result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(result, "Language 'math' is not allowed.")
 
+        # Restricted keywords must still be rejected after stripping,
+        # which is the value that gets stored.
+        for pygments_language in ["math\n", " math ", "\tspoiler\n"]:
+            payload = {
+                "name": "Bad Keyword",
+                "pygments_language": pygments_language,
+                "url_template": "https://example.com",
+            }
+            result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+            self.assert_json_error(
+                result, f"Language '{pygments_language.strip()}' is not allowed."
+            )
+            self.assertFalse(
+                RealmPlayground.objects.filter(
+                    realm=iago.realm, pygments_language__in=["math", "spoiler"]
+                ).exists()
+            )
+
+        payload = {
+            "name": "Whitespace-only language",
+            "pygments_language": "   ",
+            "url_template": "https://example.com{code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(result, "Invalid characters in pygments language")
+
+        payload = {
+            "name": "Python playground",
+            "pygments_language": " Python ",
+            "url_template": "https://python.example.com{code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_success(result)
+        self.assertTrue(
+            RealmPlayground.objects.filter(
+                realm=iago.realm, name="Python playground", pygments_language="Python"
+            ).exists()
+        )
+
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
 
