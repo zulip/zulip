@@ -1624,6 +1624,8 @@ def remote_server_post_analytics(
         RemoteRealmBillingSession,
         RemoteServerBillingSession,
         get_push_status_for_remote_request,
+        remote_realm_eligible_for_non_workplace_pricing,
+        remote_realm_on_discounted_plan,
     )
 
     # Lock the server, preventing this from racing with other
@@ -1792,6 +1794,10 @@ def remote_server_post_analytics(
         remote_realm_dict[uuid] = {
             "can_push": status.can_push,
             "expected_end_timestamp": status.expected_end_timestamp,
+            "non_workplace_pricing_eligible": remote_realm_eligible_for_non_workplace_pricing(
+                remote_realm
+            ),
+            "on_discounted_plan": remote_realm_on_discounted_plan(remote_realm),
         }
 
     if len(can_push_values) == 1:

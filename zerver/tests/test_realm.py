@@ -69,6 +69,10 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.upload import upload_avatar_image, upload_message_attachment
 from zerver.lib.user_topics import topic_has_visibility_policy
+from zerver.lib.workplace_users import (
+    update_realm_non_workplace_pricing_eligibility,
+    update_realm_on_discounted_plan,
+)
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -3420,6 +3424,7 @@ class RealmAPITest(ZulipTestCase):
             status=CustomerPlan.ACTIVE,
             fixed_price=1000,
         )
+        update_realm_non_workplace_pricing_eligibility(realm, acting_user=None)
         result = self.client_patch("/json/realm", params)
         self.assert_json_error(
             result, "Organization is not eligible for discounted pricing for non workplace users."
@@ -3432,6 +3437,8 @@ class RealmAPITest(ZulipTestCase):
         plan.save(update_fields=["fixed_price", "price_per_license"])
         customer.monthly_discounted_price = 7000
         customer.save(update_fields=["monthly_discounted_price"])
+        update_realm_non_workplace_pricing_eligibility(realm, acting_user=None)
+        update_realm_on_discounted_plan(realm, acting_user=None)
         result = self.client_patch("/json/realm", params)
         self.assert_json_error(
             result,
@@ -3441,6 +3448,7 @@ class RealmAPITest(ZulipTestCase):
         customer.monthly_discounted_price = 0
         customer.annual_discounted_price = 70000
         customer.save(update_fields=["monthly_discounted_price", "annual_discounted_price"])
+        update_realm_on_discounted_plan(realm, acting_user=None)
         result = self.client_patch("/json/realm", params)
         self.assert_json_error(
             result,
@@ -3451,6 +3459,7 @@ class RealmAPITest(ZulipTestCase):
         # can enable discounted billing for non-workplace users.
         customer.annual_discounted_price = 0
         customer.save(update_fields=["annual_discounted_price"])
+        update_realm_on_discounted_plan(realm, acting_user=None)
         result = self.client_patch("/json/realm", params)
         self.assert_json_success(result)
         realm.refresh_from_db()

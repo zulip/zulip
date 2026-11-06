@@ -469,7 +469,7 @@ export let set_two_tier_billing_settings_visibility = (): void => {
         return;
     }
 
-    if (page_params.is_cloud_realm_with_discounted_plan) {
+    if (page_params.is_realm_with_discounted_plan) {
         $("input#id_realm_enable_two_tier_billing").prop("checked", false).prop("disabled", true);
         $("input#id_realm_enable_two_tier_billing")
             .closest(".input-group")

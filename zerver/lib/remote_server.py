@@ -17,6 +17,7 @@ from analytics.models import InstallationCount, RealmCount
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.realm_settings import (
     do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_billing_state,
     do_set_realm_property,
 )
 from zerver.lib import redis_utils
@@ -325,6 +326,9 @@ def maybe_mark_pushes_disabled(
         do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
         do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
 
+    for realm in Realm.objects.filter(non_workplace_pricing_eligible=True):
+        do_set_realm_billing_state(realm, "non_workplace_pricing_eligible", False, acting_user=None)
+
 
 def build_analytics_data(
     realm_count_query: QuerySet[RealmCount],
@@ -523,6 +527,17 @@ def send_server_data_to_push_bouncer(
         )
         do_set_push_notifications_enabled_end_timestamp(
             realm, data["expected_end_timestamp"], acting_user=None
+        )
+        # Servers registered with an older version of the push notification
+        # service are not told about these.
+        do_set_realm_billing_state(
+            realm,
+            "non_workplace_pricing_eligible",
+            data.get("non_workplace_pricing_eligible", False),
+            acting_user=None,
+        )
+        do_set_realm_billing_state(
+            realm, "on_discounted_plan", data.get("on_discounted_plan", False), acting_user=None
         )
 
     logger.info("Reported %d records", record_count)
