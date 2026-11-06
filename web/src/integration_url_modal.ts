@@ -285,7 +285,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             }
 
             const params = new URLSearchParams({api_key});
-            if (stream_id !== -1) {
+            if (stream_id !== direct_messages_option.unique_id) {
                 params.set("stream", stream_id!.toString());
 
                 // These are Slack-specific settings.
@@ -322,8 +322,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     const {key, input_type} = option;
 
                     if (key === PresetUrlOption.CHANNEL_MAPPING) {
-                        const stream_input = stream_input_dropdown_widget.value();
-                        if (stream_input === map_channels_option?.unique_id) {
+                        if (stream_id === map_channels_option.unique_id) {
                             params.delete("stream");
                             params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                             params.set("topic", topic_name);
