@@ -20,11 +20,13 @@ from email.headerregistry import Address
 from functools import wraps
 from typing import Any, TypeVar
 
+import requests
 from django.core.files.base import File
 from typing_extensions import ParamSpec
 from zulip import Client
 
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.lib.avatar import avatar_url
 from zerver.lib.storage import static_path
 from zerver.models.realm_emoji import RealmEmoji
 from zerver.models.realms import get_realm
@@ -91,6 +93,15 @@ def ensure_users(ids_list: list[int], user_names: list[str]) -> None:
 def assert_success_response(response: dict[str, Any]) -> None:
     assert "result" in response
     assert response["result"] == "success"
+
+
+def assert_success_avatar_endpoint_response(
+    response: requests.Response, result: str, user_profile: UserProfile, medium: bool
+) -> None:
+    assert response.status_code == 302
+    response_headers = response.headers
+    assert result == avatar_url(user_profile, medium)
+    assert response_headers["Content-Type"] == "text/html; charset=utf-8"
 
 
 def assert_error_response(response: dict[str, Any], code: str = "BAD_REQUEST") -> None:
@@ -2152,6 +2163,100 @@ def add_channel(client: Client) -> None:
     validate_against_openapi_schema(result, "/channels/create", "post", "200")
 
 
+@openapi_test_function("/avatar/{user_id}:get")
+def get_user_avatar_by_id(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    user_profile = UserProfile.objects.get(id=user_id)
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (client.email, client.api_key)
+
+    # Get a user's avatar URL given their user ID.
+    response = requests.get(
+        f"{realm_url}/avatar/{user_id}",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result, user_profile, False)
+
+
+@openapi_test_function("/avatar/{email}:get")
+def get_user_avatar_by_email(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    user_profile = UserProfile.objects.get(id=user_id)
+    email = user_profile.email
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (client.email, client.api_key)
+
+    # Get a user's avatar URL given their Zulip API email address.
+    response = requests.get(
+        f"{realm_url}/avatar/{email}",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result, user_profile, False)
+
+
+@openapi_test_function("/avatar/{user_id}/medium:get")
+def get_medium_user_avatar_by_id(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    user_profile = UserProfile.objects.get(id=user_id)
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (client.email, client.api_key)
+
+    # Get a user's medium avatar URL given their user ID.
+    response = requests.get(
+        f"{realm_url}/avatar/{user_id}/medium",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result, user_profile, True)
+
+
+@openapi_test_function("/avatar/{email}/medium:get")
+def get_medium_user_avatar_by_email(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    user_profile = UserProfile.objects.get(id=user_id)
+    email = user_profile.email
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (client.email, client.api_key)
+
+    # Get a user's medium avatar URL given their Zulip API email address.
+    response = requests.get(
+        f"{realm_url}/avatar/{email}/medium",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result, user_profile, True)
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     assert_error_response(result, code="UNAUTHORIZED")
@@ -2268,6 +2373,10 @@ def test_users(client: Client, owner_client: Client) -> None:
     register_push_device(client)
     register_device(client)
     remove_device(client)
+    get_user_avatar_by_id(client)
+    get_user_avatar_by_email(client)
+    get_medium_user_avatar_by_id(client)
+    get_medium_user_avatar_by_email(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

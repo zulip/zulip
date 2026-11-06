@@ -45,6 +45,12 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # realm used by the test server, breaking the curl examples that
     # run after it.
     "deactivate-realm",
+    # These return a 302 with no body and the example uses a shell
+    # pipe, neither of which the curl test currently supports.
+    "get-user-avatar",
+    "get-user-avatar-by-email",
+    "get-user-medium-avatar",
+    "get-user-medium-avatar-by-email",
 }
 
 
