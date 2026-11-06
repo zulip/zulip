@@ -20,31 +20,23 @@ if (page_params.google_analytics_id !== undefined) {
     });
 
     // Opening a navigation menu doesn't load a page, so Google
-    // Analytics can't see it unless we send an event.
+    // Analytics can't see it unless we send an event. The same menus
+    // open as dropdowns on wide screens and as sections of the
+    // narrow-screen menu; the width matches the breakpoint in
+    // navbar.css.
+    const narrow_layout = window.matchMedia("(width <= 1100px)");
     $(document).on("change", ".top-menu-tab-input", function () {
         const menu_id = $(this)
             .attr("id")!
             .replace(/^top-menu-tab-/, "");
-        gtag("event", "menu_open", {menu_id, layout: "wide"});
+        gtag("event", "menu_open", {menu_id, layout: narrow_layout.matches ? "narrow" : "wide"});
     });
 
-    // The narrow-screen menu and its sections are <details> elements,
-    // whose toggle event doesn't bubble, so we listen while it's
-    // captured on the way down instead.
-    document.addEventListener(
-        "toggle",
-        (event) => {
-            const details = event.target;
-            if (
-                details instanceof HTMLDetailsElement &&
-                details.open &&
-                details.closest(".top-menu-mobile") !== null
-            ) {
-                gtag("event", "menu_open", {menu_id: details.dataset["menuId"], layout: "narrow"});
-            }
-        },
-        {capture: true},
-    );
+    $(document).on("change", "#top-menu-mobile-toggle", function () {
+        if ($(this).prop("checked")) {
+            gtag("event", "menu_open", {menu_id: "menu", layout: "narrow"});
+        }
+    });
 } else {
     config = () => {
         // No Google Analytics tracking configured.
