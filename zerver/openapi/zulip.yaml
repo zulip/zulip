@@ -27598,7 +27598,14 @@ paths:
 
         The acting user will be given the moderator role on the call.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 337), every
+        Returns an error if this provider isn't selected as the
+        organization's [call provider](/help/configure-call-provider#configure-your-organizations-call-provider).
+
+        **Changes**: Prior to Zulip 13.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the realm had selected
+        BigBlueButton as its video call provider.
+
+        Prior to Zulip 10.0 (feature level 337), every
         user was given the moderator role on BigBlueButton calls, via
         encoding a moderator password in the generated URLs.
       parameters:
@@ -27657,7 +27664,14 @@ paths:
         [Nextcloud Talk](/integrations/nextcloud-talk) to be configured on the
         Zulip server.
 
-        **Changes**: New in Zulip 12.0 (feature level 465).
+        Returns an error if this provider isn't selected as the
+        organization's [call provider](/help/configure-call-provider#configure-your-organizations-call-provider).
+
+        **Changes**: Prior to Zulip 13.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the realm had selected
+        Nextcloud Talk as its video call provider.
+
+        New in Zulip 12.0 (feature level 465).
       requestBody:
         required: true
         content:
@@ -27714,7 +27728,14 @@ paths:
         response](/api/register-queue), as well as the [`has_webex_token`
         event type](/api/get-events#has_webex_token).
 
-        **Changes**: New in Zulip 12.0 (feature level 493).
+        Returns an error if this provider isn't selected as the
+        organization's [call provider](/help/configure-call-provider#configure-your-organizations-call-provider).
+
+        **Changes**: Prior to Zulip 13.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the realm had selected
+        Webex as its video call provider.
+
+        New in Zulip 12.0 (feature level 493).
       responses:
         "200":
           description: Success.
@@ -27756,6 +27777,9 @@ paths:
         /register` response](/api/register-queue), as well as the
         [`has_google_meet_token` event type](/api/get-events#has_google_meet_token).
 
+        Returns an error if this provider isn't selected as the
+        organization's [call provider](/help/configure-call-provider#configure-your-organizations-call-provider).
+
         **Changes**: New in Zulip 13.0 (feature level 514).
       responses:
         "200":
@@ -27791,7 +27815,14 @@ paths:
         Requires [Constructor Groups](/integrations/constructor-groups)
         to be configured on the Zulip server.
 
-        **Changes**: New in Zulip 12.0 (feature level 460).
+        Returns an error if this provider isn't selected as the
+        organization's [call provider](/help/configure-call-provider#configure-your-organizations-call-provider).
+
+        **Changes**: Prior to Zulip 13.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the realm had selected
+        Constructor Groups as its video call provider.
+
+        New in Zulip 12.0 (feature level 460).
       responses:
         "200":
           description: Success.
