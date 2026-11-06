@@ -1127,12 +1127,16 @@ def find_first_unread_anchor(
     query = query.filter(user_flags__andz=UserMessage.flags.read.mask)  # type: ignore[misc] # get_base_query_for_search adds the user_flags annotation
 
     # We exclude messages on muted topics when finding the first unread
-    # message in this narrow
-    if not is_dm_narrow:
+    # message in this narrow, except for alert-word narrows, which include
+    # messages from muted topics.
+    has_alerted_term = narrow is not None and any(
+        term.operator == "is" and term.operand == "alerted" and not term.negated for term in narrow
+    )
+    if not is_dm_narrow and not has_alerted_term:
         # Since building the channel/topic muting conditions takes
         # extra queries and makes the query potentially much more
-        # verbose for PostgreSQL to parse, we skip this for searches
-        # which we know they cannot apply do -- DMs.
+        # verbose for PostgreSQL to parse, we skip this for DMs and
+        # alert-word narrows, where the muting conditions are unnecessary.
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
         query = query.filter(muting_conditions)
 

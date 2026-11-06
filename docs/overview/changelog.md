@@ -9,6 +9,9 @@ the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 _Unreleased_
 
+- Added an "Alert words" view to the left sidebar, showing unread
+  messages that contain one of your configured alert words.
+
 ### Zulip Server 13.0-rc1
 
 _Released 2026-10-30_
@@ -194,6 +197,8 @@ _Released 2026-10-30_
   fetching recent messages in large topics, fetching messages for
   users with many muted topics, and muting users.
 - Updated all dependencies.
+- Added an "Alert words" view to the left sidebar, showing unread
+  messages that contain one of your configured alert words.
 
 ### Upgrade notes for 13.0
 
