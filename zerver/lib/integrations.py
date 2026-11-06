@@ -990,6 +990,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="UptimeRobot",
     ),
     IncomingWebhookIntegration(
+        "vercel", ["deployment"], [WebhookScreenshotConfig("deployment_succeeded.json")]
+    ),
+    IncomingWebhookIntegration(
         "wekan",
         ["productivity", "project-management"],
         [WebhookScreenshotConfig("add_comment.json")],

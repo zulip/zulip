@@ -1,0 +1,58 @@
+{
+  "id": "IecVqk3b3QgbFArve6WJY",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "alias": [],
+    "deployment": {
+      "id": "dpl_Hew77EesRN8JczesyhLtt2pykXhS",
+      "customEnvironmentId": null,
+      "meta": {
+        "githubCommitAuthorName": "ki3ani",
+        "githubCommitAuthorEmail": "ki3ani@users.noreply.github.com",
+        "githubCommitMessage": "Fix contacts",
+        "githubCommitOrg": "ki3ani",
+        "githubCommitRef": "main",
+        "githubCommitRepo": "portfolio-site",
+        "githubCommitSha": "15a05e3cfa789875b5a3a216770f862f640fc78f",
+        "githubDeployment": "1",
+        "githubOrg": "ki3ani",
+        "githubRepo": "portfolio-site",
+        "gitDirty": "1",
+        "gitRootDirectory": ""
+      },
+      "name": "portfolio-site",
+      "url": "portfolio-site-7jvelcboa-ki3anis-projects.vercel.app",
+      "inspectorUrl": "https://vercel.com/ki3anis-projects/portfolio-site/Hew77EesRN8JczesyhLtt2pykXhS"
+    },
+    "links": {
+      "deployment": "https://vercel.com/ki3anis-projects/portfolio-site/Hew77EesRN8JczesyhLtt2pykXhS",
+      "project": "https://vercel.com/ki3anis-projects/portfolio-site"
+    },
+    "name": "portfolio-site",
+    "plan": "hobby",
+    "regions": [
+      "iad1"
+    ],
+    "target": null,
+    "type": "LAMBDAS",
+    "url": "portfolio-site-7jvelcboa-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793175581188,
+  "type": "deployment.created"
+}
