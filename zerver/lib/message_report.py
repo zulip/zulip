@@ -14,7 +14,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
-from zerver.lib.url_encoding import pm_message_url, stream_message_url
+from zerver.lib.url_encoding import message_link_url, pm_message_url
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.streams import StreamTopicsPolicyEnum
@@ -116,13 +116,7 @@ def send_message_report(
             channel_message_link=channel_message_link
         )
     else:
-        direct_message_link = pm_message_url(
-            realm,
-            dict(
-                id=reported_message.id,
-                display_recipient=get_display_recipient(reported_message.recipient),
-            ),
-        )
+        direct_message_link = pm_message_url(realm, reported_message)
         original_message_string = _("[Original message]({direct_message_link})").format(
             direct_message_link=direct_message_link
         )
@@ -166,24 +160,7 @@ def send_report_confirmation_dm(
     reported_message: Message,
     report_type: str,
 ) -> None:
-    if reported_message.is_channel_message:
-        message_url = stream_message_url(
-            realm=realm,
-            message=dict(
-                id=reported_message.id,
-                stream_id=reported_message.recipient.type_id,
-                display_recipient=reported_message.recipient.label(),
-                topic=reported_message.topic_name(),
-            ),
-        )
-    else:
-        message_url = pm_message_url(
-            realm,
-            dict(
-                id=reported_message.id,
-                display_recipient=get_display_recipient(reported_message.recipient),
-            ),
-        )
+    message_url = message_link_url(realm, reported_message)
 
     with override_language(reporting_user.default_language):
         reason = str(Realm.REPORT_MESSAGE_REASONS[report_type]).lower()

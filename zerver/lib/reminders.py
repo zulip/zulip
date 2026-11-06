@@ -15,7 +15,6 @@ from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_user_mentions_for_display, truncate_content
-from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import (
     TOPIC_LINK_SYNTAX_FOR_DISPLAY,
     escape_invalid_stream_topic_characters,
@@ -55,7 +54,7 @@ def get_reminder_formatted_content(
 
     format_recipient_type_key: ReminderRecipientType
     user_silent_mention = silent_mention_syntax_for_user(message.sender)
-    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
+    conversation_url = message_link_url(current_user.realm, message)
 
     if message.is_channel_message:
         # We don't need to check access here since we already have the message
@@ -66,12 +65,7 @@ def get_reminder_formatted_content(
         )
         url = stream_message_url(
             realm=None,
-            message={
-                "id": message.id,
-                "stream_id": stream.id,
-                "display_recipient": stream.name,
-                "topic": message.topic_name(),
-            },
+            message=message,
             conversation_link=True,
         )
         escape = escape_invalid_stream_topic_characters
