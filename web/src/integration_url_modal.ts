@@ -309,10 +309,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         params.set("topic", topic_name);
                     }
                 }
-
-                if (!channel_allows_empty_topic && topic_name === "") {
-                    params.delete("topic");
-                }
             }
 
             const selected_events = set_events_param(params);
