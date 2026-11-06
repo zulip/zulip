@@ -216,6 +216,72 @@ _Released 2026-10-30_
 
 ## Zulip Server 12.x series
 
+### Zulip Server 12.4
+
+_Released 2026-11-06_
+
+- GHSA-c9j8-628c-f7rm: A crafted link could pass Zulip's check that it
+  pointed to Dropbox, while making the server fetch a page from another
+  host to generate the link's preview. A page served from that host
+  could then trigger memory corruption in the server process rendering
+  the message, crashing it. It may be possible to exploit this memory
+  corruption to run arbitrary code on the server. Any user who could
+  send messages could exploit this in organizations with previews of
+  linked images and videos enabled, which is the default. This
+  vulnerability was reported by Alex Bouffard (mixbo@pebwalker.com).
+- GHSA-fphq-r53h-f8qj: A bot's owner could make another user the bot's
+  owner while keeping a working copy of its API key, and then use the
+  bot to post in any channel the new owner can post in, and to list the
+  new owner's private channels. The original owner was not able to read
+  messages in the new owner's private channels. A deactivated user could
+  gain similar access if an administrator reactivated one of their bots,
+  since reactivation makes the administrator the bot's owner. Only
+  organization administrators can now change a bot's owner, and
+  reactivating such a bot generates a new API key, and removes the old
+  API key. This vulnerability was discovered by Ada Logics using
+  Google's security automation tooling, and later also independently
+  reported by Yves Soete of Blacksight LLC (@yssoe).
+- GHSA-xgvh-hg6v-gwjm: In organizations with only external
+  authentication methods (e.g., SAML) enabled, anyone with a reusable
+  invitation link could create an account without using any of those
+  methods, as long as they controlled an email address the organization
+  allows. By default, only administrators can create reusable
+  invitation links.
+- GHSA-v36w-q3m9-2xm2: A guest included in a channel's **Who can
+  subscribe to this channel** or **Who can subscribe anyone to this
+  channel** permission could download files uploaded to that channel
+  without being subscribed to it, if they knew the file's URL. The guest
+  could not read the channel's messages, and both permissions are set
+  to nobody by default. This vulnerability was reported by Varnit Yadav
+  (@varnit7002-tech).
+- GHSA-m2g9-5v7r-xqcg: Organization exports with member consent treated
+  deleted users as having consented, so they included every direct
+  message conversation a deleted user had been part of, even messages
+  from participants who had not consented. Creating such an export
+  requires administrator permissions, and deleting a user (as opposed
+  to deactivating them) requires the `manage.py delete_user` management
+  command. This vulnerability was reported by Thai Son Dinh (@sondt99)
+  of VinSOC Labs (R&D).
+- GHSA-m9rx-7c4r-chrc: Organization exports with member consent
+  included private channels that a consenting user had left or been
+  removed from. In channels with shared history, this included messages
+  and files that members who had not consented sent after the
+  consenting user stopped being a member of the channel. Creating such
+  an export requires administrator permissions. This vulnerability was
+  reported by Md Ohidul Islam (@mdohidulserniabat).
+- Updated Python dependencies, including `certifi`, which removes the
+  affected eMudhra root certificate from its CA bundle following the
+  eMudhra CA key compromise.
+- Fixed a bug where messages with several Dropbox folder or file links
+  would fail to send; previews for those links are now fetched after
+  the message is sent.
+- Fixed a bug where re-attaching a file after closing the compose box
+  would get stuck at "Uploading…" until the page was reloaded.
+- Fixed a bug where importing an organization would regenerate the
+  Jdenticon default profile pictures of users in every other
+  organization on the server, changing those pictures and slowing down
+  the import.
+
 ### Zulip Server 12.3
 
 _Released 2026-09-21_
