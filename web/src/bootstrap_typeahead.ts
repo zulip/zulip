@@ -840,9 +840,13 @@ export class Typeahead<ItemType extends string | object> {
             default:
                 // to stop typeahead from showing up momentarily
                 // when shift + tabbing to the topic field
+                // or the add subscribers input field
+                // The add subscribers input is identified by its container rather than an id.
                 if (
                     e.key === "Shift" &&
-                    the(this.input_element.$element).id === "stream_message_recipient_topic"
+                    (the(this.input_element.$element).id === "stream_message_recipient_topic" ||
+                        this.input_element.$element.closest(".add_subscribers_container").length >
+                            0)
                 ) {
                     return;
                 }
