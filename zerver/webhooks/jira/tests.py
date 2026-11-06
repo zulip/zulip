@@ -29,9 +29,17 @@ class JiraHookTests(WebhookTestCase):
         expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with major priority."
         self.check_webhook("issue_created", expected_topic_name, expected_message)
 
+    def test_attachment_created(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = (
+            "Hemanth V. Alluri uploaded [screenshot.png]"
+            "(https://f20171170.atlassian.net/secure/attachment/10000/screenshot.png) "
+            "to [BUG-15: New bug with hook](https://f20171170.atlassian.net/browse/BUG-15)."
+        )
+        self.check_webhook("attachment_created", expected_topic_name, expected_message)
+
     def test_ignored_events(self) -> None:
         ignored_actions = [
-            "attachment_created",
             "issuelink_created",
             "issuelink_deleted",
             "jira:version_released",
