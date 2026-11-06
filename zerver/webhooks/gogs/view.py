@@ -39,11 +39,24 @@ def format_push_event(payload: WildValue) -> str:
     compare_url = payload["compare_url"].tame(check_string)
     branch_name = payload["ref"].tame(check_string).replace("refs/heads/", "")
     commits_data = _transform_commits_list_to_common_format(payload["commits"])
+    # Detect force push if payload contains a 'forced' boolean. If present,
+    # pass it to the shared git message formatter so the message reflects
+    # a force push similarly to the GitHub integration.
+    # TODO: If Gogs uses a different key for force (for example nested under
+    # the push section), update this to check the appropriate payload path.
+    forced = False
+    if payload.get("forced") is not None:
+        try:
+            forced = payload["forced"].tame(check_bool)
+        except Exception:
+            forced = False
+
     return get_push_commits_event_message(
         user_name=user_name,
         compare_url=compare_url,
         branch_name=branch_name,
         commits_data=commits_data,
+        force_push=forced,
     )
 
 
