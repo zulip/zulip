@@ -14,7 +14,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
-from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_change_user_group_permission_setting,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib import utils
@@ -2217,6 +2221,40 @@ class EditMessageTest(ZulipTestCase):
         assert UserMessage.objects.get(
             user_profile=user_profile, message=message
         ).flags.mentioned.is_set
+
+    def test_bulk_user_group_mentions_while_editing(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+
+        senders_group = check_add_user_group(hamlet.realm, "senders", [hamlet], acting_user=hamlet)
+        for i in range(3):
+            group = check_add_user_group(hamlet.realm, f"group_{i}", [othello], acting_user=hamlet)
+            # A non-default can_mention_group is what costs a query
+            # to check the permission to mention a group.
+            do_change_user_group_permission_setting(
+                group,
+                "can_mention_group",
+                senders_group,
+                acting_user=hamlet,
+            )
+
+        message_id = self.send_stream_message(hamlet, "Denmark", "test message")
+        content = "@*group_0*, @*group_1*, @*group_2*"
+
+        with self.assert_database_query_count(30):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": content,
+                },
+            )
+        self.assert_json_success(result)
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=othello, message_id=message_id
+            ).flags.mentioned.is_set
+        )
 
     def test_user_group_mention_restrictions_while_editing(self) -> None:
         iago = self.example_user("iago")
