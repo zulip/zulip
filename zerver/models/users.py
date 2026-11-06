@@ -669,10 +669,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_JDENTICON = "J"
     AVATAR_FROM_USER = "U"
+    AVATAR_FROM_SYSTEM = "S"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
         (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
+        (AVATAR_FROM_SYSTEM, "Provided by Zulip"),
     )
     DEFAULT_AVATAR_SOURCE = AVATAR_FROM_JDENTICON
     avatar_source = models.CharField(
