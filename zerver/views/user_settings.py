@@ -352,6 +352,10 @@ def json_change_settings(
         Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
     ]
     | None = None,
+    display_offline_users: Annotated[
+        Json[int], check_int_in_validator(UserProfile.DISPLAY_OFFLINE_USERS_CHOICES)
+    ]
+    | None = None,
     web_animate_image_previews: Annotated[
         str, check_string_in_validator(web_animate_image_previews_options)
     ]

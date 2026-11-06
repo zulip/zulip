@@ -793,6 +793,10 @@ def update_realm_user_settings_defaults(
         Annotated[int, check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)]
     ]
     | None = None,
+    display_offline_users: Json[
+        Annotated[int, check_int_in_validator(UserProfile.DISPLAY_OFFLINE_USERS_CHOICES)]
+    ]
+    | None = None,
     web_animate_image_previews: Literal["always", "on_hover", "never"] | None = None,
     web_channel_default_view: Json[
         Annotated[int, check_int_in_validator(UserProfile.WEB_CHANNEL_DEFAULT_VIEW_CHOICES)]

@@ -494,6 +494,7 @@ export function initialize_right_sidebar(): void {
                     ui_util.parse_html(
                         render_buddy_list_popover({
                             display_style_options: settings_config.user_list_style_values,
+                            display_offline_users_options: settings_config.display_offline_users,
                             can_invite_users:
                                 settings_data.user_can_invite_users_by_email() ||
                                 settings_data.user_can_create_multiuse_invite(),
@@ -502,12 +503,21 @@ export function initialize_right_sidebar(): void {
                 );
             },
             onMount() {
-                const current_user_list_style =
-                    settings_preferences.user_settings_panel.settings_object.user_list_style;
+                const settings_object = settings_preferences.user_settings_panel.settings_object;
+
                 $("#buddy-list-actions-menu-popover")
-                    .find(`.user_list_style_choice[value=${current_user_list_style}]`)
+                    .find(
+                        `input[name="user_list_style"][value="${settings_object.user_list_style}"]`,
+                    )
+                    .prop("checked", true);
+
+                $("#buddy-list-actions-menu-popover")
+                    .find(
+                        `input[name="display_offline_users"][value="${settings_object.display_offline_users}"]`,
+                    )
                     .prop("checked", true);
             },
+
             onHidden() {
                 close_buddy_list_popover();
             },
@@ -524,6 +534,33 @@ export function initialize_right_sidebar(): void {
                 settings_preferences.user_settings_panel.settings_object.user_list_style;
 
             if (current_user_list_style === data.user_list_style) {
+                close_buddy_list_popover();
+                return;
+            }
+
+            void channel.patch({
+                url: "/json/settings",
+                data,
+                success() {
+                    close_buddy_list_popover();
+                },
+            });
+        },
+    );
+
+    $("body").on(
+        "click",
+        "#buddy-list-actions-menu-popover .display-offline-users-selector",
+        function (this: HTMLElement) {
+            const data = {
+                display_offline_users: Number(
+                    $(this).find("input[name='display_offline_users']").val(),
+                ),
+            };
+            const current_display_offline_users =
+                settings_preferences.user_settings_panel.settings_object.display_offline_users;
+
+            if (current_display_offline_users === data.display_offline_users) {
                 close_buddy_list_popover();
                 return;
             }
