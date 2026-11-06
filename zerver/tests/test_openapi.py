@@ -230,7 +230,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These "organization settings" endpoints have low value to document:
         "/realm/icon",
         "/realm/logo",
-        "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
         #### The following are fake endpoints that live in our zulip.yaml
