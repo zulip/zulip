@@ -81,6 +81,9 @@ export function set_status_text(opts: {user_id: number; status_text: string}): v
 }
 
 export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefined {
+    if (user_settings === undefined || user_settings?.emojiset === "text") {
+        return undefined;
+    }
     return user_status_emoji_info.get(user_id);
 }
 
@@ -95,7 +98,7 @@ export function set_status_emoji(event: UserStatusEvent): void {
     }
 
     user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
+        emoji_alt_code: user_settings?.emojiset === "text",
         ...emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
