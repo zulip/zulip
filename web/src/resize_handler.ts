@@ -33,6 +33,10 @@ export function handler(): void {
 
     was_left_sidebar_overlay = left_sidebar_is_overlay;
 
+    // Whether a sidebar counts as expanded is computed differently on
+    // each side of a viewport breakpoint, so recompute it on resize.
+    sidebar_ui.update_sidebar_aria_expanded();
+
     if (new_width !== _old_width) {
         _old_width = new_width;
         width_changed = true;

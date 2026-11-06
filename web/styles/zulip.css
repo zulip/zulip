@@ -1129,7 +1129,10 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 
     &:focus-visible {
-        outline: none;
+        outline: var(--focus-ring-outline);
+        /* Draw the ring inside the button, since header buttons span
+           the full height of the navbar. */
+        outline-offset: var(--focus-ring-outline-offset-in-views);
         background-color: var(--color-header-button-focus);
     }
 
@@ -1137,6 +1140,30 @@ div.focused-message-list.is-conversation-view .recipient_row {
     &:focus-visible {
         .left-sidebar-toggle-unreadcount {
             border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
+
+    &[aria-expanded="true"] {
+        background-color: var(--color-background-header-button-pressed);
+
+        .left-sidebar-toggle-unreadcount {
+            border-color: var(
+                --color-background-header-button-pressed-no-alpha
+            );
+        }
+
+        &:hover,
+        &:active,
+        &:focus-visible {
+            background-color: var(
+                --color-background-header-button-pressed-hover
+            );
+
+            .left-sidebar-toggle-unreadcount {
+                border-color: var(
+                    --color-background-header-button-pressed-hover-no-alpha
+                );
+            }
         }
     }
 }
@@ -1155,15 +1182,8 @@ div.focused-message-list.is-conversation-view .recipient_row {
     border-radius: 0.375em;
     padding: 0;
 
-    /* At 16px/1em, the toggle icon is 20px on a side, which is
-       half the width of its container (40px on a side). To
-       place the 10px-wide unread counter correctly, then, we
-       set it to 25% of the right of the container, or 10px,
-       and likewise 25% down from the top of the container,
-       also 10px. */
-
-    top: 25%;
-    right: 25%;
+    top: 0.25em; /* 4px at 16px/1em */
+    right: 0.125em; /* 2px at 16px/1em */
 }
 
 nav {
@@ -1171,7 +1191,7 @@ nav {
         text-align: left;
         display: flex;
         justify-content: left;
-        gap: 4px;
+        gap: 0.5em; /* 8px at 16px em */
 
         .brand {
             display: flex;
@@ -1190,21 +1210,6 @@ nav {
             @media (height < $short_navbar_cutoff_height) {
                 max-height: 0.9375em; /* 15px at 16px em */
             }
-        }
-
-        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
-            /* The toggle icon is half the width of its container
-            and is at the center of the container.
-            So, the left width starts from left 25% of the container
-            and ends till 75% of the container's width.
-            Similarly, vertically, the dot is starts at the top 25% of
-            the container's height and ends at 75% of the total height
-
-            So, the top right corner of the icon is at 25% from top and
-            75% from the right. This is the location where we place the
-            unread indicator dot. */
-            top: 25%;
-            right: 25%;
         }
     }
 
@@ -1759,29 +1764,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     visibility: hidden;
 }
 
-.left-sidebar-toggle-button .zulip-icon-panel-left {
-    display: none;
-}
-
-.column-middle.expanded {
-    .left-sidebar-toggle-button .zulip-icon-panel-left {
-        display: none;
-    }
-
-    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
-        display: block;
-    }
-}
-
 %hide-left-sidebar {
-    .left-sidebar-toggle-button .zulip-icon-panel-left {
-        display: block;
-    }
-
-    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
-        display: none;
-    }
-
     .column-left {
         display: none;
 
@@ -2163,20 +2146,6 @@ body:not(.spectator-view) {
         height: var(--header-height);
     }
 
-    nav
-        .column-left
-        .left-sidebar-toggle-button
-        .left-sidebar-toggle-unreadcount {
-        top: 5px;
-        left: 16px;
-    }
-
-    .left-sidebar-toggle-unreadcount {
-        /* Adjust in response to shorter navbar. */
-        top: 5px;
-        right: 4px;
-    }
-
     #top_navbar .column-right #personal-menu .header-button-avatar {
         width: 1.25em; /* 20px at 16px em */
         height: 1.25em; /* 20px at 16px em */
@@ -2556,6 +2525,13 @@ body:not(.spectator-view) {
         filter: none;
         outline: 0;
     }
+
+    & .header-button:focus-visible {
+        outline: var(--focus-ring-outline);
+        /* Draw the ring inside the button, since header buttons span
+           the full height of the navbar. */
+        outline-offset: var(--focus-ring-outline-offset-in-views);
+    }
 }
 
 .header-button {
@@ -2570,8 +2546,7 @@ body:not(.spectator-view) {
         text-decoration: none;
     }
 
-    &:hover,
-    .navbar-item.active-navbar-menu & {
+    &:hover {
         background-color: var(--color-header-button-hover);
     }
 
@@ -2580,8 +2555,20 @@ body:not(.spectator-view) {
     }
 
     &:focus-visible {
-        outline: none;
         background-color: var(--color-header-button-focus);
+    }
+
+    &[aria-expanded="true"],
+    .navbar-item.active-navbar-menu & {
+        background-color: var(--color-background-header-button-pressed);
+
+        &:hover,
+        &:active,
+        &:focus-visible {
+            background-color: var(
+                --color-background-header-button-pressed-hover
+            );
+        }
     }
 
     .zulip-icon {
@@ -2604,11 +2591,8 @@ body:not(.spectator-view) {
     }
 }
 
-.left-sidebar-toggle-button {
-    .zulip-icon-panel-left,
-    .zulip-icon-panel-left-dashed {
-        font-size: 1.25em; /* 20px at 16px em */
-    }
+.left-sidebar-toggle-button .zulip-icon-channel-list {
+    font-size: 1.25em; /* 20px at 16px em */
 }
 
 #personal-menu {
