@@ -1,0 +1,8 @@
+{
+    "event": "call.variables",
+    "assistant_id": "asst_123",
+    "call_id": "c_a1b2c3",
+    "direction": "inbound",
+    "from_number": "+493012345678",
+    "to_number": "+498998765432"
+}
