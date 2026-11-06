@@ -232,12 +232,12 @@ DEMO_ORG_DEADLINE_DAYS = 30
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
 
-TOPIC_SUMMARIZATION_MODEL = "llama-3.3-70b-versatile"
+TOPIC_SUMMARIZATION_MODEL = "openai/gpt-oss-120b"
 TOPIC_SUMMARIZATION_API_BASE = "https://api.groq.com/openai/v1"
-# Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
-# https://groq.com/pricing/
-OUTPUT_COST_PER_GIGATOKEN = 590
-INPUT_COST_PER_GIGATOKEN = 790
+# Defaults based on groq's pricing for GPT-OSS 120B (128k context).
+# https://console.groq.com/docs/model/openai/gpt-oss-120b
+OUTPUT_COST_PER_GIGATOKEN = 600
+INPUT_COST_PER_GIGATOKEN = 150
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
 
