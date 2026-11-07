@@ -9,6 +9,7 @@ import render_user_display_only_pill from "../templates/user_display_only_pill.h
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
+import * as flatpickr_util from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
@@ -231,12 +232,17 @@ export function initialize_profile_user_type_pills(user_id: number): void {
     }
 }
 
-export function format_date(date: Date | undefined, format: string): string {
+export function format_date(
+    date: Date | undefined,
+    format: string,
+    locale: flatpickr.CustomLocale | undefined = flatpickr_util.get_flatpickr_locale(),
+): string {
     if (date === undefined || date.toString() === "Invalid Date") {
         return "Invalid Date";
     }
 
-    return flatpickr.formatDate(date, format);
+    // @ts-expect-error Flatpickr runtime createDateFormatter accepts locale as 3rd parameter, but types omit it.
+    return flatpickr.formatDate(date, format, locale);
 }
 
 // The "has-date" class controls the clear-date button's visibility,
@@ -321,7 +327,10 @@ export function initialize_custom_date_type_fields(
         common_class_name = "settings_text_input";
     }
 
+    const flatpickr_locale = flatpickr_util.get_flatpickr_locale();
+
     flatpickr($date_picker_elements, {
+        ...(flatpickr_locale && {locale: flatpickr_locale}),
         altInput: true,
         // We would need to handle the altInput separately
         // than ".custom_user_field_value" elements to handle
