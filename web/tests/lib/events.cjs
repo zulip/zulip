@@ -869,17 +869,19 @@ exports.fixtures = {
         },
     },
 
-    stream__create: {
+    stream__create: {        
         type: "stream",
         op: "create",
         streams: [
             {
                 ...streams.devel,
                 stream_weekly_traffic: null,
+                default_color: null,
             },
             {
                 ...streams.test,
                 stream_weekly_traffic: null,
+                default_color: null,
             },
         ],
     },
@@ -934,26 +936,31 @@ exports.fixtures = {
         content: "test",
     },
 
-    subscription__add: {
-        type: "subscription",
-        op: "add",
-        subscriptions: [
-            {
-                ...streams.devel,
-                audible_notifications: true,
-                color: "blue",
-                desktop_notifications: false,
-                email_notifications: false,
-                in_home_view: false,
-                is_muted: true,
-                pin_to_top: false,
-                push_notifications: false,
-                stream_weekly_traffic: 40,
-                wildcard_mentions_notify: false,
-                subscribers: [5, 8, 13, 21],
-            },
-        ],
-    },
+
+subscription__add: {
+    type: "subscription",
+    op: "add",
+    subscriptions: [
+        {
+            ...streams.devel,
+            audible_notifications: true,
+            color: "blue",
+            default_color: null,
+            auto_color: "blue",
+            color_is_default: false,
+            desktop_notifications: false,
+            email_notifications: false,
+            in_home_view: false,
+            is_muted: true,
+            pin_to_top: false,
+            push_notifications: false,
+            stream_weekly_traffic: 40,
+            wildcard_mentions_notify: false,
+            subscribers: [5, 8, 13, 21],
+        },
+    ],
+},
+
 
     subscription__peer_add: {
         type: "subscription",

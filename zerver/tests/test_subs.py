@@ -2503,6 +2503,13 @@ class StreamAdminTest(ZulipTestCase):
         stream.refresh_from_db()
         self.assertEqual(stream.default_color, "#123456")
 
+        for invalid_color in ["true", "3ffrff"]:
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {"default_color": orjson.dumps(invalid_color).decode()},
+            )
+            self.assert_json_error(result, "default_color is not a valid hex color code")
+
         admin_subscription = Subscription.objects.get(
             user_profile=admin, recipient=stream.recipient
         )
