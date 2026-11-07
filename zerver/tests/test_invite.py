@@ -3323,6 +3323,77 @@ class MultiuseInviteTest(ZulipTestCase):
         ):
             self.check_user_able_to_register(email, invite_link)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.SAMLAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_multiuse_link_when_email_backend_disabled(self) -> None:
+        """
+        In organizations without a password-based authentication backend,
+        users joining via a multiuse invite link must sign up with one of
+        the organization's external authentication methods; they can't
+        obtain a confirmation email for an address of their choosing.
+        """
+        email = self.nonreg_email("newuser")
+        invite_link = self.generate_multiuse_invite_link()
+
+        result = self.client_post(invite_link, {"email": email})
+        self.assert_not_in_success_response(["check your email"], result)
+        self.assert_in_success_response(["Sign up with"], result)
+
+        self.assert_length(mail.outbox, 0)
+        self.assertFalse(PreregistrationUser.objects.filter(email=email).exists())
+
+    def test_multiuse_link_confirmation_after_email_backend_disabled(self) -> None:
+        """
+        A confirmation email obtained via a multiuse invite link can't be
+        used to create an account once the organization no longer has a
+        password-based authentication backend.
+        """
+        email = self.nonreg_email("newuser")
+        # We begin by generating a multiuse invite link and using it to
+        # obtain a confirmation email to our email address - this is possible
+        # while EmailAuthBackend is enabled.
+        invite_link = self.generate_multiuse_invite_link()
+
+        result = self.client_post(invite_link, {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+
+        # We've obtained a confirmation link. Now disable EmailAuthBackend to verify
+        # that the confirmation link can't be used anymore. Users joining via a multiuse
+        # invite are expected to complete authentication using one of the enabled
+        # backends.
+        with (
+            self.settings(
+                AUTHENTICATION_BACKENDS=(
+                    "zproject.backends.SAMLAuthBackend",
+                    "zproject.backends.ZulipDummyBackend",
+                )
+            ),
+            self.assertLogs("zulip.registration", level="INFO") as registration_logs,
+        ):
+            result = self.submit_reg_form_for_user(email, None, from_confirmation="1")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/accounts/login/")
+
+            result = self.submit_reg_form_for_user(email, None, full_name="New User")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/accounts/login/")
+
+        expected_log_line = (
+            "INFO:zulip.registration:(zulip) Rejected signup from email confirmation for "
+            f"{email}: password authentication is disabled"
+        )
+        self.assertEqual(registration_logs.output, [expected_log_line, expected_log_line])
+        self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
+        prereg_user = PreregistrationUser.objects.get(email=email)
+        self.assertIsNone(prereg_user.created_user)
+
     def test_multiuse_link_with_specified_streams(self) -> None:
         name1 = "newuser"
         name2 = "bob"

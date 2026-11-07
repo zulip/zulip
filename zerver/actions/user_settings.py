@@ -329,7 +329,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
     )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> str:
     old_api_key = user_profile.api_key
     new_api_key = generate_api_key()

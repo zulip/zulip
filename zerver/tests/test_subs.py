@@ -1273,6 +1273,7 @@ class StreamAdminTest(ZulipTestCase):
         owner = self.example_user("desdemona")
         realm = owner.realm
         cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
         private_stream_public_history = self.make_stream(
             "private_stream_public_history",
             realm=realm,
@@ -1290,18 +1291,23 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(attachment.is_realm_public)
 
         # User should be able to see the attachment if they have
-        # content access to a channel with public history.
+        # content access to a channel with public history, but guests
+        # are never granted content access by these groups.
         for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
             self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             do_change_stream_group_based_setting(
                 private_stream_public_history,
                 setting_name,
-                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                UserGroupMembersData(
+                    direct_members=[cordelia.id, polonius.id], direct_subgroups=[]
+                ),
                 acting_user=cordelia,
             )
             self.assertFalse(check_subscriptions_exists(cordelia, private_stream_public_history))
             self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)
@@ -1335,24 +1341,31 @@ class StreamAdminTest(ZulipTestCase):
         # sent.
         for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
             self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             do_change_stream_group_based_setting(
                 private_stream_protected_history,
                 setting_name,
-                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                UserGroupMembersData(
+                    direct_members=[cordelia.id, polonius.id], direct_subgroups=[]
+                ),
                 acting_user=cordelia,
             )
             self.assertFalse(check_subscriptions_exists(cordelia, private_stream_protected_history))
             self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
 
             # They should not have access to the upload if they are
             # subscribed to the channel but they were not subscribed at
             # the time of upload.
             self.subscribe(cordelia, "private_stream_protected_history")
+            self.subscribe(polonius, "private_stream_protected_history")
             self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             self.unsubscribe(cordelia, "private_stream_protected_history")
+            self.unsubscribe(polonius, "private_stream_protected_history")
             attachment.refresh_from_db()
 
             nobody_group = NamedUserGroup.objects.get(
@@ -1364,23 +1377,30 @@ class StreamAdminTest(ZulipTestCase):
 
         # User should be able to see the attachment if they have
         # content access to a private channel with protected history
-        # and were subscribed to the channel when the upload was sent.
+        # and were subscribed to the channel when the upload was sent,
+        # unless they are a guest.
         self.subscribe(cordelia, "private_stream_protected_history")
+        self.subscribe(polonius, "private_stream_protected_history")
         body = f"Second message ...[zulip2.txt](http://{realm.host}" + url + ")"
         msg_id = self.send_stream_message(owner, "private_stream_protected_history", body, "test")
         attachment = Attachment.objects.get(messages__id=msg_id)
         self.unsubscribe(cordelia, "private_stream_protected_history")
+        self.unsubscribe(polonius, "private_stream_protected_history")
         for setting_name in Stream.stream_permission_group_settings_requiring_content_access:
             self.assertFalse(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             do_change_stream_group_based_setting(
                 private_stream_protected_history,
                 setting_name,
-                UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+                UserGroupMembersData(
+                    direct_members=[cordelia.id, polonius.id], direct_subgroups=[]
+                ),
                 acting_user=cordelia,
             )
             self.assertFalse(check_subscriptions_exists(cordelia, private_stream_protected_history))
             self.assertTrue(validate_attachment_request(cordelia, attachment.path_id)[0])
+            self.assertFalse(validate_attachment_request(polonius, attachment.path_id)[0])
             self.assertTrue(validate_attachment_request(owner, attachment.path_id)[0])
             attachment.refresh_from_db()
             self.assertFalse(attachment.is_realm_public)

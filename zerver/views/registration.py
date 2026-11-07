@@ -592,6 +592,33 @@ def registration_helper(
         except ValidationError:
             return redirect_to_email_login_url(email)
 
+        if (
+            password_required
+            and not password_auth_enabled(realm)
+            # Only signup from an email invite or in the realm import flow is allowed.
+            and prereg_user.confirmation.get().type != Confirmation.INVITATION
+            and not prereg_user.is_realm_importer
+        ):
+            # This should only be reachable in two cases:
+            #
+            # 1. The user entered their email address to begin signup by email
+            #    on the registration page while password auth was enabled, and
+            #    clicked the received confirmation link **after** the
+            #    administrators disabled password auth.
+            # 2. The same, but with the email address entered on a multiuse
+            #    invite link's page.
+            #
+            # When password-based auth methods are disabled, signing up requires
+            # going through an external authentication method (which sets
+            # password_required=False). Email invitations, which explicitly grant
+            # access to the invited address, and realm import owners are exempt.
+            logger.info(
+                "(%s) Rejected signup from email confirmation for %s: password authentication is disabled",
+                realm.string_id,
+                email,
+            )
+            return HttpResponseRedirect(reverse("login"))
+
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import (
                 check_spare_licenses_available_for_registering_new_user,

@@ -41,7 +41,7 @@ from zerver.actions.user_activity import do_update_user_activity_interval
 from zerver.actions.user_settings import do_change_user_delivery_email, do_change_user_setting
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_deactivate_user, do_delete_user_preserving_messages
 from zerver.lib import import_realm, upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
@@ -775,6 +775,11 @@ class RealmImportExportTest(ExportFile):
         non_consented_user.save(update_fields=["is_mirror_dummy"])
         self.assertIn(non_consented_user.id, get_consented_user_ids(realm))
 
+        # Deleted users aren't considered consented.
+        deleted_user = self.example_user("othello")
+        do_delete_user_preserving_messages(deleted_user, acting_user=None)
+        self.assertNotIn(deleted_user.id, get_consented_user_ids(realm))
+
     def test_client_objects_export(self) -> None:
         """
         Client objects require some special handling when exporting. They aren't
@@ -1022,6 +1027,18 @@ class RealmImportExportTest(ExportFile):
         self.subscribe(self.example_user("hamlet"), "Private D")
         self.send_stream_message(self.example_user("prospero"), "Private D", "Hello again stream D")
 
+        create_stream_if_needed(
+            realm, "Private E", invite_only=True, history_public_to_subscribers=True
+        )
+        self.subscribe(self.example_user("prospero"), "Private E")
+        self.subscribe(self.example_user("hamlet"), "Private E")
+        # Hamlet loses access to the channel when he unsubscribes, so his consent is
+        # not sufficient to export its messages.
+        self.unsubscribe(self.example_user("hamlet"), "Private E")
+        stream_e_message_id = self.send_stream_message(
+            self.example_user("prospero"), "Private E", "Hello stream E"
+        )
+
         # Create direct message groups
         self.send_group_direct_message(
             self.example_user("iago"), [self.example_user("cordelia"), self.example_user("AARON")]
@@ -1195,6 +1212,7 @@ class RealmImportExportTest(ExportFile):
                 "Private B",
                 "Private C",
                 "Private D",
+                "Private E",
             },
         )
 
@@ -1278,6 +1296,7 @@ class RealmImportExportTest(ExportFile):
         self.assertNotIn(stream_b_first_message_id, exported_msg_ids)
 
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
+        self.assertNotIn(stream_e_message_id, exported_msg_ids)
         self.assertNotIn(direct_message_group_c_message_id, exported_msg_ids)
 
         self.assertNotIn(pm_a_msg_id, exported_msg_ids)

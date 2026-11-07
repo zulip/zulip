@@ -1068,7 +1068,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(99),
+            self.assert_database_query_count(101),
             self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -1745,16 +1745,43 @@ class UserSignUpTest(ZulipTestCase):
         result = self.verify_signup(email=email, password=password, full_name="IaGo")
         assert isinstance(result, UserProfile)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.SAMLAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
     def test_signup_without_password(self) -> None:
         """
-        Check if signing up without a password works properly when
-        password_auth_enabled is False.
+        Check if signing up via an email invitation works without a password
+        when password_auth_enabled is False.
         """
         email = self.nonreg_email("newuser")
-        with patch("zerver.views.registration.password_auth_enabled", return_value=False):
-            user_profile = self.verify_signup(email=email, password=None)
+        realm = get_realm("zulip")
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                self.example_user("iago"),
+                [Invitee(email=email)],
+                [],
+                invite_expires_in_minutes=None,
+                include_realm_default_subscriptions=True,
+            )
 
-        assert isinstance(user_profile, UserProfile)
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # The registration form doesn't ask for a password.
+        result = self.submit_reg_form_for_user(email, None, from_confirmation="1")
+        self.assert_in_success_response(["id_full_name"], result)
+        self.assert_not_in_success_response(["id_password"], result)
+
+        result = self.submit_reg_form_for_user(email, None, full_name="New User")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{realm.url}/")
+
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertFalse(user_profile.has_usable_password())
         # User should now be logged in.
         self.assert_logged_in_user_id(user_profile.id)
 
@@ -2456,6 +2483,47 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_success_response(["Sign up with"], result)
 
         self.assertEqual(original_outbox_length, len(outbox))
+
+    def test_registration_confirmation_after_email_backend_disabled(self) -> None:
+        """
+        A confirmation email obtained via the registration page can't be
+        used to create an account once the organization no longer has a
+        password-based authentication backend.
+        """
+        email = self.nonreg_email("newuser")
+
+        result = self.client_post("/register/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+
+        with (
+            self.settings(
+                AUTHENTICATION_BACKENDS=(
+                    "zproject.backends.SAMLAuthBackend",
+                    "zproject.backends.ZulipDummyBackend",
+                )
+            ),
+            self.assertLogs("zulip.registration", level="INFO") as registration_logs,
+        ):
+            result = self.submit_reg_form_for_user(email, None, from_confirmation="1")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/accounts/login/")
+
+            # The final form submission is rejected too, even if the user skips the step above.
+            result = self.submit_reg_form_for_user(email, None, full_name="New User")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/accounts/login/")
+
+        expected_log_line = (
+            "INFO:zulip.registration:(zulip) Rejected signup from email confirmation for "
+            f"{email}: password authentication is disabled"
+        )
+        self.assertEqual(registration_logs.output, [expected_log_line, expected_log_line])
+        self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
+        prereg_user = PreregistrationUser.objects.get(email=email)
+        self.assertIsNone(prereg_user.created_user)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(

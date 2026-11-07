@@ -22,7 +22,7 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, most_recent_message
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
@@ -1090,6 +1090,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.subscribe(self.example_user("iago"), "private_stream_test")
         self.subscribe(test_bot, "private_stream_test")
 
+        api_key = test_bot.api_key
+        do_deactivate_user(test_bot, acting_user=None)
+
+        # Reactivating a bot whose owner is active keeps its API key.
+        result = self.client_post(f"/json/users/{bot_id}/reactivate")
+        self.assert_json_success(result)
+        test_bot.refresh_from_db()
+        self.assertEqual(test_bot.api_key, api_key)
         do_deactivate_user(test_bot, acting_user=None)
 
         # Deactivate the bot owner
@@ -1102,6 +1110,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+        self.assertNotEqual(test_bot.api_key, api_key)
 
         # There is no realm_bot delete event, since the previous
         # owner is deactivated.
@@ -1348,6 +1357,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_owner(self) -> None:
         self.login("hamlet")
+        hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
 
         bot_info: dict[str, object] = {
@@ -1360,18 +1370,28 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "bot_owner_id": othello.id,
         }
         email = "hambot-bot@zulip.testserver"
-        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        bot = self.get_bot_user(email)
+
+        # A bot's owner cannot transfer ownership unless they are an
+        # organization administrator.
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Must be an organization administrator")
+        bot.refresh_from_db()
+        self.assertEqual(bot.bot_owner, hamlet)
+
+        self.login("iago")
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
         response_dict = self.assert_json_success(result)
 
         # Test bot's owner has been changed successfully.
         self.assertEqual(response_dict["bot_owner"], othello.email)
 
         self.login("othello")
-        bot = self.get_bot()
-        self.assertEqual("The Bot of Hamlet", bot["full_name"])
+        bot_dict = self.get_bot()
+        self.assertEqual("The Bot of Hamlet", bot_dict["full_name"])
 
     def test_patch_bot_owner_bad_user_id(self) -> None:
-        self.login("hamlet")
+        self.login("iago")
         self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -1385,10 +1405,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_error(result, "Failed to change owner, no such user")
         profile = get_user("hambot-bot@zulip.testserver", get_realm("zulip"))
-        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+        self.assertEqual(profile.bot_owner, self.example_user("iago"))
 
     def test_patch_bot_owner_deactivated(self) -> None:
-        self.login("hamlet")
+        self.login("iago")
         self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -1404,10 +1424,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_error(result, "Failed to change owner, user is deactivated")
         profile = self.get_bot_user(email)
-        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+        self.assertEqual(profile.bot_owner, self.example_user("iago"))
 
     def test_patch_bot_owner_must_be_in_same_realm(self) -> None:
-        self.login("hamlet")
+        self.login("iago")
         self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -1419,7 +1439,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_error(result, "Failed to change owner, no such user")
         profile = self.get_bot_user(email)
-        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+        self.assertEqual(profile.bot_owner, self.example_user("iago"))
 
     def test_patch_bot_owner_noop(self) -> None:
         self.login("hamlet")
@@ -1439,7 +1459,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
     def test_patch_bot_owner_a_bot(self) -> None:
-        self.login("hamlet")
+        self.login("iago")
         self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -1457,7 +1477,61 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_error(result, "Failed to change owner, bots can't own other bots")
         profile = get_user(email, get_realm("zulip"))
-        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+        self.assertEqual(profile.bot_owner, self.example_user("iago"))
+
+    def test_patch_bot_owner_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        bot_mention = f"@_**{bot.full_name}|{bot.id}**"
+        new_api_key_text = (
+            "You can [generate a new API key](/help/manage-a-bot#get-a-bots-api-key) "
+            "to revoke their access, but any integrations using the current key will "
+            "stop working until they're updated."
+        )
+
+        self.login("iago")
+        result = self.client_patch(f"/json/bots/{bot.id}", {"bot_owner_id": othello.id})
+        self.assert_json_success(result)
+        bot.refresh_from_db()
+        self.assertEqual(bot.bot_owner, othello)
+        message = most_recent_message(othello)
+        self.assertEqual(message.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(
+            message.content,
+            f"@_**{iago.full_name}|{iago.id}** made you the owner of {bot_mention}.\n\n"
+            f"The bot's previous owner, @_**{hamlet.full_name}|{hamlet.id}**, "
+            f"may still have a copy of its API key. {new_api_key_text}",
+        )
+
+        do_change_bot_owner(bot, iago, acting_user=iago)
+        message = most_recent_message(iago)
+        self.assertEqual(message.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(
+            message.content,
+            f"You are now the owner of {bot_mention}.\n\n"
+            f"The bot's previous owner, @_**{othello.full_name}|{othello.id}**, "
+            f"may still have a copy of its API key. {new_api_key_text}",
+        )
+
+        # Legacy bots may not have a previous owner.
+        bot.bot_owner = None
+        bot.save()
+        do_change_bot_owner(bot, hamlet, acting_user=iago)
+        message = most_recent_message(hamlet)
+        self.assertEqual(
+            message.content,
+            f"@_**{iago.full_name}|{iago.id}** made you the owner of {bot_mention}.",
+        )
+
+        bot.bot_owner = None
+        bot.save()
+        last_message_id = most_recent_message(iago).id
+        do_change_bot_owner(bot, iago, acting_user=iago)
+        self.assertEqual(most_recent_message(iago).id, last_message_id)
 
     def test_patch_bot_owner_of_bot_with_can_create_users(self) -> None:
         """

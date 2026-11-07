@@ -287,17 +287,21 @@ class HomepageForm(forms.Form):
                 )
             )
 
-        if not from_multiuse_invite:
-            if realm.invite_required and not self.has_pending_invitation:
-                raise ValidationError(
-                    _(
-                        "Please request an invite for {email} from the organization administrator."
-                    ).format(email=email)
-                )
-            if self.require_password_backend and not password_auth_enabled(realm):
-                raise ValidationError(
-                    _("Can't join the organization: password authentication is not enabled.")
-                )
+        if not from_multiuse_invite and realm.invite_required and not self.has_pending_invitation:
+            raise ValidationError(
+                _(
+                    "Please request an invite for {email} from the organization administrator."
+                ).format(email=email)
+            )
+
+        # A multiuse invite link serves as an invitation, but doesn't skip
+        # authentication: Without a password-based backend,
+        # users signing up via such a link must go through authentication with one of the
+        # organization's external authentication methods.
+        if self.require_password_backend and not password_auth_enabled(realm):
+            raise ValidationError(
+                _("Can't join the organization: password authentication is not enabled.")
+            )
 
         try:
             email_allowed_for_realm(email, realm)

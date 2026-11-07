@@ -1909,7 +1909,7 @@ def export_partial_message_files(
         ).values_list("recipient_id", flat=True)
 
         consented_recipient_ids = Subscription.objects.filter(
-            user_profile_id__in=consented_user_ids
+            user_profile_id__in=consented_user_ids, active=True
         ).values_list("recipient_id", flat=True)
 
         recipient_ids_set = (set(public_stream_recipient_ids) | set(consented_recipient_ids)) - set(
@@ -3090,7 +3090,10 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
     #       in it. Thus, only public data of the user was exported->imported.
     #       Therefore, again we can consider the user as consenting and export
     #       everything - all this data is public by construction.
-
+    #
+    #    Deleted users also have is_mirror_dummy=True set, but they aren't mirror dummies
+    #    in the usual sense: they don't represent an account that a user can later claim
+    #    by signing up. Neither (a) nor (b) applies, we treat them as not consenting.
     query = sql.SQL("""
         WITH consenting_humans AS (
             SELECT id
@@ -3109,7 +3112,7 @@ def get_consented_user_ids(realm: Realm) -> set[int]:
                 AND is_bot
                 AND realm_id = {realm_id}
             )
-            OR (is_mirror_dummy AND realm_id = {realm_id})
+            OR (is_mirror_dummy AND NOT is_deleted AND realm_id = {realm_id})
     """).format(realm_id=sql.Literal(realm.id))
 
     with connection.cursor() as cursor:
