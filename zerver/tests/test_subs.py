@@ -44,6 +44,7 @@ from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
+    get_used_colors_for_user_ids,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
 )
@@ -4016,6 +4017,71 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assertEqual(serialized_sub["color"], "#654321")
         self.assertTrue(serialized_sub["color_is_default"])
+
+    def test_get_used_colors_for_user_ids(self) -> None:
+        user = self.example_user("hamlet")
+        subs = gather_subscriptions(user)[0]
+
+        stream = Stream.objects.get(id=subs[0]["stream_id"])
+        subscription = Subscription.objects.get(
+            user_profile=user,
+            recipient=stream.recipient,
+        )
+
+        subscription.color = "#abcdef"
+        subscription.auto_color = "#123456"
+        subscription.save(update_fields=["color", "auto_color"])
+
+        result = get_used_colors_for_user_ids([user.id])
+
+        self.assertIn("#abcdef", result[user.id])
+        self.assertIn("#123456", result[user.id])
+
+    def test_reset_subscription_color_without_existing_auto_color(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        subs = gather_subscriptions(user)[0]
+        stream = Stream.objects.get(id=subs[0]["stream_id"])
+        subscription = Subscription.objects.get(user_profile=user, recipient=stream.recipient)
+
+        subscription.color = None
+        subscription.auto_color = None
+        subscription.save(update_fields=["color", "auto_color"])
+
+        result = self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream.id}",
+            {"property": "color", "value": "null"},
+        )
+        self.assert_json_success(result)
+
+        subscription.refresh_from_db()
+        self.assertIsNone(subscription.color)
+        self.assertIsNotNone(subscription.auto_color)
+
+    def test_reset_subscription_color_preserves_auto_color_fallback(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        subs = gather_subscriptions(user)[0]
+        stream = Stream.objects.get(id=subs[0]["stream_id"])
+        subscription = Subscription.objects.get(user_profile=user, recipient=stream.recipient)
+
+        subscription.color = "#abcdef"
+        subscription.auto_color = None
+        subscription.save(update_fields=["color", "auto_color"])
+
+        result = self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream.id}",
+            {"property": "color", "value": "null"},
+        )
+        self.assert_json_success(result)
+
+        subscription.refresh_from_db()
+        self.assertIsNone(subscription.color)
+        self.assertEqual(subscription.auto_color, "#abcdef")
 
     def test_api_invalid_property(self) -> None:
         """
