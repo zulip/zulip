@@ -1,6 +1,8 @@
 import {formatISO} from "date-fns";
 import flatpickr from "flatpickr";
+import flatpickr_l10n from "flatpickr/dist/l10n/index.js";
 import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
+import type {CustomLocale} from "flatpickr/dist/types/locale.ts";
 import {$} from "jquery";
 import assert from "minimalistic-assert";
 
@@ -9,6 +11,34 @@ import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export let flatpickr_instance: flatpickr.Instance | undefined;
+
+const special_flatpickr_locales = new Map<string, string>([
+    ["el", "gr"],
+    ["kk", "kz"],
+    ["vi", "vn"],
+    ["zh-hans", "zh"],
+    ["zh-tw", "zh_tw"],
+]);
+
+const flatpickr_locales: Record<string, CustomLocale> = flatpickr_l10n;
+
+export function get_flatpickr_locale(
+    language: string = user_settings.default_language,
+): CustomLocale | undefined {
+    if (!language) {
+        return undefined;
+    }
+    const normalized = language.toLowerCase();
+    const mapped = special_flatpickr_locales.get(normalized) ?? normalized.replace("-", "_");
+    if (Object.hasOwn(flatpickr_locales, mapped)) {
+        return flatpickr_locales[mapped];
+    }
+    const base_language = normalized.split("-", 2)[0];
+    if (base_language && Object.hasOwn(flatpickr_locales, base_language)) {
+        return flatpickr_locales[base_language];
+    }
+    return undefined;
+}
 
 export function is_open(): boolean {
     return Boolean(flatpickr_instance?.isOpen);
@@ -28,6 +58,11 @@ export function show_flatpickr(
     hide_confirm_button = false,
 ): flatpickr.Instance {
     const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
+
+    const flatpickr_locale = get_flatpickr_locale();
+    if (flatpickr_locale !== undefined) {
+        options.locale ??= flatpickr_locale;
+    }
 
     options.enableTime ??= ENABLE_TIME_DEFAULT;
     if (hide_confirm_button && options.enableTime) {
