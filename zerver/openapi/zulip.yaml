@@ -24912,6 +24912,9 @@ paths:
         - Channel [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-channel) and [who can
           send](/help/channel-posting-policy).
+        - Channel [default color](/help/change-the-color-of-a-channel),
+          which determines the display color for users who have not set
+          a personal color override.
 
         Note that an organization administrator's ability to change a
         [private channel's permissions](/help/channel-permissions#private-channels)
@@ -29301,6 +29304,9 @@ components:
           type: string
           description: |
             The effective display color for the channel in the user's interface.
+            This is the user's personal color override, if set; otherwise, it is
+            the channel's organization-defined default color, if set; otherwise,
+            it is the automatically assigned color.
         color_is_default:
           type: boolean
           description: |

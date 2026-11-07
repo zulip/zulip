@@ -68,10 +68,10 @@
                         <label class="settings-field-label">{{t "Default channel color"}}</label>
                         <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_default_stream_color" data-stream-id="{{sub.stream_id}}" aria-label="{{t 'Change default channel color'}}">
                             <span class="stream-settings-color-preview stream-default-color-preview"
-                                {{#if sub.default_color}}
-                                    style="background: {{sub.default_color}};"
-                                {{/if}}
-                            ></span>
+                              {{#if sub.default_color}}
+                              style="background: {{sub.default_color}};"
+                              {{/if}}
+                              ></span>
                             <span>{{t "Change color"}}</span>
                         </button>
                         {{> ../components/action_button

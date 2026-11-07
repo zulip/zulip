@@ -1,7 +1,11 @@
 from django.db import migrations, models
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 
 
-def preserve_existing_subscription_colors(apps, schema_editor):
+def preserve_existing_subscription_colors(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     Subscription = apps.get_model("zerver", "Subscription")
     Subscription.objects.filter(auto_color__isnull=True).update(auto_color=models.F("color"))
 
@@ -25,7 +29,5 @@ class Migration(migrations.Migration):
             name="auto_color",
             field=models.CharField(default=None, max_length=10, null=True),
         ),
-        migrations.RunPython(
-            preserve_existing_subscription_colors, migrations.RunPython.noop
-        ),
+        migrations.RunPython(preserve_existing_subscription_colors, migrations.RunPython.noop),
     ]

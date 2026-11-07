@@ -507,11 +507,11 @@ export function show_settings_for(node: HTMLElement): void {
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
-    //console.log("SUBSCRIPTION:", sub);
-    //console.log("DEFAULT COLOR:", sub.default_color);
-    //console.log("DEFAULT COLOR TYPE:", typeof sub.default_color);
-    //console.log("CHANNEL COLOR:", sub.color);
-    //console.log("CHANNEL COLOR TYPE:", typeof sub.color);
+    // console.log("SUBSCRIPTION:", sub);
+    // console.log("DEFAULT COLOR:", sub.default_color);
+    // console.log("DEFAULT COLOR TYPE:", typeof sub.default_color);
+    // console.log("CHANNEL COLOR:", sub.color);
+    // console.log("CHANNEL COLOR TYPE:", typeof sub.color);
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
     stream_edit_toggler.toggler.get().prependTo("#stream_settings .tab-container");

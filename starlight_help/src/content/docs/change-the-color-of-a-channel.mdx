@@ -10,10 +10,19 @@ import ChannelActions from "../include/_ChannelActions.mdx";
 import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewPersonal from "../include/_SelectChannelViewPersonal.mdx";
 
-Zulip assigns each of your channels a color when you subscribe to the
-channel. You can choose a personal color, or follow the color set by an
-organization administrator. Changing a personal color does not affect anyone
-else.
+Each channel has a color, which helps you recognize it at a glance. The color
+you see is determined as follows:
+
+1. If you have chosen a **personal color** for the channel, Zulip shows that
+   color.
+1. Otherwise, if an organization administrator has set a **default color** for
+   the channel, Zulip shows the default color.
+1. Otherwise, Zulip shows the color it automatically assigned to you when you
+   subscribed to the channel.
+
+Changing your personal color does not affect anyone else.
+
+## Change the color of a channel for yourself
 
 <Tabs>
   <TabItem label="Via left sidebar">
@@ -37,7 +46,6 @@ else.
 
       1. Under **Personal settings**, click on the colored square below **Channel color**.
       1. Select a color from the grid, use the color picker, or enter a hex code.
-      1. Select **Reset to default** to follow the color set by an organization administrator.
       1. Click **Choose** to save and apply the color change.
     </FlattenedSteps>
 
@@ -45,10 +53,80 @@ else.
   </TabItem>
 </Tabs>
 
-Organization administrators can set a default color for a channel in its
-**General** settings. Users who follow the default will see color changes made
-by an administrator. Choosing a personal color overrides that default until
-you reset your color.
+Once you choose a personal color, it stays the same even if an organization
+administrator later changes the channel's default color.
+
+## Reset a channel's color to the default
+
+If you no longer want a personal color, you can reset the channel to follow the
+organization's default. You will then see any color changes that an
+administrator makes to the channel in the future.
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/gear/channel-settings" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPersonal />
+
+  1. Under **Personal settings**, click on the colored square below **Channel color**.
+  1. Select **Reset to default**.
+</FlattenedSteps>
+
+If the channel has no default color, resetting returns it to the color Zulip
+automatically assigned to you when you subscribed.
+
+## Set a default color for a channel
+
+<Tabs>
+  <TabItem label="Via channel settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Select a channel.
+      1. Select the **General** tab on the right.
+      1. Under **Channel default color**, click on the colored square.
+      1. Select a color from the grid, use the color picker, or enter a hex code.
+      1. Click **Choose** to save the default color.
+    </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
+  </TabItem>
+</Tabs>
+
+Only organization administrators can set or clear a channel's default color.
+The default color is applied right away to:
+
+* Everyone who subscribes to the channel in the future.
+* Everyone currently subscribed to the channel who has not chosen a personal
+  color, and who therefore follows the default.
+
+Users who have chosen a personal color keep it, and are not affected by the
+change.
+
+### Clear a channel's default color
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/gear/channel-settings" />
+
+  1. Select a channel.
+  1. Select the **General** tab on the right.
+  1. Under **Channel default color**, click on the colored square.
+  1. Select **Clear default color**.
+</FlattenedSteps>
+
+Users who were following the default will go back to the color Zulip
+automatically assigned to them when they subscribed. Users with a personal
+color are not affected.
+
+### Users who subscribed before the default color feature
+
+Before channel default colors existed, Zulip could not distinguish colors that
+users picked themselves from colors that were assigned automatically. To avoid
+overwriting anyone's choice, all existing channel colors are treated as
+personal colors. As a result, users who were subscribed to a channel before this
+feature was introduced will not see the channel's default color until they
+[reset their color to the default](#reset-a-channels-color-to-the-default).
 
 ## Related articles
 
