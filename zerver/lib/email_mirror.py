@@ -415,8 +415,15 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
 def strip_from_subject(subject: str) -> str:
     # strips RE and FWD from the subject
     # from: https://stackoverflow.com/questions/9153629/regex-code-for-removing-fwd-re-etc-from-email-subject
-    reg = r"([\[\(] *)?\b(RE|AW|SV|FWD?) *(\[\d+\])?([-:;)\]][ :;\])-]*|$)|\]+ *$"
-    stripped = re.sub(reg, "", subject, flags=re.IGNORECASE | re.MULTILINE)
+    reg = r"^(?: *([\[\(] *)?\b(RE|AW|SV|FWD?) *(\[\d+\])?((-(?!\w)|[:;)\]])[ :;\])-]*|$))+"
+    match = re.match(reg, subject, flags=re.IGNORECASE)
+    prefix = match.group(0) if match else ""
+    stripped = subject.removeprefix(prefix).rstrip()
+    unclosed_brackets = prefix.count("[") - prefix.count("]")
+    while unclosed_brackets > 0 and stripped.endswith("]"):
+        stripped = stripped.removesuffix("]").rstrip()
+        unclosed_brackets -= 1
+    stripped = re.sub(r"\( *FWD? *\)$", "", stripped, flags=re.IGNORECASE)
     return stripped.strip()
 
 

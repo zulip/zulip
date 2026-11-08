@@ -90,5 +90,41 @@
     {
         "original_subject": "Fwd: Re: fwd is an acronym (four-wheel drive)",
         "stripped_subject": "fwd is an acronym (four-wheel drive)"
+    },
+    {
+        "original_subject": "Build failed [main]",
+        "stripped_subject": "Build failed [main]"
+    },
+    {
+        "original_subject": "[JIRA] (PROJ-123) Login page broken [High]",
+        "stripped_subject": "[JIRA] (PROJ-123) Login page broken [High]"
+    },
+    {
+        "original_subject": "Re: Invoice #4411 [PAID]",
+        "stripped_subject": "Invoice #4411 [PAID]"
+    },
+    {
+        "original_subject": "[Fwd: Build failed [main]]",
+        "stripped_subject": "Build failed [main]"
+    },
+    {
+        "original_subject": "Please re-enable SSO for the sales team",
+        "stripped_subject": "Please re-enable SSO for the sales team"
+    },
+    {
+        "original_subject": "Re-deploy of api-server failed",
+        "stripped_subject": "Re-deploy of api-server failed"
+    },
+    {
+        "original_subject": "Server outage in AW-west region",
+        "stripped_subject": "Server outage in AW-west region"
+    },
+    {
+        "original_subject": "Notes re: Q3 budget",
+        "stripped_subject": "Notes re: Q3 budget"
+    },
+    {
+        "original_subject": "Q3 report: final draft (re-sent)",
+        "stripped_subject": "Q3 report: final draft (re-sent)"
     }
 ]
