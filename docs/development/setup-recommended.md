@@ -32,7 +32,7 @@ Contents:
 
 Installing the Zulip development environment requires downloading several
 hundred megabytes of dependencies. You will need an active internet
-connection throughout the entire installation processes. (See
+connection throughout the entire installation process. (See
 [Specifying a proxy](#specifying-a-proxy) if you need a proxy to access
 the internet.)
 
