@@ -30,6 +30,14 @@ mock_esm("../src/people", {
     maybe_get_user_by_id: noop,
 });
 
+mock_esm("../src/hash_util", {
+    by_conversation_and_time_url: () => "fake/url",
+});
+
+mock_esm("../src/message_viewport", {
+    is_scrolled_up: () => false,
+});
+
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
@@ -354,6 +362,47 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
 
     // One header rerender per distinct bar; the rowless message is skipped.
     assert.deepEqual(rerendered_group_ids, ["group-A", "group-B"]);
+});
+
+test("render updates aria-live based on messages_are_new", () => {
+    const view = new MessageListView(
+        {
+            id: 1,
+            update_trailing_bookend: noop,
+        },
+        true,
+        true,
+    );
+
+    const msg = {id: 1, type: "private", to_user_ids: "5"};
+    view.build_message_groups = () => [
+        {
+            message_group_id: "group-1",
+            message_containers: [{msg, include_sender: true, is_hidden: false}],
+        },
+    ];
+    view.set_subscription_dividers_and_markers = noop;
+    view.merge_message_groups = () => ({
+        append_groups: [],
+        prepend_groups: [],
+        rerender_groups: [],
+        append_messages: [],
+    });
+
+    const empty_list_stub = $.set_results("empty-stub", []);
+    view.$list.set_find_results(".message_edit_content", empty_list_stub);
+
+    view.render([], "bottom", true);
+    assert.equal(view.$list.attr("aria-live"), undefined);
+
+    view.render([msg], "bottom");
+    assert.equal(view.$list.attr("aria-live"), "off");
+
+    view.render([msg], "bottom", true);
+    assert.equal(view.$list.attr("aria-live"), "polite");
+
+    view.render([msg], "top", false);
+    assert.equal(view.$list.attr("aria-live"), "off");
 });
 
 test("muted_message_vars", () => {
