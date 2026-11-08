@@ -28,6 +28,10 @@ type LocaleWithWeekInfo = Intl.Locale & {
 };
 
 export function get_first_day_of_week(): number {
+    if (typeof Intl.Locale !== "function") {
+        return 0;
+    }
+
     // The first day of the week depends on the user's region (e.g.,
     // Monday for en-GB, Sunday for en-US), which the browser's default
     // formatting locale captures better than the Zulip language
