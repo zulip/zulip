@@ -1439,9 +1439,12 @@ class AutoLink(CompiledPattern):
         return url_to_a(db_data, url)
 
 
+ZULIP_LIST_TAB_LENGTH = 2
+
+
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1450,7 +1453,7 @@ class UListProcessor(sane_lists.SaneUListProcessor):
     """Unordered lists, but with 2-space indent"""
 
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1465,7 +1468,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1568,6 +1571,19 @@ LIST_ITEM_REGEX = re.compile(
     re.VERBOSE,
 )
 
+TAB_INDENTED_LIST_ITEM_REGEX = re.compile(
+    r"""
+    ^(\t+)        # One or more leading tabs
+    (
+        [*+-]     # A bullet marker (*, +, or -)
+        |
+        \d+\.     # Or one or more digits followed by "."
+    )
+    [ ]+          # Followed by one or more spaces
+""",
+    re.VERBOSE,
+)
+
 
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
@@ -1603,6 +1619,39 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             ):
                 copy.insert(i + inserts + 1, "")
                 inserts += 1
+        return copy
+
+
+class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
+    """Converts tab characters in tab-indented nested list items to
+    spaces with Zulip's custom list tab length (2 spaces).
+
+    This ensures that tab-indented list items align with Zulip's
+    2-space list indentation instead of Python-Markdown's default
+    4-space tab expansion."""
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        copy: list[str] = []
+        open_fences: list[Fence] = []
+        prev_line_is_li = False
+        for line in lines:
+            in_code_fence = line_is_in_code_fence(line, open_fences)
+            if in_code_fence:
+                prev_line_is_li = False
+            else:
+                tabbed_li = TAB_INDENTED_LIST_ITEM_REGEX.match(line)
+                if prev_line_is_li and tabbed_li:
+                    leading_tabs = tabbed_li.group(1)
+                    indent = leading_tabs.expandtabs(ZULIP_LIST_TAB_LENGTH)
+                    line = indent + line[len(leading_tabs) :]
+
+                if line.strip() == "" or line[:1] in (" ", "\t"):
+                    if LIST_ITEM_REGEX.match(line):
+                        prev_line_is_li = True
+                else:
+                    prev_line_is_li = bool(LIST_ITEM_REGEX.match(line))
+            copy.append(line)
         return copy
 
 
@@ -2273,6 +2322,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
+        preprocessors.register(TabIndentedListPreprocessor(self), "tab_indented_lists", 32)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
         )

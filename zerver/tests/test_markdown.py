@@ -40,6 +40,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
+    TabIndentedListPreprocessor,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     image_preview_enabled,
@@ -607,6 +608,50 @@ Outside. Should convert:<>
 * two
         """
         original, expected = self.split_message(msg)
+        self.assertEqual(preprocessor.run(original), expected)
+
+
+class TabIndentedListPreprocessorTest(ZulipTestCase):
+    def test_single_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\t- inner first", "\t- inner second"]
+        expected = ["- outer", "  - inner first", "  - inner second"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_multi_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- level 0", "\t- level 1", "\t\t- level 2"]
+        expected = ["- level 0", "  - level 1", "    - level 2"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_numbered_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["1. outer", "\t1. inner"]
+        expected = ["1. outer", "  1. inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_numbered_list_with_double_digit_numbers(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["10. outer", "\t11. inner"]
+        expected = ["10. outer", "  11. inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_tabs_inside_fence_are_untouched(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["```", "- outer", "\t- inner", "```"]
+        expected = ["```", "- outer", "\t- inner", "```"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_tabs_for_non_list_item_is_not_converted(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\tnot a list item"]
+        expected = ["- outer", "\tnot a list item"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_tab_list_marker_without_preceding_list_context(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["\t- not in a list context"]
+        expected = ["\t- not in a list context"]
         self.assertEqual(preprocessor.run(original), expected)
 
 
