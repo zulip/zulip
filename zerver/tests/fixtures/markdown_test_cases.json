@@ -394,6 +394,12 @@
       "text_content": "1. A\n2. B\n  3. C"
     },
     {
+      "name": "numbered_list_double_digit",
+      "input": "10. A\n11. B\n  12. C",
+      "expected_output": "<ol start=\"10\">\n<li>A</li>\n<li>B<ol start=\"12\">\n<li>C</li>\n</ol>\n</li>\n</ol>",
+      "text_content": "10. A\n11. B\n  12. C"
+    },
+    {
       "name": "auto_renumbered_list_trick",
       "input": "1. A\n1. B\n  1. C\n1. D",
       "expected_output": "<ol>\n<li>A</li>\n<li>B<ol>\n<li>C</li>\n</ol>\n</li>\n<li>D</li>\n</ol>",
