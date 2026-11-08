@@ -327,6 +327,144 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
     assert.ok(!$search_query_box.is(":focus"));
+
+    // Test container focus styling
+    const $searchbox_container = $("#searchbox-input-container");
+    $searchbox_form.trigger("focusin");
+    assert.ok($searchbox_container.hasClass("focused"));
+    $searchbox_form.trigger("focusout");
+    assert.ok(!$searchbox_container.hasClass("focused"));
+
+    // Test Enter key on #searchbox-input-container to expand search
+    let initiated_search = false;
+    override_rewire(search, "initiate_search", () => {
+        initiated_search = true;
+    });
+
+    $.set_results("#searchbox .navbar-search.expanded", []);
+
+    let keydown_prevented = false;
+    let keydown_stopped = false;
+    const keydown_enter = new $.Event("keydown", {
+        key: "Enter",
+        preventDefault() {
+            keydown_prevented = true;
+        },
+        stopPropagation() {
+            keydown_stopped = true;
+        },
+    });
+    $searchbox_container.trigger(keydown_enter);
+    assert.ok(!initiated_search);
+    assert.ok(keydown_prevented);
+    assert.ok(keydown_stopped);
+
+    let keyup_prevented = false;
+    let keyup_stopped = false;
+    const keyup_enter = new $.Event("keyup", {
+        key: "Enter",
+        preventDefault() {
+            keyup_prevented = true;
+        },
+        stopPropagation() {
+            keyup_stopped = true;
+        },
+    });
+    $searchbox_container.trigger(keyup_enter);
+    assert.ok(initiated_search);
+    assert.ok(keyup_prevented);
+    assert.ok(keyup_stopped);
+
+    // Enter when already expanded should not trigger initiate_search
+    initiated_search = false;
+    $.reset_selector("#searchbox .navbar-search.expanded");
+    $.set_results("#searchbox .navbar-search.expanded", ["expanded_search_stub"]);
+    const keyup_enter_expanded = new $.Event("keyup", {key: "Enter"});
+    $searchbox_container.trigger(keyup_enter_expanded);
+    assert.ok(!initiated_search);
+    $.reset_selector("#searchbox .navbar-search.expanded");
+    $.set_results("#searchbox .navbar-search.expanded", []);
+
+    // Non-Enter keys should not trigger initiate_search
+    const keyup_escape = new $.Event("keyup", {key: "Escape"});
+    $searchbox_container.trigger(keyup_escape);
+    assert.ok(!initiated_search);
+});
+
+run_test("open_and_close_search_bar_accessibility_attributes", () => {
+    const $searchbox_container = $("#searchbox-input-container");
+    const $search_query = $("#search_query");
+    const $navbar_search = $(".navbar-search");
+    const $message_view_header = $("#message_view_header");
+
+    // Initially collapsed
+    $searchbox_container.attr("tabindex", "0");
+    $search_query.attr("contenteditable", "false");
+    $search_query.removeAttr("tabindex");
+    $navbar_search.removeClass("expanded");
+    $message_view_header.removeClass("hidden");
+
+    // Open search bar
+    search.open_search_bar_and_close_narrow_description(true);
+    assert.equal($searchbox_container.attr("tabindex"), "-1");
+    assert.equal($search_query.attr("contenteditable"), "true");
+    assert.equal($search_query.attr("tabindex"), "0");
+    assert.ok($navbar_search.hasClass("expanded"));
+    assert.ok($message_view_header.hasClass("hidden"));
+
+    // Close search bar
+    search.close_search_bar_and_open_narrow_description();
+    assert.equal($searchbox_container.attr("tabindex"), "0");
+    assert.equal($search_query.attr("tabindex"), undefined);
+    assert.equal($search_query.attr("contenteditable"), "false");
+    assert.ok(!$navbar_search.hasClass("expanded"));
+    assert.ok(!$message_view_header.hasClass("hidden"));
+});
+
+run_test("focus_search_input_at_end with createRange", () => {
+    let node_contents_selected = false;
+    let range_collapsed = false;
+    let ranges_removed = false;
+    let range_added = false;
+
+    const mock_range = {
+        selectNodeContents(node) {
+            assert.equal(node, $("#search_query")[0]);
+            node_contents_selected = true;
+        },
+        collapse(to_start) {
+            assert.equal(to_start, false);
+            range_collapsed = true;
+        },
+    };
+
+    set_global("document", {
+        createRange() {
+            return mock_range;
+        },
+    });
+
+    const orig_getSelection = global.getSelection;
+    set_global("getSelection", () => ({
+        removeAllRanges() {
+            ranges_removed = true;
+        },
+        addRange(range) {
+            assert.equal(range, mock_range);
+            range_added = true;
+        },
+    }));
+
+    $.set_results(".navbar-search.expanded", []);
+    search.initiate_search();
+
+    assert.ok(node_contents_selected);
+    assert.ok(range_collapsed);
+    assert.ok(ranges_removed);
+    assert.ok(range_added);
+
+    delete global.document;
+    set_global("getSelection", orig_getSelection);
 });
 
 run_test("initiate_search", ({override_rewire}) => {

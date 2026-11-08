@@ -95,9 +95,26 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
 }
 
 function focus_search_input_at_end(): void {
-    $("#search_query").trigger("focus");
+    const $search_query = $("#search_query");
+    $search_query.trigger("focus");
     // Move cursor to the end of the input text.
-    window.getSelection()!.modify("move", "forward", "line");
+    const selection = window.getSelection();
+    if (selection) {
+        const search_query_elem = $search_query[0];
+        if (
+            search_query_elem &&
+            typeof document !== "undefined" &&
+            typeof document.createRange === "function"
+        ) {
+            const range = document.createRange();
+            range.selectNodeContents(search_query_elem);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else if (typeof selection.modify === "function") {
+            selection.modify("move", "forward", "line");
+        }
+    }
 }
 
 function convert_search_text_to_terms(
@@ -163,7 +180,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     $("#searchbox-input-container").on("keydown", (e) => {
-        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+        if (
+            keydown_util.is_enter_event(e) &&
+            $("#searchbox .navbar-search.expanded").length === 0
+        ) {
             // Prevent propagation, and wait for the keyup to open search, because
             // we also need to prevent propagation there to not have the event caught
             // by the typeahead event handlers.
@@ -173,7 +193,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     $("#searchbox-input-container").on("keyup", (e) => {
-        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+        if (
+            keydown_util.is_enter_event(e) &&
+            $("#searchbox .navbar-search.expanded").length === 0
+        ) {
             initiate_search();
             e.preventDefault();
             e.stopPropagation();
@@ -393,7 +416,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 }
 
-export function initiate_search(): void {
+export let initiate_search = (): void => {
     open_search_bar_and_close_narrow_description(true);
     focus_search_input_at_end();
 
@@ -401,6 +424,10 @@ export function initiate_search(): void {
     // get a weird visual jump where the typeahead results are narrow
     // before the search bar expands and then wider it expands.
     search_typeahead.lookup(false);
+};
+
+export function rewire_initiate_search(value: typeof initiate_search): void {
+    initiate_search = value;
 }
 
 // we rely entirely on this function to ensure
@@ -442,7 +469,9 @@ export function rewire_exit_search(value: typeof exit_search): void {
 
 export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
+    $("#searchbox-input-container").attr("tabindex", "-1");
     $("#search_query").attr("contenteditable", "true");
+    $("#search_query").attr("tabindex", "0");
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
@@ -472,6 +501,8 @@ export function close_search_bar_and_open_narrow_description(): void {
         search_pill_widget.clear(true);
     }
 
+    $("#searchbox-input-container").attr("tabindex", "0");
+    $("#search_query").removeAttr("tabindex");
     $("#search_query").attr("contenteditable", "false");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
