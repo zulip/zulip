@@ -544,6 +544,25 @@ class UnreadCountTests(ZulipTestCase):
         self.assertEqual(response["processed_count"], 5)
         self.assertEqual(response["updated_count"], 5)
 
+        result = self.client_post(
+            "/json/messages/flags/narrow",
+            {
+                "anchor": message_ids[0],
+                "num_before": 0,
+                "num_after": 999,
+                "narrow": orjson.dumps(
+                    [dict(operator="with", operand=message_ids[2], negated=True)]
+                ).decode(),
+                "op": "add",
+                "flag": "read",
+            },
+        )
+        self.assert_json_error(result, "Invalid narrow operator: Negated 'with' operator")
+        for user_message in UserMessage.objects.filter(
+            user_profile=user, message_id__in=message_ids
+        ):
+            self.assertFalse(user_message.flags.read)
+
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
 
