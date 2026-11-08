@@ -1193,6 +1193,57 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         # HTML body is empty, so the plaintext content should be picked, despite prefer-html option.
         self.assertEqual(message.content, "Test message")
 
+    def test_receive_text_attachments_not_used_as_body(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_address = f"Denmark.{email_token}@testserver"
+        stream_address_prefer_html = f"Denmark.{email_token}.prefer-html@testserver"
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(
+            "<html><body><b>Test html message</b></body></html>", subtype="html"
+        )
+        incoming_valid_message.add_attachment(
+            "Attached text file", subtype="plain", filename="server.log.txt"
+        )
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        with mock.patch(
+            "zerver.lib.email_mirror.upload_message_attachment",
+            return_value=("https://test_url", "server.log.txt"),
+        ):
+            process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(
+            message.content, "**Test html message**\n\n[server.log.txt](https://test_url)"
+        )
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test message")
+        incoming_valid_message.add_attachment(
+            "<html><body><b>Attached html file</b></body></html>",
+            subtype="html",
+            filename="report.html",
+        )
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_address_prefer_html
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        with mock.patch(
+            "zerver.lib.email_mirror.upload_message_attachment",
+            return_value=("https://test_url", "report.html"),
+        ):
+            process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Test message\n\n[report.html](https://test_url)")
+
     def test_message_with_valid_attachment_missed_message(self) -> None:
         user_profile = self.example_user("othello")
         usermessage = most_recent_usermessage(user_profile)
@@ -2068,7 +2119,7 @@ class TestContentTypeInvalidCharset(ZulipTestCase):
         message["Content-Type"] = 'text/plain; charset="iso-8859-8-i"'
 
         # return the decoded string
-        decoded_body = get_message_part_by_type(message, "text/plain")
+        decoded_body = get_message_part_by_type(message, "plain")
 
         self.assertEqual(decoded_body, "שלום")
 

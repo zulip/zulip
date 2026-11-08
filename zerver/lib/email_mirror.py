@@ -243,26 +243,26 @@ def send_mm_reply_to_stream(
         )
 
 
-def get_message_part_by_type(message: EmailMessage, content_type: str) -> str | None:
-    for part in message.walk():
-        if part.get_content_type() == content_type:
-            content = part.get_payload(decode=True)
-            assert isinstance(content, bytes)
+def get_message_part_by_type(message: EmailMessage, content_subtype: str) -> str | None:
+    part = message.get_body(preferencelist=(content_subtype,))
+    if part is None:
+        return None
 
-            charset = part.get_content_charset()
-            if charset is None:
-                # If no charset has been specified in the header, assume us-ascii,
-                # by RFC6657: https://tools.ietf.org/html/rfc6657
-                charset = "us-ascii"
+    content = part.get_payload(decode=True)
+    assert isinstance(content, bytes)
 
-            try:
-                return content.decode(charset, errors="ignore")
-            except LookupError:
-                # The RFCs do not define how to handle unknown charsets,
-                # but treating as US-ASCII seems reasonable.
-                return content.decode("us-ascii", errors="ignore")
+    charset = part.get_content_charset()
+    if charset is None:
+        # If no charset has been specified in the header, assume us-ascii,
+        # by RFC6657: https://tools.ietf.org/html/rfc6657
+        charset = "us-ascii"
 
-    return None
+    try:
+        return content.decode(charset, errors="ignore")
+    except LookupError:
+        # The RFCs do not define how to handle unknown charsets,
+        # but treating as US-ASCII seems reasonable.
+        return content.decode("us-ascii", errors="ignore")
 
 
 def extract_body(
@@ -302,7 +302,7 @@ def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) 
         talon.init()
         talon_initialized = True
 
-    plaintext_content = get_message_part_by_type(message, "text/plain")
+    plaintext_content = get_message_part_by_type(message, "plain")
     if plaintext_content is not None:
         if include_quotes:
             return plaintext_content
@@ -320,7 +320,7 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> st
         talon.init()
         talon_initialized = True
 
-    html_content = get_message_part_by_type(message, "text/html")
+    html_content = get_message_part_by_type(message, "html")
     if html_content is not None:
         if include_quotes:
             return convert_html_to_markdown(html_content)
