@@ -26,7 +26,7 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
-from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
+from zerver.lib.cache import cache_delete, cache_delete_many, to_dict_cache_key_id
 from zerver.lib.event_types import TopicLink
 from zerver.lib.exceptions import (
     JsonableError,
@@ -1006,7 +1006,11 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            update_message_cache([target_message])
+            # Invalidate the message cache only after the transaction
+            # commits, so that concurrent readers don't repopulate it
+            # with stale pre-commit data.
+            message_id = target_message.id
+            transaction.on_commit(lambda: cache_delete(to_dict_cache_key_id(message_id)))
             event.message_ids = [target_message.id]
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)

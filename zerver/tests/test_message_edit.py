@@ -53,7 +53,7 @@ class EditMessageTest(ZulipTestCase):
         We assume our caller just edited a message.
 
         Next, we will make sure we can fetch the message correctly.
-        Stream message edits invalidate the cache (rather than eagerly
+        Message edits invalidate the cache (rather than eagerly
         rebuilding it), so the first access triggers a lazy rebuild
         from the database.  We verify the rebuild populates the cache
         by checking that a second fetch needs no message-table query.
