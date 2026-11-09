@@ -373,6 +373,51 @@ html {
     font-weight: 400;
 }
 
+/* The digest email follows the system color scheme, so the page
+   around it does too, using the email's own dark surfaces. */
+@media (prefers-color-scheme: dark) {
+    body:has(.digest-container) {
+        background-color: hsl(240deg 30% 13%);
+        color: hsl(240deg 5% 90%);
+
+        .portico-header {
+            background-color: hsl(235deg 28% 21%);
+            color: hsl(240deg 5% 90%);
+
+            .brand-logo path {
+                fill: hsl(240deg 5% 90%);
+            }
+
+            .portico-header-dropdown-pill {
+                border-color: hsl(0deg 0% 100% / 20%);
+            }
+
+            .portico-header-dropdown ul {
+                background-color: hsl(235deg 28% 21%);
+                border-color: hsl(238deg 26% 31%);
+
+                &::before {
+                    color: hsl(238deg 26% 31%);
+                }
+
+                & li:hover {
+                    background-color: hsl(238deg 26% 31%);
+                }
+
+                & li a {
+                    color: hsl(240deg 5% 90%);
+                }
+            }
+        }
+
+        .digest-plain-text {
+            background-color: hsl(235deg 28% 21%);
+            border-color: hsl(238deg 26% 31%);
+            color: hsl(240deg 5% 90%);
+        }
+    }
+}
+
 .lead {
     font-weight: bold;
 }
