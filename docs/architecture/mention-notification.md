@@ -17,15 +17,15 @@ sequenceDiagram
     Author->>UI: Mention an individual
     UI-->>Author: Warning, Notify them, separate Subscribe them
     Author->>UI: Explicitly select Notify them
-    Note over UI: Draft banner stores selection; no request or DM
+    Note over UI: Draft banner stores selection until send
     Author->>UI: Send
     UI->>Server: Message content and selected recipient IDs
     rect rgb(235, 240, 245)
-        Note over Server,DB: One outer transaction
+        Note over Server,DB: One durable transaction for explicit Notify
         Server->>Server: Existing authenticated send authorization
         alt Original send fails
             Server->>DB: Roll back
-            Server-->>UI: Existing send error; no DM
+            Server-->>UI: Existing send error with no DM
         else Original send succeeds
             Server->>DB: Persist original message
             Server->>DB: Lock persisted original with SELECT FOR UPDATE
@@ -36,7 +36,7 @@ sequenceDiagram
             else Eligible
                 Server->>DB: Get or create unique message-recipient delivery row
                 alt Repeated delivery
-                    DB-->>Server: Existing row; skip DM
+                    DB-->>Server: Existing row, skip DM
                 else First delivery
                     Server->>Server: Build link and quoted content from persisted message
                     Server->>Bot: Existing internal private-message helper
@@ -59,5 +59,5 @@ message events and external-notification jobs retain Zulip's on-commit behavior.
 The database uniqueness constraint and original-message row lock apply across
 processes; this is not a browser-only deduplication flag.
 
-Mermaid rendering has not been verified: this Windows checkout has no installed
-Mermaid renderer or provisioned documentation toolchain.
+Mermaid syntax and SVG rendering were verified with Mermaid CLI 12.2.0 inside
+the Linux test container on 2026-11-09. The editable sequence above is the source.

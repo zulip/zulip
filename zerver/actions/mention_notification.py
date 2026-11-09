@@ -17,7 +17,7 @@ from zerver.models.messages import MentionNotification
 from zerver.models.users import get_system_bot
 
 
-@transaction.atomic
+@transaction.atomic(savepoint=False)
 def notify_unsubscribed_mention(actor: UserProfile, message_id: int, recipient_id: int) -> bool:
     actor = UserProfile.objects.get(id=actor.id)
     # Locking the original serializes deliveries, including requests from separate workers.
@@ -29,6 +29,7 @@ def notify_unsubscribed_mention(actor: UserProfile, message_id: int, recipient_i
     ):
         return False
     stream = Stream.objects.get(id=message.recipient.type_id)
+    assert stream.recipient_id is not None
     recipient = UserProfile.objects.filter(
         id=recipient_id, realm_id=actor.realm_id, is_active=True, is_bot=False
     ).first()

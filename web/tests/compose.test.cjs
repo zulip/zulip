@@ -169,9 +169,14 @@ test_ui("notify_toggle_requires_explicit_action", ({override}) => {
     $button.attr("aria-pressed", "false");
     const handler = $("#compose_banners").get_on_handler("click", ".notify-mentioned-user");
     let requests = 0;
-    override(channel, "post", () => {
-        requests += 1;
-    });
+    override(
+        channel,
+        "post",
+        () => {
+            requests += 1;
+        },
+        {unused: false},
+    );
     const event = {preventDefault: noop, currentTarget: $button[0]};
     handler(event);
     assert.equal($button.attr("aria-pressed"), "true");
@@ -179,6 +184,28 @@ test_ui("notify_toggle_requires_explicit_action", ({override}) => {
     handler(event);
     assert.equal($button.attr("aria-pressed"), "false");
     assert.equal(requests, 0);
+});
+
+test_ui("mention_actions_keep_native_space_activation", ({override}) => {
+    initialize_handlers({override});
+    const handler = $("body").get_on_handler(
+        "keydown",
+        "#compose_banners .recipient_not_subscribed .main-view-banner-action-button",
+    );
+    let stopped = false;
+    handler({
+        key: " ",
+        stopPropagation: () => {
+            stopped = true;
+        },
+    });
+    assert.ok(stopped);
+    handler({
+        key: "Enter",
+        stopPropagation: () => {
+            assert.fail("Enter must keep its handler");
+        },
+    });
 });
 
 function disable_window_triggers(override) {

@@ -1,7 +1,8 @@
 # ADR 001: Transactional explicit mention notifications
 
-Status: implemented for local review; runtime validation and human review pending.
-Date: 2026-11-08.
+Status: backend, concurrency, Node and migration validation passed. Browser
+integration and human review remain pending.
+Updated: 2026-11-09.
 
 ## Context and decision
 
@@ -19,7 +20,8 @@ that message rather than consulting the current composer. Selection is not saved
 in drafts or scheduled messages. Editing does not create notifications.
 
 The existing authenticated send path authorizes and persists the original.
-Inside an outer atomic transaction, `notify_unsubscribed_mention` locks that
+For a nonempty Notify selection, the send endpoint opens a durable transaction.
+Inside it, `notify_unsubscribed_mention` locks that
 original and checks its author, active same-organization human recipient,
 unsubscribed status, canonical individual Markdown mention, join permission,
 and access to the specific message. Guests are excluded using current rules.
@@ -51,6 +53,12 @@ This does not make POST /messages itself idempotent after a lost response.
 Deleting an original cascades its delivery records; originals are not recreated
 with the same primary key through this feature.
 
+The transaction is conditional because the ordinary send path deliberately
+persists some bot-owner error notices before rejecting an original send.
+Wrapping every request rolled those notices back. The existing
+`test_message_to_stream_with_nonexistent_id` caught that regression. Requests
+without selected recipients retain their existing transaction boundaries.
+
 ## Alternatives and risks
 
 A follow-up browser request permits lost intent after successful send and requires
@@ -70,5 +78,7 @@ new deployment service is required.
 eligibility, unchanged subscriptions, subscribed-user regression, rollback,
 sequential deduplication, and a two-thread/two-connection delivery race using
 `ZulipTransactionTestCase`. Web banner tests extend `compose_validate.test.cjs`.
-These tests are authored, not executed in this environment. See
+The PostgreSQL backend run passed 134 tests with transaction tests included.
+The full Node suite and migration consistency check passed. Browser integration
+is being verified with `web/e2e-tests/mention-notification.test.ts`. See
 [AV2 evidence](../evidence/av2.md) for exact blockers and remaining checks.

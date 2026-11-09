@@ -1,7 +1,87 @@
 # CoreX AV2 — evidence and handoff
 
-Date: 2026-11-08 (America/Guatemala). Status: implementation for review,
-**acceptance blocked by missing runnable Zulip environment**.
+Initial work: 2026-11-08. Validation resumed on 2026-11-09 (America/Guatemala).
+Backend, concurrent delivery, Node and migration checks now pass. Browser
+integration and final acceptance remain pending.
+
+## Resumed validation
+
+The clean continuation baseline was
+`910843a54739ffa25d46ab8908e9423f4ce143a7` on
+`feature/7719-notify-without-subscribing`. Fetching upstream again reported
+`1 0` for `HEAD...upstream/main`. The validation described here uses that commit
+plus the current AV2 working-tree corrections and new integration test.
+
+Docker Desktop now runs Linux containers. The official `zulip/ci:jammy` image
+was pulled at digest
+`sha256:2a55909f247c8685f71c5b1f1c2f49c2027eacc79b3147f88b70796a05fab2c0`.
+Container `corex-av2` holds a Linux clone at `/home/github/zulip`, with the host
+checkout mounted read-only at `/host`. Services run inside the container.
+The provisioned environment uses Python 3.10.12, Django 5.2.18, Node 24.22.1,
+PostgreSQL 14, and Chrome 156.0.8078.47. Host ports 9981 and 9991 bind localhost.
+
+`./tools/provision` and the official `./tools/ci/setup-backend` completed.
+An initial shfmt HTTP 504 was resolved by the official retry. No provision
+checks were bypassed. The new migration was applied on PostgreSQL. Its initial
+AutoField declaration was corrected to match Zulip's BigAutoField default,
+then reversed and reapplied in the disposable development database.
+
+| Resumed command inside `/home/github/zulip`, with `.venv` active | Actual result |
+| --- | --- |
+| `./tools/test-backend --coverage --no-html-report --include-transaction-tests zerver.tests.test_mention_notification zerver.tests.test_message_send zerver.tests.test_openapi` | PASS, 134 tests in 41.509 seconds |
+| `./tools/test-js-with-node` | PASS, full Node suite |
+| `./tools/test-js-with-node compose.test.cjs compose_validate.test.cjs echo.test.cjs transmit.test.cjs` | PASS, four focused modules |
+| `./tools/test-js-with-node compose_validate.test.cjs` after the active-user fix | PASS |
+| `./tools/test-migrations` | PASS, no model/migration changes detected |
+| `./tools/lint` over affected Python, web, templates, OpenAPI and integration test files | Passed after the first round of corrections. Final rerun remains pending after the active-user change |
+| Mermaid CLI 12.2.0 with installed Chrome | PASS, sequence parsed and rendered to SVG |
+| `./tools/test-js-with-puppeteer mention-notification` | Initially failed because Notify was hidden for active users with omitted `is_active`. Fixed using `people.is_active_user`. Next attempt reached Notify but the keyboard-selection assertion failed. Foreground-session and event-wait corrections await a rerun |
+| `coverage report` after the backend process exited | No retained data, because the runner cleans it by default. A rerun with `--no-cov-cleanup` is needed before claiming a coverage percentage |
+
+The first executions found and corrected JSON form encoding missing from OpenAPI,
+an obsolete DM-recipient constant in the test, test mocks requiring explicit
+unused overrides, and the distinction between channel subscriptions and internal
+DM conversation membership rows. The two-connection test now cleans the client,
+conversation and recipient rows it creates.
+
+The regression suite also caught a production-behavior problem. An unconditional
+outer transaction suppressed the existing bot-owner notice for an invalid channel.
+The send endpoint now creates a durable outer transaction only for a nonempty
+Notify selection. `test_message_to_stream_with_nonexistent_id` passes again.
+
+The first browser failure reproduced the ordinary unsubscribed-user warning
+with Subscribe only. Inspection identified that `is_active` is optional in the
+initial user object. The UI now checks Zulip's active-user registry. Mermaid
+rendering also exposed semicolons being parsed as statement separators. The
+editable sequence was corrected and rendered successfully.
+
+The latest attempt to synchronize and rerun Puppeteer was rejected at the
+permission prompt. Docker's pipe remains inaccessible inside the sandbox.
+Continuation of Docker-dependent checks awaits clarification from the user.
+The foreground-session adjustment is present in the host working tree and has
+not yet been executed in the container. Subsequent source inspection identified
+that the global Space hotkey intercepts banner button activation. A localized
+keydown handler now preserves native Space activation for Notify and Subscribe,
+with `mention_actions_keep_native_space_activation` covering the event handling.
+These latest changes await Docker execution and final lint.
+
+| Current acceptance criterion | Verified result | Remaining work |
+| --- | --- | --- |
+| CA1 | Explicit-consent backend and toggle unit tests passed | Execute latest keyboard fix and browser flow |
+| CA2 | Backend asserts bot sender, recipient, original link, quote, one DM and unchanged channel subscriptions | Complete recipient browser walkthrough |
+| CA3 | Denied recipient and actor cases, private access and revoked-access tests passed | Final human security review |
+| CA4 | Rollback, helper failure, sequential duplicate suppression and real concurrent delivery passed | Execute browser cancellation, removed-mention and channel-reset cases |
+| CA5 | Ordinary send and OpenAPI regressions plus full Node suite passed | Execute latest web changes, integration and final visual review |
+
+Observed backend metrics include zero unauthorized DMs in the tested denied
+cases, zero channel-subscription changes in the successful notification test,
+one bot DM for repeated sequential delivery, and one DM across two concurrent
+delivery requests. These results apply to the asserted test cases. Browser
+walkthrough and manual-action metrics remain pending.
+
+The sections below retain the original blocked attempt and its original plan
+for historical traceability. The resumed results above supersede its environment
+and execution status.
 
 ## Verified baseline
 

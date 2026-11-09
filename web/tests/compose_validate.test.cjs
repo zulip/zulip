@@ -683,7 +683,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     };
 
     let new_banner_rendered = false;
-    let expected_can_notify = false;
+    let expected_can_notify = true;
     mock_template("compose_banner/not_subscribed_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.recipient_not_subscribed);
         assert.equal(data.user_id, 34);
@@ -754,13 +754,15 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
 
-    mentioned_details.user.is_active = true;
-    expected_can_notify = true;
+    people.deactivate(mentioned_details.user);
+    expected_can_notify = false;
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    people.add_active_user(mentioned_details.user);
     mentioned_details.user.is_guest = true;
     expected_can_notify = false;
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     mentioned_details.user.is_guest = false;
+    sub.subscribed = true;
     sub.invite_only = true;
     sub.history_public_to_subscribers = false;
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);

@@ -9336,6 +9336,8 @@ paths:
             encoding:
               to:
                 contentType: application/json
+              notify_mentioned_user_ids:
+                contentType: application/json
               read_by_sender:
                 contentType: application/json
       responses:

@@ -388,6 +388,18 @@ export function initialize(): void {
     });
 
     $("body").on(
+        "keydown",
+        `#compose_banners .${CSS.escape(
+            compose_banner.CLASSNAMES.recipient_not_subscribed,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            if (event.key === " ") {
+                event.stopPropagation();
+            }
+        },
+    );
+
+    $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
         (event) => {

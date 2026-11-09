@@ -361,10 +361,13 @@ export async function warn_if_mentioning_unsubscribed_user(
                     $textarea.attr("id") === "compose-textarea" &&
                     !mentioned.user.is_guest &&
                     !mentioned.user.is_bot &&
-                    mentioned.user.is_active &&
-                    (!sub.invite_only || sub.history_public_to_subscribers) &&
+                    people.is_active_user(user_id) &&
                     (!sub.invite_only ||
-                        stream_data.has_content_access_via_group_permissions(sub, mentioned.user)),
+                        (sub.history_public_to_subscribers &&
+                            stream_data.has_content_access_via_group_permissions(
+                                sub,
+                                mentioned.user,
+                            ))),
                 name: mentioned.user.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
                 should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),

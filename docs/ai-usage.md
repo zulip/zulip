@@ -8,6 +8,23 @@
   including CA1–CA5, architecture, evidence and publishing restrictions.
 - Human review: **pending**. No teammate review or acceptance is implied.
 
+Validation continued on 2026-11-09 after the user reported Docker working.
+The agent provisioned the official Linux CI image, executed backend and Node
+tests, corrected a transaction regression, OpenAPI encoding, migration field
+type, test cleanup and active-user detection, and added a Puppeteer integration
+test. The 134-test backend run includes a real two-connection race. The complete
+Node suite and migration consistency checks passed. Mermaid CLI rendered the
+sequence. Browser integration exposed a remaining keyboard-selection assertion
+and is pending a rerun with corrected session focus and event waiting. Source
+inspection then identified the global Space hotkey intercepting banner buttons.
+A localized handler and regression test preserve native activation of both
+mention actions. This final web change awaits execution and final lint.
+
+Commands and outcomes from the continuation are recorded in the resumed
+validation section of the evidence document. Docker-dependent checks were paused
+after the latest synchronization/execution approval request was rejected. The
+agent requested clarification before continuing those actions.
+
 Affected areas: compose warning templates and validation/setup/send/recipient
 lifecycle; local echo and transmit request types; send endpoint; new internal
 notification action; unique delivery model and migration; backend and web tests;

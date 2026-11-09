@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from contextlib import nullcontext
 from dataclasses import asdict
 from typing import Annotated, Literal, TypedDict
 
@@ -38,7 +39,6 @@ class SendMessageResponseData(TypedDict, total=False):
 
 
 @typed_endpoint
-@transaction.atomic
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -133,26 +133,29 @@ def send_message_backend(
         read_by_sender = client.default_read_by_sender()
 
     data: SendMessageResponseData = {}
-    sent_message_result = check_send_message(
-        sender,
-        client,
-        recipient_type_name,
-        message_to,
-        topic_name,
-        message_content,
-        forged=forged,
-        forged_timestamp=time,
-        forwarder_user_profile=user_profile,
-        realm=realm,
-        local_id=local_id,
-        sender_queue_id=queue_id,
-        widget_content=widget_content,
-        read_by_sender=read_by_sender,
-    )
+    with transaction.atomic(durable=True) if notify_mentioned_user_ids else nullcontext():
+        sent_message_result = check_send_message(
+            sender,
+            client,
+            recipient_type_name,
+            message_to,
+            topic_name,
+            message_content,
+            forged=forged,
+            forged_timestamp=time,
+            forwarder_user_profile=user_profile,
+            realm=realm,
+            local_id=local_id,
+            sender_queue_id=queue_id,
+            widget_content=widget_content,
+            read_by_sender=read_by_sender,
+        )
+        if sender.id == user_profile.id:
+            for recipient_id in sorted(set(notify_mentioned_user_ids or [])):
+                notify_unsubscribed_mention(
+                    user_profile, sent_message_result.message_id, recipient_id
+                )
     data["id"] = sent_message_result.message_id
-    if sender.id == user_profile.id:
-        for recipient_id in sorted(set(notify_mentioned_user_ids or [])):
-            notify_unsubscribed_mention(user_profile, sent_message_result.message_id, recipient_id)
     data["message_url"] = sent_message_result.message_url
     data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
