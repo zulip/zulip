@@ -836,6 +836,9 @@ class TestDigestContentInBrowser(ZulipTestCase):
         # The email's <body> is embedded as a <div>, so that its
         # attributes don't apply to the page's own <body>.
         self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
+        # The page header shows the logo, so the email's own logo is
+        # left out of the page.
+        self.assert_not_in_success_response(["email_logo_color.png"], result)
 
 
 class TestDigestTopics(ZulipTestCase):
