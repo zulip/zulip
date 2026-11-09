@@ -130,8 +130,24 @@ html {
     }
 }
 
+.digest-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
 .digest-container {
-    padding-top: 100px;
+    /* 1.5rem below the header, less the 2px cell spacing of the
+       email's outer table. */
+    padding-top: calc(1.5rem - 2px);
+}
+
+/* The email's own top spacing sits above its logo, which this page
+   leaves out. Overriding the email's inlined styles needs !important. */
+.digest-email-html .container,
+.digest-email-html .content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 .digest-email-container {
