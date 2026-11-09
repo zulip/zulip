@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as server_time from "./server_time.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -326,5 +327,6 @@ export function last_active_date(user_id: number): Date | undefined {
 }
 
 export function initialize(params: StateData["presence"]): void {
+    server_time.update_offset(params.server_timestamp);
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
 }

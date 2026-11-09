@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -17,6 +17,7 @@ const presence = mock_esm("../src/presence");
 set_global("document", {hasFocus: () => true});
 
 const activity = zrequire("activity");
+const server_time = zrequire("server_time");
 
 run_test("send_presence_to_server (spectator)", ({override}) => {
     override(page_params, "is_spectator", true);
@@ -97,4 +98,34 @@ run_test("send_presence_to_server (redraw)", ({override}) => {
     success_function(response);
     assert.equal(activity.new_user_input, false);
     assert.equal(num_redraw_callbacks, 1);
+});
+
+run_test("send_presence_to_server updates server_time with RTT", ({override}) => {
+    server_time._reset_for_testing();
+    clock.setSystemTime(1000 * 1000);
+
+    let success_function;
+    override(channel, "post", ({success}) => {
+        success_function = success;
+    });
+
+    activity.send_presence_to_server();
+
+    // Advance 400ms (0.4s RTT)
+    clock.tick(400);
+
+    const response = {
+        presences: {},
+        msg: "",
+        result: "success",
+        server_timestamp: 2000,
+        presence_last_update_id: -1,
+    };
+
+    success_function(response);
+
+    // After 0.4s RTT, at arrival (client t = 1000.4s), server_time.now()
+    // reflects server_timestamp + 0.2s = 2000.2s.
+    assert.equal(Math.round(server_time.now() * 10) / 10, 2000.2);
+    server_time._reset_for_testing();
 });
