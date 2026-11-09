@@ -15,9 +15,13 @@ async function visual_test(page: Page): Promise<void> {
     await page.waitForSelector("#stream_settings .choose_default_stream_color", {visible: true});
     await common.screenshot(page, "step-1-channel-default-color-setting");
 
+    // Set organization default color.
     await page.click(`.choose_default_stream_color[data-stream-id="${stream_id}"]`);
     await page.waitForSelector(".color-picker-popover", {visible: true});
     await page.click('.color-picker-popover .color-swatch-label[data-swatch-color="#53a063"]');
+    await page.click(".color_picker_confirm_button");
+    await page.waitForSelector(".color-picker-popover", {hidden: true});
+
     await page.waitForFunction(
         (stream_name) => {
             const sub = zulip_test.get_sub(stream_name);
@@ -26,10 +30,9 @@ async function visual_test(page: Page): Promise<void> {
         {},
         stream_name,
     );
-    await page.click(".color_picker_confirm_button");
-    await page.waitForSelector(".color-picker-popover", {hidden: true});
     await common.screenshot(page, "step-2-channel-default-color-set");
 
+    // Set personal color override.
     await page.goto(`${new URL(page.url()).origin}/#channels/${stream_id}/${stream_name}/personal`);
     await page.waitForSelector(`.choose_stream_color[data-stream-id="${stream_id}"]`, {
         visible: true,
@@ -37,6 +40,9 @@ async function visual_test(page: Page): Promise<void> {
     await page.click(`.choose_stream_color[data-stream-id="${stream_id}"]`);
     await page.waitForSelector(".color-picker-popover", {visible: true});
     await page.click('.color-picker-popover .color-swatch-label[data-swatch-color="#e79ab5"]');
+    await page.click(".color_picker_confirm_button");
+    await page.waitForSelector(".color-picker-popover", {hidden: true});
+
     await page.waitForFunction(
         (stream_name) =>
             zulip_test.get_sub(stream_name)?.color === "#e79ab5" &&
@@ -44,8 +50,8 @@ async function visual_test(page: Page): Promise<void> {
         {},
         stream_name,
     );
-    await page.click(".color_picker_confirm_button");
-    await page.waitForSelector(".color-picker-popover", {hidden: true});
+
+    // Reset personal color to organization default.
     await page.click(`.choose_stream_color[data-stream-id="${stream_id}"]`);
     await page.waitForSelector(".reset-channel-color", {visible: true});
     await common.screenshot(page, "step-3-reset-to-channel-default");
