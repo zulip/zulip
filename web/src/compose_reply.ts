@@ -329,7 +329,7 @@ function get_textarea_to_quote(forward_message?: boolean): JQuery<HTMLTextAreaEl
     // the quote in that textarea, else we default to the compose box.
     const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
     const $textarea =
-        last_focused_compose_type_input?.isConnected && forward_message
+        last_focused_compose_type_input?.isConnected && !forward_message
             ? $(last_focused_compose_type_input)
             : $<HTMLTextAreaElement>("textarea#compose-textarea");
     return $textarea;

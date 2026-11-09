@@ -977,6 +977,28 @@ ${fence}`;
     const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
     assert.equal(opts_when_message_has_no_selection.message_id, 100);
+
+    // When the message edit box was focused last, quoting inserts into
+    // the edit box, but forwarding starts a new message in the compose box.
+    const edit_textarea = $("textarea.message_edit_content")[0];
+    edit_textarea.isConnected = true;
+    compose_state.set_last_focused_compose_type_input(edit_textarea);
+
+    let inserted_into;
+    override(compose_ui, "insert_syntax_and_focus", (_syntax, $textarea) => {
+        inserted_into = $textarea.selector;
+    });
+    let replaced_in;
+    override(compose_ui, "replace_syntax", (_syntax, _replacement, $textarea) => {
+        replaced_in = $textarea.selector;
+    });
+
+    quote_messages({message_id: 100});
+    assert.equal(inserted_into, "textarea.message_edit_content");
+    assert.equal(replaced_in, "textarea.message_edit_content");
+
+    quote_messages({message_id: 100, forward_message: true});
+    assert.equal(replaced_in, "textarea#compose-textarea");
 });
 
 test("focus_in_empty_compose", () => {
