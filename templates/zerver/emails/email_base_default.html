@@ -16,9 +16,11 @@
                 <td>&nbsp;</td>
                 <td class="container">
                     <div class="content">
+                        {% block email_logo %}
                         <div class="email-logo">
                             <img src="{{ email_images_base_url }}/email_logo_color.png" alt="{{ _('Zulip logo') }}" width="124" height="32" />
                         </div>
+                        {% endblock %}
                         <span class="preheader">
                             {% block preheader %}{% endblock %}
                         </span>

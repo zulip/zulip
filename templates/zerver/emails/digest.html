@@ -2,6 +2,9 @@
 
 {% block main_class %}main-without-card{% endblock %}
 
+{#- On the /digest page, the page header already shows the logo. #}
+{% block email_logo %}{% if not page_is_digest %}{{ super() }}{% endif %}{% endblock %}
+
 {% block content %}
     {% if show_message_content %}
     {% if hot_conversations %}

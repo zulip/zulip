@@ -23,6 +23,7 @@ def digest_page(request: HttpRequest) -> HttpResponse:
     context.update(
         email_images_base_url=settings.STATIC_URL + "images/emails",
         physical_address=settings.PHYSICAL_ADDRESS,
+        page_is_digest=True,
     )
 
     email_body_html = render_to_string("zerver/emails/digest.html", context, request=request)

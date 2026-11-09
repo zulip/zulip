@@ -134,6 +134,17 @@ html {
     position: sticky;
     top: 0;
     z-index: 100;
+
+    /* Like the help center header: the page name beside the logo. */
+    .header-main .logo .portico-header-text {
+        opacity: 1;
+
+        & a {
+            font-size: 1.4rem;
+            margin-left: 10px;
+            color: hsl(0deg 0% 27%);
+        }
+    }
 }
 
 .digest-container {
@@ -392,6 +403,11 @@ html {
 
             .brand-logo path {
                 fill: hsl(240deg 5% 90%);
+            }
+
+            .header-main .logo .portico-header-text,
+            .header-main .logo .portico-header-text a {
+                color: hsl(240deg 5% 90%);
             }
 
             .portico-header-dropdown-pill {
