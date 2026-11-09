@@ -199,6 +199,10 @@ function update_fade(): void {
 }
 
 export function update_on_recipient_change(): void {
+    compose_validate.invalidate_pending_mention_warnings();
+    $("#compose_banners .notify-mentioned-user")
+        .attr("aria-pressed", "false")
+        .text($t({defaultMessage: "Notify them"}));
     update_fade();
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();

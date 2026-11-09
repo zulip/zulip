@@ -41,6 +41,7 @@ export type SendMessageData = {
     queue_id: string | null;
     to: string;
     content: string;
+    notify_mentioned_user_ids?: string;
     resend?: boolean;
     locally_echoed?: boolean;
     draft_id: string;
@@ -63,6 +64,7 @@ export type SendMessageData = {
 );
 
 export function clear_invites(): void {
+    compose_validate.invalidate_pending_mention_warnings();
     $(
         `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
     ).remove();
@@ -100,6 +102,7 @@ export function update_preview_embeds(content: string, rendered_content: string)
 }
 
 export function clear_compose_box(): void {
+    clear_invites();
     /* Before clearing the compose box, we reset it to the
      * default/normal size. Note that for locally echoed messages, we
      * will have already done this action before echoing the message
@@ -206,6 +209,17 @@ export let send_message = (): void => {
         const stream_id = compose_state.stream_id();
         assert(stream_id !== undefined);
         const topic = compose_state.topic();
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings(
+            $("textarea#compose-textarea"),
+        );
+        const notify_user_ids = [...$("#compose_banners .notify-mentioned-user")]
+            .filter(
+                (button) =>
+                    $(button).attr("aria-pressed") === "true" &&
+                    Number($(button).closest(".main-view-banner").attr("data-stream-id")) ===
+                        stream_id,
+            )
+            .map((button) => Number($(button).closest(".main-view-banner").attr("data-user-id")));
         message_data = {
             type: message_type,
             content: compose_state.message_content(),
@@ -215,6 +229,7 @@ export let send_message = (): void => {
             stream_id,
             to: JSON.stringify([stream_id]),
             draft_id,
+            notify_mentioned_user_ids: JSON.stringify(notify_user_ids),
         };
     }
 
@@ -349,7 +364,6 @@ export let finish = (scheduling_message = false): boolean | undefined => {
         return undefined;
     }
 
-    clear_invites();
     clear_private_stream_alert();
     compose_banner.clear_message_sent_banners();
 

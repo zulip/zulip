@@ -1,6 +1,8 @@
 {{#> compose_banner . }}
     <p class="banner_message">
-        {{#if can_subscribe_other_users}}
+        {{#if can_notify}}
+            {{#tr}}<strong>{name}</strong> is not subscribed to this channel. Choose whether to notify them when you send this message.{{/tr}}
+        {{else if can_subscribe_other_users}}
             {{#if should_add_guest_user_indicator}}
             {{#tr}}<strong>{name}</strong> <i>(guest)</i> is not subscribed to this channel. They will not be notified unless you subscribe them.{{/tr}}
             {{else}}

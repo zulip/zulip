@@ -40,6 +40,7 @@ import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 let user_acknowledged_stream_wildcard = false;
+let mention_warning_generation = 0;
 let upload_in_progress = false;
 let no_message_content = false;
 let message_too_long = false;
@@ -47,6 +48,10 @@ let message_too_long = false;
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
 let disabled_send_tooltip_message_html = "";
+
+export function invalidate_pending_mention_warnings(): void {
+    mention_warning_generation += 1;
+}
 
 export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage: "You do not have permission to post in this channel.",
@@ -315,6 +320,7 @@ export async function warn_if_mentioning_unsubscribed_user(
         return; // don't check if @all/@everyone/@stream
     }
     const user_id = mentioned.user.user_id;
+    const generation = mention_warning_generation;
 
     const stream_id = get_stream_id_for_textarea($textarea);
     if (!stream_id) {
@@ -324,7 +330,10 @@ export async function warn_if_mentioning_unsubscribed_user(
     if (await needs_subscribe_warning(user_id, stream_id)) {
         // Double check that we're still composing to the same stream id
         // after the awaited fetch for subscriber data.
-        if (get_stream_id_for_textarea($textarea) !== stream_id) {
+        if (
+            get_stream_id_for_textarea($textarea) !== stream_id ||
+            generation !== mention_warning_generation
+        ) {
             return;
         }
 
@@ -348,6 +357,14 @@ export async function warn_if_mentioning_unsubscribed_user(
                     ? $t({defaultMessage: "Subscribe them"})
                     : null,
                 can_subscribe_other_users,
+                can_notify:
+                    $textarea.attr("id") === "compose-textarea" &&
+                    !mentioned.user.is_guest &&
+                    !mentioned.user.is_bot &&
+                    mentioned.user.is_active &&
+                    (!sub.invite_only || sub.history_public_to_subscribers) &&
+                    (!sub.invite_only ||
+                        stream_data.has_content_access_via_group_permissions(sub, mentioned.user)),
                 name: mentioned.user.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
                 should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),

@@ -683,11 +683,13 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     };
 
     let new_banner_rendered = false;
+    let expected_can_notify = false;
     mock_template("compose_banner/not_subscribed_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.recipient_not_subscribed);
         assert.equal(data.user_id, 34);
         assert.equal(data.stream_id, 111);
         assert.equal(data.name, "Foo Barson");
+        assert.equal(Boolean(data.can_notify), expected_can_notify);
         new_banner_rendered = true;
         return "<banner-stub>";
     });
@@ -751,6 +753,19 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
 
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
+
+    mentioned_details.user.is_active = true;
+    expected_can_notify = true;
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    mentioned_details.user.is_guest = true;
+    expected_can_notify = false;
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    mentioned_details.user.is_guest = false;
+    sub.invite_only = true;
+    sub.history_public_to_subscribers = false;
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    sub.invite_only = false;
+    expected_can_notify = true;
 
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .recipient_not_subscribed");

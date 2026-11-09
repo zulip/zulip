@@ -48,6 +48,7 @@ const send_message_api_response_schema = z.object({
 });
 
 type MessageRequestObject = {
+    notify_mentioned_user_ids?: string;
     sender_id: number;
     queue_id: null | string;
     topic: string;

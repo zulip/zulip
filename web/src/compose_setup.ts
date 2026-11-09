@@ -61,6 +61,7 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
+    compose_actions.register_compose_cancel_hook(compose.clear_invites);
     compose_actions.register_compose_cancel_hook(() => {
         compose_call_session_manager.abandon_session("");
     });
@@ -338,7 +339,7 @@ export function initialize(): void {
         "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.recipient_not_subscribed,
-        )} .main-view-banner-action-button`,
+        )} .main-view-banner-action-button:not(.notify-mentioned-user)`,
         (event) => {
             event.preventDefault();
             const {$banner_container} = get_input_info(event);
@@ -373,6 +374,18 @@ export function initialize(): void {
             subscriber_api.add_user_ids_to_stream([user_id], sub, true, success, xhr_failure);
         },
     );
+
+    $("#compose_banners").on("click", ".notify-mentioned-user", (event) => {
+        event.preventDefault();
+        const $button = $(event.currentTarget);
+        const selected = $button.attr("aria-pressed") === "true";
+        $button.attr("aria-pressed", String(!selected));
+        $button.text(
+            selected
+                ? $t({defaultMessage: "Notify them"})
+                : $t({defaultMessage: "Will notify on send"}),
+        );
+    });
 
     $("body").on(
         "click",

@@ -22,6 +22,18 @@ from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
 
+class MentionNotification(models.Model):
+    message = models.ForeignKey("Message", on_delete=CASCADE)
+    recipient = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["message", "recipient"], name="unique_mention_notification"
+            ),
+        ]
+
+
 class AbstractMessage(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)

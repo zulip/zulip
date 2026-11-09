@@ -9198,6 +9198,25 @@ paths:
             schema:
               type: object
               properties:
+                notify_mentioned_user_ids:
+                  description: |
+                    IDs of individually mentioned users to notify with a Notification Bot
+                    direct message after this channel message is persisted, without
+                    subscribing them. Requires explicit author intent. Ineligible users
+                    are silently skipped, including subscribed users, guests, inactive
+                    users, users in other organizations, and users who cannot join the
+                    channel or access the message. Direct messages are not eligible.
+                    The original and notification messages commit atomically. Delivery
+                    is deduplicated per persisted original message and recipient; sending
+                    two distinct original messages can produce two notifications.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-22b239).
+                  type: array
+                  items:
+                    type: integer
+                  nullable: true
+                  example: [10]
+
                 type:
                   description: |
                     The type of message to be sent.

@@ -38,6 +38,7 @@ exports.mock_banners = () => {
     $cb.set_find_results(".subscription_error", $stub);
     $cb.set_find_results(".generic_compose_error", $stub);
     $cb.set_find_results(".topic_resolved", $stub);
+    $cb.set_find_results(".recipient_not_subscribed", $stub);
     $cb.set_find_results(".search_view", $stub);
     $cb.set_find_results(".unscheduled_message", $stub);
 };

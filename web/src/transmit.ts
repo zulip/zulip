@@ -13,6 +13,7 @@ import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 
 type SendMessageData = {
+    notify_mentioned_user_ids?: string;
     local_id: string;
     sender_id: number;
     queue_id: string | null;

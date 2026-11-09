@@ -163,6 +163,24 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
+test_ui("notify_toggle_requires_explicit_action", ({override}) => {
+    initialize_handlers({override});
+    const $button = $.create("notify-button");
+    $button.attr("aria-pressed", "false");
+    const handler = $("#compose_banners").get_on_handler("click", ".notify-mentioned-user");
+    let requests = 0;
+    override(channel, "post", () => {
+        requests += 1;
+    });
+    const event = {preventDefault: noop, currentTarget: $button[0]};
+    handler(event);
+    assert.equal($button.attr("aria-pressed"), "true");
+    assert.equal(requests, 0);
+    handler(event);
+    assert.equal($button.attr("aria-pressed"), "false");
+    assert.equal(requests, 0);
+});
+
 function disable_window_triggers(override) {
     override(window, "to_$", () => $("window-stub"));
 }

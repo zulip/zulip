@@ -3,10 +3,12 @@ from dataclasses import asdict
 from typing import Annotated, Literal, TypedDict
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
 
+from zerver.actions.mention_notification import notify_unsubscribed_mention
 from zerver.actions.message_send import (
     check_send_message,
     extract_private_recipients,
@@ -36,6 +38,7 @@ class SendMessageResponseData(TypedDict, total=False):
 
 
 @typed_endpoint
+@transaction.atomic
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -46,6 +49,7 @@ def send_message_backend(
     local_id: str | None = None,
     message_content: Annotated[str, ApiParamConfig("content")],
     queue_id: str | None = None,
+    notify_mentioned_user_ids: Json[list[int]] | None = None,
     read_by_sender: Json[bool] | None = None,
     req_sender: Annotated[
         str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
@@ -146,6 +150,9 @@ def send_message_backend(
         read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
+    if sender.id == user_profile.id:
+        for recipient_id in sorted(set(notify_mentioned_user_ids or [])):
+            notify_unsubscribed_mention(user_profile, sent_message_result.message_id, recipient_id)
     data["message_url"] = sent_message_result.message_url
     data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
