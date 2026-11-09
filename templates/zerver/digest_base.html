@@ -6,14 +6,11 @@
 {% endblock %}
 
 {% block content %}
-    <div class="portico-wrap">
+    <div class="portico-wrap digest-header">
         {% include 'zerver/portico-header.html' %}
     </div>
     <div class="digest-container">
         <div class="digest-email-container">
-            <div class="portico-page digest-page-title">
-                <h1> Zulip digest </h1>
-            </div>
             <div class="digest-email-html">
                 {{ inlined_digest_content|safe }}
             </div>

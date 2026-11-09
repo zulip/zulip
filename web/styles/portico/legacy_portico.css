@@ -130,8 +130,14 @@ html {
     }
 }
 
+.digest-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
 .digest-container {
-    padding-top: 100px;
+    padding-top: 20px;
 }
 
 .digest-email-container {
