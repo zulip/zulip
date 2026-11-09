@@ -8,4 +8,5 @@ import "../../styles/portico/portico_variables.css";
 import "../../styles/components.css";
 import "../../styles/portico/legacy_portico.css";
 import "../../styles/portico/markdown.css";
+import "../../styles/portico/print.css";
 import "tippy.js/dist/tippy.css";
