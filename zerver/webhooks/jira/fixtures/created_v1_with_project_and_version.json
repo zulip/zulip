@@ -1,0 +1,220 @@
+{
+  "timestamp": 1774526757447,
+  "webhookEvent": "jira:issue_created",
+  "issue_event_type_name": "issue_created",
+  "user": {
+    "self": "https://shettypritesh16.atlassian.net/rest/api/2/user?accountId=712020%3A28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+    "accountId": "712020:28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+    "avatarUrls": {
+      "48x48": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+      "24x24": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+      "16x16": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+      "32x32": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png"
+    },
+    "displayName": "Pritesh Shetty",
+    "active": true,
+    "timeZone": "Asia/Calcutta",
+    "accountType": "atlassian"
+  },
+  "issue": {
+    "id": "10001",
+    "self": "https://shettypritesh16.atlassian.net/rest/api/2/issue/10001",
+    "key": "KAN-2",
+    "fields": {
+      "statuscategorychangedate": "2026-03-26T17:35:57.500+0530",
+      "issuetype": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/issuetype/10003",
+        "id": "10003",
+        "description": "Tasks track small, distinct pieces of work.",
+        "iconUrl": "https://shettypritesh16.atlassian.net/rest/api/2/universal_avatar/view/type/issuetype/avatar/10318?size=medium",
+        "name": "Task",
+        "subtask": false,
+        "avatarId": 10318,
+        "entityId": "6cbe0d34-672b-42df-9f50-d663599f7183",
+        "hierarchyLevel": 0
+      },
+      "components": [],
+      "timespent": null,
+      "timeoriginalestimate": null,
+      "project": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/project/10000",
+        "id": "10000",
+        "key": "KAN",
+        "name": "Test Project",
+        "projectTypeKey": "software",
+        "simplified": true,
+        "avatarUrls": {
+          "48x48": "https://shettypritesh16.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10417",
+          "24x24": "https://shettypritesh16.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10417?size=small",
+          "16x16": "https://shettypritesh16.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10417?size=xsmall",
+          "32x32": "https://shettypritesh16.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10417?size=medium"
+        }
+      },
+      "description": null,
+      "fixVersions": [
+        {
+          "self": "https://shettypritesh16.atlassian.net/rest/api/2/version/10000",
+          "id": "10000",
+          "description": "",
+          "name": "r4",
+          "archived": false,
+          "released": false
+        }
+      ],
+      "statusCategory": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/statuscategory/2",
+        "id": 2,
+        "key": "new",
+        "colorName": "blue-gray",
+        "name": "New"
+      },
+      "aggregatetimespent": null,
+      "resolution": null,
+      "timetracking": {},
+      "customfield_10015": null,
+      "security": null,
+      "attachment": [],
+      "aggregatetimeestimate": null,
+      "resolutiondate": null,
+      "workratio": -1,
+      "summary": "Test webhook 2",
+      "issuerestriction": {
+        "issuerestrictions": {},
+        "shouldDisplay": true
+      },
+      "lastViewed": null,
+      "watches": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/issue/KAN-2/watchers",
+        "watchCount": 0,
+        "isWatching": false
+      },
+      "creator": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/user?accountId=712020%3A28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+        "accountId": "712020:28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "24x24": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "16x16": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "32x32": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png"
+        },
+        "displayName": "Pritesh Shetty",
+        "active": true,
+        "timeZone": "Asia/Calcutta",
+        "accountType": "atlassian"
+      },
+      "subtasks": [],
+      "created": "2026-03-26T17:35:57.269+0530",
+      "reporter": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/user?accountId=712020%3A28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+        "accountId": "712020:28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "24x24": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "16x16": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png",
+          "32x32": "https://secure.gravatar.com/avatar/4372b40d13504d44a83ac31235091a29?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FPS-6.png"
+        },
+        "displayName": "Pritesh Shetty",
+        "active": true,
+        "timeZone": "Asia/Calcutta",
+        "accountType": "atlassian"
+      },
+      "customfield_10021": null,
+      "aggregateprogress": {
+        "progress": 0,
+        "total": 0
+      },
+      "customfield_10001": null,
+      "priority": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://shettypritesh16.atlassian.net/images/icons/priorities/medium_new.svg",
+        "name": "Medium",
+        "id": "3"
+      },
+      "labels": [],
+      "environment": null,
+      "customfield_10019": "0|i00007:",
+      "timeestimate": null,
+      "aggregatetimeoriginalestimate": null,
+      "versions": [],
+      "duedate": null,
+      "progress": {
+        "progress": 0,
+        "total": 0
+      },
+      "votes": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/issue/KAN-2/votes",
+        "votes": 0,
+        "hasVoted": false
+      },
+      "issuelinks": [],
+      "assignee": null,
+      "updated": "2026-03-26T17:35:57.269+0530",
+      "status": {
+        "self": "https://shettypritesh16.atlassian.net/rest/api/2/status/10000",
+        "description": "",
+        "iconUrl": "https://shettypritesh16.atlassian.net/images/icons/statuses/generic.png",
+        "name": "To Do",
+        "id": "10000",
+        "statusCategory": {
+          "self": "https://shettypritesh16.atlassian.net/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "New"
+        }
+      }
+    }
+  },
+  "changelog": {
+    "id": "10001",
+    "items": [
+      {
+        "field": "summary",
+        "fieldtype": "jira",
+        "fieldId": "summary",
+        "from": null,
+        "fromString": null,
+        "to": null,
+        "toString": "Test webhook 2"
+      },
+      {
+        "field": "Status",
+        "fieldtype": "jira",
+        "fieldId": "status",
+        "from": null,
+        "fromString": null,
+        "to": "10000",
+        "toString": "To Do"
+      },
+      {
+        "field": "priority",
+        "fieldtype": "jira",
+        "fieldId": "priority",
+        "from": null,
+        "fromString": null,
+        "to": "3",
+        "toString": "Medium"
+      },
+      {
+        "field": "Fix Version",
+        "fieldtype": "jira",
+        "fieldId": "fixVersions",
+        "from": null,
+        "fromString": null,
+        "to": "10000",
+        "toString": "r4"
+      },
+      {
+        "field": "reporter",
+        "fieldtype": "jira",
+        "fieldId": "reporter",
+        "from": null,
+        "fromString": null,
+        "to": "712020:28d10afc-d4b0-47f2-b86f-74d9a5f29c81",
+        "toString": "Pritesh Shetty",
+        "tmpFromAccountId": null,
+        "tmpToAccountId": "712020:28d10afc-d4b0-47f2-b86f-74d9a5f29c81"
+      }
+    ]
+  }
+}
