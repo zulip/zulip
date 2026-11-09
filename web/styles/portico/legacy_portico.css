@@ -148,12 +148,6 @@ html {
     padding-bottom: 30px;
 }
 
-.digest-email-html {
-    padding: 20px;
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 5px;
-}
-
 .app.help {
     display: inline-flex;
 
