@@ -3,7 +3,7 @@
 - Use _आप_ as the second-person pronoun. Don't use तुम or तू.
   (See [chat thread](https://chat.zulip.org/#narrow/channel/58-translation/topic/Hindi.20Translation/near/1762384).)
 
-- Imperative, active, and continuous verbs, e.g., _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage channels_ -
   _चैनल प्रबंधित करें_, not _चैनल प्रबंधन_.
 
 - Warm and friendly phrasing whenever appropriate.
@@ -23,12 +23,10 @@ Zulip friendly and usable.
 
 - Message - **संदेश**
 - Direct message (DM) - **सीधा संदेश**
-- Stream - **धारा**: the use of the literal Hindi word for stream
-  "प्रवाह" is very confusing and not the correct metaphor for Hindi
-  speaking people. The correct term would be "धारा".
+- Channel - **चैनल**
 - Topic - **विषय**
-- Private/invite-only stream - **निजी / केवल-आमंत्रण धारा**
-- Public stream - **सार्वजनिक धारा**
+- Private/invite-only channel - **निजी / केवल-आमंत्रण चैनल**
+- Public channel - **सार्वजनिक चैनल**
 - Bot - **बॉट**
 - Integration - **एकीकरण**
 - Notification - **अधिसूचना**
@@ -40,7 +38,7 @@ Zulip friendly and usable.
 
 ## Phrases (वाक्यांश)
 
-- Subscribe/Unsubscribe to a stream - **एक धारा में सदस्यता लें/सदस्यता समाप्त करें**
+- Subscribe/Unsubscribe to a channel - **एक चैनल में सदस्यता लें/सदस्यता समाप्त करें**
 - Narrow to - **अकेले फ़िल्टर करें**: this is _filter only_, because there's no other
   word that's common enough in Hindi for _to narrow_.
 - Mute/Unmute - **शांत/अशांत**

@@ -8,7 +8,7 @@ Use semi-formal Polish for translation, some specifics:
 - Gender-neutral forms of verbs, e.g., _unsubscribed_ - _odsubskrybowano_,
   not \*odsubskrybowałeś".
 
-- Imperative, active and continuous verbs, e.g., _manage streams_ -
+- Imperative, active and continuous verbs, e.g., _manage channels_ -
   _zarządzaj kanałami_, not _zarządź kanałami_.
 
 - Not using reflexive _się_, e.g., _log out_ would be simply _wyloguj_,
@@ -206,8 +206,8 @@ Direct messages are often abbreviated to DM.
 
 > Wiadomości bezpośrednie są też nazywane DMami, od angielskiego "direct message".
 
-**private stream**: prywatny kanał
-**public stream**: publiczny kanał
+**private channel**: prywatny kanał
+**public channel**: publiczny kanał
 
 example:
 
@@ -234,7 +234,7 @@ You starred this message.
 
 > Ta wiadomość została oznaczona.
 
-**stream**: kanał, similar to a tv channel - _strumień_ sounds a bit artificial
+**channel**: kanał, similar to a tv channel - _strumień_ sounds a bit artificial
 
 example:
 
@@ -242,7 +242,7 @@ You can create new streams in Zulip.
 
 > Możesz tworzyć nowe kanały w Zulipie.
 
-**subscribing to a stream**: (za)subskrybowanie kanału (noun) and
+**subscribing to a channel**: (za)subskrybowanie kanału (noun) and
 (za)subskrybować kanał (verb), perfective form depending on the
 context
 
@@ -264,7 +264,7 @@ Add a new topic.
 
 > Dodaj nowy wątek.
 
-**unsubscribing from a stream**: odsubskrybowanie kanału (noun) and
+**unsubscribing from a channel**: odsubskrybowanie kanału (noun) and
 odsubskrybować kanał (verb)
 
 example:

@@ -7,7 +7,7 @@ Use informal Spanish for translation:
   the daily language and avoids making translations look like they were written
   by machines.
 
-- Imperative, active, and continuous verbs, e.g., _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage channels_ -
   _gestionar canales_, not _gestión de canales_.
 
 - Not using reflexive _se_ e.g., _log out_ should be _salir_, not _salirse_,
@@ -42,9 +42,9 @@ Zulip friendly and usable.
   "Flujo" is very confusing and not the correct metaphor for Spanish
   speaking people. The correct term would be "canal" (_channel_).
 - Topic - **Tema**
-- Private/invite-only stream - **Canal privado/limitado por invitación**: (lit.
+- Private/invite-only channel - **Canal privado/limitado por invitación**: (lit.
   _channel limited by invitation_)
-- Public stream - **Canal público**
+- Public channel - **Canal público**
 - Bot - **Bot**
 - Embedded bot - **Bot integrado**
 - Interactive bot - **Bot interactivo**
@@ -63,7 +63,7 @@ Zulip friendly and usable.
 
 ## Frases
 
-- Subscribe/Unsubscribe to a stream - **Suscribir a/Desuscribir de un canal**
+- Subscribe/Unsubscribe to a channel - **Suscribir a/Desuscribir de un canal**
 - Narrow to - **Buscar solo**: this translates to _search only_. We use this
   term because there's no other word that's common enough in Spanish for
   _to narrow_ except for "filtrar", but this word can be incorrectly

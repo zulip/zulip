@@ -69,7 +69,7 @@ of the reader.
 
 To be consistent with other online platforms, use continuous labels for buttons,
 item titles, etc. with verbs in infinitive form,
-e.g., _Manage streams_ - _Kanäle verwalten_ instead of _Verwalte Kanäle_.
+e.g., _Manage channels_ - _Kanäle verwalten_ instead of _Verwalte Kanäle_.
 
 ### Concatenation of words
 

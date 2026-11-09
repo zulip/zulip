@@ -6,7 +6,7 @@ Use semi-formal Urdu for translation:
   companies (e.g., Google, Facebook, Microsoft) use the formal one, because it's typically
   considered rude to use the informal one without an established acquaintance with someone.
 
-- Imperative, active, and continuous verbs, e.g., _manage streams_ -
+- Imperative, active, and continuous verbs, e.g., _manage channels_ -
   _سٹریمس کی رہنمائ کریں_, not _سٹریمس کی رہنمائ_.
 
 - Warm and friendly phrasing whenever appropriate.
@@ -26,10 +26,10 @@ Zulip friendly and usable.
 
 - Message - **پیغام**
 - Direct message (DM) - **براہ راست پیغام**
-- Stream - **سٹریم**
+- Channel - **چینل**
 - Topic - **موضوع**
-- Private/invite-only stream - **ذاتی / دعوت کی ضرورت والی سٹریم**
-- Public stream - **عوامی سٹریم**
+- Private/invite-only channel - **ذاتی / دعوت کی ضرورت والی سٹریم**
+- Public channel - **عوامی سٹریم**
 - Bot - **بوٹ**
 - Integration - **انضمام**
 - Notification - **اطلاع**
@@ -44,7 +44,7 @@ Zulip friendly and usable.
 - Narrow to - **محدود کریں**: the literal Urdu translation is "تنگ کریں" which may end up being
   interpreted as its more common meaning which is incorrect here. The correct phrase is
   "محدود کریں".
-- Subscribe/Unsubscribe to a stream - **سٹریم کو سبسکرائب ی / اَنسبسکرائب**
+- Subscribe/Unsubscribe to a channel - **سٹریم کو سبسکرائب ی / اَنسبسکرائب**
 - Mute/Unmute - **خاموش کریں / نا خاموسش کریں**
 - Deactivate/Reactivate - **فعال کریں/غیر فعال کریں**
 - Search - **تلاش کریں**
