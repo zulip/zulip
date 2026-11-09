@@ -31,6 +31,7 @@ import * as pm_list from "./pm_list.ts";
 import * as recent_view_data from "./recent_view_data.ts";
 import * as rows from "./rows.ts";
 import * as sent_messages from "./sent_messages.ts";
+import * as server_time from "./server_time.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
@@ -281,7 +282,7 @@ export function insert_local_message(
         sender_email: people.my_current_email(),
         sender_full_name: people.my_full_name(),
         avatar_url: people.small_avatar_url_for_person(current_user),
-        timestamp: Date.now() / 1000,
+        timestamp: server_time.now(),
         local_id: local_id_float.toString(),
         locally_echoed: true,
         id: local_id_float,

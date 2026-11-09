@@ -99,6 +99,7 @@ const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
+const server_time = zrequire("server_time");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -491,6 +492,9 @@ run_test("update_message_lists", () => {
 run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
     clock.setSystemTime(new Date(fake_now * 1000));
+    // Local echoes are timestamped by the server's clock, which here
+    // is an hour ahead of the client's.
+    server_time.update_offset(fake_now + 3600, server_time.get_request_start());
 
     const local_id_float = 101.01;
 
@@ -509,7 +513,7 @@ run_test("insert_local_message streams", ({override}) => {
     const insert_new_messages = (message_data) => {
         const [message] = message_data.raw_messages;
         assert.equal(message.display_recipient, "general");
-        assert.equal(message.timestamp, fake_now);
+        assert.equal(message.timestamp, fake_now + 3600);
         assert.equal(message.sender_email, "iago@zulip.com");
         assert.equal(message.sender_full_name, "Iago");
         assert.equal(message.sender_id, 123);
@@ -530,6 +534,7 @@ run_test("insert_local_message streams", ({override}) => {
     assert.ok(render_called);
     assert.ok(get_topic_links_called);
     assert.ok(insert_message_called);
+    server_time.clear_for_testing();
 });
 
 run_test("insert_local_message direct message", ({override}) => {
