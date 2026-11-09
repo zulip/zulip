@@ -95,6 +95,16 @@ img.responsive-width {
     width: 100%;
 }
 
+/* For emails whose content brings its own surfaces, like the digest's
+   conversations, which sit directly on the email background. */
+.main.main-without-card {
+    background-color: transparent;
+}
+
+.main-without-card .wrapper {
+    padding: 0;
+}
+
 .wrapper {
     box-sizing: border-box;
     padding: 48px;
@@ -235,28 +245,61 @@ img.responsive-width {
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #a1a2c9;
-    border-radius: 6px;
+    background-color: #fff;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
 }
 
+/* Like the web app's recipient bar; the background color is the
+   recipient's own channel color, set in digest.html. */
 .hot_convo_recipient_header {
-    background-color: #ebebf5;
-    border-bottom: 1px solid #a1a2c9;
-    /* 6px block radius less its 1px border, so the header's
+    border-bottom: 1px solid #d6d6d6;
+    /* 7px block radius less its 1px border, so the header's
        background doesn't poke out past the rounded corners. */
-    border-radius: 5px 5px 0 0;
+    border-radius: 6px 6px 0 0;
+    font-size: 15px;
     font-weight: bold;
-    padding: 8px 12px;
+    line-height: 1.2;
+    padding: 5px 10px;
 }
 
-.hot_convo_message_content {
-    margin-left: 1px;
-    margin-right: 2px;
+.hot_convo_recipient_header a {
+    color: #0c0c0e;
+    text-decoration: none;
 }
 
-.hot_convo_message_content_block {
-    padding-left: 6px;
+.hot_convo_recipient_header a:hover {
+    color: #0c0c0e !important;
+}
+
+.hot_convo_separator {
+    color: #999;
     font-weight: normal;
+}
+
+/* Like the web app's message rows: avatar beside the sender's name,
+   with their messages below the name. */
+.hot_convo_avatar {
+    width: 35px;
+    padding: 8px 11px 8px 15px;
+}
+
+.hot_convo_avatar img {
+    display: block;
+    border-radius: 4px;
+}
+
+.hot_convo_sender_messages {
+    padding: 8px 10px 3px 0;
+}
+
+.hot_convo_sender_name {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.hot_convo_message_content_block p {
+    margin: 0 0 5px;
 }
 
 /* Restore bullets on user-authored lists, which the .content list
@@ -336,13 +379,26 @@ img.responsive-width {
         border-left-color: #3a3b64 !important;
     }
 
+    .main.main-without-card {
+        background-color: transparent !important;
+    }
+
+    .hot_convo_recipient_block {
+        background-color: #272845 !important;
+    }
+
     .hot_convo_recipient_block,
     .hot_convo_recipient_header {
         border-color: #3a3b64 !important;
     }
 
-    .hot_convo_recipient_header {
-        background-color: #17172b !important;
+    .hot_convo_recipient_header a,
+    .hot_convo_recipient_header a:hover {
+        color: #e4e4e7 !important;
+    }
+
+    .hot_convo_separator {
+        color: #8c8c99 !important;
     }
 }
 

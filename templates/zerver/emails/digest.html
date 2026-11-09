@@ -1,20 +1,44 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
+{% block main_class %}main-without-card{% endblock %}
+
 {% block content %}
     {% if show_message_content %}
     {% if hot_conversations %}
+        {#- Each recipient's own channel colors, as in their web app.
+        The light rules get inlined; the dark ones need the media query. #}
+        <style>
+            {% for stream_id, colors in channel_colors.items() %}
+            .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color }}; }
+            .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color }}; }
+            @media (prefers-color-scheme: dark) {
+                .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color_dark }} !important; }
+                .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color_dark }} !important; }
+            }
+            {% endfor %}
+        </style>
         {% for convo in hot_conversations %}
         <div class='messages'>
             {% with recipient_block=convo.first_few_messages %}
-                <div class='hot_convo_recipient_block'>
+                <div class='hot_convo_recipient_block digest-channel-{{ convo.stream_id }}'>
                     <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
                     <div class='hot_convo_message_content'>
                         {% for sender_block in recipient_block.senders %}
-                            {% for message_block in sender_block.content %}
-                            <div class='hot_convo_message_content_block'>
-                                {{ message_block.html|safe }}
-                            </div>
-                            {% endfor %}
+                        <table border="0" cellpadding="0" cellspacing="0" class="layout hot_convo_sender">
+                            <tr>
+                                <td class="hot_convo_avatar">
+                                    <img src="{{ sender_block.avatar_url }}" alt="" width="35" height="35" />
+                                </td>
+                                <td class="hot_convo_sender_messages">
+                                    <div class="hot_convo_sender_name">{{ sender_block.sender }}</div>
+                                    {% for message_block in sender_block.content %}
+                                    <div class='hot_convo_message_content_block'>
+                                        {{ message_block.html|safe }}
+                                    </div>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        </table>
                         {% endfor %}
                     </div>
                 </div>
