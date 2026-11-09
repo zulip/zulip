@@ -136,7 +136,6 @@ img.responsive-width {
 }
 
 .body p,
-p.digest_paragraph,
 .content ul,
 .content ol {
     font-family: sans-serif;
@@ -168,7 +167,6 @@ p.digest_paragraph,
     color: #2e2eff !important;
 }
 
-.digest_paragraph a,
 .sponsorship_request_link,
 .support_request_link,
 .email-preferences a,
@@ -177,7 +175,6 @@ p.digest_paragraph,
     text-decoration: underline;
 }
 
-.digest_paragraph a:hover,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
 .email-preferences a:hover,
@@ -230,22 +227,26 @@ p.digest_paragraph,
 
 /* CSS for digest email content. */
 .messages {
-    width: 600px;
-    font-size: 12px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    width: 100%;
+    font-size: 14px;
+    font-family: sans-serif;
     overflow-y: auto;
     margin-bottom: 12px;
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid #a1a2c9;
+    border-radius: 6px;
 }
 
 .hot_convo_recipient_header {
-    background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    background-color: #ebebf5;
+    border-bottom: 1px solid #a1a2c9;
+    /* 6px block radius less its 1px border, so the header's
+       background doesn't poke out past the rounded corners. */
+    border-radius: 5px 5px 0 0;
     font-weight: bold;
-    padding: 2px;
+    padding: 8px 12px;
 }
 
 .hot_convo_message_content {
@@ -256,6 +257,23 @@ p.digest_paragraph,
 .hot_convo_message_content_block {
     padding-left: 6px;
     font-weight: normal;
+}
+
+/* Restore bullets on user-authored lists, which the .content list
+   rules above flatten for our hand-written onboarding emails. */
+.hot_convo_message_content ul,
+.hot_convo_message_content ol {
+    padding-left: 20px;
+}
+
+.hot_convo_message_content ul li {
+    list-style: disc;
+    margin-left: 0;
+}
+
+.hot_convo_message_content ol li {
+    list-style: decimal;
+    margin-left: 0;
 }
 
 /* Text and link colors for missed-message emails. */
@@ -316,6 +334,15 @@ p.digest_paragraph,
 
     .deactivated-user-text {
         border-left-color: #3a3b64 !important;
+    }
+
+    .hot_convo_recipient_block,
+    .hot_convo_recipient_header {
+        border-color: #3a3b64 !important;
+    }
+
+    .hot_convo_recipient_header {
+        background-color: #17172b !important;
     }
 }
 

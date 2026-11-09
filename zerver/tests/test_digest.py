@@ -787,6 +787,9 @@ class TestDigestContentInBrowser(ZulipTestCase):
         self.login("hamlet")
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Log in to Zulip to catch up"], result)
+        # The email's <body> is embedded as a <div>, so that its
+        # attributes don't apply to the page's own <body>.
+        self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
 
 
 class TestDigestTopics(ZulipTestCase):
