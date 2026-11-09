@@ -6,10 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-09 14:50+0000\n"
+"POT-Creation-Date: 2026-11-09 15:42+0000\n"
 "PO-Revision-Date: 2026-11-09 14:50+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Somali <https://hosted.weblate.org/projects/zulip/django/so/>\n"
+"Language-Team: Somali <https://hosted.weblate.org/projects/zulip/django/so/"
+">\n"
 "Language: so\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -6761,19 +6762,6 @@ msgstr ""
 #: zerver/views/realm_playgrounds.py
 msgid "Invalid playground"
 msgstr ""
-
-#: zerver/views/registration.py
-#, python-brace-format
-msgid ""
-"{count} Slack user has an invalid email address. Correct it in Slack, then "
-"start the import again. If you can't correct it, contact {support_email} for "
-"help. Invalid address: {emails}"
-msgid_plural ""
-"{count} Slack users have invalid email addresses. Correct them in Slack, "
-"then start the import again. If you can't correct them, contact "
-"{support_email} for help. Invalid addresses: {emails}"
-msgstr[0] ""
-msgstr[1] ""
 
 #: zerver/views/registration.py
 msgid ""
