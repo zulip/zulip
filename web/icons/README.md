@@ -18,6 +18,7 @@ arrow-up-right.svg
 bold.svg
 bot.svg
 browse-channels.svg
+channel-list.svg
 compose-scroll-left.svg
 compose-scroll-right.svg
 dm-groups-3.svg
@@ -34,8 +35,6 @@ manage-search.svg
 masked-unread.svg
 math.svg
 ordered-list.svg
-panel-left-dashed.svg
-panel-left.svg
 pin.svg
 placeholder.svg
 question.svg
