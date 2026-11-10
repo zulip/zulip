@@ -1,11 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG UBUNTU_MIRROR
 
 # Basic packages and dependencies of docker-systemctl-replacement
 RUN echo locales locales/default_environment_locale select C.UTF-8 | debconf-set-selections \
     && echo locales locales/locales_to_be_generated select "C.UTF-8 UTF-8" | debconf-set-selections \
-    && { [ ! "$UBUNTU_MIRROR" ] || sed -i "s|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |$UBUNTU_MIRROR |" /etc/apt/sources.list; } \
+    && { [ ! "$UBUNTU_MIRROR" ] || sed -i "s|^URIs: http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\?$|URIs: $UBUNTU_MIRROR|" /etc/apt/sources.list.d/ubuntu.sources; } \
     # This restores man pages and other documentation that have been
     # stripped from the default Ubuntu cloud image and installs
     # ubuntu-minimal and ubuntu-standard.
@@ -41,8 +41,10 @@ RUN \
     && mkdir -p /run/sshd \
     # docker-systemctl-replacement doesn’t work with template units yet:
     # https://github.com/gdraheim/docker-systemctl-replacement/issues/62
-    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@14-main.service \
+    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@16-main.service \
     # Set up the vagrant user and its SSH key (globally public)
+    # The ubuntu:24.04 image ships with an "ubuntu" user occupying UID 1000.
+    && userdel -r ubuntu \
     && useradd -ms /bin/bash -u "$VAGRANT_UID" vagrant \
     && mkdir -m 700 ~vagrant/.ssh \
     && curl -fLsS --retry 3 -o ~vagrant/.ssh/authorized_keys 'https://raw.githubusercontent.com/hashicorp/vagrant/v2.4.0/keys/vagrant.pub' \

@@ -11,7 +11,12 @@ if [ -e /srv/zulip ]; then
 fi
 
 # Set the Ubuntu mirror
-[ ! "$UBUNTU_MIRROR" ] || sudo sed -i 's|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |'"$UBUNTU_MIRROR"' |' /etc/apt/sources.list
+if [ "$UBUNTU_MIRROR" ]; then
+    sudo sed -i 's|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |'"$UBUNTU_MIRROR"' |' /etc/apt/sources.list
+    if [ -e /etc/apt/sources.list.d/ubuntu.sources ]; then
+        sudo sed -i 's|^URIs: http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\?$|URIs: '"$UBUNTU_MIRROR"'|' /etc/apt/sources.list.d/ubuntu.sources
+    fi
+fi
 
 # Set the MOTD on the system to have Zulip instructions
 sudo ln -nsf "$ZULIP_PATH/tools/setup/dev-motd" /etc/update-motd.d/99-zulip-dev
