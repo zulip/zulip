@@ -681,6 +681,25 @@ new subscribers.
             default_channel_notifications="/help/enable-mobile-notifications-by-default",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=29,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since last
+April, in the [blog post]({blog_post_13_0_url}) announcing today's release of
+Zulip Server 13.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_13_0_url}) to learn about additional
+feature highlights in Zulip Server 13.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_13_0_url="https://blog.zulip.com/zulip-server-13-0",
+        ),
+    ),
 ]
 
 
