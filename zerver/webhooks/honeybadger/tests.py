@@ -151,7 +151,7 @@ class HoneybadgerHookTests(ZulipTestCase):
 
     def test_recorded_check_in(self) -> None:
         self.check_notification(
-            "checkin",
+            "check_in",
             "Check-in 15mIYe",
             "[Zulip Integration] MISSING: Zulip hasn't checked in for 6 minutes",
         )
