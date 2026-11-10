@@ -402,6 +402,7 @@ def access_message(
     lock_message: bool = False,
     *,
     is_modifying_message: bool,
+    fetch_edit_history: bool = False,
 ) -> Message:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
@@ -417,9 +418,15 @@ def access_message(
     delete the message during the current transaction, which is
     important to prevent rare race conditions. Callers must only
     pass lock_message when inside a @transaction.atomic block.
+
+    The message's edit history can be large, so it is only fetched
+    if fetch_edit_history is passed; otherwise, accessing it will
+    cause an additional query.
     """
     try:
         base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+        if not fetch_edit_history:
+            base_query = base_query.defer("edit_history")
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
@@ -457,12 +464,16 @@ def access_message_and_usermessage(
     # Fetches only specified fields from Message and related models.
     # Use for performance-critical paths.
     only_message_fields: OnlyMessageFields | None = None,
+    fetch_edit_history: bool = False,
 ) -> tuple[Message, UserMessage | None]:
     """As access_message, but also returns the usermessage, if any."""
     try:
         if only_message_fields is None:
             base_query = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED)
+            if not fetch_edit_history:
+                base_query = base_query.defer("edit_history")
         else:
+            assert not fetch_edit_history
             base_query = Message.objects.select_related(*only_message_fields.select_related).only(
                 *only_message_fields.fields
             )

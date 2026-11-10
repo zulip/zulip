@@ -827,6 +827,12 @@ class EditMessageTest(ZulipTestCase):
             self.assertIn("second version", update_sqls[0])
             self.assertNotIn("first version", update_sqls[0])
 
+            # Nor is the existing edit history fetched from the
+            # database.
+            for query in queries:
+                if query.sql.startswith("SELECT"):
+                    self.assertNotIn('"zerver_message"."edit_history"', query.sql)
+
             message = Message.objects.get(id=msg_id)
             self.assertEqual(message.content, "third version")
             edit_history = orjson.loads(assert_is_not_none(message.edit_history))

@@ -40,7 +40,15 @@ def remove_reaction(
     emoji_name: str | None = None,
     reaction_type: str = "unicode_emoji",
 ) -> HttpResponse:
-    message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
+    # notify_reaction_update reads the edit history to update the
+    # message cache.
+    message = access_message(
+        user_profile,
+        message_id,
+        lock_message=True,
+        is_modifying_message=True,
+        fetch_edit_history=True,
+    )
 
     if emoji_code is None:
         if emoji_name is None:
