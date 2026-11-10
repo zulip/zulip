@@ -215,3 +215,9 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
 
     return message;
 }
+
+export function xhr_error_code(xhr: JQuery.jqXHR<unknown>): string | undefined {
+    // Not every error response has a `code`.
+    const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
+    return parsed.success ? parsed.data.code : undefined;
+}

@@ -40,7 +40,9 @@ const sample_message = {
     ],
 };
 
-const channel = mock_esm("../src/channel");
+const channel = mock_esm("../src/channel", {
+    xhr_error_code: (xhr) => xhr.responseJSON?.code,
+});
 const message_store = mock_esm("../src/message_store");
 const settings_data = mock_esm("../src/settings_data");
 const spectators = mock_esm("../src/spectators", {

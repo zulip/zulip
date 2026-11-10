@@ -8,7 +8,9 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
-const channel = mock_esm("../src/channel");
+const channel = mock_esm("../src/channel", {
+    xhr_error_code: (xhr) => xhr.responseJSON?.code,
+});
 const reload = mock_esm("../src/reload");
 const reload_state = mock_esm("../src/reload_state");
 const sent_messages = mock_esm("../src/sent_messages", {

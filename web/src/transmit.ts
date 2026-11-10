@@ -1,5 +1,4 @@
 import assert from "minimalistic-assert";
-import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
@@ -91,8 +90,7 @@ export function send_message(
                 }
 
                 const response = channel.xhr_error_message("Error sending message", xhr);
-                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
-                error(response, parsed.success ? parsed.data.code : "");
+                error(response, channel.xhr_error_code(xhr) ?? "");
             },
         });
     });

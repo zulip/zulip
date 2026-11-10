@@ -141,12 +141,8 @@ export function generate_and_insert_audio_or_video_call_link(
             status: JQuery.Ajax.ErrorTextStatus,
         ): void => {
             const callback = (): void => {
-                const parsed = z.object({code: z.string()}).safeParse(error_xhr.responseJSON);
-                if (
-                    status === "error" &&
-                    parsed.success &&
-                    parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
-                ) {
+                const code = channel.xhr_error_code(error_xhr);
+                if (status === "error" && code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN") {
                     switch (oauth_call_provider) {
                         case "google_meet":
                             current_user.has_google_meet_token = false;
@@ -159,11 +155,7 @@ export function generate_and_insert_audio_or_video_call_link(
                             break;
                     }
                 }
-                if (
-                    status === "error" &&
-                    parsed.success &&
-                    parsed.data.code === "UNKNOWN_ZOOM_USER"
-                ) {
+                if (status === "error" && code === "UNKNOWN_ZOOM_USER") {
                     compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
                 } else if (status !== "abort") {
                     ui_report.generic_embed_error(
