@@ -1,0 +1,119 @@
+{% macro channel_colors_style(channel_colors) -%}
+{#- Each recipient's own channel colors, as in their web app.
+The light rules get inlined; the dark ones need the media query. #}
+<style>
+    {% for stream_id, colors in channel_colors.items() %}
+    .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color }}; }
+    .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color }}; }
+    .digest-channel-{{ stream_id }} .digest-chip { background-color: {{ colors.recipient_bar_color }}; }
+    @media (prefers-color-scheme: dark) {
+        .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color_dark }} !important; }
+        .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color_dark }} !important; }
+        .digest-channel-{{ stream_id }} .digest-chip { background-color: {{ colors.recipient_bar_color_dark }} !important; }
+    }
+    {% endfor %}
+</style>
+{%- endmacro %}
+
+{% macro conversation(convo) -%}
+<div class='messages'>
+    {% with recipient_block=convo.first_few_messages %}
+    <div class='hot_convo_recipient_block digest-channel-{{ convo.stream_id }}'>
+        <div class='hot_convo_recipient_header'>
+            {{ recipient_block.header.html|safe }}
+            {% for reason in convo.reasons %}<span class="digest-reason">{{ reason }}</span>{% endfor %}
+        </div>
+        <div class='hot_convo_message_content'>
+            {% for sender_block in recipient_block.senders %}
+            <table border="0" cellpadding="0" cellspacing="0" class="layout hot_convo_sender">
+                <tr>
+                    <td class="hot_convo_avatar">
+                        <img src="{{ sender_block.avatar_url }}" alt="" width="35" height="35" />
+                    </td>
+                    <td class="hot_convo_sender_messages">
+                        <div class="hot_convo_sender_name">
+                            {% if sender_block.content[0].url %}<a href="{{ sender_block.content[0].url }}">{{ sender_block.sender }}</a>{% else %}{{ sender_block.sender }}{% endif %}
+                        </div>
+                        {% for message_block in sender_block.content %}
+                        {% if message_block.url %}
+                        <table border="0" cellpadding="0" cellspacing="0" class="layout hot_convo_message_row">
+                            <tr>
+                                <td class='hot_convo_message_content_block'>{{ message_block.html|safe }}</td>
+                                <td class="hot_convo_message_time"><a href="{{ message_block.url }}">{{ message_block.time }}</a></td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <div class='hot_convo_message_content_block'>
+                            {{ message_block.html|safe }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            </table>
+            {% endfor %}
+        </div>
+        {% if convo.count > 0 %}<a class="hot_convo_more" href="{{ convo.topic_url }}">{{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(2) }}.</a>{% endif %}
+    </div>
+    {% endwith %}
+</div>
+{%- endmacro %}
+
+{% macro channel_index(groups) -%}
+{% for stream, rows in groups %}
+<div class="hot_convo_recipient_block digest-index-block digest-channel-{{ stream.id }}">
+    <div class="hot_convo_recipient_header">
+        <a href="{{ rows[0].stream_url }}"><span class="hot_convo_privacy_icon">#</span>{{ stream.name }}</a>
+    </div>
+    <table border="0" cellpadding="0" cellspacing="0" class="layout digest-index">
+        {% for row in rows %}
+        <tr>
+            <td class="digest-index-topic"><a href="{{ row.topic_url }}">{{ row.topic_display_name }}</a></td>
+            <td class="digest-index-meta">
+                {% if row.topic.unread_count %}<b>{{ row.topic.unread_count }} unread</b> · {% endif %}{{ row.topic.participants|display_list(2) }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endfor %}
+{%- endmacro %}
+
+{% macro topic_rows(rows, show_reasons=False) -%}
+<div class="hot_convo_recipient_block digest-index-block">
+    <table border="0" cellpadding="0" cellspacing="0" class="layout digest-index">
+        {% for row in rows %}
+        <tr class="digest-channel-{{ row.topic.stream_id }}">
+            <td class="digest-index-topic">
+                <a class="digest-chip" href="{{ row.stream_url }}"><span class="hot_convo_privacy_icon">#</span>{{ row.topic.stream.name }}</a>
+                <a href="{{ row.topic_url }}">{{ row.topic_display_name }}</a>
+            </td>
+            <td class="digest-index-meta">
+                {% if show_reasons and row.topic.reasons %}{{ row.topic.reasons|join(", ") }}{% else %}{{ row.latest.sender.full_name }} · {{ row.age }}{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{%- endmacro %}
+
+{% macro introduction(summary, intro, custom_intro, realm_name) -%}
+<div class="digest-summary">
+    {% if intro == "default" %}
+    <p class="digest-intro">Here's a weekly summary of conversations in {{ realm_name }}. You're receiving this because you're a member and haven't been active recently. If you'd prefer not to get these summaries, you can unsubscribe at the bottom of this email.</p>
+    {% elif intro == "custom" %}
+    <div class="digest-intro-label">A note from your organization</div>
+    <p class="digest-intro">{{ custom_intro }}</p>
+    {% endif %}
+    <div class="digest-summary-title">While you were away · {{ summary.days }} day{{ summary.days|pluralize }}</div>
+    <table border="0" cellpadding="0" cellspacing="0" class="layout digest-summary-stats">
+        <tr>
+            <td><span class="digest-stat">{{ summary.messages }}</span>message{{ summary.messages|pluralize }}</td>
+            <td class="digest-summary-divided"><span class="digest-stat">{{ summary.topics }}</span>topic{{ summary.topics|pluralize }}</td>
+            <td class="digest-summary-divided"><span class="digest-stat">{{ summary.channels }}</span>channel{{ summary.channels|pluralize }}</td>
+            <td class="digest-summary-divided"><span class="digest-stat">{{ summary.new_channels }}</span>new channel{{ summary.new_channels|pluralize }}</td>
+            <td class="digest-summary-divided"><span class="digest-stat">{{ summary.new_members }}</span>new member{{ summary.new_members|pluralize }}</td>
+        </tr>
+    </table>
+</div>
+{%- endmacro %}

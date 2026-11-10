@@ -16,8 +16,10 @@
             </div>
             <br />
             <br />
+            {% if digest_strategy == "current" and digest_presentation == "single" %}
             <h2 class="digest-page-title">Plain text version</h2>
             <pre class="digest-plain-text">{% include 'zerver/emails/digest.txt' %}</pre>
+            {% endif %}
         </div>
         {% include 'zerver/footer.html' %}
     </div>

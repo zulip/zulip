@@ -298,6 +298,40 @@ img.responsive-width {
     margin-bottom: 2px;
 }
 
+/* Sender names and message times link to the message, as the
+   message timestamps do in the web app. */
+.hot_convo_sender_name a {
+    color: #0c0c0e;
+    text-decoration: none;
+}
+
+.hot_convo_sender_name a:hover {
+    color: #0c0c0e !important;
+    text-decoration: underline;
+}
+
+.hot_convo_message_row {
+    width: 100%;
+}
+
+.hot_convo_message_time {
+    width: 1%;
+    padding-left: 12px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.hot_convo_message_time a {
+    color: #6c6c80;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.hot_convo_message_time a:hover {
+    color: #0c0c0e !important;
+    text-decoration: underline;
+}
+
 .hot_convo_message_content_block p {
     margin: 0 0 5px;
 }
@@ -317,6 +351,161 @@ img.responsive-width {
 .hot_convo_message_content ol li {
     list-style: decimal;
     margin-left: 0;
+}
+
+/* Prototype digest variants, for the /digest page. */
+.digest-section-title {
+    margin: 24px 0 8px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c6c80;
+}
+
+.digest-reason {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #4b4bb3;
+    font-size: 12px;
+    font-weight: normal;
+    vertical-align: 1px;
+}
+
+/* "+ N more messages", shown as the block's last row and linking
+   to the topic. Left-aligned with the avatars above. */
+.hot_convo_recipient_block a.hot_convo_more {
+    display: block;
+    padding: 8px 10px 8px 15px;
+    border-top: 1px solid #ebebf5;
+    /* 7px block radius less its 1px border. */
+    border-radius: 0 0 6px 6px;
+    color: #6c6c80;
+    font-size: 13px;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hot_convo_recipient_block a.hot_convo_more:hover {
+    background-color: #f5f5fa;
+    color: #0c0c0e !important;
+}
+
+p.digest-emailed-note {
+    margin-top: 16px;
+    color: #6c6c80;
+    font-size: 13px;
+}
+
+.digest-index-block {
+    margin-bottom: 12px;
+}
+
+.digest-index {
+    width: 100%;
+}
+
+.digest-index td {
+    padding: 6px 10px;
+    border-top: 1px solid #ebebf5;
+    vertical-align: middle;
+}
+
+.digest-index tr:first-child td {
+    border-top: none;
+}
+
+.digest-index-meta {
+    color: #6c6c80;
+    font-size: 13px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.digest-index-meta b {
+    color: #0c0c0e;
+}
+
+.digest-chip {
+    display: inline-block;
+    color: #0c0c0e;
+    margin-right: 6px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Not !important: these get inlined, and the dark mode colors
+   below need to override them. */
+.digest-index a {
+    color: #0c0c0e;
+    text-decoration: none;
+}
+
+.digest-index a:hover {
+    color: #0c0c0e !important;
+}
+
+.digest-summary {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: #fff;
+}
+
+.digest-summary .digest-intro {
+    margin: 0 0 14px;
+    line-height: 1.5;
+}
+
+.digest-intro-label {
+    margin-bottom: 4px;
+    color: #6c6c80;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.digest-summary-title {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.digest-summary-stats {
+    table-layout: fixed;
+}
+
+.digest-summary-stats td {
+    width: 20%;
+    padding: 0 12px;
+    color: #6c6c80;
+    font-size: 13px;
+}
+
+/* The other cells' padding and divider, all on the right, so the
+   columns stay equal while the first lines up with the title. */
+.digest-summary-stats td:first-child {
+    padding: 0 25px 0 0; /* 12px + 12px padding + 1px divider */
+}
+
+.digest-summary-stats td.digest-summary-divided {
+    border-left: 1px solid #ebebf5;
+}
+
+.digest-stat {
+    display: block;
+    color: #0c0c0e;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.2;
 }
 
 /* Text and link colors for missed-message emails. */
@@ -395,6 +584,67 @@ img.responsive-width {
     .hot_convo_recipient_header a,
     .hot_convo_recipient_header a:hover {
         color: #e4e4e7 !important;
+    }
+
+    .hot_convo_sender_name a,
+    .hot_convo_sender_name a:hover,
+    .hot_convo_message_time a:hover {
+        color: #e4e4e7 !important;
+    }
+
+    .hot_convo_message_time a {
+        color: #a0a0b4 !important;
+    }
+
+    .digest-summary,
+    .digest-reason {
+        background-color: #272845 !important;
+    }
+
+    .digest-summary {
+        border-color: #3a3b64 !important;
+    }
+
+    .digest-reason {
+        color: #b8b8ff !important;
+    }
+
+    .digest-index td,
+    .hot_convo_recipient_block a.hot_convo_more {
+        border-top-color: #3a3b64 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more {
+        color: #a0a0b4 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more:hover {
+        background-color: #30315a !important;
+        color: #e4e4e7 !important;
+    }
+
+    .digest-summary-stats td.digest-summary-divided {
+        border-left-color: #3a3b64 !important;
+    }
+
+    .digest-index tr:first-child td {
+        border-top: none !important;
+    }
+
+    .digest-index a,
+    .digest-index a:hover,
+    .digest-chip,
+    .digest-index-meta b,
+    .digest-stat {
+        color: #e4e4e7 !important;
+    }
+
+    .digest-section-title,
+    .digest-index-meta,
+    .digest-intro-label,
+    .digest-emailed-note,
+    .digest-summary-stats td {
+        color: #a0a0b4 !important;
     }
 
     .hot_convo_separator {

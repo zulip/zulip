@@ -42,6 +42,7 @@ from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_ba
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
+    stream_message_url,
     stream_narrow_url,
     topic_narrow_url,
 )
@@ -55,6 +56,9 @@ from zerver.models.users import get_user_profile_by_id
 class FormattedText:
     plain: str
     html: Markup
+    # Set only for messages shown with sender avatars, in digests.
+    url: str | None = None
+    time: str | None = None
 
 
 @dataclass
@@ -269,6 +273,17 @@ def get_channel_privacy_icon(channel: Stream) -> str:
     return "#"
 
 
+def format_message_time(date_sent: datetime, user: UserProfile) -> str:
+    # Like the message timestamps in the web app, in the recipient's
+    # timezone and time format, with the date when it isn't today.
+    tz = zoneinfo.ZoneInfo(canonicalize_timezone(user.timezone)) if user.timezone else None
+    local_time = date_sent.astimezone(tz)
+    time_format = "%H:%M" if user.twenty_four_hour_time else "%-I:%M %p"
+    if local_time.date() == timezone_now().astimezone(tz).date():
+        return local_time.strftime(time_format)
+    return local_time.strftime(f"%b %-d, {time_format}")
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
@@ -339,6 +354,22 @@ def build_message_list(
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
+        if with_sender_avatars and stream_id_map is not None:
+            stream = stream_id_map[message.recipient.type_id]
+            return FormattedText(
+                plain=plain,
+                html=html,
+                url=stream_message_url(
+                    user.realm,
+                    dict(
+                        id=message.id,
+                        stream_id=stream.id,
+                        display_recipient=stream.name,
+                        topic=message.topic_name(),
+                    ),
+                ),
+                time=format_message_time(message.date_sent, user),
+            )
         return FormattedText(plain=plain, html=html)
 
     def build_sender_payload(message: Message) -> SenderPayload:

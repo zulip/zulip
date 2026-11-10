@@ -1,4 +1,5 @@
 {% extends "zerver/emails/email_base_default.html" %}
+{% import "zerver/emails/digest_macros.html" as digest_macros %}
 
 {% block main_class %}main-without-card{% endblock %}
 
@@ -7,48 +8,63 @@
 
 {% block content %}
     {% if show_message_content %}
-    {% if hot_conversations %}
-        {#- Each recipient's own channel colors, as in their web app.
-        The light rules get inlined; the dark ones need the media query. #}
-        <style>
-            {% for stream_id, colors in channel_colors.items() %}
-            .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color }}; }
-            .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color }}; }
-            @media (prefers-color-scheme: dark) {
-                .digest-channel-{{ stream_id }} .hot_convo_recipient_header { background-color: {{ colors.recipient_bar_color_dark }} !important; }
-                .digest-channel-{{ stream_id }} .hot_convo_privacy_icon { color: {{ colors.privacy_icon_color_dark }} !important; }
-            }
-            {% endfor %}
-        </style>
-        {% for convo in hot_conversations %}
-        <div class='messages'>
-            {% with recipient_block=convo.first_few_messages %}
-                <div class='hot_convo_recipient_block digest-channel-{{ convo.stream_id }}'>
-                    <div class='hot_convo_recipient_header'>{{ recipient_block.header.html|safe }}</div>
-                    <div class='hot_convo_message_content'>
-                        {% for sender_block in recipient_block.senders %}
-                        <table border="0" cellpadding="0" cellspacing="0" class="layout hot_convo_sender">
-                            <tr>
-                                <td class="hot_convo_avatar">
-                                    <img src="{{ sender_block.avatar_url }}" alt="" width="35" height="35" />
-                                </td>
-                                <td class="hot_convo_sender_messages">
-                                    <div class="hot_convo_sender_name">{{ sender_block.sender }}</div>
-                                    {% for message_block in sender_block.content %}
-                                    <div class='hot_convo_message_content_block'>
-                                        {{ message_block.html|safe }}
-                                    </div>
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        </table>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% if convo.count > 0 %}<p class="digest_paragraph">+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
-            {% endwith %}
-        </div>
-        {% endfor %}
+    {% if digest_demo %}
+        {{ digest_macros.channel_colors_style(channel_colors) }}
+        {{ digest_macros.introduction(summary, digest_intro, digest_custom_intro, realm_name) }}
+        {% if digest_presentation == "mixed" %}
+            {% if for_you %}
+            <div class="digest-section-title">For you</div>
+            {% for convo in for_you %}{{ digest_macros.conversation(convo) }}{% endfor %}
+            {% endif %}
+            {% if highlights %}
+            <div class="digest-section-title">Highlights</div>
+            {% for convo in highlights %}{{ digest_macros.conversation(convo) }}{% endfor %}
+            {% endif %}
+            {% if index %}
+            <div class="digest-section-title">Everything else</div>
+            {{ digest_macros.channel_index(index) }}
+            {% endif %}
+        {% elif digest_strategy == "a" %}
+            <div class="digest-section-title">{{ unread_total }} unread message{{ unread_total|pluralize }} in {{ index|length }} channel{{ index|length|pluralize }}</div>
+            {% if index %}{{ digest_macros.channel_index(index) }}{% else %}<p>You're all caught up.</p>{% endif %}
+        {% elif digest_strategy == "b" %}
+            <div class="digest-section-title">Recent conversations</div>
+            {{ digest_macros.topic_rows(recents) }}
+            {% if recents_more %}<p class="digest_paragraph">{{ recents_more }} more topic{{ recents_more|pluralize }} in <a href="{{ realm_url }}/#recent">Recent conversations</a>.</p>{% endif %}
+        {% elif digest_strategy == "c" %}
+            {% if for_you %}
+            <div class="digest-section-title">For you</div>
+            {% for convo in for_you %}{{ digest_macros.conversation(convo) }}{% endfor %}
+            {% endif %}
+            {% if for_you_rest %}
+            <div class="digest-section-title">Also active</div>
+            {{ digest_macros.topic_rows(for_you_rest, show_reasons=True) }}
+            {% endif %}
+        {% elif digest_strategy == "d" %}
+            {% if summary.resolved %}
+            <div class="digest-section-title">Resolved</div>
+            {{ digest_macros.topic_rows(summary.resolved) }}
+            {% endif %}
+            <div class="digest-section-title">Busiest channels</div>
+            <div class="hot_convo_recipient_block digest-index-block">
+                <table border="0" cellpadding="0" cellspacing="0" class="layout digest-index">
+                    {% for stream, count in summary.busiest %}
+                    <tr class="digest-channel-{{ stream.id }}">
+                        <td class="digest-index-topic"><span class="digest-chip"><span class="hot_convo_privacy_icon">#</span>{{ stream.name }}</span></td>
+                        <td class="digest-index-meta">{{ count }} message{{ count|pluralize }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            {% for convo in hot_conversations %}{{ digest_macros.conversation(convo) }}{% endfor %}
+        {% endif %}
+        {% if emailed_topics and (digest_presentation == "mixed" or digest_strategy != "current") %}
+        <p class="digest-emailed-note">Not included, since you were already emailed about {{ "it" if emailed_topics|length == 1 else "them" }}: {% for row in emailed_topics %}<a href="{{ row.topic_url }}">#{{ row.topic.stream.name }} › {{ row.topic_display_name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+        {% endif %}
+    {% elif hot_conversations %}
+        {{ digest_macros.channel_colors_style(channel_colors) }}
+        {% for convo in hot_conversations %}{{ digest_macros.conversation(convo) }}{% endfor %}
     {% endif %}
 
     {% if new_channels.html %}
