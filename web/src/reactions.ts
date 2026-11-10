@@ -129,15 +129,12 @@ function send_reaction_request(
             // Network drop (status 0) and gateway/server errors deserve some
             // retries with exponential backoff.
             const is_transient_error = xhr.status === 0 || xhr.status >= 500;
+            const code = channel.xhr_error_code(xhr);
             let parsed;
             if (xhr.readyState === 0) {
                 // client cancelled the request
                 waiting_for_server_request_ids.delete(reaction_request_id);
-            } else if (
-                (parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON)).success &&
-                (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
-                    parsed.data.code === "REACTION_DOES_NOT_EXIST")
-            ) {
+            } else if (code === "REACTION_ALREADY_EXISTS" || code === "REACTION_DOES_NOT_EXIST") {
                 // Don't send error report for simple precondition failures caused by race
                 // conditions; the user already got what they wanted
                 waiting_for_server_request_ids.delete(reaction_request_id);

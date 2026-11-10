@@ -322,6 +322,18 @@ test("xhr_error_message", () => {
     assert.equal(channel.xhr_error_message(msg, xhr), "file not found");
 });
 
+test("xhr_error_code", () => {
+    assert.equal(
+        channel.xhr_error_code({responseJSON: {code: "BAD_REQUEST", msg: "Bad request"}}),
+        "BAD_REQUEST",
+    );
+    assert.equal(
+        channel.xhr_error_code({responseJSON: {msg: "Server temporarily unavailable"}}),
+        undefined,
+    );
+    assert.equal(channel.xhr_error_code({responseJSON: undefined}), undefined);
+});
+
 test("while_reloading", () => {
     reload_state.set_state_to_in_progress();
 
