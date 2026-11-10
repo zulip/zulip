@@ -1,0 +1,25 @@
+{
+    "event": "cert_will_expire",
+    "message": "[Billing API] SSL certificate for Checkout will expire on 11/4/2026 23:59:59 UTC",
+    "project": {
+        "id": 85736,
+        "name": "Billing API"
+    },
+    "site": {
+        "id": "8121ab91-87fd-4e92-ae23-a7b5bf915a2f",
+        "name": "Checkout",
+        "url": "https://billing.example.com/health",
+        "frequency": 5,
+        "match_type": "success",
+        "match": null,
+        "state": "up",
+        "active": true,
+        "last_checked_at": "2026-10-21T12:36:26.482113Z",
+        "retries": 0,
+        "proxy": 0,
+        "cert_will_expire_at": "2026-11-04T23:59:59.000000Z",
+        "timeout": null,
+        "response_headers": null,
+        "details_url": "https://app.honeybadger.io/projects/85736/sites/8121ab91-87fd-4e92-ae23-a7b5bf915a2f"
+    }
+}
