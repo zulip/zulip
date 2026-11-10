@@ -1037,7 +1037,7 @@ function do_toggle_resolve_topic(
             }
 
             if (xhr.responseJSON) {
-                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                const code = channel.xhr_error_code(xhr);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
                     return;
@@ -1251,7 +1251,7 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
             if (xhr.responseJSON === undefined) {
                 return;
             }
-            const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+            const code = channel.xhr_error_code(xhr);
             if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 const {first_message_id_allowed_to_move} = z
                     .object({first_message_id_allowed_to_move: z.number()})
@@ -1460,7 +1460,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 );
 
                 if (xhr.responseJSON !== undefined) {
-                    const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                    const code = channel.xhr_error_code(xhr);
                     if (code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
                         const new_row_html = render_wildcard_mention_not_allowed_error({
                             banner_type: compose_banner.ERROR,
@@ -1725,7 +1725,7 @@ export function move_topic_containing_message_to_stream(
         error(xhr): void {
             reset_modal_ui();
             if (xhr.responseJSON !== undefined) {
-                const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                const code = channel.xhr_error_code(xhr);
                 if (code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     const {first_message_id_allowed_to_move} = z
                         .object({first_message_id_allowed_to_move: z.number()})
