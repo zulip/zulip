@@ -137,11 +137,11 @@ export function generate_and_insert_audio_or_video_call_link(
         };
 
         const handle_error = (
-            _xhr: JQuery.jqXHR<unknown>,
+            error_xhr: JQuery.jqXHR<unknown>,
             status: JQuery.Ajax.ErrorTextStatus,
         ): void => {
             const callback = (): void => {
-                const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
+                const parsed = z.object({code: z.string()}).safeParse(error_xhr.responseJSON);
                 if (
                     status === "error" &&
                     parsed.success &&
