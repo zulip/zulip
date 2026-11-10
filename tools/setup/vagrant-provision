@@ -25,6 +25,19 @@ sudo dpkg --purge landscape-common
 sudo dpkg-divert --add --rename /etc/default/motd-news
 sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
 
+# Use the PostgreSQL version that production runs.  Environments
+# that already have PostgreSQL keep their version, since provision
+# does not upgrade databases.  When changing this, also update the
+# postgresql@*-main symlink in dev-vagrant-docker/Dockerfile.
+if [ ! -e /etc/postgresql ] && ! grep -q '^POSTGRESQL_VERSION=' /etc/environment; then
+    echo "POSTGRESQL_VERSION=17" | sudo tee -a /etc/environment
+fi
+# /etc/environment applies to later logins, so also read it now.
+if grep -q '^POSTGRESQL_VERSION=' /etc/environment; then
+    POSTGRESQL_VERSION="$(sed -n 's/^POSTGRESQL_VERSION=//p' /etc/environment)"
+    export POSTGRESQL_VERSION
+fi
+
 # Set default locale, this prevents errors if the user has another locale set.
 if ! grep -q 'LC_ALL=C.UTF-8' /etc/default/locale; then
     echo "LC_ALL=C.UTF-8" | sudo tee -a /etc/default/locale

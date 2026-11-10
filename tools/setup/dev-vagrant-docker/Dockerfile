@@ -41,7 +41,7 @@ RUN \
     && mkdir -p /run/sshd \
     # docker-systemctl-replacement doesn’t work with template units yet:
     # https://github.com/gdraheim/docker-systemctl-replacement/issues/62
-    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@16-main.service \
+    && ln -ns /lib/systemd/system/postgresql@.service /etc/systemd/system/multi-user.target.wants/postgresql@17-main.service \
     # Set up the vagrant user and its SSH key (globally public)
     # The ubuntu:24.04 image ships with an "ubuntu" user occupying UID 1000.
     && userdel -r ubuntu \

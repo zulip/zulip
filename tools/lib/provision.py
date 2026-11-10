@@ -93,6 +93,10 @@ elif vendor == "centos" and os_version == "7":
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     sys.exit(1)
+DISTRO_POSTGRESQL_VERSION = POSTGRESQL_VERSION
+# The Vagrant development environment sets this, to match the
+# PostgreSQL version used in production.
+POSTGRESQL_VERSION = os.environ.get("POSTGRESQL_VERSION", POSTGRESQL_VERSION)
 
 VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
 
@@ -184,10 +188,17 @@ elif "debian" in os_families():
         # https://github.com/apache/arrow/issues/55112
         DEBIAN_DEPENDENCIES.append("opentelemetry-cpp")
 
+    # PGroonga's builds for PostgreSQL versions other than the
+    # distribution's own have -pgdg- in their package names.
+    if POSTGRESQL_VERSION == DISTRO_POSTGRESQL_VERSION:
+        pgroonga_package = f"postgresql-{POSTGRESQL_VERSION}-pgroonga"
+    else:
+        pgroonga_package = f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga"
+
     SYSTEM_DEPENDENCIES = [
         *DEBIAN_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
-        f"postgresql-{POSTGRESQL_VERSION}-pgroonga",
+        pgroonga_package,
         *VENV_DEPENDENCIES,
     ]
 elif "rhel" in os_families():
