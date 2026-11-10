@@ -1,0 +1,13 @@
+{{! The label lives in an attribute so that it is not copied along with the
+message; screen readers read it from the button's aria-label. }}
+<div class="remove-preview-overlay" aria-hidden="true" data-label="{{t 'Remove link preview'}}"></div>
+<div class="remove-preview-container">
+    <button
+      class="remove-preview-button tippy-zulip-delayed-tooltip"
+      type="button"
+      data-preview-url="{{preview_url}}"
+      data-tippy-content="{{t 'Remove link preview'}}"
+      aria-label="{{t 'Remove link preview'}}">
+        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+    </button>
+</div>
