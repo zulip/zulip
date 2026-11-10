@@ -552,8 +552,7 @@
     {
       "name": "link_with_quote_and_parentheses_in_url",
       "input": "[film](https://en.wikipedia.org/wiki/Ocean's_Eleven_(2001_film))",
-      "expected_output": "<p><a href=\"https://en.wikipedia.org/wiki/Ocean's_Eleven_(2001_film\">film</a>)</p>",
-      "marked_expected_output": "<p><a href=\"https://en.wikipedia.org/wiki/Ocean's_Eleven_(2001_film)\">film</a></p>"
+      "expected_output": "<p><a href=\"https://en.wikipedia.org/wiki/Ocean's_Eleven_(2001_film)\">film</a></p>"
     },
     {
       "name": "link_with_parentheses_in_url_and_single_quoted_title",
@@ -1178,6 +1177,21 @@
       "name": "explicit_link_asana_desktop",
       "input": "[Asana Task](asanadesktop://task/123456789)",
       "expected_output": "<p><a href=\"asanadesktop://task/123456789\">Asana Task</a></p>"
+    },
+    {
+      "name": "link_with_parens",
+      "input": "[example with parens](https://example.org?a=())",
+      "expected_output": "<p><a href=\"https://example.org?a=()\">example with parens</a></p>"
+    },
+    {
+      "name": "link_with_single_quote",
+      "input": "[example with single quote](https://example.org?a=')",
+      "expected_output": "<p><a href=\"https://example.org?a='\">example with single quote</a></p>"
+    },
+    {
+      "name": "link_with_single_quote_and_parens",
+      "input": "[example with single quote and parens](https://example.org?a='())",
+      "expected_output": "<p><a href=\"https://example.org?a='()\">example with single quote and parens</a></p>"
     }
   ],
   "linkify_tests": [
