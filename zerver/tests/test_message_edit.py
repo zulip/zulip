@@ -805,6 +805,36 @@ class EditMessageTest(ZulipTestCase):
             ),
         )
 
+    def test_edit_history_prepended_in_database(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        for recipient in ["dm", "stream"]:
+            if recipient == "dm":
+                msg_id = self.send_personal_message(
+                    hamlet, self.example_user("cordelia"), "first version"
+                )
+            else:
+                msg_id = self.send_stream_message(hamlet, "Denmark", "first version")
+            for content in ["second version", "third version"]:
+                with queries_captured() as queries:
+                    result = self.client_patch(f"/json/messages/{msg_id}", {"content": content})
+                self.assert_json_success(result)
+
+            # Only the new edit history event, and not the existing
+            # edit history, is sent to the database.
+            update_sqls = [q.sql for q in queries if q.sql.startswith('UPDATE "zerver_message"')]
+            self.assert_length(update_sqls, 1)
+            self.assertIn("second version", update_sqls[0])
+            self.assertNotIn("first version", update_sqls[0])
+
+            message = Message.objects.get(id=msg_id)
+            self.assertEqual(message.content, "third version")
+            edit_history = orjson.loads(assert_is_not_none(message.edit_history))
+            self.assertEqual(
+                [event["prev_content"] for event in edit_history],
+                ["second version", "first version"],
+            )
+
     def test_edit_history_unedited(self) -> None:
         self.login("hamlet")
 

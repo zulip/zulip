@@ -139,6 +139,10 @@ def save_message_for_edit_use_case(message: Message) -> None:
             "recipient_id",
         ]
     )
+    # The database computed the new edit_history value from an
+    # expression; drop the expression so that the field is lazily
+    # fetched from the database if it is accessed again.
+    del message.edit_history
 
 
 def user_message_exists_for_topic(
@@ -152,16 +156,48 @@ def user_message_exists_for_topic(
     ).exists()
 
 
+def prepend_edit_history_expression(edit_history_event: EditHistoryEvent) -> Cast:
+    # We cast the `edit_history` column to jsonb (defaulting NULL
+    # to `[]`), apply the `||` array concatenation operator to it,
+    # and cast the result back to text.  This avoids sending the
+    # entire (potentially very large) edit history over the wire on
+    # every edit.  See #26496 for making this column itself jsonb,
+    # which is a complicated migration.
+    #
+    # This equates to:
+    #    "edit_history" = (
+    #      ( '[{ ..json event.. }]' )::jsonb
+    #      ||
+    #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
+    #     )::text
+    return Cast(
+        Func(
+            Cast(
+                Value(orjson.dumps([edit_history_event]).decode()),
+                JSONField(),
+            ),
+            Cast(
+                Func(
+                    F("edit_history"),
+                    Value("[]"),
+                    function="COALESCE",
+                ),
+                JSONField(),
+            ),
+            function="",
+            arg_joiner=" || ",
+        ),
+        TextField(),
+    )
+
+
 def update_edit_history(
     message: Message, last_edit_time: datetime, edit_history_event: EditHistoryEvent
 ) -> None:
     message.last_edit_time = last_edit_time
-    if message.edit_history is not None:
-        edit_history: list[EditHistoryEvent] = orjson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = orjson.dumps(edit_history).decode()
+    # The new value is computed by the database when the message is
+    # saved; see save_message_for_edit_use_case.
+    message.edit_history = prepend_edit_history_expression(edit_history_event)
 
 
 def update_messages_for_topic_edit(
@@ -199,36 +235,7 @@ def update_messages_for_topic_edit(
 
     update_fields: dict[str, object] = {
         "last_edit_time": last_edit_time,
-        # We cast the `edit_history` column to jsonb (defaulting NULL
-        # to `[]`), apply the `||` array concatenation operator to it,
-        # and cast the result back to text.  See #26496 for making
-        # this column itself jsonb, which is a complicated migration.
-        #
-        # This equates to:
-        #    "edit_history" = (
-        #      ( '[{ ..json event.. }]' )::jsonb
-        #      ||
-        #      (COALESCE("zerver_message"."edit_history", '[]'))::jsonb
-        #     )::text
-        "edit_history": Cast(
-            Func(
-                Cast(
-                    Value(orjson.dumps([edit_history_event]).decode()),
-                    JSONField(),
-                ),
-                Cast(
-                    Func(
-                        F("edit_history"),
-                        Value("[]"),
-                        function="COALESCE",
-                    ),
-                    JSONField(),
-                ),
-                function="",
-                arg_joiner=" || ",
-            ),
-            TextField(),
-        ),
+        "edit_history": prepend_edit_history_expression(edit_history_event),
     }
     if message_edit_request.is_stream_edited:
         update_fields["recipient"] = message_edit_request.target_stream.recipient
