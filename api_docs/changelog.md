@@ -70,6 +70,8 @@ format used by the Zulip server that they are interacting with.
   workspace-restricted, audience. Clients should use this to warn users that
   the video call feature is restricted to a particular Google Workspace before
   starting the Google OAuth flow for the Google Meet video call integration.
+* `PATCH /bots/{bot_id}`: The `config_data` parameter is now only accepted
+  for embedded bots; sending it for other bot types returns an error.
 
 **Feature level 513**
 
