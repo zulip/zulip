@@ -228,12 +228,38 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_error(result, "Default custom field cannot be updated.")
 
+        # Verify sending name, hint, or field_data individually with existing values is rejected
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={
                 "name": field.name,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
                 "hint": field.hint,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
                 "field_data": field_data,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        # Successfully update display_in_profile_summary without name/hint/field_data
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
                 "display_in_profile_summary": "true",
             },
         )
@@ -1153,6 +1179,45 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             },
         )
         self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        # Verify that passing existing name, hint, or field_data individually is rejected
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": field.name,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "hint": field.hint,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "field_data": field.field_data,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        # Successfully update display_in_profile_summary without passing name/hint/field_data
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_success(result)
+        field.refresh_from_db()
+        self.assertTrue(field.display_in_profile_summary)
 
     def assert_profile_field_value(
         self, user: UserProfile, field_id: int, field_value: str | None

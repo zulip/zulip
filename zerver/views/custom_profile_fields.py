@@ -147,24 +147,6 @@ def validate_custom_profile_field_update(
     )
 
 
-def update_only_display_in_profile_summary(
-    existing_field: CustomProfileField,
-    requested_field_data: ProfileFieldData | None = None,
-    requested_name: str | None = None,
-    requested_hint: str | None = None,
-) -> bool:
-    if (
-        (requested_name is not None and requested_name != existing_field.name)
-        or (requested_hint is not None and requested_hint != existing_field.hint)
-        or (
-            requested_field_data is not None
-            and requested_field_data != orjson.loads(existing_field.field_data)
-        )
-    ):
-        return False
-    return True
-
-
 def display_in_profile_summary_limit_reached(
     realm: Realm, profile_field_id: int | None = None
 ) -> bool:
@@ -272,16 +254,8 @@ def update_realm_custom_profile_field(
 
     if (
         field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
-        # HACK: Allow changing the display_in_profile_summary property
-        # of default external account types, but not any others.
-        #
-        # TODO: Make the name/hint/field_data parameters optional, and
-        # explicitly require that the client passes None for all of them for this case.
-        # Right now, for name/hint/field_data we allow the client to send the existing
-        # values for the respective fields. After this TODO is done, we will only allow
-        # the client to pass None values if the field is unchanged.
         and is_default_external_field(field.field_type, orjson.loads(field.field_data))
-        and not update_only_display_in_profile_summary(field, field_data, name, hint)
+        and (name is not None or hint is not None or field_data is not None)
     ):
         raise JsonableError(_("Default custom field cannot be updated."))
 
