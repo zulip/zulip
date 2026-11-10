@@ -123,7 +123,9 @@ def get_message_edit_history(
         == MessageEditHistoryVisibilityPolicyEnum.none.value
     ):
         raise JsonableError(_("Message edit history is disabled in this organization"))
-    message = access_message(user_profile, message_id, is_modifying_message=False)
+    message = access_message(
+        user_profile, message_id, is_modifying_message=False, fetch_edit_history=True
+    )
 
     # Extract the message edit history from the message
     if message.edit_history is not None:

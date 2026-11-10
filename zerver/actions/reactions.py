@@ -109,8 +109,14 @@ def check_add_reaction(
     emoji_code: str | None,
     reaction_type: str | None,
 ) -> None:
+    # notify_reaction_update reads the edit history to update the
+    # message cache.
     message, user_message = access_message_and_usermessage(
-        user_profile, message_id, lock_message=True, is_modifying_message=True
+        user_profile,
+        message_id,
+        lock_message=True,
+        is_modifying_message=True,
+        fetch_edit_history=True,
     )
 
     if emoji_code is None or reaction_type is None:
