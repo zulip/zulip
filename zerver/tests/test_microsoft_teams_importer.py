@@ -985,11 +985,12 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
         finally:
             shutil.rmtree(output_dir)
 
-    def test_skip_messages_not_sent_by_users(self) -> None:
+    def test_skip_messages_not_sent_by_users_or_deleted(self) -> None:
         app_message: MicrosoftTeamsFieldsT = {
             "Id": "1754976555179",
             "MessageType": "message",
             "CreatedDateTime": "2025-08-12T05:29:15.179+00:00",
+            "DeletedDateTime": None,
             "From": {
                 "Application": {"Id": "workflows-app-id", "DisplayName": "Workflows"},
                 "Device": None,
@@ -1005,6 +1006,12 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             "MessageType": "systemEventMessage",
             "From": None,
         }
+        deleted_message: MicrosoftTeamsFieldsT = {
+            **app_message,
+            "Id": "1754976555181",
+            "DeletedDateTime": "2025-08-13T05:29:15.179+00:00",
+            "From": {"Application": None, "Device": None, "User": {"Id": "user-id"}},
+        }
 
         with self.assertLogs(level="WARNING") as warn_logs:
             conversion_result = process_messages(
@@ -1012,7 +1019,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 channel_metadata=None,
                 do_download_and_export_upload_file=lambda parameter: None,
                 domain_name="zulip.example.com",
-                messages=[app_message, system_message],
+                messages=[app_message, system_message, deleted_message],
                 microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
                 microsoft_teams_user_id_to_zulip_user_id={},
                 realm={},
@@ -1026,5 +1033,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             [
                 "WARNING:root:Skipping message 1754976555179, which wasn't sent by a user.",
                 "WARNING:root:Skipping message 1754976555180, which wasn't sent by a user.",
+                "WARNING:root:Skipping deleted message 1754976555181.",
             ],
         )
