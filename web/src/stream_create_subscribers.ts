@@ -87,11 +87,13 @@ function build_pill_widget({
     $parent_container: JQuery;
 }): CombinedPillContainer {
     const $pill_container = $parent_container.find(".pill-container");
+    const $error_element = $parent_container.find(".add-subscribers-error").expectOne();
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
     const get_user_groups = user_groups.get_all_realm_user_groups;
     const new_pill_widget = add_subscribers_pill.create({
         $parent_container,
         $pill_container,
+        $error_element,
         get_potential_subscribers,
         get_user_groups,
         with_add_button: false,

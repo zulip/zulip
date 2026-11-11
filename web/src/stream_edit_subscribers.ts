@@ -151,6 +151,7 @@ export function enable_subscriber_management({
     const stream_id = sub.stream_id;
 
     const $pill_container = $parent_container.find(".pill-container");
+    const $error_element = $parent_container.find(".add-subscribers-error").expectOne();
 
     // current_stream_id and pill_widget are module-level variables
     current_stream_id = stream_id;
@@ -166,6 +167,7 @@ export function enable_subscriber_management({
     pill_widget = add_subscribers_pill.create({
         $parent_container,
         $pill_container,
+        $error_element,
         get_potential_subscribers,
         onPillCreateAction: pill_update_callback,
         onPillRemoveAction: pill_update_callback,

@@ -355,6 +355,23 @@
     opacity: 0.7;
 }
 
+.add-subscribers-hintline-container {
+    margin-bottom: 10px;
+}
+
+.add-subscribers-error {
+    color: hsl(0deg 100% 50%);
+}
+
+.add-subscribers-error:empty {
+    display: none;
+}
+
+.add-subscribers-hintline-container:has(> .add-subscribers-error:not(:empty))
+    > .add-subscribers-subtitle {
+    display: none;
+}
+
 .send_notification_to_new_subscribers_container {
     /* Avoid having the clickable area extend to the full width of
     the containing element. */
@@ -366,7 +383,7 @@
     padding-left: 2px;
 }
 
-#stream_settings .add-subscribers-subtitle,
+#stream_settings,
 #user_group_settings .add-members-subtitle {
     margin-bottom: 10px;
 }
