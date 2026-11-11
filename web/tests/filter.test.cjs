@@ -1949,6 +1949,10 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
     page_params.is_spectator = false;
 
+    term = {operator: "channels", operand: "private", negated: true};
+    string = "translated: Exclude channel type private";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
     term = {operator: "date", operand: ""};
     string = "translated: Messages sent around a specific date";
     assert.equal(Filter.search_description_as_html(term, true), string);
@@ -2001,11 +2005,15 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "search", operand: "lunch"};
-    string = "search for lunch";
+    string = "translated: Search for lunch";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "search", operand: "lunch", negated: true};
-    string = "exclude lunch";
+    string = "translated: Exclude lunch";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "search", operand: ""};
+    string = "translated: Search for";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "id", operand: "99"};
@@ -2090,12 +2098,8 @@ test("describe", ({mock_template, override}) => {
     string = "translated: Invalid unresolved operand for is operator";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
-    // All the `is` operands are handled in search_suggestions. This is just
-    // for coverage.
-    assert.equal(Filter.operator_to_prefix("is"), "messages that are");
-
     term = {operator: "with", operand: "12"};
-    string = "unknown operator";
+    string = "translated: Unknown operator";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "has", operand: "image", negated: true};
@@ -2134,7 +2138,7 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "channels", operand: ""};
-    string = "channel type";
+    string = "translated: Channel type";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "topic", operand: ""};

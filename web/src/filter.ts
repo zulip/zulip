@@ -50,11 +50,6 @@ type Part =
           type: "empty_topic";
           negated: boolean;
           topic_display_name: string;
-      }
-    | {
-          type: "prefix_for_operator";
-          prefix_for_operator: string;
-          operand: string;
       };
 
 const channels_operands = new Set(["archived", "public", "web-public"]);
@@ -797,26 +792,6 @@ export class Filter {
         return term_types.toSorted(compare);
     }
 
-    static operator_to_prefix(operator: NarrowTerm["operator"], negated?: boolean): string {
-        operator = filter_util.canonicalize_operator(operator);
-
-        if (operator === "search") {
-            return negated ? "exclude" : "search for";
-        }
-
-        const verb = negated ? "exclude " : "";
-
-        switch (operator) {
-            case "channels":
-                return verb + "channel type";
-
-            // Note: We hack around using this in "describe" below.
-            case "is":
-                return verb + "messages that are";
-        }
-        return "";
-    }
-
     // Convert a search term to a human-readable description.
     static describe_term(term: NarrowTermSuggestion, is_operator_suggestion: boolean): Part {
         // Calling canonicalize_term on the term is not easy here,
@@ -834,7 +809,7 @@ export class Filter {
                 content: this.describe_has_operator(term.negated ?? false, term.operand),
             };
         }
-        if (term.operator === "channels" && channels_operands.has(term.operand)) {
+        if (filter_util.canonicalize_operator(term.operator) === "channels") {
             return {
                 type: "plain_text",
                 content: this.describe_channels_operator(term.negated ?? false, term.operand),
@@ -922,17 +897,25 @@ export class Filter {
                 content: this.describe_in_operator(term.negated ?? false, term.operand),
             };
         }
-        const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
-        if (prefix_for_operator !== "") {
+        if (operator === "search") {
+            if (term.operand === "") {
+                return {
+                    type: "plain_text",
+                    content: term.negated
+                        ? $t({defaultMessage: "Exclude"})
+                        : $t({defaultMessage: "Search for"}),
+                };
+            }
             return {
-                type: "prefix_for_operator",
-                prefix_for_operator,
-                operand: term.operand,
+                type: "plain_text",
+                content: term.negated
+                    ? $t({defaultMessage: "Exclude {search_text}"}, {search_text: term.operand})
+                    : $t({defaultMessage: "Search for {search_text}"}, {search_text: term.operand}),
             };
         }
         return {
             type: "plain_text",
-            content: "unknown operator",
+            content: $t({defaultMessage: "Unknown operator"}),
         };
     }
 
@@ -1109,7 +1092,6 @@ export class Filter {
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
-        assert(channels_operands.has(operand));
         if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
             return negated
                 ? $t({defaultMessage: "Exclude all public channels that you can view"})
@@ -1124,10 +1106,21 @@ export class Filter {
                 return negated
                     ? $t({defaultMessage: "Exclude archived channels"})
                     : $t({defaultMessage: "Archived channels"});
-            default:
+            case "public":
                 return negated
                     ? $t({defaultMessage: "Exclude all public channels"})
                     : $t({defaultMessage: "All public channels"});
+            case "":
+                return negated
+                    ? $t({defaultMessage: "Exclude channel type"})
+                    : $t({defaultMessage: "Channel type"});
+            default:
+                return negated
+                    ? $t(
+                          {defaultMessage: "Exclude channel type {channel_type}"},
+                          {channel_type: operand},
+                      )
+                    : $t({defaultMessage: "Channel type {channel_type}"}, {channel_type: operand});
         }
     }
 

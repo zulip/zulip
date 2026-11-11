@@ -26,12 +26,6 @@
                 {{#*inline "z-topic"}}<span class="empty-topic-display">{{> @partial-block}}</span>{{/inline}}
             {{/tr}}
         {{~/if~}}
-    {{else if (eq this.type "prefix_for_operator")}}
-        {{~#if this.operand~}}
-        {{this.prefix_for_operator}} {{this.operand}}
-        {{~ else ~}}
-        {{this.prefix_for_operator}}
-        {{~/if~}}
     {{~/if~}}
 
 {{~/with~}}
