@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
@@ -7,6 +6,7 @@ import * as date_util from "./date_util.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import {Filter} from "./filter.ts";
 import * as filter_util from "./filter_util.ts";
+import {$t_html} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -1279,8 +1279,11 @@ class Attacher {
     }
 }
 
-export function search_term_description_html(operand: string): string {
-    return `search for ${Handlebars.Utils.escapeExpression(operand)}`;
+export function search_term_description_html(operand: string, is_line_start: boolean): string {
+    // After pills, this continues the suggestion line, so it isn't capitalized.
+    return is_line_start
+        ? $t_html({defaultMessage: "Search for {search_text}"}, {search_text: operand})
+        : $t_html({defaultMessage: "search for {search_text}"}, {search_text: operand});
 }
 
 // The canonical list of filterers that the search typeahead runs. The

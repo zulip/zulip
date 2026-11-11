@@ -277,19 +277,16 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 }
                 break;
             }
-            case "search": {
-                let description_html = search_term_description_html(search_pill.operand);
+            case "search":
                 // We capitalize the beginning of the suggestion line if it's text (not
                 // pills), which is only relevant for suggestions with search operators.
-                if (index === 0) {
-                    const capitalized_first_letter = description_html.charAt(0).toUpperCase();
-                    description_html = capitalized_first_letter + description_html.slice(1);
-                }
                 return {
                     ...search_pill,
-                    description_html,
+                    description_html: search_term_description_html(
+                        search_pill.operand,
+                        index === 0,
+                    ),
                 };
-            }
         }
 
         return {
