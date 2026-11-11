@@ -810,9 +810,6 @@ export class Filter {
             case "channels":
                 return verb + "channel type";
 
-            case "date":
-                return "messages sent around a specific date";
-
             case "near":
                 return verb + "messages around";
 
@@ -902,17 +899,24 @@ export class Filter {
                 content: this.describe_user_operator(operator, term.negated ?? false, term.operand),
             };
         }
+        if (operator === "date") {
+            // Negated date terms aren't valid, so there's no "exclude" variant.
+            if (term.operand === "") {
+                return {
+                    type: "plain_text",
+                    content: $t({defaultMessage: "Messages sent around a specific date"}),
+                };
+            }
+            return {
+                type: "plain_text",
+                content: $t(
+                    {defaultMessage: "Messages sent around {date}"},
+                    {date: date_util.convert_date_str_to_description_date(term.operand)},
+                ),
+            };
+        }
         const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
-            switch (term.operator) {
-                case "date":
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator:
-                            term.operand === "" ? prefix_for_operator : "messages sent around",
-                        operand: date_util.convert_date_str_to_description_date(term.operand),
-                    };
-            }
             return {
                 type: "prefix_for_operator",
                 prefix_for_operator,

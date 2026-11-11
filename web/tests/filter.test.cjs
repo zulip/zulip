@@ -1950,11 +1950,15 @@ test("describe", ({mock_template, override}) => {
     page_params.is_spectator = false;
 
     term = {operator: "date", operand: ""};
-    string = "messages sent around a specific date";
+    string = "translated: Messages sent around a specific date";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "date", operand: "2026-03-15"};
-    string = "messages sent around March 15, 2026";
+    string = "translated: Messages sent around March 15, 2026";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "date", operand: "yesterday"};
+    string = "translated: Messages sent around yesterday";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     const devel_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">devel</span></span>`;
