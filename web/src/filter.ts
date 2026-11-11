@@ -47,11 +47,6 @@ type Part =
           stream: StreamSubscription;
       }
     | {
-          type: "is_operator";
-          verb: string;
-          operand: string;
-      }
-    | {
           type: "invalid_has";
           operand: string;
       }
@@ -861,25 +856,9 @@ export class Filter {
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
         if (term.operator === "is") {
-            // Some operands have their own negative words, like
-            // unresolved, rather than the default "exclude " prefix.
-            const custom_negated_operand_phrases: Record<string, string> = {
-                resolved: "unresolved",
-            };
-            const negated_phrase = custom_negated_operand_phrases[term.operand];
-            if (term.negated && negated_phrase !== undefined) {
-                return {
-                    type: "is_operator",
-                    verb: "",
-                    operand: negated_phrase,
-                };
-            }
-
-            const verb = term.negated ? "exclude " : "";
             return {
-                type: "is_operator",
-                verb,
-                operand: term.operand,
+                type: "plain_text",
+                content: this.describe_is_operator(term.negated ?? false, term.operand),
             };
         }
         if (term.operator === "has") {
@@ -954,6 +933,46 @@ export class Filter {
             type: "plain_text",
             content: "unknown operator",
         };
+    }
+
+    static describe_is_operator(negated: boolean, operand: string): string {
+        switch (operand) {
+            case "mentioned":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages that mention you"})
+                    : $t({defaultMessage: "Messages that mention you"});
+            case "starred":
+                return negated
+                    ? $t({defaultMessage: "Exclude starred messages"})
+                    : $t({defaultMessage: "Starred messages"});
+            case "alerted":
+                return negated
+                    ? $t({defaultMessage: "Exclude alerted messages"})
+                    : $t({defaultMessage: "Alerted messages"});
+            case "unread":
+                return negated
+                    ? $t({defaultMessage: "Exclude unread messages"})
+                    : $t({defaultMessage: "Unread messages"});
+            case "dm":
+            case "private":
+                return negated
+                    ? $t({defaultMessage: "Exclude direct messages"})
+                    : $t({defaultMessage: "Direct messages"});
+            case "resolved":
+                return negated
+                    ? $t({defaultMessage: "Unresolved topics"})
+                    : $t({defaultMessage: "Resolved topics"});
+            case "followed":
+                return negated
+                    ? $t({defaultMessage: "Exclude followed topics"})
+                    : $t({defaultMessage: "Followed topics"});
+            case "muted":
+                return negated
+                    ? $t({defaultMessage: "Exclude muted messages"})
+                    : $t({defaultMessage: "Muted messages"});
+            default:
+                return $t({defaultMessage: "Invalid {operand} operand for is operator"}, {operand});
+        }
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {

@@ -18,40 +18,6 @@
         {{~ else ~}}
         {{this.prefix_for_operator}}
         {{~/if~}}
-    {{else if (eq this.type "is_operator")}}
-        {{#if (eq this.operand "mentioned")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}messages that mention you
-            {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}{{this.operand}} messages
-            {{~!-- squash whitespace --~}}
-        {{else if (or (eq this.operand "dm") (eq this.operand "private"))}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}direct messages
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "resolved")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}resolved topics
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "followed")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}followed topics
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "muted")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}muted messages
-            {{~!-- squash whitespace --~}}
-        {{else if (eq this.operand "unresolved")}}
-            {{~!-- squash whitespace --~}}
-            {{this.verb}}unresolved topics
-            {{~!-- squash whitespace --~}}
-        {{else}}
-            {{~!-- squash whitespace --~}}
-            invalid {{this.operand}} operand for is operator
-            {{~!-- squash whitespace --~}}
-        {{~/if~}}
     {{~/if~}}
 
 {{~/with~}}

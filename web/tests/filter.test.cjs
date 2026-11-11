@@ -1999,48 +1999,61 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "dm"};
-    string = "direct messages";
+    string = "translated: Direct messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "dm", negated: true};
+    string = "translated: Exclude direct messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "starred"};
-    string = "starred messages";
+    string = "translated: Starred messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "starred", negated: true};
-    string = "exclude starred messages";
+    string = "translated: Exclude starred messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "unread"};
-    string = "unread messages";
+    string = "translated: Unread messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "mentioned"};
-    string = "messages that mention you";
+    string = "translated: Messages that mention you";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "mentioned", negated: true};
+    string = "translated: Exclude messages that mention you";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "alerted"};
-    string = "alerted messages";
+    string = "translated: Alerted messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "resolved"};
-    string = "resolved topics";
+    string = "translated: Resolved topics";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "followed"};
-    string = "followed topics";
+    string = "translated: Followed topics";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "muted"};
-    string = "muted messages";
+    string = "translated: Muted messages";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     // operands with their own negative words, like resolved.
     term = {operator: "is", operand: "resolved", negated: true};
-    string = "unresolved topics";
+    string = "translated: Unresolved topics";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "something_we_do_not_support"};
-    string = "invalid something_we_do_not_support operand for is operator";
+    string = "translated: Invalid something_we_do_not_support operand for is operator";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    // "unresolved" is only the description of -is:resolved, not an operand.
+    term = {operator: "is", operand: "unresolved"};
+    string = "translated: Invalid unresolved operand for is operator";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     // All the `is` operands are handled in search_suggestions. This is just
