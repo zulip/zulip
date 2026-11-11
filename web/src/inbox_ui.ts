@@ -2066,6 +2066,14 @@ export function update_internal(): void {
         return;
     }
 
+    // `row_focus` is a position in the list, so remember which row it
+    // points at before rows are added or removed. `current_navigated_id`
+    // can't be used for this, since scrolling while Inbox isn't focused
+    // moves only `row_focus`. When the search box or filters dropdown
+    // was focused last, `row_focus` is where ArrowDown reenters the
+    // list, such as the top after a new search, so it's left as is.
+    const focused_row_id = is_navigated_to_list() ? get_all_rows().get(row_focus)?.id : undefined;
+
     const unread_dms = unread.get_unread_pm();
     const unread_dms_count = unread_dms.total_count;
     const unread_dms_dict = unread_dms.pm_dict;
@@ -2246,6 +2254,13 @@ export function update_internal(): void {
     const has_visible_unreads = has_dms_post_filter || has_topics_post_filter;
     show_empty_inbox_text(has_visible_unreads);
 
+    // Rows are matched by id, since rerendering a row replaces its element.
+    const all_rows = get_all_rows().toArray();
+    const focused_row_index = all_rows.findIndex((row) => row.id === focused_row_id);
+    if (focused_row_index !== -1) {
+        row_focus = focused_row_index;
+    }
+
     // We want to avoid weird jumps when user is interacting with Inbox
     // and we are updating the view. So, we only reset current focus if
     // the update was triggered by user. This can mean `row_focus` can
@@ -2254,7 +2269,7 @@ export function update_internal(): void {
         revive_current_focus();
         update_triggered_by_user = false;
     } else {
-        if (row_focus >= get_all_rows().length) {
+        if (row_focus >= all_rows.length) {
             revive_current_focus();
         }
     }
