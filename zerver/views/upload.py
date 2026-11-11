@@ -249,6 +249,21 @@ def closest_thumbnail_format(
     return min(rendered_formats, key=grade_format)
 
 
+def get_deleted_file_placeholder_path(filename: str) -> str:
+    """Returns the placeholder image to serve for an uploaded file that
+    does not exist (or has been deleted), with text matching the file's
+    type.  Since the Attachment row is gone, the filename's extension is
+    the only information we have about what kind of file it was.
+    """
+    content_type = guess_type(filename)[0]
+    if content_type is not None:
+        if content_type.startswith("image/"):
+            return "images/errors/image-not-exist.png"
+        if content_type.startswith("video/"):
+            return "images/errors/video-not-exist.png"
+    return "images/errors/file-not-exist.png"
+
+
 def serve_file(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
@@ -270,7 +285,7 @@ def serve_file(
 
     if attachment is None:
         if request.get_preferred_type(["text/html", "image/png"]) == "image/png":
-            response = serve_image_error(404, "images/errors/image-not-exist.png")
+            response = serve_image_error(404, get_deleted_file_placeholder_path(filename))
         else:
             response = HttpResponseNotFound(
                 _("<p>This file does not exist or has been deleted.</p>")
