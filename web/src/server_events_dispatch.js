@@ -1121,6 +1121,16 @@ export function dispatch_normal_event(event) {
                     settings_preferences.report_emojiset_change(
                         settings_preferences.user_settings_panel,
                     );
+                    // Status emoji are hidden with the plain-text emoji set.
+                    for (const user_id of user_status.get_user_ids_with_status_emoji()) {
+                        message_store.update_status_emoji_info(
+                            user_id,
+                            user_status.get_status_emoji(user_id),
+                        );
+                    }
+                    pm_list.update_private_messages();
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();

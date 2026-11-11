@@ -13,8 +13,10 @@ const people = zrequire("people");
 
 const compose_pm_pill = zrequire("compose_pm_pill");
 const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 set_realm(make_realm());
+initialize_user_settings({user_settings: {}});
 
 let pills = {
     pill: {},

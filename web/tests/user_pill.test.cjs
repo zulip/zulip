@@ -11,11 +11,13 @@ const blueslip = require("./lib/zblueslip.cjs");
 const people = zrequire("people");
 const user_pill = zrequire("user_pill");
 const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const settings_data = mock_esm("../src/settings_data");
 
 const realm = make_realm();
 set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 const alice = make_user({
     email: "alice@example.com",

@@ -23,6 +23,7 @@ const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
 const typeahead_helper = zrequire("typeahead_helper");
 
 const current_user = {};
@@ -33,6 +34,7 @@ const realm = make_realm({
     },
 });
 set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 // set global test variables.
 let sort_recipients_called = false;

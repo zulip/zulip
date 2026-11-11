@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import type {Page} from "puppeteer";
 
 import * as common from "./lib/common.ts";
@@ -82,21 +84,17 @@ async function test_user_status_with_text_emojiset(page: Page): Promise<void> {
     await page.waitForSelector(`.emoji-popover ${grinning_emoji_selector}`, {visible: true});
     await page.click(`.emoji-popover ${grinning_emoji_selector}`);
     await page.waitForSelector(".emoji-picker-popover", {hidden: true});
-    await page.waitForFunction(
-        () =>
-            document.querySelector(".status-emoji-wrapper .emoji_alt_code")?.textContent?.trim() ===
-            ":grinning:",
-    );
+    await page.waitForSelector(`.selected-emoji${grinning_emoji_selector}`);
 
     await page.click("#set-user-status-modal .dialog_submit_button");
     await page.waitForSelector("#set-user-status-modal", {hidden: true});
 
-    await page.waitForFunction(
-        () =>
-            document
-                .querySelector(".user_sidebar_entry_me .user-presence-link .emoji_alt_code")
-                ?.textContent?.trim() === ":grinning:",
-    );
+    // Status emoji are hidden with the plain-text emoji set, and
+    // shown again once the user switches back.
+    const my_status_emoji_selector = ".user_sidebar_entry_me .user-presence-link .status-emoji";
+    assert.equal(await page.$(my_status_emoji_selector), null);
+    await switch_emojiset(page, "google");
+    await page.waitForSelector(`${my_status_emoji_selector}${grinning_emoji_selector}`);
 }
 
 async function user_status_test(page: Page): Promise<void> {
