@@ -1908,40 +1908,44 @@ test("describe", ({mock_template, override}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     term = {operator: "channels", operand: "public"};
-    string = "all public channels";
+    string = "translated: All public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "public", negated: true};
-    string = "exclude all public channels";
+    string = "translated: Exclude all public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "archived"};
-    string = "archived channels";
+    string = "translated: Archived channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "archived", negated: true};
-    string = "exclude archived channels";
+    string = "translated: Exclude archived channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "web-public"};
-    string = "all web-public channels";
+    string = "translated: All web-public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "web-public", negated: true};
-    string = "exclude all web-public channels";
+    string = "translated: Exclude all web-public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     page_params.is_spectator = true;
     term = {operator: "channels", operand: "public"};
-    string = "all public channels that you can view";
+    string = "translated: All public channels that you can view";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "channels", operand: "public", negated: true};
+    string = "translated: Exclude all public channels that you can view";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "web-public"};
-    string = "all web-public channels";
+    string = "translated: All web-public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channels", operand: "web-public", negated: true};
-    string = "exclude all web-public channels";
+    string = "translated: Exclude all web-public channels";
     assert.equal(Filter.search_description_as_html(term, false), string);
     page_params.is_spectator = false;
 
