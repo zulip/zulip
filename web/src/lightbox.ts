@@ -711,13 +711,19 @@ export function initialize(): void {
         },
     );
 
-    $("#main_div, #compose .preview_content").on("click", ".message_inline_video", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // A deleted video has no <video> element to open, so clicking its
+    // placeholder just follows the link.
+    $("#main_div, #compose .preview_content").on(
+        "click",
+        ".message_inline_video:not(.video-deleted)",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-        const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
-        handle_inline_media_element_click($video);
-    });
+            const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
+            handle_inline_media_element_click($video);
+        },
+    );
 
     $("#lightbox_overlay .download").on("click", function () {
         this.blur();
