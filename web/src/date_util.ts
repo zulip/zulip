@@ -12,6 +12,7 @@ import {
 
 import * as common from "./common.ts";
 import type {Suggestion} from "./search_suggestion.ts";
+import {user_settings} from "./user_settings.ts";
 
 function get_default_dates(): {
     today: Date;
@@ -215,10 +216,19 @@ export function maybe_get_parsed_iso_8601_date(date_str: string): Date | undefin
     return undefined;
 }
 
-// A date string like "2022-03-10" would return "March 10, 2022"
+// A date string like "2022-03-10" would return "March 10, 2022",
+// formatted for the user's language.
 export function convert_date_str_to_description_date(date_str: string): string {
     const date = parseISO(date_str);
-    return isValid(date) ? format(date, "MMMM d, yyyy") : date_str;
+    if (!isValid(date)) {
+        return date_str;
+    }
+    // We don't pass a time zone, since parseISO reads a date-only string
+    // as local midnight, and formatting it in another time zone could
+    // move it to a different day.
+    return new Intl.DateTimeFormat(user_settings.default_language, {dateStyle: "long"}).format(
+        date,
+    );
 }
 
 function is_same_day(d1: Date, d2: Date): boolean {

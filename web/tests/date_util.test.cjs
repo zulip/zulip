@@ -17,6 +17,10 @@ const {clock, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const date_util = zrequire("date_util");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {default_language: "en"};
+initialize_user_settings({user_settings});
 
 run_test("get_default_search_suggestions", () => {
     const today = new Date(2024, 0, 15, 2, 0, 0);
@@ -167,9 +171,15 @@ run_test("is_date_valid", () => {
     clock.reset();
 });
 
-run_test("convert_date_str_to_description_date", () => {
+run_test("convert_date_str_to_description_date", ({override}) => {
     assert.equal(date_util.convert_date_str_to_description_date("2025-05-12"), "May 12, 2025");
     assert.equal(date_util.convert_date_str_to_description_date("foobar"), "foobar");
+
+    override(user_settings, "default_language", "es");
+    assert.equal(
+        date_util.convert_date_str_to_description_date("2025-05-12"),
+        "12 de mayo de 2025",
+    );
 });
 
 run_test("get_unix_seconds_for_local_midnight", () => {
