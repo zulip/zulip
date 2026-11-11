@@ -14,10 +14,20 @@
                 {{#*inline "z-channel"}}{{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}}{{/inline}}
             {{/tr}}
         {{~/if~}}
+    {{else if (eq this.type "empty_topic")}}
+        {{~#if this.negated~}}
+            {{#tr}}
+                Exclude topic <z-topic>{topic_display_name}</z-topic>
+                {{#*inline "z-topic"}}<span class="empty-topic-display">{{> @partial-block}}</span>{{/inline}}
+            {{/tr}}
+            {{~else~}}
+            {{#tr}}
+                Topic <z-topic>{topic_display_name}</z-topic>
+                {{#*inline "z-topic"}}<span class="empty-topic-display">{{> @partial-block}}</span>{{/inline}}
+            {{/tr}}
+        {{~/if~}}
     {{else if (eq this.type "prefix_for_operator")}}
-        {{~#if is_empty_string_topic~}}
-        {{this.prefix_for_operator}} <span class="empty-topic-display">{{this.operand}}</span>
-        {{~ else if this.operand ~}}
+        {{~#if this.operand~}}
         {{this.prefix_for_operator}} {{this.operand}}
         {{~ else ~}}
         {{this.prefix_for_operator}}

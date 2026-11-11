@@ -1980,20 +1980,20 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "topic", operand: "JS"};
-    string = "topic JS";
+    string = "translated: Topic JS";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     // Operands that are also `has` operands aren't pluralized.
     term = {operator: "topic", operand: "image"};
-    string = "topic image";
+    string = "translated: Topic image";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "topic", operand: "JS", negated: true};
-    string = "exclude topic JS";
+    string = "translated: Exclude topic JS";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "subject", operand: "JS", negated: true};
-    string = "exclude topic JS";
+    string = "translated: Exclude topic JS";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "search", operand: "lunch"};
@@ -2101,7 +2101,11 @@ test("describe", ({mock_template, override}) => {
     // Empty string topic involved.
     override(realm, "realm_empty_topic_display_name", "general chat");
     term = {operator: "topic", operand: ""};
-    string = `topic <span class="empty-topic-display">translated: general chat</span>`;
+    string = `translated: Topic <span class="empty-topic-display">translated: general chat</span>`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "topic", operand: "", negated: true};
+    string = `translated: Exclude topic <span class="empty-topic-display">translated: general chat</span>`;
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     /* Description for operator suggestion search terms */
@@ -2114,7 +2118,11 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "topic", operand: ""};
-    string = "topic";
+    string = "translated: Topic";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "topic", operand: "", negated: true};
+    string = "translated: Exclude topic";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "near", operand: ""};

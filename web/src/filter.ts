@@ -47,10 +47,14 @@ type Part =
           stream: StreamSubscription;
       }
     | {
+          type: "empty_topic";
+          negated: boolean;
+          topic_display_name: string;
+      }
+    | {
           type: "prefix_for_operator";
           prefix_for_operator: string;
           operand: string;
-          is_empty_string_topic?: boolean;
       };
 
 const channels_operands = new Set(["archived", "public", "web-public"]);
@@ -815,9 +819,6 @@ export class Filter {
             case "id":
                 return verb + "message ID";
 
-            case "topic":
-                return verb + "topic";
-
             case "sender":
                 return verb + "sent by";
 
@@ -877,6 +878,30 @@ export class Filter {
                     : $t({defaultMessage: "Messages in a specific channel"}),
             };
         }
+        if (filter_util.canonicalize_operator(term.operator) === "topic") {
+            const negated = term.negated ?? false;
+            if (term.operand === "") {
+                if (is_operator_suggestion) {
+                    return {
+                        type: "plain_text",
+                        content: negated
+                            ? $t({defaultMessage: "Exclude topic"})
+                            : $t({defaultMessage: "Topic"}),
+                    };
+                }
+                return {
+                    type: "empty_topic",
+                    negated,
+                    topic_display_name: util.get_final_topic_display_name(""),
+                };
+            }
+            return {
+                type: "plain_text",
+                content: negated
+                    ? $t({defaultMessage: "Exclude topic {topic_name}"}, {topic_name: term.operand})
+                    : $t({defaultMessage: "Topic {topic_name}"}, {topic_name: term.operand}),
+            };
+        }
         const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
             switch (term.operator) {
@@ -887,16 +912,6 @@ export class Filter {
                             term.operand === "" ? prefix_for_operator : "messages sent around",
                         operand: date_util.convert_date_str_to_description_date(term.operand),
                     };
-                case "topic":
-                    if (!is_operator_suggestion) {
-                        return {
-                            type: "prefix_for_operator",
-                            prefix_for_operator,
-                            operand: util.get_final_topic_display_name(term.operand),
-                            is_empty_string_topic: term.operand === "",
-                        };
-                    }
-                    break;
             }
             return {
                 type: "prefix_for_operator",
