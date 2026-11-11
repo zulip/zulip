@@ -258,7 +258,7 @@ and report to the server the following whenever a message is sent:
   the server-rendered content, which can be used for statistics on how
   effective our [local echo system](markdown.md) is.
 
-The code is all in `zerver/lib/report.py` and `web/src/sent_messages.ts`.
+The code is all in `zerver/views/report.py` and `web/src/sent_messages.ts`.
 
 We have similar reporting for the time it takes to narrow / switch to
 a new view:
