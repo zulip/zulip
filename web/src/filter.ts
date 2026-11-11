@@ -43,7 +43,7 @@ type Part =
       }
     | {
           type: "channel";
-          prefix_for_operator: string;
+          negated: boolean;
           stream: StreamSubscription;
       }
     | {
@@ -803,8 +803,6 @@ export class Filter {
         const verb = negated ? "exclude " : "";
 
         switch (operator) {
-            case "channel":
-                return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
 
@@ -865,24 +863,23 @@ export class Filter {
                 content: this.describe_channels_operator(term.negated ?? false, term.operand),
             };
         }
+        if (filter_util.canonicalize_operator(term.operator) === "channel") {
+            const stream = stream_data.get_sub_by_id_string(term.operand);
+            if (stream) {
+                return {type: "channel", negated: term.negated ?? false, stream};
+            }
+            // Operator suggestions have an empty operand, and pills can
+            // refer to channels this client doesn't know about.
+            return {
+                type: "plain_text",
+                content: term.negated
+                    ? $t({defaultMessage: "Exclude messages in a specific channel"})
+                    : $t({defaultMessage: "Messages in a specific channel"}),
+            };
+        }
         const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
             switch (term.operator) {
-                case "channel": {
-                    const stream = stream_data.get_sub_by_id_string(term.operand);
-                    const verb = term.negated ? "exclude " : "";
-                    if (stream) {
-                        return {
-                            type: "channel",
-                            prefix_for_operator: verb + "messages in ",
-                            stream,
-                        };
-                    }
-                    // Assume the operand is a partially formed name and return
-                    // the operator as the channel name in the next block.
-                    /* istanbul ignore next */
-                    break;
-                }
                 case "date":
                     return {
                         type: "prefix_for_operator",

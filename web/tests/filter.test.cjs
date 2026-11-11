@@ -1963,11 +1963,20 @@ test("describe", ({mock_template, override}) => {
     make_sub("devel", devel_id);
 
     term = {operator: "channel", operand: devel_id.toString()};
-    string = `messages in ${devel_decorated}`;
+    string = `translated: Messages in ${devel_decorated}`;
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "channel", operand: devel_id.toString(), negated: true};
-    string = `exclude messages in ${devel_decorated}`;
+    string = `translated: Exclude messages in ${devel_decorated}`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "stream", operand: devel_id.toString()};
+    string = `translated: Messages in ${devel_decorated}`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    // A channel this client doesn't know about.
+    term = {operator: "channel", operand: new_stream_id().toString(), negated: true};
+    string = "translated: Exclude messages in a specific channel";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "topic", operand: "JS"};
@@ -2096,6 +2105,10 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     /* Description for operator suggestion search terms */
+    term = {operator: "channel", operand: ""};
+    string = "translated: Messages in a specific channel";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
     term = {operator: "channels", operand: ""};
     string = "channel type";
     assert.equal(Filter.search_description_as_html(term, true), string);
