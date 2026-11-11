@@ -2130,16 +2130,45 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "sender", operand: ""};
-    string = "sent by";
+    string = "translated: Sent by";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "sender", operand: "", negated: true};
+    string = "translated: Exclude sent by";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "dm", operand: ""};
+    string = "translated: Direct messages with";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "dm-including", operand: ""};
-    string = "direct messages including";
+    string = "translated: Direct messages including";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "mentions", operand: ""};
-    string = "messages mentioning";
+    string = "translated: Messages mentioning";
     assert.equal(Filter.search_description_as_html(term, true), string);
+
+    /* Description for user operators whose operand isn't a valid user */
+    term = {operator: "sender", operand: "nobody@example.com"};
+    string = "translated: Sent by nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "from", operand: "nobody@example.com", negated: true};
+    string = "translated: Exclude sent by nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "dm", operand: "nobody@example.com"};
+    string = "translated: Direct messages with nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "dm-including", operand: "nobody@example.com", negated: true};
+    string = "translated: Exclude direct messages including nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "mentions", operand: "<b>nobody</b>"};
+    string = "translated: Messages mentioning &lt;b&gt;nobody&lt;/b&gt;";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 });
 
 test("can_bucket_by", () => {

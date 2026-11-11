@@ -819,18 +819,6 @@ export class Filter {
             case "id":
                 return verb + "message ID";
 
-            case "sender":
-                return verb + "sent by";
-
-            case "dm":
-                return verb + "direct messages with";
-
-            case "dm-including":
-                return verb + "direct messages including";
-
-            case "mentions":
-                return verb + "messages mentioning";
-
             case "in":
                 return verb + "messages in";
 
@@ -902,6 +890,18 @@ export class Filter {
                     : $t({defaultMessage: "Topic {topic_name}"}, {topic_name: term.operand}),
             };
         }
+        const operator = filter_util.canonicalize_operator(term.operator);
+        if (
+            operator === "sender" ||
+            operator === "dm" ||
+            operator === "dm-including" ||
+            operator === "mentions"
+        ) {
+            return {
+                type: "plain_text",
+                content: this.describe_user_operator(operator, term.negated ?? false, term.operand),
+            };
+        }
         const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
             switch (term.operator) {
@@ -923,6 +923,57 @@ export class Filter {
             type: "plain_text",
             content: "unknown operator",
         };
+    }
+
+    static describe_user_operator(
+        operator: "sender" | "dm" | "dm-including" | "mentions",
+        negated: boolean,
+        operand: string,
+    ): string {
+        // Pills for valid users don't show a description, so this is only
+        // used for operator suggestions, which have an empty operand, and
+        // for operands that aren't valid users.
+        switch (operator) {
+            case "sender":
+                if (operand === "") {
+                    return negated
+                        ? $t({defaultMessage: "Exclude sent by"})
+                        : $t({defaultMessage: "Sent by"});
+                }
+                return negated
+                    ? $t({defaultMessage: "Exclude sent by {user}"}, {user: operand})
+                    : $t({defaultMessage: "Sent by {user}"}, {user: operand});
+            case "dm":
+                if (operand === "") {
+                    return negated
+                        ? $t({defaultMessage: "Exclude direct messages with"})
+                        : $t({defaultMessage: "Direct messages with"});
+                }
+                return negated
+                    ? $t({defaultMessage: "Exclude direct messages with {users}"}, {users: operand})
+                    : $t({defaultMessage: "Direct messages with {users}"}, {users: operand});
+            case "dm-including":
+                if (operand === "") {
+                    return negated
+                        ? $t({defaultMessage: "Exclude direct messages including"})
+                        : $t({defaultMessage: "Direct messages including"});
+                }
+                return negated
+                    ? $t(
+                          {defaultMessage: "Exclude direct messages including {users}"},
+                          {users: operand},
+                      )
+                    : $t({defaultMessage: "Direct messages including {users}"}, {users: operand});
+            default:
+                if (operand === "") {
+                    return negated
+                        ? $t({defaultMessage: "Exclude messages mentioning"})
+                        : $t({defaultMessage: "Messages mentioning"});
+                }
+                return negated
+                    ? $t({defaultMessage: "Exclude messages mentioning {user}"}, {user: operand})
+                    : $t({defaultMessage: "Messages mentioning {user}"}, {user: operand});
+        }
     }
 
     static describe_is_operator(negated: boolean, operand: string): string {
