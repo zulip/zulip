@@ -47,10 +47,6 @@ type Part =
           stream: StreamSubscription;
       }
     | {
-          type: "invalid_has";
-          operand: string;
-      }
-    | {
           type: "prefix_for_operator";
           prefix_for_operator: string;
           operand: string;
@@ -818,10 +814,6 @@ export class Filter {
             case "near":
                 return verb + "messages around";
 
-            // Note: We hack around using this in "describe" below.
-            case "has":
-                return verb + "messages with";
-
             case "id":
                 return verb + "message ID";
 
@@ -862,24 +854,10 @@ export class Filter {
             };
         }
         if (term.operator === "has") {
-            // search_suggestion.get_suggestions takes care that this message will
-            // only be shown if the `has` operator is not at the last.
-            const valid_has_operands = [
-                "image",
-                "images",
-                "link",
-                "links",
-                "attachment",
-                "attachments",
-                "reaction",
-                "reactions",
-            ];
-            if (!valid_has_operands.includes(term.operand)) {
-                return {
-                    type: "invalid_has",
-                    operand: term.operand,
-                };
-            }
+            return {
+                type: "plain_text",
+                content: this.describe_has_operator(term.negated ?? false, term.operand),
+            };
         }
         if (term.operator === "channels" && channels_operands.has(term.operand)) {
             return {
@@ -972,6 +950,38 @@ export class Filter {
                     : $t({defaultMessage: "Muted messages"});
             default:
                 return $t({defaultMessage: "Invalid {operand} operand for is operator"}, {operand});
+        }
+    }
+
+    static describe_has_operator(negated: boolean, operand: string): string {
+        switch (operand) {
+            case "link":
+            case "links":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages with links"})
+                    : $t({defaultMessage: "Messages with links"});
+            case "image":
+            case "images":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages with images"})
+                    : $t({defaultMessage: "Messages with images"});
+            case "attachment":
+            case "attachments":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages with attachments"})
+                    : $t({defaultMessage: "Messages with attachments"});
+            case "reaction":
+            case "reactions":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages with reactions"})
+                    : $t({defaultMessage: "Messages with reactions"});
+            default:
+                // search_suggestion.get_suggestions takes care that this message will
+                // only be shown if the `has` operator is not at the last.
+                return $t(
+                    {defaultMessage: "Invalid {operand} operand for has operator"},
+                    {operand},
+                );
         }
     }
 

@@ -1974,6 +1974,11 @@ test("describe", ({mock_template, override}) => {
     string = "topic JS";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
+    // Operands that are also `has` operands aren't pluralized.
+    term = {operator: "topic", operand: "image"};
+    string = "topic image";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
     term = {operator: "topic", operand: "JS", negated: true};
     string = "exclude topic JS";
     assert.equal(Filter.search_description_as_html(term, false), string);
@@ -2065,11 +2070,23 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "has", operand: "image", negated: true};
-    string = "exclude messages with images";
+    string = "translated: Exclude messages with images";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "has", operand: "link"};
+    string = "translated: Messages with links";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "has", operand: "attachment"};
+    string = "translated: Messages with attachments";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "has", operand: "reactions"};
+    string = "translated: Messages with reactions";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "has", operand: "abc", negated: true};
-    string = "invalid abc operand for has operator";
+    string = "translated: Invalid abc operand for has operator";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     // Empty string topic involved.

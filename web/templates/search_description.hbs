@@ -6,15 +6,11 @@
         {{~!-- squash whitespace --~}}
         {{this.prefix_for_operator}}{{> decorated_channel_name stream=this.stream inline_with_text=true show_colored_icon=false}}
         {{~!-- squash whitespace --~}}
-    {{else if (eq this.type "invalid_has")}}
-        {{~!-- squash whitespace --~}}
-        invalid {{this.operand}} operand for has operator
-        {{~!-- squash whitespace --~}}
     {{else if (eq this.type "prefix_for_operator")}}
         {{~#if is_empty_string_topic~}}
         {{this.prefix_for_operator}} <span class="empty-topic-display">{{this.operand}}</span>
         {{~ else if this.operand ~}}
-        {{this.prefix_for_operator}} {{this.operand}}{{#if (or (eq this.operand "link") (eq this.operand "image") (eq this.operand "attachment") (eq this.operand "reaction"))}}s{{/if}}
+        {{this.prefix_for_operator}} {{this.operand}}
         {{~ else ~}}
         {{this.prefix_for_operator}}
         {{~/if~}}
