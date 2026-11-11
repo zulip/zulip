@@ -59,7 +59,6 @@ CATEGORIES: dict[str, str] = {
 FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "asana",
     "capistrano",
-    "codebase",
     "discourse",
     "git",
     "github-actions",
@@ -588,6 +587,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="CircleCI",
     ),
     IncomingWebhookIntegration(
+        "codebase",
+        ["version-control", "project-management"],
+        [WebhookScreenshotConfig("ticket_creation.json")],
+        display_name="Codebase",
+    ),
+    IncomingWebhookIntegration(
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
@@ -1107,11 +1112,6 @@ OTHER_INTEGRATIONS = [
 ]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
-    PythonAPIIntegration(
-        "codebase",
-        ["version-control", "project-management"],
-        [FixturelessScreenshotConfigOptions(channel="commits")],
-    ),
     PythonAPIIntegration(
         "git", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
     ),
