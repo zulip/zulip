@@ -810,15 +810,6 @@ export class Filter {
             case "channels":
                 return verb + "channel type";
 
-            case "near":
-                return verb + "messages around";
-
-            case "id":
-                return verb + "message ID";
-
-            case "in":
-                return verb + "messages in";
-
             // Note: We hack around using this in "describe" below.
             case "is":
                 return verb + "messages that are";
@@ -915,6 +906,22 @@ export class Filter {
                 ),
             };
         }
+        if (operator === "near" || operator === "id") {
+            return {
+                type: "plain_text",
+                content: this.describe_message_id_operator(
+                    operator,
+                    term.negated ?? false,
+                    term.operand,
+                ),
+            };
+        }
+        if (operator === "in") {
+            return {
+                type: "plain_text",
+                content: this.describe_in_operator(term.negated ?? false, term.operand),
+            };
+        }
         const prefix_for_operator = this.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
             return {
@@ -977,6 +984,55 @@ export class Filter {
                 return negated
                     ? $t({defaultMessage: "Exclude messages mentioning {user}"}, {user: operand})
                     : $t({defaultMessage: "Messages mentioning {user}"}, {user: operand});
+        }
+    }
+
+    static describe_message_id_operator(
+        operator: "near" | "id",
+        negated: boolean,
+        operand: string,
+    ): string {
+        if (operator === "near") {
+            if (operand === "") {
+                return negated
+                    ? $t({defaultMessage: "Exclude messages around"})
+                    : $t({defaultMessage: "Messages around"});
+            }
+            return negated
+                ? $t(
+                      {defaultMessage: "Exclude messages around {message_id}"},
+                      {message_id: operand},
+                  )
+                : $t({defaultMessage: "Messages around {message_id}"}, {message_id: operand});
+        }
+        if (operand === "") {
+            return negated
+                ? $t({defaultMessage: "Exclude message ID"})
+                : $t({defaultMessage: "Message ID"});
+        }
+        return negated
+            ? $t({defaultMessage: "Exclude message ID {message_id}"}, {message_id: operand})
+            : $t({defaultMessage: "Message ID {message_id}"}, {message_id: operand});
+    }
+
+    static describe_in_operator(negated: boolean, operand: string): string {
+        switch (operand) {
+            case "":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages in"})
+                    : $t({defaultMessage: "Messages in"});
+            case "home":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages in home"})
+                    : $t({defaultMessage: "Messages in home"});
+            case "all":
+                return negated
+                    ? $t({defaultMessage: "Exclude messages in all"})
+                    : $t({defaultMessage: "Messages in all"});
+            default:
+                return negated
+                    ? $t({defaultMessage: "Exclude messages in {location}"}, {location: operand})
+                    : $t({defaultMessage: "Messages in {location}"}, {location: operand});
         }
     }
 

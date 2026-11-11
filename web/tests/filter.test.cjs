@@ -2009,11 +2009,27 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "id", operand: "99"};
-    string = "message ID 99";
+    string = "translated: Message ID 99";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "near", operand: "99", negated: true};
+    string = "translated: Exclude messages around 99";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "in", operand: "home"};
-    string = "messages in home";
+    string = "translated: Messages in home";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "home", negated: true};
+    string = "translated: Exclude messages in home";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "all"};
+    string = "translated: Messages in all";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "nowhere"};
+    string = "translated: Messages in nowhere";
     assert.equal(Filter.search_description_as_html(term, false), string);
 
     term = {operator: "is", operand: "dm"};
@@ -2130,7 +2146,15 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "near", operand: ""};
-    string = "messages around";
+    string = "translated: Messages around";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "id", operand: "", negated: true};
+    string = "translated: Exclude message ID";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "in", operand: ""};
+    string = "translated: Messages in";
     assert.equal(Filter.search_description_as_html(term, true), string);
 
     term = {operator: "sender", operand: ""};
