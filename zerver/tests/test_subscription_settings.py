@@ -190,6 +190,15 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
 
+        result = self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream_id}",
+            {"property": "pin_to_top", "value": orjson.dumps(not new_pin_to_top).decode()},
+        )
+        self.assert_json_success(result)
+        updated_sub = get_subscription(sub["name"], user)
+        self.assertEqual(updated_sub.pin_to_top, not new_pin_to_top)
+
     def test_change_is_muted(self) -> None:
         test_user = self.example_user("hamlet")
         self.login_user(test_user)
