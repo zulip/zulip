@@ -703,6 +703,16 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
+    if payload_url and bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+        raise JsonableError(_("Only outgoing-webhook bots have payload_url."))
+    if config_data and bot_type not in (
+        UserProfile.EMBEDDED_BOT,
+        UserProfile.INCOMING_WEBHOOK_BOT,
+    ):
+        raise JsonableError(_("Only embedded bots and incoming-webhook bots have config_data."))
+    if service_name is not None and bot_type == UserProfile.DEFAULT_BOT:
+        raise JsonableError(_("Only non-generic bots have service_name."))
+
     avatar_source = None
     if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER

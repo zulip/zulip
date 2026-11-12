@@ -2205,6 +2205,59 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         [service] = get_bot_services(bot.id)
         self.assertEqual(service.name, "outgoingservicebot")
 
+    def test_add_default_bot_rejects_service_and_config_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            service_name="followup",
+            assert_json_error_msg="Only non-generic bots have service_name.",
+        )
+
+    def test_add_incoming_webhook_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="webhookbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_embedded_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            payload_url=orjson.dumps("http://embedded.example.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="outgoingservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
