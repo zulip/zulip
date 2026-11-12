@@ -799,7 +799,7 @@ export function notify_server_messages_read(
         return;
     }
 
-    message_flags.send_read(messages);
+    message_flags.send_read.add(messages);
 
     const conversation_keys = new Set<string>();
     for (const message of messages) {

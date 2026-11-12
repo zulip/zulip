@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
 mock_esm("../src/desktop_notifications", {close_notification: noop});
-mock_esm("../src/message_flags", {send_read: noop});
+mock_esm("../src/message_flags", {send_read: {add: noop}});
 mock_esm("../src/unread_ui", {
     hide_unread_banner: noop,
     update_unread_counts: noop,
