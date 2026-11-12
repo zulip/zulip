@@ -479,8 +479,8 @@ def add_subgroups_to_group_backend(
     with lock_subgroups_with_respect_to_supergroup(
         subgroup_ids, user_group_id, user_profile, permission_setting="can_add_members_group"
     ) as context:
-        existing_direct_subgroup_ids = context.supergroup.direct_subgroups.all().values_list(
-            "id", flat=True
+        existing_direct_subgroup_ids = set(
+            context.supergroup.direct_subgroups.all().values_list("id", flat=True)
         )
         for group in context.direct_subgroups:
             if group.id in existing_direct_subgroup_ids:
@@ -538,8 +538,8 @@ def remove_subgroups_from_group_backend(
         # While the recursive subgroups in the context are not used, it is important that
         # we acquire a lock for these rows while updating the subgroups to acquire the locks
         # in a consistent order for subgroup membership changes.
-        existing_direct_subgroup_ids = context.supergroup.direct_subgroups.all().values_list(
-            "id", flat=True
+        existing_direct_subgroup_ids = set(
+            context.supergroup.direct_subgroups.all().values_list("id", flat=True)
         )
         for group in context.direct_subgroups:
             if group.id not in existing_direct_subgroup_ids:
