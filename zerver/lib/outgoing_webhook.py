@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from dataclasses import dataclass
 from time import perf_counter
@@ -133,6 +134,15 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        command = event["command"]
+        text = command
+        command_field = ""
+        match = re.match(r"^@\*\*(.*?)\*\*\s*(.*)$", command, re.DOTALL)
+        if match:
+            bot_name = match.group(1)
+            command_field = f"/{bot_name}"
+            text = match.group(2)
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -143,10 +153,13 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
+        if command_field:
+            request_data.append(("command", command_field))
+
         return self.session.post(base_url, data=request_data)
 
     @override
