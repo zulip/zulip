@@ -447,6 +447,13 @@ type UpdateDraftOptions = {
 };
 
 export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined => {
+    if (compose_draft_id !== undefined && draft_model.getDraft(compose_draft_id) === false) {
+        // The draft was deleted while restored in the compose box,
+        // e.g., when the failed message it was restored from was
+        // resent successfully. Save the compose contents as a new
+        // draft.
+        compose_draft_id = undefined;
+    }
     const draft_id = compose_draft_id;
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 

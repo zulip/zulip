@@ -388,6 +388,23 @@ test("update_draft", ({override}) => {
     assert.equal(draft_id, "5-2");
     assert.ok(!tippy_show_called);
     assert.ok(!tippy_destroy_called);
+
+    // The draft was deleted while restored in the compose box, so
+    // the compose contents are saved as a new draft.
+    override(Date, "now", () => 9);
+    drafts.draft_model.deleteDrafts(["5-2"]);
+    compose_state.message_content("dummy content edited after the draft was deleted");
+    tippy_show_called = false;
+    tippy_destroy_called = false;
+    draft_id = drafts.update_draft();
+    assert.equal(draft_id, "9-2");
+    assert.equal(drafts.compose_draft_id, "9-2");
+    assert.equal(
+        drafts.draft_model.getDraft("9-2").content,
+        "dummy content edited after the draft was deleted",
+    );
+    assert.ok(tippy_show_called);
+    assert.ok(tippy_destroy_called);
 });
 
 test("rename_stream_recipient", () => {
