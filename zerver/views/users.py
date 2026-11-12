@@ -640,8 +640,6 @@ def add_bot_backend(
     if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
         check_demo_organization_has_set_email(user_profile.realm)
 
-    if config_data is None:
-        config_data = {}
     try:
         short_name, email = validate_short_name_and_construct_bot_email(
             short_name_raw, user_profile.realm
@@ -683,6 +681,22 @@ def add_bot_backend(
     check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
+
+    if payload_url and bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+        raise JsonableError(_("Only outgoing-webhook bots have payload_url."))
+    if config_data is not None and bot_type not in (
+        UserProfile.EMBEDDED_BOT,
+        UserProfile.INCOMING_WEBHOOK_BOT,
+    ):
+        raise JsonableError(_("Only embedded bots and incoming-webhook bots have config_data."))
+    if service_name is not None and bot_type not in (
+        UserProfile.EMBEDDED_BOT,
+        UserProfile.OUTGOING_WEBHOOK_BOT,
+    ):
+        raise JsonableError(_("Only embedded bots and outgoing-webhook bots have service_name."))
+
+    if config_data is None:
+        config_data = {}
 
     avatar_source = None
     if len(request.FILES) == 1:

@@ -2318,6 +2318,73 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
+    def test_add_default_bot_rejects_service_and_config_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            config_data=orjson.dumps({}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            service_name="followup",
+            assert_json_error_msg="Only embedded bots and outgoing-webhook bots have service_name.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            service_name="",
+            assert_json_error_msg="Only embedded bots and outgoing-webhook bots have service_name.",
+        )
+
+    def test_add_incoming_webhook_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="webhookbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_embedded_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            payload_url=orjson.dumps("http://embedded.example.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="outgoingservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
@@ -2480,15 +2547,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 
-    def test_create_incoming_webhook_bot_ignores_service_name(self) -> None:
-        self.login("hamlet")
-        result = self.create_bot(
-            bot_type=UserProfile.INCOMING_WEBHOOK_BOT, service_name="nonexistent-integration"
+    def test_add_incoming_webhook_bot_rejects_service_name(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="webhookbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+            assert_json_error_msg="Only embedded bots and outgoing-webhook bots have service_name.",
         )
-        new_bot = UserProfile.objects.get(id=result["user_id"])
-        with self.assertRaises(ConfigError):
-            get_bot_config(new_bot)
-        self.assertEqual(get_bot_services(new_bot.id), [])
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_invalid_config(self) -> None:
