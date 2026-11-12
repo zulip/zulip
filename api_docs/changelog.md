@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 517**
+
+No changes; API feature level used for the Zulip 13.0 release.
+
 **Feature level 516**
 
 * `PATCH /bots/{bot_id}`: A bot's owner can no longer change the bot's

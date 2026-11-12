@@ -3,11 +3,11 @@
 This page contains the release history for the Zulip server. See also
 the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip Server 13.x series (development)
+## Zulip Server 13.x series
 
 ### Zulip Server 13.0
 
-_Unreleased_
+_Released 2026-11-12_
 
 ### Zulip Server 13.0-rc2
 
