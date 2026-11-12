@@ -666,8 +666,14 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        service_name = service_name or short_name
+    # Treat a whitespace-only service_name as if it were omitted.
+    if service_name is not None and not service_name.strip():
+        service_name = None
+    if (
+        bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT)
+        and service_name is None
+    ):
+        service_name = short_name
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )

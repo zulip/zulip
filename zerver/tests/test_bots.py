@@ -2189,6 +2189,22 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
+    def test_create_outgoing_webhook_bot_with_whitespace_service_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Outgoing Webhook test bot",
+            "short_name": "outgoingservicebot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
+            "service_name": " ",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = get_user("outgoingservicebot-bot@zulip.testserver", get_realm("zulip"))
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.name, "outgoingservicebot")
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
