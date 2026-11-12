@@ -355,20 +355,28 @@
     opacity: 0.7;
 }
 
-.add-subscribers-hintline-container {
+.add-subscribers-hintline-container,
+.add-members-hintline-container {
     margin-bottom: 10px;
 }
 
-.add-subscribers-error {
+.add-subscribers-error,
+.add-members-error {
     color: hsl(0deg 100% 50%);
 }
 
-.add-subscribers-error:empty {
+.add-subscribers-error:empty,
+.add-members-error:empty {
     display: none;
 }
 
 .add-subscribers-hintline-container:has(> .add-subscribers-error:not(:empty))
     > .add-subscribers-subtitle {
+    display: none;
+}
+
+.add-members-hintline-container:has(> .add-members-error:not(:empty))
+    > .add-members-subtitle {
     display: none;
 }
 
@@ -384,7 +392,7 @@
 }
 
 #stream_settings,
-#user_group_settings .add-members-subtitle {
+#user_group_settings {
     margin-bottom: 10px;
 }
 
