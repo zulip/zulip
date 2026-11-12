@@ -242,6 +242,12 @@ export const draft_model = (function () {
         return changed;
     }
 
+    function undeleteDraft(id: string, draft: LocalStorageDraft): void {
+        const drafts = get();
+        drafts[id] = draft;
+        save(drafts);
+    }
+
     function deleteDrafts(ids: string[]): void {
         const drafts = get();
 
@@ -259,6 +265,7 @@ export const draft_model = (function () {
         getDraftCount,
         addDraft,
         editDraft,
+        undeleteDraft,
         deleteDrafts,
     };
 })();

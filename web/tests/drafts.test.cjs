@@ -280,6 +280,70 @@ test("draft_model delete", () => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
+test("draft_model restore deleted draft", () => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    assert.equal(ls.get("draft"), undefined);
+
+    const id = draft_model.addDraft(draft_1);
+    draft_model.deleteDrafts([id]);
+    assert.deepEqual(draft_model.getDraft(id), false);
+
+    // Undoing a deletion restores the draft under its original id, so
+    // a compose box still holding that id keeps saving to it.
+    draft_model.undeleteDraft(id, draft_1);
+    assert.deepEqual(draft_model.getDraft(id), draft_1);
+    assert.equal(draft_model.getDraftCount(), 1);
+});
+
+test("undo draft deletion keeps the draft id", ({override, mock_template}) => {
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    assert.equal(ls.get("draft"), undefined);
+    override(settings_data, "using_dark_theme", () => false);
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+    mock_template("components/banner.hbs", false, () => "<banner stub>");
+    // These selectors are accessed during render_widgets(),
+    // update_bulk_delete_ui() and set_count().
+    function set_overlay_results() {
+        $.set_results(".drafts-list", []);
+        $.set_results(".drafts-tab-pane .overlay-message-row", []);
+        $.set_results(".draft-selection-checkbox", []);
+        $(".top_left_drafts").set_find_results(".unread_count", $("<unread-count-stub>"));
+        $(".compose-drafts-count-container").set_find_results(
+            ".compose-drafts-count",
+            $("<compose-drafts-count-stub>"),
+        );
+    }
+    set_overlay_results();
+
+    const draft_id = draft_model.addDraft(draft_1);
+    drafts_overlay_ui.initialize();
+    drafts_overlay_ui.launch();
+    const undo_handler = $("body").get_on_handler(
+        "click",
+        "#draft_overlay_banner_container .draft-delete-banner-undo-button",
+    );
+
+    const $draft_row = $.create("draft-row");
+    $draft_row.attr("data-draft-id", draft_id);
+    $draft_row[0].remove = noop;
+    const $delete_button = $("#drafts_table .overlay_message_controls .delete-overlay-message");
+    $delete_button.set_closest_results(".overlay-message-row", [$draft_row[0]]);
+    $delete_button.get_on_handler("click").call($delete_button[0]);
+    assert.equal(draft_model.getDraft(draft_id), false);
+
+    // Undo re-renders the overlay, which rebinds the row handlers on
+    // fresh elements in a real DOM.
+    $.clear_all_elements();
+    set_overlay_results();
+    undo_handler();
+    assert.deepEqual(draft_model.getDraft(draft_id), draft_1);
+    assert.equal(draft_model.getDraftCount(), 1);
+});
+
 test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     mock_banners();
