@@ -143,3 +143,50 @@ run_test("notify_server_messages_read", ({override}) => {
     );
     assert.equal(unread.get_unread_message_count(), 0);
 });
+
+run_test("initialize - update_views_callback", ({override}) => {
+    override(window, "to_$", () => ({
+        on: noop,
+    }));
+    override(recent_view_ui, "bulk_inplace_rerender", noop);
+    override(recent_view_ui, "complete_rerender", noop);
+    const updated_views = [];
+    unread_ops.initialize({
+        update_views_callback(ids, prop, value) {
+            updated_views.push({ids, prop, value});
+        },
+    });
+
+    unread.declare_bankruptcy();
+    const msg = {
+        id: 301,
+        type: "stream",
+        stream_id,
+        topic: "copenhagen",
+        unread: true,
+        mentioned: false,
+        mentioned_me_directly: false,
+        content: "",
+    };
+    message_store.update_message_cache({type: "server_message", message: msg});
+    track_unread_stream_message(301, "copenhagen");
+
+    unread_ops.process_read_messages_event([301]);
+    assert.deepEqual(updated_views, [{ids: [301], prop: "is-unread", value: false}]);
+
+    updated_views.length = 0;
+    unread_ops.process_unread_messages_event({
+        message_ids: [301],
+        message_details: {
+            301: {
+                type: "stream",
+                stream_id,
+                topic: "copenhagen",
+                mentioned: false,
+                unmuted_stream_msg: true,
+            },
+        },
+    });
+    assert.deepEqual(updated_views, [{ids: [301], prop: "is-unread", value: true}]);
+    unread_ops.initialize();
+});
