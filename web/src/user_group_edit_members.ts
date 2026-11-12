@@ -146,9 +146,11 @@ export function enable_member_management({
 
     if (!group.is_system_group) {
         const $pill_container = $parent_container.find(".pill-container");
+        const $error_element = $parent_container.find(".add-members-error").expectOne();
         pill_widget = add_group_members_pill.create({
             $parent_container,
             $pill_container,
+            $error_element,
             get_potential_members,
             get_potential_groups: get_potential_subgroups,
             with_add_button: true,

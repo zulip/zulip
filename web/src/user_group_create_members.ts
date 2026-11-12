@@ -108,10 +108,12 @@ function sync_members(user_ids: number[], subgroup_ids: number[]): void {
 
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
+    const $error_element = $parent_container.find(".add-members-error").expectOne();
 
     const new_pill_widget = add_group_members_pill.create({
         $parent_container,
         $pill_container,
+        $error_element,
         get_potential_members: user_group_create_members_data.get_potential_members,
         get_potential_groups: user_group_create_members_data.get_potential_subgroups,
         with_add_button: false,

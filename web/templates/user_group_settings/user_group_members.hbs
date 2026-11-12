@@ -10,16 +10,19 @@
         </div>
         <div class="user_group_subscription_request_result banner-wrapper"></div>
         {{> add_members_form .}}
-        <div class="add-members-subtitle">
-            {{#tr}}
-                You can add members by name or email address.
-                Enter a <z-user-roles-link>user role</z-user-roles-link>,
-                <z-user-groups-link>user group</z-user-groups-link>,
-                or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
-                {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
+        <div class="add-members-hintline-container">
+            <div class="add-members-subtitle">
+                {{#tr}}
+                    You can add members by name or email address.
+                    Enter a <z-user-roles-link>user role</z-user-roles-link>,
+                    <z-user-groups-link>user group</z-user-groups-link>,
+                    or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+                    {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                    {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                    {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{/tr}}
+            </div>
+            <div class="add-members-error pill-error-text text-danger" role="alert"></div>
         </div>
     {{/unless}}
     <div class="settings_panel_list_header members-list-header">
