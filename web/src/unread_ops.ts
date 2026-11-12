@@ -35,6 +35,8 @@ import * as watchdog from "./watchdog.ts";
 let update_read_flag_banner_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
 
+export const pending_unread_message_ids = new Set<number>();
+
 // Late-bound reference to message_events.update_views_filtered_on_message_property,
 // injected via initialize() to avoid a circular import
 // (unread_ops → message_events → message_events_util → unread_ops).
@@ -588,41 +590,141 @@ function do_mark_unread_by_narrow(
 }
 
 function do_mark_unread_by_ids(message_ids_to_update: number[], attempt = 0): void {
-    // TODO: Add support for locally echoing when we're offline.
-    void channel.post({
-        url: "/json/messages/flags",
-        data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
-        success(raw_data) {
-            show_read_flag_update_success_banner("unread", message_ids_to_update.length);
+    if (message_ids_to_update.length === 0) {
+        return;
+    }
 
-            const data = update_flags_for_response_schema.parse(raw_data);
-            const ignored_because_not_subscribed_channels =
-                data.ignored_because_not_subscribed_channels;
-            if (ignored_because_not_subscribed_channels.length > 0) {
-                handle_skipped_unsubscribed_streams(ignored_because_not_subscribed_channels);
+    // Cancel any pending "mark as read" requests for these messages
+    // to prevent conflicting flags from being sent to the server.
+    message_flags.send_read.remove_from_queue(message_ids_to_update);
+    for (const id of message_ids_to_update) {
+        pending_unread_message_ids.add(id);
+    }
+
+    // Only locally echo and potentially roll back messages that were
+    // actually read before this action, so an error rollback cannot
+    // mark pre-existing unread messages as read.
+    const read_message_ids = new Set(unread.get_read_message_ids(message_ids_to_update));
+
+    // Build a synthetic MessageDetails object from locally available
+    // message data, then dispatch through the same code path as a
+    // real server event. This ensures all UI and state updates are
+    // handled identically to a server-delivered event.
+    const message_details: MessageDetails = {};
+    const locally_echoed_ids: number[] = [];
+    for (const message_id of message_ids_to_update) {
+        if (!read_message_ids.has(message_id)) {
+            continue;
+        }
+        const message = message_store.get(message_id);
+        if (message) {
+            locally_echoed_ids.push(message_id);
+            if (message.type === "private") {
+                message_details[message_id] = {
+                    type: "private",
+                    mentioned: message.mentioned,
+                    user_ids: people.pm_with_user_ids(message) ?? [],
+                };
+            } else {
+                // unmuted_stream_msg must mirror the server-side logic in
+                // zerver/lib/message.py:format_unread_message_details.
+                // If the server logic changes, update this accordingly.
+                message_details[message_id] = {
+                    type: "stream",
+                    mentioned: message.mentioned,
+                    stream_id: message.stream_id,
+                    topic: message.topic,
+                    unmuted_stream_msg: unread.is_message_in_unmuted_context(message),
+                };
             }
-        },
-        error(xhr) {
-            handle_mark_unread_from_here_error(xhr, {
-                retry(next_attempt) {
-                    do_mark_unread_by_ids(message_ids_to_update, next_attempt);
+        }
+    }
+
+    // Dispatch synthetic event for local echo.
+    // process_unread_messages_event is idempotent: when the real
+    // server event arrives, get_read_message_ids() will filter
+    // out already-processed messages.
+    if (locally_echoed_ids.length > 0) {
+        process_unread_messages_event({
+            message_ids: locally_echoed_ids,
+            message_details,
+        });
+    }
+
+    function send_request(current_attempt: number): void {
+        message_flags.send_read.wait_for_in_flight(() => {
+            void channel.post({
+                url: "/json/messages/flags",
+                data: {
+                    messages: JSON.stringify(message_ids_to_update),
+                    op: "remove",
+                    flag: "read",
                 },
-                attempt,
+                success(raw_data) {
+                    for (const id of message_ids_to_update) {
+                        pending_unread_message_ids.delete(id);
+                    }
+                    show_read_flag_update_success_banner("unread", message_ids_to_update.length);
+
+                    const data = update_flags_for_response_schema.parse(raw_data);
+                    const ignored_because_not_subscribed_channels =
+                        data.ignored_because_not_subscribed_channels;
+                    if (ignored_because_not_subscribed_channels.length > 0) {
+                        handle_skipped_unsubscribed_streams(
+                            ignored_because_not_subscribed_channels,
+                        );
+                    }
+                },
+                error(xhr) {
+                    handle_mark_unread_from_here_error(xhr, {
+                        retry(next_attempt) {
+                            send_request(next_attempt);
+                        },
+                        attempt: current_attempt,
+                        rollback() {
+                            for (const id of message_ids_to_update) {
+                                pending_unread_message_ids.delete(id);
+                            }
+                            if (locally_echoed_ids.length > 0) {
+                                process_read_messages_event(locally_echoed_ids);
+                            }
+                        },
+                    });
+                },
             });
-        },
-    });
+        });
+    }
+
+    send_request(attempt);
 }
 
 function handle_mark_unread_from_here_error(
     xhr: JQuery.jqXHR<unknown>,
-    {retry, attempt}: {retry: (attempt: number) => void; attempt: number},
+    {
+        retry,
+        attempt,
+        rollback,
+    }: {
+        retry: (attempt: number) => void;
+        attempt: number;
+        rollback?: () => void;
+    },
 ): void {
     let parsed;
     // Network drop (status 0) and gateway/server errors deserve some
     // retries with exponential backoff.
     const is_transient_error = xhr.status === 0 || xhr.status >= 500;
     if (xhr.readyState === 0) {
-        // client cancelled the request
+        // Client is offline or request was cancelled.
+        // Keep the local echo in place and retry the server
+        // request when connectivity is restored.
+        window.addEventListener(
+            "online",
+            () => {
+                retry(0);
+            },
+            {once: true},
+        );
     } else if (
         (parsed = z
             .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
@@ -643,7 +745,7 @@ function handle_mark_unread_from_here_error(
     } else if (is_transient_error) {
         // The transient failure persisted past our retry budget, so the
         // server is likely having a real problem.
-        // TODO: Ideally this would communicate the failure to the user.
+        rollback?.();
         blueslip.error("Unexpected error marking messages as unread after retries", {
             status: xhr.status,
             body: xhr.responseText,
@@ -652,7 +754,7 @@ function handle_mark_unread_from_here_error(
         // Any other error -- a 4xx bad request, or an unexpected/
         // unparsable response -- is a client-side problem that retrying
         // won't fix.
-        // TODO: Ideally this would communicate the failure to the user.
+        rollback?.();
         blueslip.error("Unexpected error marking messages as unread", {
             status: xhr.status,
             body: xhr.responseText,
@@ -670,6 +772,7 @@ export function process_read_messages_event(message_ids: number[]): void {
     */
     const options = {from: "server" as const};
 
+    message_ids = message_ids.filter((id) => !pending_unread_message_ids.has(id));
     message_ids = unread.get_unread_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
@@ -794,6 +897,10 @@ export function notify_server_messages_read(
     messages: Message[],
     options: {from?: "pointer" | "server"} = {},
 ): void {
+    for (const message of messages) {
+        pending_unread_message_ids.delete(message.id);
+    }
+
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
