@@ -700,6 +700,8 @@ def add_bot_backend(
         config_data = {}
 
     if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        if not payload_url:
+            raise JsonableError(_("Outgoing-webhook bots require a payload_url."))
         if interface_type is not None:
             check_valid_interface_type(interface_type)
     elif bot_type == UserProfile.EMBEDDED_BOT:
