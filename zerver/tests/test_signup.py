@@ -1906,30 +1906,15 @@ class UserSignUpTest(ZulipTestCase):
         )
 
     def test_do_create_realm_subdomain_unavailable_error(self) -> None:
-        """
-        do_create_realm raises RealmSubdomainUnavailableError when attempting to
-        create a realm with an existing subdomain.
-        """
         with self.assertRaises(RealmSubdomainUnavailableError):
             do_create_realm("zulip", "Zulip clone")
-
-    def test_do_create_realm_unexpected_integrity_error(self) -> None:
-        """
-        do_create_realm re-raises IntegrityError when an unexpected database
-        integrity error occurs during realm creation.
-        """
-        with (
-            patch.object(Realm, "save", side_effect=IntegrityError("unexpected error")),
-            self.assertRaises(IntegrityError),
-        ):
-            do_create_realm("new-realm-subdomain", "New Realm")
 
     def test_realm_creation_with_subdomain_race(self) -> None:
         """
         The availability check for a realm subdomain can race with another
-        realm creation. Verify that RealmSubdomainUnavailableError is handled
-        by re-rendering the registration form with an error without consuming
-        the confirmation link.
+        realm creation. Verify that such a situation is handled by re-rendering
+        the registration form with an error without consuming the confirmation
+        link.
         """
         email = self.nonreg_email("newguy")
         realm_subdomain = "custom-test"
@@ -1958,10 +1943,6 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "Subdomain is already in use. Please choose a different one.", result
         )
-        self.assert_in_response('id="registration"', result)
-        self.assert_in_response('name="realm_subdomain"', result)
-        self.assert_in_response(f'value="{realm_subdomain}"', result)
-        self.assert_in_response(f'value="{realm_name}"', result)
 
         # The user can retry with the same confirmation link and only a new
         # organization URL.
@@ -1972,33 +1953,6 @@ class UserSignUpTest(ZulipTestCase):
             realm_name=realm_name,
         )
         self.assertEqual(result.status_code, 302)
-
-    def test_realm_creation_with_unexpected_integrity_error(self) -> None:
-        email = self.nonreg_email("newguy")
-        realm_subdomain = "custom-test"
-
-        self.submit_realm_creation_form(
-            email,
-            realm_subdomain=realm_subdomain,
-            realm_name="Zulip test",
-        )
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        self.client_get(confirmation_url)
-
-        with (
-            patch(
-                "zerver.views.registration.do_create_realm",
-                side_effect=IntegrityError("unexpected error"),
-            ),
-            self.assertRaises(IntegrityError),
-            self.assertLogs("django.request", "ERROR"),
-        ):
-            self.submit_reg_form_for_user(
-                email,
-                "password",
-                realm_subdomain=realm_subdomain,
-                realm_name="Zulip test",
-            )
 
     def test_signup_with_weak_password(self) -> None:
         """

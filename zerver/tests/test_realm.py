@@ -15,6 +15,7 @@ import orjson
 import time_machine
 from django.conf import settings
 from django.core import mail
+from django.db import IntegrityError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -131,6 +132,13 @@ class RealmTest(ZulipTestCase):
             self.assertRaises(AssertionError),
         ):
             do_create_realm("zulipselfhosting", "Test Realm")
+
+    def test_realm_creation_unexpected_integrity_error(self) -> None:
+        with (
+            mock.patch.object(Realm, "save", side_effect=IntegrityError("unexpected error")),
+            self.assertRaises(IntegrityError),
+        ):
+            do_create_realm("new-realm-subdomain", "New Realm")
 
     def test_permission_for_education_non_profit_organization(self) -> None:
         realm = do_create_realm(
