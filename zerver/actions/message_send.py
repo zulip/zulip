@@ -1562,7 +1562,7 @@ def extract_private_recipients(s: str) -> list[str] | list[int]:
 
 def get_validated_user_ids(user_ids: Collection[int]) -> list[int]:
     for user_id in user_ids:
-        if not isinstance(user_id, int) or isinstance(user_id, bool):
+        if type(user_id) is not int:
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(set(user_ids))
