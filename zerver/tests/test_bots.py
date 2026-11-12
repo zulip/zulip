@@ -2205,6 +2205,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         [service] = get_bot_services(bot.id)
         self.assertEqual(service.name, "outgoingservicebot")
 
+    def test_add_outgoing_webhook_bot_requires_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="outgoingservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            assert_json_error_msg="Outgoing-webhook bots require a payload_url.",
+        )
+
     def test_add_default_bot_rejects_service_and_config_fields(self) -> None:
         hamlet = self.example_user("hamlet")
 
