@@ -2640,6 +2640,31 @@ run_test("can_use_empty_topic", ({override, override_rewire}) => {
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
 });
 
+test("can_mention_many_users_in_stream", ({override}) => {
+    const social = {
+        subscribed: true,
+        name: "social",
+        stream_id: 10,
+        can_mention_many_users_group: nobody_group.id,
+    };
+    stream_data.add_sub_for_tests(social);
+
+    override(current_user, "user_id", admin_user_id);
+    assert.equal(stream_data.can_mention_many_users_in_stream(social.stream_id), false);
+
+    social.can_mention_many_users_group = admins_group.id;
+    assert.equal(stream_data.can_mention_many_users_in_stream(social.stream_id), true);
+
+    override(current_user, "user_id", moderator_user_id);
+    assert.equal(stream_data.can_mention_many_users_in_stream(social.stream_id), false);
+
+    social.can_mention_many_users_group = everyone_group.id;
+    assert.equal(stream_data.can_mention_many_users_in_stream(social.stream_id), true);
+
+    // Returns false when the stream does not exist.
+    assert.equal(stream_data.can_mention_many_users_in_stream(999), false);
+});
+
 test("set_max_channel_width_css_variable", async ({override_rewire}) => {
     const stream = {
         subscribed: true,

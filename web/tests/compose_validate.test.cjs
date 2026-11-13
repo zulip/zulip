@@ -343,7 +343,11 @@ test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
     // policy matters. Set 16 subscribers so is_recipient_large_stream() returns true.
-    const large_stream = {stream_id: 100, name: "Denmark"};
+    const large_stream = {
+        stream_id: 100,
+        name: "Denmark",
+        can_mention_many_users_group: nobody.id,
+    };
     stream_data.add_sub_for_tests(large_stream);
     compose_state.set_stream_id(large_stream.stream_id);
     peer_data.set_subscribers(
@@ -380,6 +384,14 @@ test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
 
     override(current_user, "user_id", bob.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    // Channel-level setting grants access even when realm-level denies it.
+    override(realm, "realm_can_mention_many_users_group", nobody.id);
+    override(current_user, "user_id", alice.user_id);
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+    large_stream.can_mention_many_users_group = members.id;
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
+    large_stream.can_mention_many_users_group = nobody.id;
 });
 
 test_ui("validate_stream_message", ({override, mock_template}) => {
@@ -398,6 +410,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
         can_send_message_group: everyone.id,
         topics_policy: "inherit",
         can_create_topic_group: everyone.id,
+        can_mention_many_users_group: nobody.id,
     };
     stream_data.add_sub_for_tests(special_sub);
 

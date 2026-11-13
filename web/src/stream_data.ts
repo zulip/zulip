@@ -977,6 +977,18 @@ export function rewire_can_create_new_topics_in_stream(
     can_create_new_topics_in_stream = value;
 }
 
+export function can_mention_many_users_in_stream(stream_id: number): boolean {
+    const sub = get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        return false;
+    }
+    return settings_data.user_has_permission_for_group_setting(
+        sub.can_mention_many_users_group,
+        "can_mention_many_users_group",
+        "stream",
+    );
+}
+
 // Returns true when no channel is selected, so callers can pass the
 // compose state's channel id directly.
 export function is_topic_creation_enabled(stream_id: number | undefined): boolean {

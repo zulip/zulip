@@ -805,11 +805,20 @@ function is_recipient_large_topic(): boolean {
 }
 
 function user_can_mention_many_users(): boolean {
-    return settings_data.user_has_permission_for_group_setting(
-        realm.realm_can_mention_many_users_group,
-        "can_mention_many_users_group",
-        "realm",
-    );
+    if (
+        settings_data.user_has_permission_for_group_setting(
+            realm.realm_can_mention_many_users_group,
+            "can_mention_many_users_group",
+            "realm",
+        )
+    ) {
+        return true;
+    }
+    const stream_id = compose_state.stream_id();
+    if (stream_id === undefined) {
+        return false;
+    }
+    return stream_data.can_mention_many_users_in_stream(stream_id);
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
