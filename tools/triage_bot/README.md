@@ -16,6 +16,12 @@ items updated in the last two days that don't have one yet. A PR's
 card waits for its Zulip CI run, so that the card can say whether CI
 passed. Draft PRs get a card after they are marked ready for review.
 
+When a PR has the "not ready" label and its author comments after the
+feedback, asking for another look, the bot posts a status update in
+the week's topic. The status update says what the author did since the
+feedback, and what the feedback asked for that is still missing. The
+status update doesn't recommend what to do; the triager decides.
+
 ## One-time setup
 
 1. On chat.zulip.org, create a generic bot. Note its email and API
@@ -49,7 +55,8 @@ you only get cards for maintainer items.
 If you also set `ZULIP_TRIAGE_BOT_EMAIL`, `ZULIP_TRIAGE_BOT_API_KEY`
 and `ZULIP_TRIAGE_CHANNEL` (a chat.zulip.org bot's email and API key,
 and the cards' channel), the dry run checks whether the item already
-has a card. If it does, the bot stops and prints no card.
+has a card. If it does, the bot prints its status update instead, if
+one is due.
 
 ## Evals
 
