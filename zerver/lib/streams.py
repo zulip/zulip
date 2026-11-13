@@ -1335,6 +1335,15 @@ def can_resolve_topics_in_stream(user: UserProfile, stream: Stream) -> bool:
     )
 
 
+def can_mention_many_users_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_mention_many_users_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_mention_many_users_group"],
+        direct_member_only=False,
+    )
+
+
 def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: Stream) -> bool:
     # Users can only resolve topics if they have either of these permissions:
     #   1) organization-level permission to resolve topics
