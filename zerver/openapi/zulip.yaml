@@ -9442,7 +9442,8 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a stream wildcard mention, but the user doesn't have
                           permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
+                          in the realm-level `can_mention_many_users_group` or the channel-level
+                          `can_mention_many_users_group`, and the channel contains a large number
                           of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
@@ -9459,7 +9460,8 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
                           permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
+                          in the realm-level `can_mention_many_users_group` or the channel-level
+                          `can_mention_many_users_group`, and the topic contains a large number
                           of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
@@ -10984,7 +10986,8 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a stream wildcard mention, but the user doesn't have
                           permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
+                          in the realm-level `can_mention_many_users_group` or the channel-level
+                          `can_mention_many_users_group`, and the channel contains a large number
                           of subscribers.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
@@ -11001,7 +11004,8 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
                           permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
+                          in the realm-level `can_mention_many_users_group` or the channel-level
+                          `can_mention_many_users_group`, and the topic contains a large number
                           of participants.
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
@@ -13422,6 +13426,8 @@ paths:
                   $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
                 can_delete_own_message_group:
                   $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 can_move_messages_out_of_channel_group:
                   $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
                 can_move_messages_within_channel_group:
@@ -13476,6 +13482,8 @@ paths:
               can_delete_any_message_group:
                 contentType: application/json
               can_delete_own_message_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               can_move_messages_out_of_channel_group:
                 contentType: application/json
@@ -25185,6 +25193,26 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_mention_many_users_group:
+                  allOf:
+                    - description: |
+                        The set of users who are additionally allowed to use wildcard mentions
+                        in this channel expressed as an [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        This setting only grants additional users the ability to use wildcard
+                        mentions; it cannot restrict users already permitted by the
+                        organization-level `can_mention_many_users_group` setting.
+
+                        **Changes**: New in Zulip 14.0 (feature level ZF-ef09e6).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
                 can_move_messages_out_of_channel_group:
                   allOf:
                     - description: |
@@ -25351,6 +25379,8 @@ paths:
               can_delete_any_message_group:
                 contentType: application/json
               can_delete_own_message_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               can_move_messages_out_of_channel_group:
                 contentType: application/json
@@ -25928,6 +25958,8 @@ paths:
                   $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
                 can_delete_own_message_group:
                   $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 can_remove_subscribers_group:
                   $ref: "#/components/schemas/CanRemoveSubscribersGroup"
                 can_administer_channel_group:
@@ -25959,6 +25991,8 @@ paths:
               can_delete_any_message_group:
                 contentType: application/json
               can_delete_own_message_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               can_administer_channel_group:
                 contentType: application/json
@@ -31581,6 +31615,25 @@ components:
             change, only the users in the organization-level `can_delete_any_message_group`
             and `can_delete_own_message_group` settings were able delete their own messages in
             the organization.
+
+            [setting-values]: /api/group-setting-values
+    CanMentionManyUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who are additionally allowed to use wildcard mentions in this channel,
+            beyond those already permitted by the organization-level
+            `can_mention_many_users_group` setting.
+
+            This setting only grants additional users the ability to use wildcard
+            mentions; it cannot restrict users already permitted by the
+            organization-level setting.
+
+            Users who are permitted at the organization level can always use
+            wildcard mentions in any channel regardless of this setting.
+
+            **Changes**: New in Zulip 14.0 (feature level ZF-ef09e6).
 
             [setting-values]: /api/group-setting-values
     CanMoveMessagesOutOfChannelGroup:
