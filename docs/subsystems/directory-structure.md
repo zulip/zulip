@@ -9,15 +9,15 @@ understanding the flow through these files.
 ### Core Python files
 
 Zulip uses the [Django web
-framework](https://docs.djangoproject.com/en/5.0/), so a lot of these
+framework](https://docs.djangoproject.com/en/stable/), so a lot of these
 paths will be familiar to Django developers.
 
 - `zproject/urls.py` Main
-  [Django routes file](https://docs.djangoproject.com/en/5.0/topics/http/urls/).
+  [Django routes file](https://docs.djangoproject.com/en/stable/topics/http/urls/).
   Defines which URLs are handled by which view functions or templates.
 
 - `zerver/models/*.py`
-  [Django models](https://docs.djangoproject.com/en/5.0/topics/db/models/)
+  [Django models](https://docs.djangoproject.com/en/stable/topics/db/models/)
   files. Defines Zulip's database tables.
 
 - `zerver/lib/*.py` Most library code.
@@ -27,7 +27,7 @@ paths will be familiar to Django developers.
   all code calling `send_event_on_commit` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
 
-- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/5.0/topics/http/views/).
+- `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/stable/topics/http/views/).
 
 - `zerver/webhooks/` Webhook views and tests for [Zulip's incoming webhook integrations](../webhooks/incoming-webhooks-overview.md).
 
@@ -37,7 +37,7 @@ paths will be familiar to Django developers.
 
 - `zerver/lib/markdown/` [Backend Markdown processor](../subsystems/markdown.md).
 
-- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/5.0/topics/auth/customizing/).
+- `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/stable/topics/auth/customizing/).
 
 ---
 
