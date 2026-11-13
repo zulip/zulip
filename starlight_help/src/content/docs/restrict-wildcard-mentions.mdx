@@ -5,9 +5,9 @@ title: Restrict wildcard mentions
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
-
-<AdminOnly />
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 Organization administrators can configure who is allowed to use [wildcard
 mentions](/help/dm-mention-alert-notifications#wildcard-mentions) that affect a
@@ -19,6 +19,15 @@ participants.
 This permission can be granted to any combination of [roles](/help/user-roles),
 [groups](/help/user-groups), and individual [users](/help/introduction-to-users).
 
+Channel administrators can additionally grant this permission to specific users
+for individual channels. The channel-level setting only expands the set of
+permitted users; it cannot restrict users already permitted by the
+organization-level setting.
+
+## Organization-level setting
+
+<AdminOnly />
+
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-permissions" />
 
@@ -28,6 +37,26 @@ This permission can be granted to any combination of [roles](/help/user-roles),
   <SaveChanges />
 </FlattenedSteps>
 
+## Allow additional users per channel
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPermissions />
+
+  1. Under **Messaging permissions**, configure **Who can notify a large number
+     of users with a wildcard mention in this channel**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
+
 ## Related articles
 
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [Channel permissions](/help/channel-permissions)
+* [User roles](/help/user-roles)
+* [User groups](/help/user-groups)
