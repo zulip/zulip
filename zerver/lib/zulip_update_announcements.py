@@ -677,7 +677,7 @@ new subscribers.
             view_conversation_links="/help/link-to-a-message-or-conversation#view-links-to-and-from-a-conversation",
             help_reading_conversations="/help/reading-conversations",
             help_report_message="/help/report-a-message",
-            help_enable_moderation="help/enable-moderation-requests",
+            help_enable_moderation="/help/enable-moderation-requests",
             default_channel_notifications="/help/enable-mobile-notifications-by-default",
         ),
     ),
