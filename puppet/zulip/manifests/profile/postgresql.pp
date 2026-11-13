@@ -69,6 +69,18 @@ class zulip::profile::postgresql(Boolean $start = true) {
     fail("PostgreSQL ${version} not supported")
   }
 
+  # Our configuration sets log_directory to this directory.  On a new
+  # install, postgresql-common 294 can leave it owned by root, because
+  # its tmpfiles.d entry runs before the postgres user exists.
+  # https://bugs.debian.org/1153884
+  file { '/var/log/postgresql':
+    ensure  => directory,
+    require => Package[$zulip::postgresql_base::postgresql],
+    owner   => 'postgres',
+    group   => 'postgres',
+    mode    => '2775',
+  }
+
   # PostgreSQL 18's io_method = io_uring requires a larger
   # RLIMIT_MEMLOCK than systemd's default on Linux 6.14 and newer
   if $facts['os']['family'] == 'Debian' {
@@ -110,7 +122,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
   }
   service { 'postgresql':
     ensure    => $start,
-    require   => $require + [Exec['reload systemd']],
+    require   => $require + [Exec['reload systemd'], File['/var/log/postgresql']],
     subscribe => [ File[$postgresql_conf_file] ],
   }
 }
