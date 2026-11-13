@@ -5,6 +5,13 @@ the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 13.x series
 
+### Zulip Server 13.1
+
+_Released 2026-11-12_
+
+- Fixed an error that stopped Zulip update announcements from being
+  sent after upgrading to 13.0.
+
 ### Zulip Server 13.0
 
 _Released 2026-11-12_
