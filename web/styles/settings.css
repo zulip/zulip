@@ -488,7 +488,8 @@ select.settings_select {
 }
 
 #bot-edit-form,
-#edit-user-form {
+#edit-user-form,
+#account-settings {
     .danger-zone {
         border-top: 1px solid var(--color-border-modal-bar);
         padding-top: 0.5em; /* 8px at 16px/1em */
