@@ -256,13 +256,15 @@ usually one needs to think about making changes in 3 places:
 
 - `tools/lib/provision.py`. This is the main provisioning script,
   used by most developers to maintain their development environment.
-- `docs/development/dev-setup-non-vagrant.md`. This is our "manual installation"
-  documentation. Strategically, we'd like to move the support for more
-  versions of Linux from here into `tools/lib/provision.py`.
+- The first section of `docs/development/setup-advanced.md` for
+  installing Zulip directly on various Linux hosts. This is our
+  "manual installation" documentation. Strategically, we'd like to
+  move the support for more versions of Linux from here into
+  `tools/lib/provision.py`.
 - Production. Our tools for compiling/generating static assets need
   to be called from `tools/update-prod-static`, which is called by
   `tools/build-release-tarball` (for doing Zulip releases) as well as
-  `tools/upgrade-zulip-from-git` (for deploying a Zulip server off of
+  `scripts/upgrade-zulip-from-git` (for deploying a Zulip server off of
   `main`).
 
 [virtualenv]: https://virtualenv.pypa.io/en/stable/

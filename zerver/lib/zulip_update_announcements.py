@@ -638,6 +638,68 @@ feature highlights in Zulip Server 12.0, and other Zulip project updates.
             blog_post_12_0_url="https://blog.zulip.com/zulip-server-12-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=28,
+        message="""
+In the web, desktop and mobile apps, you can now [hide]({hide_link_previews})
+website and video previews in a message that you find distracting.
+
+**Web and desktop updates**
+- [Drafts]({help_drafts}) of the message you're composing now autosave
+as you're typing.
+- Hovering over an emoji in a message or a user's status now shows an enlarged
+preview of the emoji, with its name.
+- You can now focus your [search]({help_search}) so results are scrolled to a
+specified [date]({search_by_date}).
+- You can now easily navigate between related conversations by [viewing the
+links]({view_conversation_links}) to and from a
+[conversation]({help_reading_conversations}).
+
+**Mobile updates**
+- Clicking on a notification now navigates to the specific message that
+triggered the notification.
+- Notifications for iOS users are now grouped by conversation.
+- Android users can now attach multiple photos and videos when composing
+a message.
+- You can now [report]({help_report_message}) problematic messages if
+moderation requests are [enabled]({help_enable_moderation}).
+
+For channels where it’s important that everyone stays on top of new messages,
+such as a channel for urgent announcements, organization administrators can
+[enable mobile notifications]({default_channel_notifications}) by default for
+new subscribers.
+
+""".format(
+            hide_link_previews="/help/image-video-and-website-previews#hide-or-show-link-previews-in-a-message",
+            help_drafts="/help/view-and-edit-your-message-drafts",
+            help_search="/help/search-for-messages",
+            search_by_date="/help/search-for-messages#search-by-date",
+            view_conversation_links="/help/link-to-a-message-or-conversation#view-links-to-and-from-a-conversation",
+            help_reading_conversations="/help/reading-conversations",
+            help_report_message="/help/report-a-message",
+            help_enable_moderation="/help/enable-moderation-requests",
+            default_channel_notifications="/help/enable-mobile-notifications-by-default",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=29,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since last
+April, in the [blog post]({blog_post_13_0_url}) announcing today's release of
+Zulip Server 13.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_13_0_url}) to learn about additional
+feature highlights in Zulip Server 13.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_13_0_url="https://blog.zulip.com/zulip-server-13-0",
+        ),
+    ),
 ]
 
 

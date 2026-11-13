@@ -62,7 +62,7 @@ system. Reading the following guides will give you a good starting point:
   Zulip server's filesystem, and the S3 backend, where the files are
   stored in Amazon S3. It would not be difficult to add additional
   supported backends should there be a need; see
-  `zerver/lib/upload.py` for the full interface.
+  `zerver/lib/upload/base.py` for the full interface.
 
   For both backends, the URLs used to access uploaded files are long,
   random strings, providing one layer of security against unauthorized
