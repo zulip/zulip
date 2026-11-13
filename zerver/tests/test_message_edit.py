@@ -2218,6 +2218,73 @@ class EditMessageTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
+    def test_wildcard_mention_channel_level_restrictions_when_editing(self) -> None:
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        self.login("cordelia")
+        stream_name = "Macbeth"
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(polonius, stream_name)
+
+        realm = cordelia.realm
+        stream = get_stream(stream_name, realm)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Realm restricts to nobody; channel grants members.
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", nobody_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", members_system_group, acting_user=cordelia
+        )
+
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        # Cordelia is a member and is granted by the channel setting.
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {"content": "Hello @**everyone**"},
+            )
+        self.assert_json_success(result)
+
+        # Realm grants everyone; channel restricts to nobody — realm grant still allows.
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", everyone_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", nobody_system_group, acting_user=cordelia
+        )
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {"content": "Hello @**all**"},
+            )
+        self.assert_json_success(result)
+
+        # Both restrict to nobody: blocked.
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", nobody_system_group, acting_user=None
+        )
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {"content": "Hello @**all**"},
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use channel wildcard mentions in this channel."
+        )
+
     def test_user_group_mentions_via_subgroup_when_editing(self) -> None:
         user_profile = self.example_user("iago")
         self.login("hamlet")

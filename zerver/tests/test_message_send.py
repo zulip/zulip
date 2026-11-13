@@ -2484,6 +2484,104 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
 
+    def test_stream_wildcard_mention_channel_level_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(polonius, stream_name)
+        stream = get_stream(stream_name, realm)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Realm restricts to members; channel grants everyone (including guests).
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", members_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", everyone_system_group, acting_user=cordelia
+        )
+        # Polonius is a guest and would normally be blocked by the realm setting,
+        # but the channel-level grant allows them.
+        self.send_and_verify_stream_wildcard_mention_message("polonius")
+
+        # Realm restricts to nobody; channel grants members.
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", nobody_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", members_system_group, acting_user=cordelia
+        )
+        # Cordelia is a member and is granted by the channel setting.
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
+        # Polonius is a guest and is not granted by either setting.
+        self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
+
+        # Both realm and channel restrict to nobody: no one is allowed.
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", nobody_system_group, acting_user=cordelia
+        )
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+
+    def test_topic_wildcard_mention_channel_level_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(polonius, stream_name)
+        stream = get_stream(stream_name, realm)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Realm restricts to members; channel grants everyone (including guests).
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", members_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", everyone_system_group, acting_user=cordelia
+        )
+        # Polonius is a guest and would normally be blocked by the realm setting,
+        # but the channel-level grant allows them.
+        self.send_and_verify_topic_wildcard_mention_message("polonius")
+
+        # Realm restricts to nobody; channel grants members.
+        do_change_realm_permission_group_setting(
+            realm, "can_mention_many_users_group", nobody_system_group, acting_user=None
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", members_system_group, acting_user=cordelia
+        )
+        # Cordelia is a member and is granted by the channel setting.
+        self.send_and_verify_topic_wildcard_mention_message("cordelia")
+        # Polonius is a guest and is not granted by either setting.
+        self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
+
+        # Both realm and channel restrict to nobody: no one is allowed.
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", nobody_system_group, acting_user=cordelia
+        )
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
+
     def test_topic_wildcard_mentioned_flag(self) -> None:
         # For topic wildcard mentions, the 'topic_wildcard_mentioned' flag should be
         # set for all the user messages for topic participants, irrespective of
