@@ -509,7 +509,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
         const $pill_container = $("#invitee_emails_container .pill-container");
-        email_pill_widget = email_pill.create_pills($pill_container);
+        const $error_element = $(".invite-email-error").expectOne();
+        email_pill_widget = email_pill.create_pills($pill_container, $error_element);
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 

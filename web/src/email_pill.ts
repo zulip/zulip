@@ -83,10 +83,12 @@ export function generate_pill_html(item: EmailPill): string {
 
 export function create_pills(
     $pill_container: JQuery,
+    $error_element: JQuery,
     pill_config?: InputPillConfig,
 ): input_pill.InputPillContainer<EmailPill> {
     const pill_container = input_pill.create({
         $container: $pill_container,
+        $error_element,
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,

@@ -244,6 +244,14 @@
     }
 }
 
+.pill-error-text {
+    color: hsl(0deg 80% 40%);
+}
+
+.pill-error-text:empty {
+    display: none;
+}
+
 .person_picker {
     .pill:hover {
         background-color: var(--color-background-input-pill-hover);
@@ -295,6 +303,10 @@
 #invitee_emails_container .pill-container.not-editable-by-user {
     height: var(--height-input-pill);
     background-color: var(--color-background-pill-container-input-disabled);
+}
+
+.invite-email-error {
+    color: hsl(0deg 100% 50%);
 }
 
 .add_subscribers_container .pill-container,
