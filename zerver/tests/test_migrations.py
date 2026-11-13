@@ -22,47 +22,43 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class FixDeletedUserEmail(MigrationsTestCase):
-    migrate_from = "0804_backfill_user_created_audit_logs"
-    migrate_to = "0805_fix_deleteduser_email"
+class SetDefaultValueForCanChangeNameGroup(MigrationsTestCase):
+    migrate_from = "0819_realm_can_change_name_group"
+    migrate_to = "0820_set_default_value_for_can_change_name_group"
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         Realm = apps.get_model("zerver", "Realm")
-        UserProfile = apps.get_model("zerver", "UserProfile")
-        realm = Realm.objects.get(string_id="zulip")
+        NamedUserGroup = apps.get_model("zerver", "NamedUserGroup")
 
-        # Simulate a user deleted before the fix in 208c0c303405,
-        # after 0439_fix_deleteduser_email repaired delivery_email.
-        deleted_user = UserProfile.objects.get(realm=realm, delivery_email="hamlet@zulip.com")
-        UserProfile.objects.filter(id=deleted_user.id).update(
-            is_active=False,
-            email=f"deleteduser{deleted_user.id}@https://zulip.testserver",
-            delivery_email=f"deleteduser{deleted_user.id}@zulip.testserver",
+        # Reversing to 0819 leaves the backfilled values in place, so
+        # clear them to simulate a server upgrading from before 0819.
+        Realm.objects.update(can_change_name_group=None)
+
+        Realm.objects.filter(string_id="zulip").update(name_changes_disabled=True)
+        Realm.objects.filter(string_id="lear").update(name_changes_disabled=False)
+
+        # A realm whose setting was already backfilled should be left
+        # alone if the migration is re-run.
+        zephyr = Realm.objects.get(string_id="zephyr")
+        self.zephyr_moderators_group_id = NamedUserGroup.objects.get(
+            name="role:moderators", realm_for_sharding=zephyr, is_system_group=True
+        ).id
+        Realm.objects.filter(id=zephyr.id).update(
+            name_changes_disabled=False,
+            can_change_name_group_id=self.zephyr_moderators_group_id,
         )
-        self.deleted_user_id = deleted_user.id
 
-        # A normal active user, as a control.
-        control_user = UserProfile.objects.get(realm=realm, delivery_email="cordelia@zulip.com")
-        self.control_user_id = control_user.id
-        self.control_user_email = control_user.email
+    def test_can_change_name_group_backfilled(self) -> None:
+        Realm = self.apps.get_model("zerver", "Realm")
+        NamedUserGroup = self.apps.get_model("zerver", "NamedUserGroup")
 
-        # A deactivated user with a valid email, as a control for the
-        # is_active=False part of the migration's filter.
-        deactivated_user = UserProfile.objects.get(realm=realm, delivery_email="othello@zulip.com")
-        UserProfile.objects.filter(id=deactivated_user.id).update(is_active=False)
-        self.deactivated_user_id = deactivated_user.id
-        self.deactivated_user_email = deactivated_user.email
+        def group_name(string_id: str) -> str:
+            realm = Realm.objects.get(string_id=string_id)
+            return NamedUserGroup.objects.get(id=realm.can_change_name_group_id).name
 
-    def test_deleted_user_email_fixed(self) -> None:
-        UserProfile = self.apps.get_model("zerver", "UserProfile")
+        self.assertEqual(group_name("zulip"), "role:administrators")
+        self.assertEqual(group_name("lear"), "role:everyone")
 
-        deleted_user = UserProfile.objects.get(id=self.deleted_user_id)
-        self.assertEqual(deleted_user.email, f"deleteduser{deleted_user.id}@zulip.testserver")
-        self.assertEqual(deleted_user.email, deleted_user.delivery_email)
-
-        control_user = UserProfile.objects.get(id=self.control_user_id)
-        self.assertEqual(control_user.email, self.control_user_email)
-
-        deactivated_user = UserProfile.objects.get(id=self.deactivated_user_id)
-        self.assertEqual(deactivated_user.email, self.deactivated_user_email)
+        zephyr = Realm.objects.get(string_id="zephyr")
+        self.assertEqual(zephyr.can_change_name_group_id, self.zephyr_moderators_group_id)

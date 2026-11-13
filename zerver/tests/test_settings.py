@@ -120,6 +120,21 @@ class ChangeSettingsTest(ZulipTestCase):
         json_result = self.client_patch("/json/settings", dict(full_name=""))
         self.assert_json_error(json_result, "Name must not be empty!")
 
+    def test_admin_can_change_name_when_server_disabled(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_patch(
+                "/json/settings",
+                {"full_name": "Updated Admin Name"},
+            )
+
+        self.assert_json_success(json_result)
+
+        admin.refresh_from_db()
+        self.assertEqual(admin.full_name, "Updated Admin Name")
+
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
 

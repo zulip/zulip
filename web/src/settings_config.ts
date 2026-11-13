@@ -789,6 +789,7 @@ export const all_group_setting_labels = {
         direct_message_initiator_group: $t({
             defaultMessage: "Who can start a direct message conversation",
         }),
+        can_change_name_group: $t({defaultMessage: "Who can change their name"}),
         can_manage_all_groups: $t({defaultMessage: "Who can administer all user groups"}),
         can_manage_billing_group: $t({defaultMessage: "Who can manage plans and billing"}),
         can_create_groups: $t({defaultMessage: "Who can create user groups"}),
@@ -913,6 +914,11 @@ export const realm_group_permission_settings: {
             "can_delete_own_message_group",
             "can_set_delete_message_policy_group",
         ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "User identity"}),
+        subsection_key: "org-user-identity",
+        settings: ["can_change_name_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Guests"}),
