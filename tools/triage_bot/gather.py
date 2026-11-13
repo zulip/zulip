@@ -111,6 +111,7 @@ class Comment:
     review_state: str | None
     created_at: datetime
     body: str
+    url: str
 
 
 @dataclass
@@ -355,6 +356,7 @@ def comments_from_timeline(events: list[JSONDict]) -> list[Comment]:
                 review_state=review_state,
                 created_at=parse_github_time(created),
                 body=event.get("body") or "",
+                url=event.get("html_url") or "",
             )
         )
     return comments

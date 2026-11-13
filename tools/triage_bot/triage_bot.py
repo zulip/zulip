@@ -6,10 +6,15 @@ The bot is read-only on GitHub.  For each item it posts one message
 Maintainers' items get a one-line card.  Other items get a card
 written by Claude from the input that assemble.py builds.
 
+When the author of a PR labeled "not ready" comments after the
+feedback, asking for another look, the bot posts a status update:
+what the author did since the feedback, and what is still missing.
+See status_update.py.
+
 In GitHub Actions (see .github/workflows/triage-bot.yml):
 
   triage_bot.py --scan     post cards for recently updated items that
-                           don't have one yet
+                           don't have one yet, and status updates
   triage_bot.py --item N
 
 Locally:
@@ -38,11 +43,22 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 sys.path.insert(0, ZULIP_PATH)
 
 from tools.triage_bot import gather
-from tools.triage_bot.assemble import assemble, kind_name
+from tools.triage_bot.assemble import HAS_CONFLICTS_LABEL, assemble, kind_name
 from tools.triage_bot.gather import Item, JSONDict, log
+from tools.triage_bot.status_update import (
+    NOT_READY_LABEL,
+    StatusUpdateRequest,
+    fetch_changes_lines,
+    find_status_update_request,
+    ready_check_input,
+    status_update_lines,
+)
 
 MODEL = "claude-opus-5-5"
-PROMPT_FILE = Path(__file__).resolve().parent / "prompt.md"
+BOT_DIR = Path(__file__).resolve().parent
+PROMPT_FILE = BOT_DIR / "prompt.md"
+READY_CHECK_PROMPT_FILE = BOT_DIR / "ready_check.md"
+STATUS_UPDATE_PROMPT_FILE = BOT_DIR / "status_update.md"
 # Zulip allows up to 5000, but cards are long, so pages stay smaller.
 MESSAGES_PER_FETCH = 1000
 WORKFLOW_PATH = ".github/workflows/triage-bot.yml"
@@ -139,8 +155,14 @@ def card_heading(item: Item) -> str:
     return "\n".join(lines)
 
 
-# The first line of card_heading().  An item's URL ends with its number.
+def status_update_heading(item: Item, comment_url: str) -> str:
+    return f"**Status update: [#{item.number} {item.title}]({comment_url})**"
+
+
+# The first lines of card_heading() and status_update_heading().  An item's
+# URL ends with its number.
 CARD_HEADING = re.compile(r"\*\*\[#(?P<number>\d+) .*/(?P=number)\)\*\*")
+STATUS_UPDATE_HEADING = re.compile(r"\*\*Status update: \[#\d+ .*\]\((?P<comment_url>[^()]+)\)\*\*")
 
 
 @dataclass
@@ -148,12 +170,15 @@ class PostedMessages:
     """What the bot posted in the cards channel, read from each message's first line."""
 
     card_topics: dict[int, str] = field(default_factory=dict)
+    status_update_comment_urls: set[str] = field(default_factory=set)
 
     def add(self, content: str, topic: str) -> None:
         """Call this newest first, so an item keeps its newest card's topic."""
         line = content.partition("\n")[0]
         if match := CARD_HEADING.fullmatch(line):
             self.card_topics.setdefault(int(match["number"]), topic)
+        elif match := STATUS_UPDATE_HEADING.fullmatch(line):
+            self.status_update_comment_urls.add(match["comment_url"])
 
 
 def silence_mentions(content: str) -> str:
@@ -180,9 +205,9 @@ def call_claude(system_prompt: str, user_message: str) -> str:
         messages=[{"role": "user", "content": user_message}],
     )
     if response.stop_reason == "refusal":
-        raise RuntimeError(f"The model declined to write a card: {response.stop_details}")
+        raise RuntimeError(f"The model declined to answer: {response.stop_details}")
     if response.stop_reason == "max_tokens":
-        log("The model hit max_tokens; the card may be cut off.")
+        log("The model hit max_tokens; the answer may be cut off.")
     text = "".join(
         block.text for block in response.content if isinstance(block, anthropic.types.TextBlock)
     ).strip()
@@ -191,14 +216,24 @@ def call_claude(system_prompt: str, user_message: str) -> str:
     return text
 
 
-def process(zulip: Zulip | None, number: int, dry_run: bool, wait_for_ci: bool = False) -> None:
+def process(
+    zulip: Zulip | None,
+    number: int,
+    dry_run: bool,
+    wait_for_ci: bool = False,
+    judged_before: datetime | None = None,
+) -> None:
     if zulip is None:
         log("No Zulip credentials; skipping the check for an existing card.")
     else:
         # Checked first: most items a scan finds already have a card.
         topic = zulip.posted.card_topics.get(number)
         if topic is not None:
-            log(f"Skipping #{number}: it already has a card in {topic!r}.")
+            log(f"#{number} already has a card in {topic!r}.")
+            item = gather.fetch_item(number)
+            if item is None or item.kind != "pr" or item.draft or item.author_is_maintainer:
+                return
+            post_status_update(zulip, item, dry_run, judged_before)
             return
 
     item = gather.fetch_item(number)
@@ -243,6 +278,66 @@ def post(zulip: Zulip | None, message_heading: str, body: str, dry_run: bool) ->
         zulip.posted.add(content, topic)
 
 
+def asks_for_another_look(item: Item, request: StatusUpdateRequest) -> bool:
+    answer = call_claude(READY_CHECK_PROMPT_FILE.read_text(), ready_check_input(item, request))
+    return answer.partition("\n")[0].strip().lower() == "yes"
+
+
+def post_status_update(
+    zulip: Zulip, item: Item, dry_run: bool, judged_before: datetime | None
+) -> None:
+    """Post a status update if the author of a "not ready" PR asked for
+    another look since the feedback, and it isn't posted yet."""
+    number = item.number
+    if NOT_READY_LABEL not in item.labels:
+        return
+    if HAS_CONFLICTS_LABEL in item.labels:
+        log(f"No status update for #{number}: it has conflicts.")
+        return
+    events = gather.fetch_timeline(gather.repository().get_issue(number))
+    request = find_status_update_request(item, events, gather.comments_from_timeline(events))
+    if request is None:
+        return
+    if judged_before is not None and request.author_comment.created_at < judged_before:
+        log(f"No status update for #{number}: an earlier scan already judged the author's comment.")
+        return
+    comment_url = request.author_comment.url
+    if comment_url in zulip.posted.status_update_comment_urls:
+        log(f"Skipping the status update for #{number}: it is already posted.")
+        return
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        notice("ANTHROPIC_API_KEY isn't configured; no status update.")
+        return
+    if not asks_for_another_look(item, request):
+        log(f"No status update for #{number}: the author's comment doesn't ask for one.")
+        return
+
+    gathered = gather.gather(item)
+    bot_input = (
+        assemble(gathered)
+        + "\n"
+        + "\n".join(status_update_lines(request, fetch_changes_lines(item, request)))
+        + "\n"
+    )
+    answer = call_claude(STATUS_UPDATE_PROMPT_FILE.read_text(), bot_input)
+    choice, _, rest = answer.partition("\n")
+    choice = choice.strip()
+    if choice == "NOTHING":
+        log(f"No status update for #{number}: {rest.strip()}")
+        return
+    if choice == "CARD":
+        # The status update's heading marks the comment as looked at.
+        body = "The PR changed a lot since its card, so here is a new one.\n\n" + call_claude(
+            PROMPT_FILE.read_text(), assemble(gathered)
+        )
+    elif choice == "NOTE":
+        body = rest.strip()
+    else:
+        raise RuntimeError(f"The status update started with {choice!r}, not NOTHING, CARD or NOTE.")
+    post(zulip, status_update_heading(item, comment_url), body, dry_run)
+    log(f"Posted the status update for #{number}.")
+
+
 def launch_time() -> datetime:
     """When the bot started: the date of the oldest commit on main that
     touched the workflow file.  That file didn't exist before the bot."""
@@ -250,9 +345,18 @@ def launch_time() -> datetime:
     return commits.reversed[0].commit.committer.date
 
 
+def last_scan_time() -> datetime | None:
+    """When the last successful scheduled scan started.  Manual runs
+    don't count, since one may have processed only one item."""
+    workflow = gather.repository().get_workflow(Path(WORKFLOW_PATH).name)
+    for run in workflow.get_runs(event="schedule", status="success"):
+        return run.run_started_at
+    return None
+
+
 def scan(zulip: Zulip, dry_run: bool) -> list[int]:
-    """Post cards for the open items updated in the last SCAN_WINDOW that
-    don't have one yet.  Returns the items whose card failed."""
+    """Post cards and status updates for the open items updated in the
+    last SCAN_WINDOW.  Returns the items that failed."""
     since = datetime.now(timezone.utc) - SCAN_WINDOW
     # Items opened before the bot started get no card, so that old open
     # PRs don't each get one on their next update.
@@ -263,10 +367,11 @@ def scan(zulip: Zulip, dry_run: bool) -> list[int]:
     # Oldest first, so the cards are in the order the items were opened.
     numbers = sorted(issue.number for issue in gather.search_issues(query, MAX_SEARCH_RESULTS))
     log(f"Found {len(numbers)} items updated since {since:%Y-%m-%d %H:%M} UTC.")
+    judged_before = last_scan_time()
     failed = []
     for number in numbers:
         try:
-            process(zulip, number, dry_run, wait_for_ci=True)
+            process(zulip, number, dry_run, wait_for_ci=True, judged_before=judged_before)
         except POST_ERRORS as e:
             notice(f"No card posted for #{number}: {e}.", level="error")
             failed.append(number)
