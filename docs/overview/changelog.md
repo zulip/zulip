@@ -1,7 +1,12 @@
 # Version history
 
-This page contains the release history for the Zulip server. See also
-the [Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip Server 13.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of all changes.
+
+See also the [Zulip release
+lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 13.x series
 
@@ -23,62 +28,6 @@ _Released 2026-11-12_
 ### Zulip Server 13.0
 
 _Released 2026-11-12_
-
-### Zulip Server 13.0-rc2
-
-_Released 2026-11-06_
-
-- GHSA-fphq-r53h-f8qj: A bot's owner could make another user the bot's
-  owner while keeping a working copy of its API key, and then use the
-  bot to post in any channel the new owner can post in, and to list the
-  new owner's private channels. The original owner was not able to read
-  messages in the new owner's private channels. A deactivated user could
-  gain similar access if an administrator reactivated one of their bots,
-  since reactivation makes the administrator the bot's owner. Only
-  organization administrators can now change a bot's owner, and
-  reactivating such a bot generates a new API key, and removes the old
-  API key. This vulnerability was discovered by Ada Logics using
-  Google's security automation tooling, and later also independently
-  reported by Yves Soete of Blacksight LLC (@yssoe).
-- GHSA-xgvh-hg6v-gwjm: In organizations with only external
-  authentication methods (e.g., SAML) enabled, anyone with a reusable
-  invitation link could create an account without using any of those
-  methods, as long as they controlled an email address the organization
-  allows. By default, only administrators can create reusable
-  invitation links.
-- GHSA-v36w-q3m9-2xm2: A guest included in a channel's **Who can
-  subscribe to this channel** or **Who can subscribe anyone to this
-  channel** permission could download files uploaded to that channel
-  without being subscribed to it, if they knew the file's URL. The guest
-  could not read the channel's messages, and both permissions are set
-  to nobody by default. This vulnerability was reported by Varnit Yadav
-  (@varnit7002-tech).
-- GHSA-m2g9-5v7r-xqcg: Organization exports with member consent treated
-  deleted users as having consented, so they included every direct
-  message conversation a deleted user had been part of, even messages
-  from participants who had not consented. Creating such an export
-  requires administrator permissions, and deleting a user (as opposed
-  to deactivating them) requires the `manage.py delete_user` management
-  command. This vulnerability was reported by Thai Son Dinh (@sondt99)
-  of VinSOC Labs (R&D).
-- GHSA-m9rx-7c4r-chrc: Organization exports with member consent
-  included private channels that a consenting user had left or been
-  removed from. In channels with shared history, this included messages
-  and files that members who had not consented sent after the
-  consenting user stopped being a member of the channel. Creating such
-  an export requires administrator permissions. This vulnerability was
-  reported by Md Ohidul Islam (@mdohidulserniabat).
-- Added Google Meet as a video call provider option; see the
-  [setup instructions](../production/video-calls.md#google-meet).
-- Notification Bot now sends a direct message to users who are
-  unsubscribed from a channel by someone else. The
-  `MAX_BULK_NEW_SUBSCRIPTION_MESSAGES` setting has been renamed to
-  `MAX_BULK_SUBSCRIPTION_MESSAGES`, and now also limits these
-  messages.
-
-### Zulip Server 13.0-rc1
-
-_Released 2026-10-30_
 
 #### Highlights
 
@@ -117,6 +66,11 @@ _Released 2026-10-30_
 - The Combined feed now offers to view all messages in public channels
   once you reach its oldest messages.
 - Reporting a message now sends the reporter a confirmation message.
+- Notification Bot now sends a direct message to users who are
+  unsubscribed from a channel by someone else. The
+  `MAX_BULK_NEW_SUBSCRIPTION_MESSAGES` setting has been renamed to
+  `MAX_BULK_SUBSCRIPTION_MESSAGES`, and now also limits these
+  messages.
 - The OpenID Connect integration can now synchronize users' names,
   roles, custom profile fields, and group memberships when they log in.
   It can also optionally update users' email addresses when they change
@@ -164,6 +118,8 @@ _Released 2026-10-30_
   in the **Set status** dialog.
 - Alert words are now highlighted in topic links. Search highlights
   and alert words also have better contrast in the dark theme.
+- Added Google Meet as a video call provider option; see the
+  [setup instructions](../production/video-calls.md#google-meet).
 - Added a new webhook integration for Gong.
 - The Heroku integration now uses Heroku's app webhooks, with support
   for build and release events; Heroku's legacy deploy hooks are no
@@ -5993,7 +5949,7 @@ _Released 2015-10-19_
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 13.0](#upgrade-notes-for-130)
+- [Upgrade notes for 13.0](#upgrade-notes-for-130)
 - [Upgrade notes for 12.0](#upgrade-notes-for-120)
 - [Upgrade notes for 11.0](#upgrade-notes-for-110)
 - [Upgrade notes for 10.0](#upgrade-notes-for-100)
