@@ -19597,6 +19597,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_delete_any_message_group: {}
                                 can_delete_own_message_group: {}
+                                can_mention_many_users_group: {}
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
@@ -24689,6 +24690,7 @@ paths:
                                 can_administer_channel_group: {}
                                 can_delete_any_message_group: {}
                                 can_delete_own_message_group: {}
+                                can_mention_many_users_group: {}
                                 can_move_messages_out_of_channel_group: {}
                                 can_move_messages_within_channel_group: {}
                                 can_send_message_group: {}
@@ -27940,6 +27942,7 @@ components:
             can_administer_channel_group: {}
             can_delete_any_message_group: {}
             can_delete_own_message_group: {}
+            can_mention_many_users_group: {}
             can_move_messages_out_of_channel_group: {}
             can_move_messages_within_channel_group: {}
             can_send_message_group: {}
@@ -28148,6 +28151,8 @@ components:
           $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
         can_delete_own_message_group:
           $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         can_move_messages_out_of_channel_group:
           $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
         can_move_messages_within_channel_group:
@@ -29375,6 +29380,8 @@ components:
           $ref: "#/components/schemas/CanDeleteAnyMessageGroup"
         can_delete_own_message_group:
           $ref: "#/components/schemas/CanDeleteOwnMessageGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         can_move_messages_out_of_channel_group:
           $ref: "#/components/schemas/CanMoveMessagesOutOfChannelGroup"
         can_move_messages_within_channel_group:
