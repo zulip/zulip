@@ -27,7 +27,7 @@ from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.stream_color import StreamColors, get_stream_colors
-from zerver.lib.url_encoding import stream_narrow_url
+from zerver.lib.url_encoding import stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Message,
     Realm,
@@ -58,6 +58,7 @@ class DigestTeaserData:
     participants: list[str]
     count: int
     first_few_messages: MessageListPayload
+    topic_url: str
 
 
 class DigestTopic:
@@ -101,6 +102,11 @@ class DigestTopic:
             participants=sorted(self.human_senders),
             count=teaser_count,
             first_few_messages=first_few_messages,
+            topic_url=topic_narrow_url(
+                realm=user.realm,
+                stream=stream_id_map[self.stream_id()],
+                topic_name=self.topic_name(),
+            ),
         )
 
 

@@ -44,8 +44,8 @@
                         </table>
                         {% endfor %}
                     </div>
+                    {% if convo.count > 0 %}<a class="hot_convo_more" href="{{ convo.topic_url }}">{{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(2) }}.</a>{% endif %}
                 </div>
-                {% if convo.count > 0 %}<p class="digest_paragraph">+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
             {% endwith %}
         </div>
         {% endfor %}

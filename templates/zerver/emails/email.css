@@ -154,11 +154,6 @@ img.responsive-width {
     margin: 10px 0;
 }
 
-.messages p.digest_paragraph {
-    line-height: normal;
-    margin: 4px 0 0;
-}
-
 .body p li,
 .content ul li,
 .content ol li {
@@ -319,6 +314,27 @@ img.responsive-width {
     margin-left: 0;
 }
 
+/* "N more messages", shown as the block's last row and linking to
+   the topic. Left-aligned with the avatars above. */
+.hot_convo_recipient_block a.hot_convo_more {
+    display: block;
+    padding: 8px 10px 8px 15px;
+    border-top: 1px solid #ebebf5;
+    /* 7px block radius less its 1px border. */
+    border-radius: 0 0 6px 6px;
+    color: #6c6c80;
+    font-size: 13px;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hot_convo_recipient_block a.hot_convo_more:hover {
+    background-color: #f5f5fa;
+    color: #0c0c0e !important;
+}
+
 /* Text and link colors for missed-message emails. */
 .email-preferences {
     color: #666;
@@ -399,6 +415,16 @@ img.responsive-width {
 
     .hot_convo_separator {
         color: #8c8c99 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more {
+        border-top-color: #3a3b64 !important;
+        color: #a0a0b4 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more:hover {
+        background-color: #30315a !important;
+        color: #e4e4e7 !important;
     }
 }
 
