@@ -19,8 +19,13 @@ passed. Draft PRs get a card after they are marked ready for review.
 When a PR has the "not ready" label and its author comments after the
 feedback, asking for another look, the bot posts a status update in
 the week's topic. The status update says what the author did since the
-feedback, and what the feedback asked for that is still missing. The
-status update doesn't recommend what to do; the triager decides.
+feedback, and what the feedback asked for that is still missing. If
+nothing is missing and nobody is assigned, it also suggests a reviewer.
+The status update doesn't recommend what to do; the triager decides.
+
+When a PR gets a review label ("maintainer review", "integration
+review" or "priority integration review") and nobody is assigned, the
+bot also posts a reviewer suggestion in the week's topic, once per PR.
 
 ## One-time setup
 
@@ -55,8 +60,8 @@ you only get cards for maintainer items.
 If you also set `ZULIP_TRIAGE_BOT_EMAIL`, `ZULIP_TRIAGE_BOT_API_KEY`
 and `ZULIP_TRIAGE_CHANNEL` (a chat.zulip.org bot's email and API key,
 and the cards' channel), the dry run checks whether the item already
-has a card. If it does, the bot prints its status update instead, if
-one is due.
+has a card. If it does, the bot prints its status update or reviewer
+suggestion instead, if one is due.
 
 ## Evals
 

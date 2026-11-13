@@ -14,7 +14,8 @@ See status_update.py.
 In GitHub Actions (see .github/workflows/triage-bot.yml):
 
   triage_bot.py --scan     post cards for recently updated items that
-                           don't have one yet, and status updates
+                           don't have one yet, status updates and
+                           reviewer suggestions
   triage_bot.py --item N
 
 Locally:
@@ -44,7 +45,7 @@ sys.path.insert(0, ZULIP_PATH)
 
 from tools.triage_bot import gather
 from tools.triage_bot.assemble import HAS_CONFLICTS_LABEL, assemble, kind_name
-from tools.triage_bot.gather import Item, JSONDict, log
+from tools.triage_bot.gather import MAINTAINERS, GatheredItem, Item, JSONDict, log
 from tools.triage_bot.status_update import (
     NOT_READY_LABEL,
     StatusUpdateRequest,
@@ -59,6 +60,11 @@ BOT_DIR = Path(__file__).resolve().parent
 PROMPT_FILE = BOT_DIR / "prompt.md"
 READY_CHECK_PROMPT_FILE = BOT_DIR / "ready_check.md"
 STATUS_UPDATE_PROMPT_FILE = BOT_DIR / "status_update.md"
+REVIEWER_PROMPT_FILE = BOT_DIR / "reviewer.md"
+NOTHING_MISSING = "| ✅"
+# Buddy and mentor reviews don't need an assignee.
+HANDOFF_LABELS = {"maintainer review", "integration review", "priority integration review"}
+REVIEWER_LINE = re.compile(r"@(?P<login>[\w-]+) — (?P<reason>.+)")
 # Zulip allows up to 5000, but cards are long, so pages stay smaller.
 MESSAGES_PER_FETCH = 1000
 WORKFLOW_PATH = ".github/workflows/triage-bot.yml"
@@ -159,10 +165,15 @@ def status_update_heading(item: Item, comment_url: str) -> str:
     return f"**Status update: [#{item.number} {item.title}]({comment_url})**"
 
 
-# The first lines of card_heading() and status_update_heading().  An item's
-# URL ends with its number.
+def reviewer_heading(item: Item) -> str:
+    return f"**Reviewer: [#{item.number} {item.title}]({item.url})**"
+
+
+# The first lines of card_heading(), status_update_heading() and
+# reviewer_heading().  An item's URL ends with its number.
 CARD_HEADING = re.compile(r"\*\*\[#(?P<number>\d+) .*/(?P=number)\)\*\*")
 STATUS_UPDATE_HEADING = re.compile(r"\*\*Status update: \[#\d+ .*\]\((?P<comment_url>[^()]+)\)\*\*")
+REVIEWER_HEADING = re.compile(r"\*\*Reviewer: \[#(?P<number>\d+) .*/(?P=number)\)\*\*")
 
 
 @dataclass
@@ -171,6 +182,7 @@ class PostedMessages:
 
     card_topics: dict[int, str] = field(default_factory=dict)
     status_update_comment_urls: set[str] = field(default_factory=set)
+    reviewer_suggestions: set[int] = field(default_factory=set)
 
     def add(self, content: str, topic: str) -> None:
         """Call this newest first, so an item keeps its newest card's topic."""
@@ -179,6 +191,8 @@ class PostedMessages:
             self.card_topics.setdefault(int(match["number"]), topic)
         elif match := STATUS_UPDATE_HEADING.fullmatch(line):
             self.status_update_comment_urls.add(match["comment_url"])
+        elif match := REVIEWER_HEADING.fullmatch(line):
+            self.reviewer_suggestions.add(int(match["number"]))
 
 
 def silence_mentions(content: str) -> str:
@@ -234,6 +248,7 @@ def process(
             if item is None or item.kind != "pr" or item.draft or item.author_is_maintainer:
                 return
             post_status_update(zulip, item, dry_run, judged_before)
+            suggest_reviewer_for_handoff(zulip, item, dry_run)
             return
 
     item = gather.fetch_item(number)
@@ -281,6 +296,19 @@ def post(zulip: Zulip | None, message_heading: str, body: str, dry_run: bool) ->
 def asks_for_another_look(item: Item, request: StatusUpdateRequest) -> bool:
     answer = call_claude(READY_CHECK_PROMPT_FILE.read_text(), ready_check_input(item, request))
     return answer.partition("\n")[0].strip().lower() == "yes"
+
+
+def suggest_reviewer(gathered: GatheredItem) -> str | None:
+    """The "Possible reviewer" line, or None if the model's answer doesn't
+    start with a maintainer."""
+    maintainers = "\n".join(f"- @{login}" for login in sorted(MAINTAINERS, key=str.lower))
+    prompt = REVIEWER_PROMPT_FILE.read_text().replace("{maintainers}", maintainers)
+    answer = call_claude(prompt, assemble(gathered))
+    match = REVIEWER_LINE.match(answer.partition("\n")[0].strip())
+    if match is None or match["login"] not in MAINTAINERS:
+        log(f"No usable reviewer suggestion in: {answer!r}")
+        return None
+    return f"Possible reviewer: {match['login']} ({match['reason']})"
 
 
 def post_status_update(
@@ -332,10 +360,33 @@ def post_status_update(
         )
     elif choice == "NOTE":
         body = rest.strip()
+        if NOTHING_MISSING in body and not item.assignees:
+            reviewer = suggest_reviewer(gathered)
+            if reviewer is not None:
+                body += f"\n| 👤 | {reviewer} |"
     else:
         raise RuntimeError(f"The status update started with {choice!r}, not NOTHING, CARD or NOTE.")
     post(zulip, status_update_heading(item, comment_url), body, dry_run)
     log(f"Posted the status update for #{number}.")
+
+
+def suggest_reviewer_for_handoff(zulip: Zulip, item: Item, dry_run: bool) -> None:
+    """Post a reviewer suggestion if the PR has a review label and nobody
+    is assigned, and the suggestion isn't posted yet."""
+    number = item.number
+    if HANDOFF_LABELS.isdisjoint(item.labels) or item.assignees:
+        return
+    if number in zulip.posted.reviewer_suggestions:
+        log(f"Skipping the reviewer suggestion for #{number}: it is already posted.")
+        return
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        notice("ANTHROPIC_API_KEY isn't configured; no reviewer suggestion.")
+        return
+    reviewer = suggest_reviewer(gather.gather(item))
+    if reviewer is None:
+        return
+    post(zulip, reviewer_heading(item), reviewer, dry_run)
+    log(f"Posted the reviewer suggestion for #{number}.")
 
 
 def launch_time() -> datetime:
@@ -355,8 +406,9 @@ def last_scan_time() -> datetime | None:
 
 
 def scan(zulip: Zulip, dry_run: bool) -> list[int]:
-    """Post cards and status updates for the open items updated in the
-    last SCAN_WINDOW.  Returns the items that failed."""
+    """Post cards, status updates and reviewer suggestions for the open
+    items updated in the last SCAN_WINDOW.  Returns the items that
+    failed."""
     since = datetime.now(timezone.utc) - SCAN_WINDOW
     # Items opened before the bot started get no card, so that old open
     # PRs don't each get one on their next update.
