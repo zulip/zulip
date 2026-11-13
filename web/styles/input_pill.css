@@ -305,6 +305,10 @@
     background-color: var(--color-background-pill-container-input-disabled);
 }
 
+.invite-email-error {
+    color: hsl(0deg 100% 50%);
+}
+
 .add_subscribers_container .pill-container,
 .add_streams_container .pill-container,
 .add-user-group-container .pill-container,
