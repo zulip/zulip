@@ -15,13 +15,24 @@ _Unreleased_
 
 ## Zulip Server 13.x series
 
-### Zulip Server 13.0
+### Zulip Server 13.2
+
+_Released 2026-11-13_
+
+- Fixed new installs failing because PostgreSQL could not start. This was caused
+  by a [bug in postgresql-common 294](https://bugs.debian.org/1153884), which
+  leaves `/var/log/postgresql` owned by root. Upgrades were not affected.
+
+### Zulip Server 13.1
 
 _Released 2026-11-12_
 
-### Zulip Server 13.0-rc1
+- Fixed an error that stopped Zulip update announcements from being
+  sent after upgrading to 13.0.
 
-_Released 2026-10-30_
+### Zulip Server 13.0
+
+_Released 2026-11-12_
 
 #### Highlights
 
@@ -60,6 +71,11 @@ _Released 2026-10-30_
 - The Combined feed now offers to view all messages in public channels
   once you reach its oldest messages.
 - Reporting a message now sends the reporter a confirmation message.
+- Notification Bot now sends a direct message to users who are
+  unsubscribed from a channel by someone else. The
+  `MAX_BULK_NEW_SUBSCRIPTION_MESSAGES` setting has been renamed to
+  `MAX_BULK_SUBSCRIPTION_MESSAGES`, and now also limits these
+  messages.
 - The OpenID Connect integration can now synchronize users' names,
   roles, custom profile fields, and group memberships when they log in.
   It can also optionally update users' email addresses when they change
@@ -107,6 +123,8 @@ _Released 2026-10-30_
   in the **Set status** dialog.
 - Alert words are now highlighted in topic links. Search highlights
   and alert words also have better contrast in the dark theme.
+- Added Google Meet as a video call provider option; see the
+  [setup instructions](../production/video-calls.md#google-meet).
 - Added a new webhook integration for Gong.
 - The Heroku integration now uses Heroku's app webhooks, with support
   for build and release events; Heroku's legacy deploy hooks are no
