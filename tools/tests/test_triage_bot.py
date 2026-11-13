@@ -9,6 +9,7 @@ from github.PullRequestComment import PullRequestComment
 from github.PullRequestReview import PullRequestReview
 
 from tools.triage_bot.gather import (
+    Comment,
     ConversationLink,
     CzoThread,
     Item,
@@ -17,12 +18,14 @@ from tools.triage_bot.gather import (
     linked_item_refs,
     parse_conversation_link,
 )
+from tools.triage_bot.status_update import PrShape, changes_lines, find_status_update_request
 from tools.triage_bot.triage_bot import (
     PostedMessages,
     Zulip,
     card_heading,
     post,
     silence_mentions,
+    status_update_heading,
     topic_name,
 )
 
@@ -225,11 +228,103 @@ ITEM = Item(
 )
 
 
+def time(day: int, hour: int = 0) -> datetime:
+    return datetime(2026, 10, day, hour, tzinfo=timezone.utc)
+
+
+def comment(author: str, day: int, is_maintainer: bool = False, is_bot: bool = False) -> Comment:
+    return Comment(
+        author=author,
+        association="MEMBER" if is_maintainer else "CONTRIBUTOR",
+        is_maintainer=is_maintainer,
+        is_bot=is_bot,
+        kind="comment",
+        review_state=None,
+        created_at=time(day),
+        body=f"{author} on day {day}",
+        url=f"https://github.com/zulip/zulip/pull/40000#issuecomment-{day}",
+    )
+
+
+def not_ready_label(day: int) -> dict[str, object]:
+    return {
+        "event": "labeled",
+        "label": {"name": "not ready"},
+        "actor": {"login": "laurynmm"},
+        "created_at": f"2026-10-{day:02}T00:00:00Z",
+    }
+
+
+class TestFindStatusUpdateRequest(unittest.TestCase):
+    feedback = comment("laurynmm", 2, is_maintainer=True)
+
+    def test_conversation_since_label(self) -> None:
+        since_label = [
+            comment("contributor", 4),
+            comment("timabbott", 5, is_maintainer=True),
+            comment("contributor", 6),
+            comment("timabbott", 7, is_maintainer=True),
+        ]
+        comments = [comment("contributor", 1), self.feedback, *since_label]
+        request = find_status_update_request(ITEM, [not_ready_label(3)], comments)
+        assert request is not None
+        self.assertEqual(request.conversation, [self.feedback, *since_label])
+        self.assertEqual(request.latest_author_comment, since_label[2])
+        self.assertEqual(request.labeled_by, "laurynmm")
+
+    def test_bot_comments_are_ignored(self) -> None:
+        comments = [self.feedback, comment("contributor", 4), comment("zulipbot", 5, is_bot=True)]
+        self.assertIsNotNone(find_status_update_request(ITEM, [not_ready_label(2)], comments))
+
+    def test_no_request(self) -> None:
+        # No label.
+        self.assertIsNone(
+            find_status_update_request(ITEM, [], [self.feedback, comment("contributor", 4)])
+        )
+        # The author's latest comment is from before the label.
+        self.assertIsNone(
+            find_status_update_request(
+                ITEM, [not_ready_label(3)], [self.feedback, comment("contributor", 2)]
+            )
+        )
+
+
+class TestChangesLines(unittest.TestCase):
+    then = PrShape(files=["a.py", "b.py"], additions=10, deletions=2, commits=["x: Fix."])
+
+    def test_no_push(self) -> None:
+        self.assertEqual(
+            changes_lines(self.then, self.then, 0), ["None: no new push since the label."]
+        )
+
+    def test_push(self) -> None:
+        now = PrShape(files=["a.py", "c.py"], additions=12, deletions=2, commits=["x: Fix."])
+        self.assertEqual(
+            changes_lines(self.then, now, 2),
+            [
+                "New pushes since the label: 2.",
+                "Size then: +10/-2 in 2 files. Size now: +12/-2 in 2 files.",
+                "Commit messages: unchanged.",
+                "Files added to the PR: c.py",
+                "Files no longer in the PR: b.py",
+            ],
+        )
+
+
 class TestPostedMessages(unittest.TestCase):
+    comment_url = "https://github.com/zulip/zulip/pull/40000#issuecomment-4"
+
     def test_headings(self) -> None:
         posted = PostedMessages()
         posted.add(card_heading(ITEM) + "\n\nThe card.", "October 5–11, 2026")
         self.assertEqual(posted.card_topics, {40000: "October 5–11, 2026"})
+        self.assertEqual(posted.status_update_comment_urls, set())
+
+        # A status update isn't a card.
+        posted = PostedMessages()
+        posted.add(status_update_heading(ITEM, self.comment_url) + "\n\nNote.", "topic")
+        self.assertEqual(posted.card_topics, {})
+        self.assertEqual(posted.status_update_comment_urls, {self.comment_url})
 
     def test_other_messages(self) -> None:
         posted = PostedMessages()

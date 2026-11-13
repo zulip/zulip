@@ -115,6 +115,7 @@ class Comment:
     review_state: str | None
     created_at: datetime
     body: str
+    url: str
     # The file that an inline comment is on.
     path: str | None = None
 
@@ -348,6 +349,7 @@ def comment_from_json(
         review_state=review_state,
         created_at=parse_github_time(created),
         body=data.get("body") or "",
+        url=data.get("html_url") or "",
     )
 
 
@@ -364,6 +366,7 @@ def comment_from_review_comment(review_comment: PullRequestComment, sent_at: dat
         review_state=None,
         created_at=sent_at,
         body=review_comment.body or "",
+        url=review_comment.html_url,
         path=review_comment.path,
     )
 
