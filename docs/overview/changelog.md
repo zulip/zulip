@@ -5,6 +5,14 @@ the [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 13.x series
 
+### Zulip Server 13.2
+
+_Released 2026-11-13_
+
+- Fixed new installs failing because PostgreSQL could not start. This was caused
+  by a [bug in postgresql-common 294](https://bugs.debian.org/1153884), which
+  leaves `/var/log/postgresql` owned by root. Upgrades were not affected.
+
 ### Zulip Server 13.1
 
 _Released 2026-11-12_
