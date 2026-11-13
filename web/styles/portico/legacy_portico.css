@@ -147,6 +147,115 @@ html {
     }
 }
 
+/* Prototype switches for previewing digest variants, in a row after
+   the logo. */
+.digest-header .float-left {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+}
+
+.digest-header .logo {
+    flex-shrink: 0;
+}
+
+.digest-switches {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: normal;
+    white-space: nowrap;
+}
+
+.digest-switch-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.digest-switch {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid hsl(0deg 0% 0% / 15%);
+    border-radius: 6px;
+}
+
+.digest-switch-label {
+    color: hsl(0deg 0% 45%);
+}
+
+.digest-switch-option {
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: hsl(0deg 0% 27%);
+    text-decoration: none;
+
+    &:hover {
+        background-color: hsl(0deg 0% 0% / 6%);
+        color: hsl(0deg 0% 15%);
+        text-decoration: none;
+    }
+
+    &.digest-switch-option-active {
+        background-color: hsl(240deg 52% 95%);
+        color: hsl(240deg 52% 45%);
+    }
+}
+
+.digest-dropdown {
+    position: relative;
+
+    &[open] .digest-dropdown-toggle {
+        border-color: hsl(0deg 0% 0% / 30%);
+    }
+}
+
+.digest-dropdown-intro .digest-dropdown-toggle {
+    width: 6em;
+}
+
+.digest-dropdown-toggle {
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 8px;
+    color: hsl(0deg 0% 27%);
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+
+    .fa {
+        font-size: 10px;
+        opacity: 0.6;
+    }
+}
+
+.digest-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1;
+    min-width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    border: 1px solid hsl(0deg 0% 0% / 15%);
+    border-radius: 6px;
+    background-color: hsl(0deg 0% 100%);
+    box-shadow: 0 2px 8px hsl(0deg 0% 0% / 10%);
+}
+
+@media (width < 600px) {
+    .digest-switches {
+        display: none;
+    }
+}
+
 .digest-container {
     padding-top: 20px;
 }
@@ -412,6 +521,36 @@ html {
 
             .portico-header-dropdown-pill {
                 border-color: hsl(0deg 0% 100% / 20%);
+            }
+
+            .digest-switch,
+            .digest-dropdown-menu {
+                border-color: hsl(0deg 0% 100% / 20%);
+            }
+
+            .digest-dropdown-menu {
+                background-color: hsl(235deg 28% 21%);
+            }
+
+            .digest-dropdown-toggle {
+                color: hsl(240deg 5% 90%);
+            }
+
+            .digest-switch-label {
+                color: hsl(240deg 5% 65%);
+            }
+
+            .digest-switch-option {
+                color: hsl(240deg 5% 90%);
+
+                &:hover {
+                    background-color: hsl(0deg 0% 100% / 8%);
+                }
+
+                &.digest-switch-option-active {
+                    background-color: hsl(238deg 26% 31%);
+                    color: hsl(240deg 100% 88%);
+                }
             }
 
             .portico-header-dropdown ul {

@@ -329,6 +329,15 @@ img.responsive-width {
     line-height: 1.5;
 }
 
+.digest-intro-label {
+    margin-bottom: 4px;
+    color: #6c6c80;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 /* When message content is hidden, there's no summary below. */
 .digest-summary .digest-intro:last-child {
     margin-bottom: 0;
@@ -489,6 +498,7 @@ img.responsive-width {
         color: #e4e4e7 !important;
     }
 
+    .digest-intro-label,
     .digest-summary-stats td {
         color: #a0a0b4 !important;
     }

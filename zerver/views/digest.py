@@ -1,5 +1,6 @@
 import time
 from datetime import timedelta
+from urllib.parse import urlencode
 
 import lxml.html
 from django.conf import settings
@@ -10,6 +11,18 @@ from django.utils.timezone import now as timezone_now
 from zerver.decorator import zulip_login_required
 from zerver.lib.digest import DIGEST_CUTOFF, get_digest_context
 from zerver.lib.send_email import get_inliner_instance
+
+# Prototype: introduction variants to preview on the /digest page,
+# while we figure out which organization settings the intro needs.
+DIGEST_INTRO_PREVIEWS = {
+    "default": "Default",
+    "custom": "Custom",
+    "none": "None",
+}
+DIGEST_CUSTOM_INTRO_EXAMPLE = (
+    "Welcome back to {realm_name}! Our community call is every Thursday at "
+    "16:00 UTC, and new members are always welcome to say hi in #social."
+)
 
 
 @zulip_login_required
@@ -24,6 +37,25 @@ def digest_page(request: HttpRequest) -> HttpResponse:
         email_images_base_url=settings.STATIC_URL + "images/emails",
         physical_address=settings.PHYSICAL_ADDRESS,
         page_is_digest=True,
+    )
+
+    intro = request.GET.get("intro", "default")
+    if intro not in DIGEST_INTRO_PREVIEWS:
+        intro = "default"
+    context.update(
+        digest_intro=intro,
+        digest_custom_intro=DIGEST_CUSTOM_INTRO_EXAMPLE.format(realm_name=user_profile.realm.name),
+        digest_switches=[
+            {
+                "name": "intro",
+                "label": "Intro",
+                "selected_label": DIGEST_INTRO_PREVIEWS[intro],
+                "links": [
+                    (label, f"?{urlencode({'intro': key})}", key == intro)
+                    for key, label in DIGEST_INTRO_PREVIEWS.items()
+                ],
+            }
+        ],
     )
 
     email_body_html = render_to_string("zerver/emails/digest.html", context, request=request)

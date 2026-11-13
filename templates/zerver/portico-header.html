@@ -28,6 +28,23 @@
                 {% endif %}
             </div>
             {% endif %}
+            {% if digest_switches %}
+            <div class="digest-switches">
+                {% for switch in digest_switches %}
+                <div class="digest-switch-group">
+                    <span class="digest-switch-label" id="digest-{{ switch.name }}-label">{{ switch.label }}</span>
+                    <details class="digest-dropdown digest-dropdown-{{ switch.name }}" name="digest-switches">
+                        <summary class="digest-switch digest-dropdown-toggle" aria-labelledby="digest-{{ switch.name }}-label">{{ switch.selected_label }}<i class="fa fa-chevron-down" aria-hidden="true"></i></summary>
+                        <div class="digest-dropdown-menu">
+                            {% for label, url, active in switch.links %}
+                            <a href="{{ url }}" class="digest-switch-option{% if active %} digest-switch-option-active{% endif %}"{% if active %} aria-current="true"{% endif %}>{{ label }}</a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
 
         <div class="float-right top-links">
