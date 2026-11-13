@@ -92,7 +92,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_realm
+from zerver.models.realms import get_realm, name_changes_disabled
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.models.streams import get_stream
@@ -401,21 +401,146 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Must be an organization administrator")
 
     def test_unauthorized_name_change(self) -> None:
-        data = {"full_name": "Sir Hamlet"}
-        user_profile = self.example_user("hamlet")
-        self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "name_changes_disabled", True, acting_user=None)
-        url = "/json/settings"
-        result = self.client_patch(url, data)
-        self.assertEqual(result.status_code, 200)
-        # Since the setting fails silently, no message is returned
-        self.assert_in_response("", result)
-        # Realm admins can change their name even setting is disabled.
-        data = {"full_name": "New Iago"}
-        self.login("iago")
-        url = "/json/settings"
-        result = self.client_patch(url, data)
+        realm = self.example_user("hamlet").realm
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            admins_group,
+            acting_user=None,
+        )
+
+        # Regular users cannot change their names.
+        hamlet = self.example_user("hamlet")
+        original_name = hamlet.full_name
+        self.login_user(hamlet)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"full_name": "Sir Hamlet"},
+        )
         self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, original_name)
+
+        # Administrators can change their own names.
+        iago = self.example_user("iago")
+        self.login_user(iago)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"full_name": "New Iago"},
+        )
+        self.assert_json_success(result)
+
+        iago.refresh_from_db()
+        self.assertEqual(iago.full_name, "New Iago")
+
+    def test_name_change_allowed_for_everyone(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            everyone_group,
+            acting_user=None,
+        )
+
+        self.login_user(hamlet)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"full_name": "Sir Hamlet"},
+        )
+
+        self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Sir Hamlet")
+
+    def test_name_change_allowed_for_custom_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        realm = hamlet.realm
+
+        custom_group = check_add_user_group(
+            realm,
+            "name-changers",
+            [hamlet],
+            acting_user=self.example_user("iago"),
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            custom_group,
+            acting_user=None,
+        )
+
+        # Hamlet belongs to the permitted group.
+        self.login_user(hamlet)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"full_name": "Sir Hamlet"},
+        )
+        self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Sir Hamlet")
+
+        # Othello does not belong to the permitted group.
+        original_name = othello.full_name
+        self.login_user(othello)
+
+        result = self.client_patch(
+            "/json/settings",
+            {"full_name": "Sir Othello"},
+        )
+        self.assert_json_success(result)
+
+        othello.refresh_from_db()
+        self.assertEqual(othello.full_name, original_name)
+
+    def test_name_changes_disabled(self) -> None:
+        realm = get_realm("zulip")
+
+        # Without a realm (e.g., while creating a new organization),
+        # only the server-wide setting applies.
+        self.assertFalse(name_changes_disabled(None))
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            self.assertTrue(name_changes_disabled(None))
+            self.assertTrue(name_changes_disabled(realm))
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_change_name_group", everyone_group, acting_user=None
+        )
+        self.assertFalse(name_changes_disabled(realm))
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_change_name_group", admins_group, acting_user=None
+        )
+        self.assertTrue(name_changes_disabled(realm))
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is

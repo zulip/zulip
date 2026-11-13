@@ -798,15 +798,12 @@ def registration_helper(
             )
     else:
         postdata = request.POST.copy()
-        if name_changes_disabled(realm):
+        if "authenticated_full_name" in request.session and name_changes_disabled(realm):
             # If we populate profile information via LDAP and we have a
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
-            try:
-                postdata.update(full_name=request.session["authenticated_full_name"])
-                name_validated = True
-            except KeyError:
-                pass
+            postdata.update(full_name=request.session["authenticated_full_name"])
+            name_validated = True
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
     if not (password_auth_enabled(realm) and password_required):
