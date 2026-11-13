@@ -94,6 +94,24 @@ export const web_channel_default_view_values: Record<
     },
 };
 
+export const web_left_sidebar_topics_order_values: {
+    unresolved_first: SettingDescription<number>;
+    recent_activity: SettingDescription<number>;
+} = {
+    unresolved_first: {
+        code: 2,
+        description: $t({defaultMessage: "Resolved topics after unresolved topics"}),
+    },
+    recent_activity: {
+        code: 1,
+        description: $t({defaultMessage: "All topics in order of recent activity"}),
+    },
+};
+
+// A subscription with this value follows the user's
+// web_left_sidebar_topics_order setting.
+export const left_sidebar_topics_order_inherit = 0;
+
 export const user_list_style_values: {
     compact: SettingDescription<number>;
     with_status: SettingDescription<number>;

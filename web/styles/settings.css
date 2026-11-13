@@ -251,6 +251,47 @@ a.help_link_widget {
     width: calc(100% - 10em - 6em);
 }
 
+.left-sidebar-topics-order-overrides {
+    display: grid;
+    grid-template-columns: auto fit-content(30%) 1fr auto;
+    column-gap: 6px;
+    margin-top: 15px;
+}
+
+.left-sidebar-topics-order-override {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    align-items: center;
+    margin-bottom: 10px;
+
+    .left-sidebar-topics-order-override-text {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / 4;
+        align-items: baseline;
+    }
+
+    .stream-privacy {
+        display: flex;
+        align-items: center;
+
+        /* An empty line of text gives the icon the same baseline
+           and line height as the channel name beside it. */
+        &::before {
+            content: "\200b";
+        }
+    }
+
+    .left-sidebar-topics-order-override-name {
+        font-weight: 600;
+    }
+
+    .left-sidebar-topics-order-override-value {
+        margin-left: 6px;
+    }
+}
+
 #language_selection_modal {
     & table {
         width: 90%;
@@ -1276,7 +1317,9 @@ input[type="checkbox"] {
 }
 
 .emojiset_choices,
-.user_list_style_values {
+.user_list_style_values,
+.web_left_sidebar_topics_order_values,
+.left_sidebar_topics_order_values {
     padding: 0 10px;
 }
 
@@ -1353,6 +1396,10 @@ label.preferences-radio-choice-label {
         width: 2.625em; /* 42px / 16px em */
         border-radius: 0.25em; /* 4px / 16px em */
     }
+}
+
+.web_left_sidebar_topics_order_values {
+    max-width: 25em; /* 350px / 14px em */
 }
 
 .user_list_style_values {

@@ -96,6 +96,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as topic_list from "./topic_list.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -1013,6 +1014,7 @@ export function dispatch_normal_event(event) {
                 "web_left_sidebar_unreads_count_summary",
                 "web_left_sidebar_show_channel_folders",
                 "web_inbox_show_channel_folders",
+                "web_left_sidebar_topics_order",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -1108,6 +1110,10 @@ export function dispatch_normal_event(event) {
                     break;
                 case "web_inbox_show_channel_folders":
                     inbox_ui.complete_rerender();
+                    break;
+                case "web_left_sidebar_topics_order":
+                    topic_list.update();
+                    stream_ui_updates.update_left_sidebar_topics_order_widget();
                     break;
                 case "receives_typing_notifications":
                     if (!user_settings.receives_typing_notifications) {

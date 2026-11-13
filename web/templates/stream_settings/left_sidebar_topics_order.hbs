@@ -1,0 +1,8 @@
+{{#each options}}
+    <label class="preferences-radio-choice-label">
+        <span class="radio-choice-controls">
+            <input type="radio" class="left_sidebar_topics_order_choice" name="left_sidebar_topics_order_{{../stream_id}}" value="{{this.code}}" {{#if this.is_selected}}checked{{/if}}/>
+            <span class="preferences-radio-choice-text">{{this.description}}</span>
+        </span>
+    </label>
+{{/each}}

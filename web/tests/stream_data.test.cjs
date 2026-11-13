@@ -150,6 +150,77 @@ function test(label, f) {
     });
 }
 
+test("demotes_resolved_topics", ({override}) => {
+    // social follows the user setting; Denmark lists resolved topics
+    // after unresolved ones regardless of it.
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        left_sidebar_topics_order: 0,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+    };
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        left_sidebar_topics_order: 2,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(social);
+    stream_data.add_sub_for_tests(denmark);
+    const unknown_stream_id = 999;
+
+    override(user_settings, "web_left_sidebar_topics_order", 1);
+    assert.ok(!stream_data.demotes_resolved_topics(social.stream_id));
+    assert.ok(stream_data.demotes_resolved_topics(denmark.stream_id));
+    assert.ok(!stream_data.demotes_resolved_topics(unknown_stream_id));
+
+    override(user_settings, "web_left_sidebar_topics_order", 2);
+    assert.ok(stream_data.demotes_resolved_topics(social.stream_id));
+    assert.ok(stream_data.demotes_resolved_topics(denmark.stream_id));
+
+    social.left_sidebar_topics_order = 1;
+    assert.ok(!stream_data.demotes_resolved_topics(social.stream_id));
+});
+
+test("get_left_sidebar_topics_order_options", ({override}) => {
+    const sub = {left_sidebar_topics_order: 0};
+    override(user_settings, "web_left_sidebar_topics_order", 2);
+
+    let options = stream_settings_data.get_left_sidebar_topics_order_options(sub);
+    assert.deepEqual(
+        options.map((option) => [option.code, option.is_selected]),
+        [
+            [0, true],
+            [2, false],
+            [1, false],
+        ],
+    );
+    // The first option's label names the current default.
+    assert.ok(options[0].description.includes("Use my default"));
+    assert.ok(options[0].description.includes("Resolved topics after unresolved topics"));
+
+    override(user_settings, "web_left_sidebar_topics_order", 1);
+    sub.left_sidebar_topics_order = 2;
+    options = stream_settings_data.get_left_sidebar_topics_order_options(sub);
+    assert.deepEqual(
+        options.map((option) => [option.code, option.is_selected]),
+        [
+            [0, false],
+            [2, true],
+            [1, false],
+        ],
+    );
+    assert.ok(options[0].description.includes("All topics in order of recent activity"));
+});
+
 test("basics", () => {
     const denmark = {
         subscribed: false,
@@ -157,6 +228,7 @@ test("basics", () => {
         name: "Denmark",
         stream_id: 1,
         is_muted: true,
+        left_sidebar_topics_order: 2,
         invite_only: true,
         history_public_to_subscribers: true,
         can_add_subscribers_group: admins_group.id,

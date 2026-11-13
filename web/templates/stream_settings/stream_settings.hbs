@@ -134,6 +134,21 @@
                     </div>
                 {{/each}}
             </div>
+            <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h3 class="settings-subsection-title">{{t "Left sidebar" }}</h3>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
+                <div class="input-group">
+                    <label class="settings-field-label">
+                        {{t "Show resolved topics in the left sidebar" }}
+                        {{> ../help_link_widget link="/help/resolve-a-topic#show-resolved-topics-last-in-the-left-sidebar" }}
+                    </label>
+                    <div class="left_sidebar_topics_order_values settings-highlight-box">
+                        {{> left_sidebar_topics_order options=left_sidebar_topics_order_options stream_id=sub.stream_id}}
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="stream_section" data-stream-section="subscribers">

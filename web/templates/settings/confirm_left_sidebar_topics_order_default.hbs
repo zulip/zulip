@@ -1,0 +1,31 @@
+<p>{{t "These channels have a custom setting, so changing the default won't affect them." }}</p>
+<div class="left-sidebar-topics-order-overrides">
+    {{#each channels}}
+        <div class="left-sidebar-topics-order-override" data-stream-id="{{stream_id}}">
+            <div class="left-sidebar-topics-order-override-text">
+                <span class="stream-privacy" style="color: {{stream_privacy_icon_color}}">
+                    {{> ../stream_privacy .}}
+                </span>
+                <span class="left-sidebar-topics-order-override-name">{{name}}</span>
+                <span class="left-sidebar-topics-order-override-value">{{order_description}}</span>
+                <span class="left-sidebar-topics-order-override-value left-sidebar-topics-order-override-pending hide">{{t "Will follow your default" }}</span>
+            </div>
+            {{> ../components/action_button
+              label=(t "Reset to default")
+              icon="reset"
+              variant="subtle"
+              intent="neutral"
+              custom_classes="left-sidebar-topics-order-override-button reset-left-sidebar-topics-order"
+              type="button"
+              }}
+            {{> ../components/action_button
+              label=(t "Undo")
+              variant="subtle"
+              intent="neutral"
+              custom_classes="left-sidebar-topics-order-override-button undo-reset-left-sidebar-topics-order"
+              type="button"
+              hidden=true
+              }}
+        </div>
+    {{/each}}
+</div>
