@@ -97,7 +97,7 @@ from zerver.lib.mobile_auth_otp import is_valid_otp
 from zerver.lib.rate_limiter import RateLimitedObject, client_is_exempt_from_rate_limiting
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
-from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.sessions import delete_user_sessions, get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
@@ -2832,6 +2832,14 @@ def social_auth_finish(
 
     mobile_flow_otp = strategy.session_get("mobile_flow_otp")
     desktop_flow_otp = strategy.session_get("desktop_flow_otp")
+    if mobile_flow_otp is None and hasattr(strategy, "request"):
+        mobile_flow_otp = get_expirable_session_var(
+            strategy.request.session, "registration_mobile_flow_otp"
+        )
+    if desktop_flow_otp is None and hasattr(strategy, "request"):
+        desktop_flow_otp = get_expirable_session_var(
+            strategy.request.session, "registration_desktop_flow_otp"
+        )
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:

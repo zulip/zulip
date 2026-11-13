@@ -1321,6 +1321,65 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
+    def test_social_auth_mobile_flow_from_login_page_session(self) -> None:
+        mobile_flow_otp = "1234abcd" * 8
+        hamlet = self.example_user("hamlet")
+        account_data_dict = self.get_account_data_dict(
+            email=hamlet.delivery_email, name="Full Name"
+        )
+        self.user_profile.date_joined = timezone_now() - timedelta(
+            seconds=JUST_CREATED_THRESHOLD + 1
+        )
+        self.user_profile.save()
+
+        # The mobile app initiates login by opening the Zulip login page with mobile_flow_otp.
+        login_url = append_url_query_string(
+            "/login/", urlencode(dict(mobile_flow_otp=mobile_flow_otp))
+        )
+        login_response = self.client_get(login_url, subdomain="zulip")
+        self.assertEqual(login_response.status_code, 200)
+
+        # The user then clicks social login (e.g. Google, OIDC) on the page.
+        # This initiates the social auth flow without mobile_flow_otp in the GET parameters.
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain="zulip",
+            expect_choose_email_screen=False,
+        )
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result["Location"]
+        parsed_url = urlsplit(redirect_url)
+        query_params = parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, "zulip")
+        self.assertEqual(query_params["realm"], ["http://zulip.testserver"])
+        self.assertEqual(query_params["email"], [hamlet.delivery_email])
+        self.assertEqual(query_params["user_id"], [str(hamlet.id)])
+
+        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        self.assertEqual(
+            otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp),
+            self.example_user("hamlet").api_key,
+        )
+
+    def test_social_auth_desktop_flow_from_login_page_session(self) -> None:
+        desktop_flow_otp = "1234abcd" * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
+
+        # The desktop app opens the login page with desktop_flow_otp.
+        login_url = append_url_query_string(
+            "/login/", urlencode(dict(desktop_flow_otp=desktop_flow_otp))
+        )
+        login_response = self.client_get(login_url, subdomain="zulip")
+        self.assertEqual(login_response.status_code, 200)
+
+        # User completes social login from the browser.
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain="zulip",
+            expect_choose_email_screen=False,
+        )
+        self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
+
     def test_social_auth_desktop_success(self) -> None:
         desktop_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
