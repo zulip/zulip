@@ -77,7 +77,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -93,6 +93,12 @@ class TestDigestEmailMessages(ZulipTestCase):
         teaser_messages = hot_convo.first_few_messages.senders
         self.assertIn("some content", teaser_messages[0].content[0].plain)
         self.assertIn(teaser_messages[0].sender, expected_participants)
+
+        summary = kwargs["context"]["summary"]
+        self.assertEqual(summary.topics, len(kwargs["context"]["hot_conversations"]))
+        self.assertEqual(summary.messages, 5)
+        self.assertEqual(summary.channels, 1)
+        self.assertEqual(summary.days, 1)
 
         # Senders are shown with their avatars, rather than with their
         # names prepended to their first message.
@@ -119,7 +125,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # are 3 reused streams and one new one, for a net of two fewer
         # than before.
         iago = self.example_user("iago")
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([iago.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 3)
         self.assertEqual(get_recent_topics.cache_info().currsize, 6)
@@ -128,13 +134,13 @@ class TestDigestEmailMessages(ZulipTestCase):
         # the above.
         cordelia = self.example_user("cordelia")
         prospero = self.example_user("prospero")
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 7)
         self.assertEqual(get_recent_topics.cache_info().currsize, 7)
 
         # If we use a different cutoff, it clears the cache.
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff + 1)
         self.assertEqual(get_recent_topics.cache_info().hits, 1)
         self.assertEqual(get_recent_topics.cache_info().currsize, 4)
@@ -276,7 +282,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, "digest")
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([polonius.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -338,7 +344,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             get_recent_topics.cache_clear()
-            with self.assert_database_query_count(17), self.assert_memcached_count(0):
+            with self.assert_database_query_count(18), self.assert_memcached_count(0):
                 bulk_handle_digest_email(digest_user_ids, cutoff)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)

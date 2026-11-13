@@ -314,6 +314,60 @@ img.responsive-width {
     margin-left: 0;
 }
 
+/* Introduction at the top of the digest, with a summary of what the
+   reader missed. */
+.digest-summary {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: #fff;
+}
+
+.digest-summary .digest-intro {
+    margin: 0 0 14px;
+    line-height: 1.5;
+}
+
+/* When message content is hidden, there's no summary below. */
+.digest-summary .digest-intro:last-child {
+    margin-bottom: 0;
+}
+
+.digest-summary-title {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.digest-summary-stats {
+    table-layout: fixed;
+}
+
+.digest-summary-stats td {
+    width: 20%;
+    padding: 0 12px;
+    color: #6c6c80;
+    font-size: 13px;
+}
+
+/* The other cells' padding and divider, all on the right, so the
+   columns stay equal while the first lines up with the title. */
+.digest-summary-stats td:first-child {
+    padding: 0 25px 0 0; /* 12px + 12px padding + 1px divider */
+}
+
+.digest-summary-stats td.digest-summary-divided {
+    border-left: 1px solid #ebebf5;
+}
+
+.digest-stat {
+    display: block;
+    color: #0c0c0e;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
 /* "N more messages", shown as the block's last row and linking to
    the topic. Left-aligned with the avatars above. */
 .hot_convo_recipient_block a.hot_convo_more {
@@ -419,6 +473,23 @@ img.responsive-width {
 
     .hot_convo_recipient_block a.hot_convo_more {
         border-top-color: #3a3b64 !important;
+        color: #a0a0b4 !important;
+    }
+
+    .digest-summary {
+        background-color: #272845 !important;
+        border-color: #3a3b64 !important;
+    }
+
+    .digest-summary-stats td.digest-summary-divided {
+        border-left-color: #3a3b64 !important;
+    }
+
+    .digest-stat {
+        color: #e4e4e7 !important;
+    }
+
+    .digest-summary-stats td {
         color: #a0a0b4 !important;
     }
 

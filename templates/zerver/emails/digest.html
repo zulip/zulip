@@ -6,6 +6,22 @@
 {% block email_logo %}{% if not page_is_digest %}{{ super() }}{% endif %}{% endblock %}
 
 {% block content %}
+    <div class="digest-summary">
+        <p class="digest-intro">{% trans %}Here's a weekly summary of conversations in {{ realm_name }}. You're receiving this because you're a member and haven't been active recently. If you'd prefer not to get these summaries, you can unsubscribe at the bottom of this email.{% endtrans %}</p>
+        {% if summary %}
+        <div class="digest-summary-title">{% trans count=summary.days %}While you were away · {{ count }} day{% pluralize %}While you were away · {{ count }} days{% endtrans %}</div>
+        <table border="0" cellpadding="0" cellspacing="0" class="layout digest-summary-stats">
+            <tr>
+                <td><span class="digest-stat">{{ summary.messages }}</span>{% trans count=summary.messages %}message{% pluralize %}messages{% endtrans %}</td>
+                <td class="digest-summary-divided"><span class="digest-stat">{{ summary.topics }}</span>{% trans count=summary.topics %}topic{% pluralize %}topics{% endtrans %}</td>
+                <td class="digest-summary-divided"><span class="digest-stat">{{ summary.channels }}</span>{% trans count=summary.channels %}channel{% pluralize %}channels{% endtrans %}</td>
+                <td class="digest-summary-divided"><span class="digest-stat">{{ summary.new_channels }}</span>{% trans count=summary.new_channels %}new channel{% pluralize %}new channels{% endtrans %}</td>
+                <td class="digest-summary-divided"><span class="digest-stat">{{ summary.new_members }}</span>{% trans count=summary.new_members %}new member{% pluralize %}new members{% endtrans %}</td>
+            </tr>
+        </table>
+        {% endif %}
+    </div>
+
     {% if show_message_content %}
     {% if hot_conversations %}
         {#- Each recipient's own channel colors, as in their web app.

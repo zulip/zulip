@@ -61,6 +61,16 @@ class DigestTeaserData:
     topic_url: str
 
 
+@dataclass
+class DigestSummary:
+    days: int
+    messages: int
+    topics: int
+    channels: int
+    new_channels: int
+    new_members: int
+
+
 class DigestTopic:
     def __init__(self, topic_key: TopicKey) -> None:
         self.topic_key = topic_key
@@ -448,6 +458,10 @@ def bulk_get_digest_context(
 
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)
 
+    # Shared across all users, and computed lazily since it is only
+    # needed for users who see message content in their digest.
+    new_members_count: int | None = None
+
     user_ids = [user.id for user in users]
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
     stream_ids = set().union(*(stream_colors.keys() for stream_colors in user_stream_map.values()))
@@ -515,6 +529,18 @@ def bulk_get_digest_context(
                 for hot_topic in hot_topics
             }
             context["new_channels"] = new_streams
+            if new_members_count is None:
+                new_members_count = UserProfile.objects.filter(
+                    realm=realm, is_active=True, is_bot=False, date_joined__gt=cutoff_date
+                ).count()
+            context["summary"] = DigestSummary(
+                days=max(1, (timezone_now() - cutoff_date).days),
+                messages=sum(topic.num_human_messages for topic in recent_topics),
+                topics=len(recent_topics),
+                channels=len({topic.stream_id() for topic in recent_topics}),
+                new_channels=new_streams_count,
+                new_members=new_members_count,
+            )
             context["new_messages_count"] = 0
             context["show_message_content"] = True
 

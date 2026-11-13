@@ -1,4 +1,8 @@
-{% if show_message_content %}
+{% trans %}Here's a weekly summary of conversations in {{ realm_name }}. You're receiving this because you're a member and haven't been active recently. If you'd prefer not to get these summaries, you can unsubscribe at the bottom of this email.{% endtrans %}
+
+{% if summary %}{% trans days=summary.days, messages=summary.messages, topics=summary.topics, channels=summary.channels %}While you were away ({{ days }} days): {{ messages }} messages in {{ topics }} topics across {{ channels }} channels.{% endtrans %}
+
+{% endif %}{% if show_message_content %}
 {% if hot_conversations %}
 {% for convo in hot_conversations %}{% with recipient_block=convo.first_few_messages %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}
