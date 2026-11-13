@@ -24,6 +24,7 @@ from tools.triage_bot.triage_bot import (
     Zulip,
     card_heading,
     post,
+    reviewer_heading,
     silence_mentions,
     status_update_heading,
     topic_name,
@@ -319,12 +320,15 @@ class TestPostedMessages(unittest.TestCase):
         posted.add(card_heading(ITEM) + "\n\nThe card.", "October 5–11, 2026")
         self.assertEqual(posted.card_topics, {40000: "October 5–11, 2026"})
         self.assertEqual(posted.status_update_comment_urls, set())
+        self.assertEqual(posted.reviewer_suggestions, set())
 
-        # A status update isn't a card.
+        # A status update and a reviewer suggestion aren't cards.
         posted = PostedMessages()
         posted.add(status_update_heading(ITEM, self.comment_url) + "\n\nNote.", "topic")
+        posted.add(reviewer_heading(ITEM) + "\n\nPossible reviewer: x (y)", "topic")
         self.assertEqual(posted.card_topics, {})
         self.assertEqual(posted.status_update_comment_urls, {self.comment_url})
+        self.assertEqual(posted.reviewer_suggestions, {40000})
 
     def test_other_messages(self) -> None:
         posted = PostedMessages()
@@ -332,6 +336,7 @@ class TestPostedMessages(unittest.TestCase):
         posted.add(
             "**[#4000 compose: Fix the thing.](https://github.com/zulip/zulip/pull/40000)**", "t"
         )
+        posted.add("**Reviewer: [#4000 x](https://github.com/zulip/zulip/pull/40000)**", "t")
         # Only the first line counts.
         posted.add("Hello\n" + card_heading(ITEM), "t")
         self.assertEqual(posted, PostedMessages())
@@ -353,7 +358,10 @@ class TestLoadPosted(unittest.TestCase):
         pages = [
             {
                 "found_oldest": False,
-                "messages": [bot_message(20, card_heading(ITEM), "week 2")],
+                "messages": [
+                    bot_message(20, card_heading(ITEM), "week 2"),
+                    bot_message(21, reviewer_heading(ITEM), "week 2"),
+                ],
             },
             {
                 "found_oldest": True,
@@ -363,6 +371,7 @@ class TestLoadPosted(unittest.TestCase):
         with mock.patch.object(zulip, "get", side_effect=pages) as get:
             zulip.load_posted()
         self.assertEqual(zulip.posted.card_topics, {40000: "week 2"})
+        self.assertEqual(zulip.posted.reviewer_suggestions, {40000})
         self.assertEqual([call.args[1]["anchor"] for call in get.call_args_list], ["newest", "20"])
         params = get.call_args.args[1]
         self.assertEqual(params["include_anchor"], "false")
