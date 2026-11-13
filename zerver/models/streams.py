@@ -142,6 +142,9 @@ class Stream(models.Model):
     can_delete_own_message_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
+    can_mention_many_users_group = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT, related_name="+"
+    )
     can_move_messages_out_of_channel_group = models.ForeignKey(
         UserGroup, on_delete=models.RESTRICT, related_name="+"
     )
@@ -191,6 +194,11 @@ class Stream(models.Model):
             default_group_name=SystemGroups.NOBODY,
         ),
         "can_delete_own_message_group": GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.NOBODY,
+        ),
+        "can_mention_many_users_group": GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.NOBODY,
@@ -288,6 +296,7 @@ class Stream(models.Model):
         "can_create_topic_group_id",
         "can_delete_any_message_group_id",
         "can_delete_own_message_group_id",
+        "can_mention_many_users_group_id",
         "can_move_messages_out_of_channel_group_id",
         "can_move_messages_within_channel_group_id",
         "can_send_message_group_id",
