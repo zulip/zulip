@@ -1,0 +1,26 @@
+<li class="todo-task-item" data-key="{{ key }}">
+    <label class="checkbox">
+        <span class="todo-checkbox">
+            <input type="checkbox" class="task" {{#if completed}}checked{{/if}}/>
+            <span class="custom-checkbox"></span>
+        </span>
+        {{> todo_widget_task_label . }}
+    </label>
+    {{#if is_my_task_list}}
+        <button type="button" class="todo-edit-task-icon" aria-label="{{t 'Edit task'}}"><i class="zulip-icon zulip-icon-pencil" aria-hidden="true"></i></button>
+        <div class="todo-task-edit-bar" style="display: none;">
+            <div class="todo-task-edit-inputs-wrapper">
+                <input type="text" class="add-task" placeholder="{{t 'Task'}}" />
+                <input type="text" class="add-desc" placeholder="{{t 'Description'}}" />
+            </div>
+            <div class="todo-task-edit-buttons-wrapper">
+                <button type="button" class="todo-task-edit-cancel" aria-label="{{t 'Cancel edit'}}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                <button type="button" class="todo-task-edit-check" aria-label="{{t 'Save'}}">
+                    <i class="zulip-icon zulip-icon-check todo-task-check" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-loader-circle todo-task-spinner" aria-hidden="true" style="display: none;"></i>
+                </button>
+            </div>
+        </div>
+        <div class="widget-error"></div>
+    {{/if}}
+</li>

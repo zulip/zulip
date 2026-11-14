@@ -420,6 +420,12 @@ class WidgetContentTestCase(ZulipTestCase):
             result, "You can't edit the task list title unless you are the author."
         )
 
+        result = post(cordelia, dict(type="edit_task", key="5,9", task="Homework", desc=""))
+        self.assert_json_success(result)
+
+        result = post(hamlet, dict(type="edit_task", key="5,9", task="Homework", desc=""))
+        self.assert_json_error(result, "You can't edit the task unless you are the author.")
+
     def test_poll_type_validation(self) -> None:
         sender = self.example_user("cordelia")
         stream_name = "Verona"
@@ -532,6 +538,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
+        assert_success(dict(type="edit_task", key="5,9", task="ea", desc=""))
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
