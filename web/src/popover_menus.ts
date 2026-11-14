@@ -263,6 +263,18 @@ export const default_popover_props: Partial<tippy.Props> = {
                         return;
                     }
 
+                    // If an interactive element inside the popover is currently focused
+                    // (for example, the search/filter input in the emoji picker or dropdown),
+                    // the reference element might be obscured or pushed offscreen by the
+                    // on-screen keyboard. We must not destroy the popover while the user is
+                    // actively interacting with its contents.
+                    if (
+                        document.activeElement instanceof HTMLElement &&
+                        popper.contains(document.activeElement)
+                    ) {
+                        return;
+                    }
+
                     if (is_reference_outside_window) {
                         hide_current_popover_if_visible(instance);
                         return;
@@ -465,7 +477,7 @@ export function toggle_popover_menu(
     // popover centered on the screen as an overlay.
     let show_as_overlay =
         (options?.show_as_overlay_on_mobile === true &&
-            ui_util.matches_viewport_state("lt_md_min")) ||
+            (ui_util.matches_viewport_state("lt_md_min") || util.is_mobile())) ||
         options?.show_as_overlay_always === true;
 
     // Show the popover as overlay if the reference element is hidden in message feed.
