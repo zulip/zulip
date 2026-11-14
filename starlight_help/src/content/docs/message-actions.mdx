@@ -5,6 +5,8 @@ title: Message actions
 import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
 import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 
@@ -33,11 +35,38 @@ In the mobile app, the message actions menu lets you:
     <FlattenedSteps>
       <MessageActionsMenu />
     </FlattenedSteps>
+
+    <ZulipTip>
+      You can also [configure Zulip](#open-the-message-actions-menu-by-right-clicking)
+      to open the message actions menu when you right-click on a message.
+    </ZulipTip>
   </TabItem>
 
   <TabItem label="Mobile">
     <FlattenedSteps>
       <MessageLongPressMenu />
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Open the message actions menu by right-clicking
+
+You can configure Zulip to open the message actions menu, instead of your
+browser's menu, when you right-click on a message. Your browser's menu will
+still open when you right-click on a link, an image, selected text, or anywhere
+outside the message's content.
+
+If you've selected part of a message, right-clicking elsewhere in that message
+opens the message actions menu, ready to [quote](/help/quote-or-forward-a-message)
+your selection.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Navigation**, toggle **Open Zulip's context menu when
+         right-clicking on a message**, as desired.
     </FlattenedSteps>
   </TabItem>
 </Tabs>
