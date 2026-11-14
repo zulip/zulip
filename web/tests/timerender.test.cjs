@@ -505,7 +505,7 @@ run_test("get_full_datetime", ({override}) => {
     timerender.set_display_time_zone("UTC");
 });
 
-run_test("last_seen_status_from_date", () => {
+run_test("last_seen_status_from_date", ({override}) => {
     // Set base_date to March 1 2016 12.30 AM (months are zero based)
     let base_date = new Date(2016, 2, 1, 0, 30);
     clock.setSystemTime(base_date.getTime());
@@ -518,7 +518,7 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Active 1 hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
 
@@ -548,13 +548,28 @@ run_test("last_seen_status_from_date", () => {
     base_date = new Date(2016, 4, 2, 23, 30);
     clock.setSystemTime(base_date.getTime());
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Active 1 hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
 
     assert_same({hours: -12}, $t({defaultMessage: "Active 12 hours ago"}));
 
     assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+
+    // Languages with several plural forms get the form that matches
+    // the number, which a translated template with the number
+    // substituted in could never produce.
+    override(user_settings, "default_language", "ru");
+
+    assert_same({minutes: -3}, $t({defaultMessage: "Active 3 минуты назад"}));
+
+    assert_same({minutes: -5}, $t({defaultMessage: "Active 5 минут назад"}));
+
+    assert_same({hours: -2}, $t({defaultMessage: "Active 2 часа назад"}));
+
+    assert_same({hours: -24}, $t({defaultMessage: "Active вчера"}));
+
+    assert_same({days: -5}, $t({defaultMessage: "Active 5 дней назад"}));
 
     clock.reset();
 });
