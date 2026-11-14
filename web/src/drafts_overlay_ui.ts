@@ -29,7 +29,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
-let draft_undo_delete_list: LocalStorageDraft[] = [];
+let draft_undo_delete_list: {id: string; draft: LocalStorageDraft}[] = [];
 
 function clear_undo_list(): void {
     draft_undo_delete_list = [];
@@ -41,8 +41,10 @@ function undo_draft_deletion(): void {
         return;
     }
 
-    for (const draft of draft_undo_delete_list) {
-        drafts.draft_model.addDraft(draft);
+    // Restoring a draft under its original id keeps it in sync with
+    // the compose box if the draft is open there.
+    for (const {id, draft} of draft_undo_delete_list) {
+        drafts.draft_model.undeleteDraft(id, draft);
     }
 
     clear_undo_list();
@@ -122,22 +124,20 @@ function restore_draft(draft_id: string): void {
 
 function remove_drafts($draft_rows: JQuery): void {
     // Deletes the drafts and removes it from the list
-    const deleted_drafts: LocalStorageDraft[] = [];
-    const draft_ids: string[] = [];
+    const deleted_drafts: {id: string; draft: LocalStorageDraft}[] = [];
 
     $draft_rows.each(function () {
         const draft_id = $(this).attr("data-draft-id")!;
 
         const draft = drafts.draft_model.getDraft(draft_id);
         if (draft) {
-            deleted_drafts.push(draft);
-            draft_ids.push(draft_id);
+            deleted_drafts.push({id: draft_id, draft});
             $(this).remove();
         }
     });
 
     if (deleted_drafts.length > 0) {
-        drafts.draft_model.deleteDrafts(draft_ids);
+        drafts.draft_model.deleteDrafts(deleted_drafts.map((deleted) => deleted.id));
         draft_undo_delete_list.push(...deleted_drafts);
         show_delete_banner();
     }
