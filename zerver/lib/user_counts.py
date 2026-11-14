@@ -44,6 +44,14 @@ def get_role_based_system_group_member_count(
     return sum(human_counts[str(role)] for role in roles)
 
 
+def realm_workplace_user_count(realm: Realm) -> int:
+    return (
+        get_recursive_group_members(realm.workplace_users_group_id)
+        .filter(is_bot=False, is_active=True)
+        .count()
+    )
+
+
 def realm_user_count_by_role(realm: Realm) -> dict[str, Any]:
     human_counts = {
         str(UserProfile.ROLE_REALM_ADMINISTRATOR): 0,
@@ -77,11 +85,7 @@ def realm_user_count_by_role(realm: Realm) -> dict[str, Any]:
             human_counts, system_group_name
         )
     else:
-        human_counts["workplace_users"] = (
-            get_recursive_group_members(realm.workplace_users_group_id)
-            .filter(is_bot=False, is_active=True)
-            .count()
-        )
+        human_counts["workplace_users"] = realm_workplace_user_count(realm)
 
     human_counts["non_workplace_users"] = total_human_count - human_counts["workplace_users"]
 
