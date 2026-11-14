@@ -90,12 +90,17 @@ S3_SKIP_CHECKSUM = True
 ```
 
 ...and adding `s3_key` and `s3_secret_key` in `/etc/zulip/zulip-secrets.conf`,
-you will need to also add a `/etc/zulip/gcp_key.json` which contains a [service
-account key][gcp-key] with "Storage Object Admin" permissions on the uploads
-bucket. This is used by the `tusd` chunked upload service when receiving file
-uploads from clients.
+the `tusd` chunked upload service (which handles file uploads from clients)
+needs its own way to authenticate to GCS. If you add a `/etc/zulip/gcp_key.json`
+containing a [service account key][gcp-key] with "Storage Object Admin"
+permissions on the uploads bucket, `tusd` will use it. Otherwise, `tusd` falls
+back to [Application Default Credentials][gcp-adc], which is the recommended
+approach when running on GKE with [Workload Identity][gcp-workload-identity]
+configured, since it avoids the need to manage a long-lived static key.
 
 [gcp-key]: https://cloud.google.com/iam/docs/keys-create-delete
+[gcp-adc]: https://cloud.google.com/docs/authentication/application-default-credentials
+[gcp-workload-identity]: https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity
 
 ## S3 local caching
 
