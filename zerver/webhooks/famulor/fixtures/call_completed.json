@@ -1,0 +1,46 @@
+{
+    "event": "call.completed",
+    "timestamp": "2026-08-26T14:32:07.000Z",
+    "data": {
+        "call_id": "c1b2c3d4-0000-4000-8000-000000000010",
+        "tenant_id": "9f86d081-0000-4000-8000-000000000020",
+        "assistant_id": "1b2c3d4e-0000-4000-8000-000000000030",
+        "direction": "outbound",
+        "status": "completed",
+        "duration_sec": 132,
+        "transcript": {
+            "items": [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [
+                        "Hi, this is Alex from Riverside Dental."
+                    ]
+                },
+                {
+                    "type": "message",
+                    "role": "user",
+                    "content": [
+                        "Hi, yes, I have a moment."
+                    ]
+                }
+            ]
+        },
+        "collected": {
+            "appointment_time": "2026-09-02T10:00:00Z"
+        },
+        "variables": {
+            "lead_quality": "high"
+        },
+        "input_variables": {
+            "customer_name": "Max Mustermann"
+        },
+        "analysis": {
+            "summary": "Customer confirmed interest and booked a demo.",
+            "sentiment": "positive",
+            "success": true,
+            "success_reason": "Appointment booked"
+        },
+        "qa_scorecard": null
+    }
+}
