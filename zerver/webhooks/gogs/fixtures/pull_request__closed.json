@@ -111,11 +111,11 @@
     "updated_at": "2017-02-19T17:56:41-05:00"
   },
   "sender": {
-    "id": 1,
-    "login": "john",
+    "id": 3,
+    "login": "benjamin",
     "full_name": "",
-    "email": "john@example.com",
-    "avatar_url": "https://secure.gravatar.com/avatar/715cb4680284423d81d2e75e94f812a1",
-    "username": "john"
+    "email": "ben@example.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/2c66f6142933ed5a97948f89cb1c7be0",
+    "username": "benjamin"
   }
 }
