@@ -93,6 +93,7 @@ export function create_pills(
         get_display_value_from_item: get_email_from_item,
         split_text_on_comma: false,
         split_text_to_form_pills: split_text_to_form_email_pills,
+        shake_on_invalid_paste: true,
         generate_pill_html,
     });
     return pill_container;

@@ -37,6 +37,7 @@ type InputPillCreateOptions<ItemType> = {
         remove_pill: (pill: HTMLElement) => void,
     ) => void;
     show_outline_on_invalid_input?: boolean;
+    shake_on_invalid_paste?: boolean;
     split_text_to_form_pills?: (pills: string) => string[];
 };
 
@@ -64,6 +65,7 @@ type InputPillStore<ItemType> = {
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
+    shake_on_invalid_paste: boolean;
     split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
 };
 
@@ -113,6 +115,7 @@ export function create<ItemType extends {type: string}>(
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
+        shake_on_invalid_paste: opts.shake_on_invalid_paste ?? false,
         split_text_to_form_pills: opts.split_text_to_form_pills,
     };
 
@@ -146,14 +149,16 @@ export function create<ItemType extends {type: string}>(
             return store.$input.text().trim() !== "";
         },
 
-        create_item(text: string) {
+        create_item(text: string, shake_on_invalid_input = true) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
             if (!item) {
-                store.$input.addClass("input-validation-shake");
+                if (shake_on_invalid_input) {
+                    store.$input.addClass("input-validation-shake");
 
-                if (store.show_outline_on_invalid_input) {
-                    store.$parent.addClass("invalid");
+                    if (store.show_outline_on_invalid_input) {
+                        store.$parent.addClass("invalid");
+                    }
                 }
                 return undefined;
             }
@@ -200,16 +205,16 @@ export function create<ItemType extends {type: string}>(
 
         // this appends a pill to the end of the container but before the
         // input block.
-        appendPill(value: string) {
+        appendPill(value: string, shake_on_invalid_input = true) {
             if (value.length === 0) {
                 return true;
             }
             if (store.split_text_on_comma && value.includes(",")) {
-                funcs.insertManyPills(value);
+                funcs.insertManyPills(value, shake_on_invalid_input);
                 return false;
             }
 
-            const payload = this.create_item(value);
+            const payload = this.create_item(value, shake_on_invalid_input);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
             if (payload === undefined) {
@@ -271,7 +276,7 @@ export function create<ItemType extends {type: string}>(
             this.clear(util.the(store.$input));
         },
 
-        insertManyPills(pills: string | string[]) {
+        insertManyPills(pills: string | string[], shake_on_invalid_input = true) {
             if (typeof pills === "string") {
                 if (!store.split_text_on_comma && store.split_text_to_form_pills) {
                     pills = store.split_text_to_form_pills(pills);
@@ -286,7 +291,7 @@ export function create<ItemType extends {type: string}>(
                 (pill) =>
                     // if this returns `false`, it errored and we should push it to
                     // the draft pills.
-                    !funcs.appendPill(pill),
+                    !funcs.appendPill(pill, shake_on_invalid_input),
             );
 
             store.$input.text(drafts.join(", "));
@@ -490,8 +495,10 @@ export function create<ItemType extends {type: string}>(
             // eslint-disable-next-line @typescript-eslint/no-deprecated
             document.execCommand("insertText", false, text);
 
+            // Pasted text that isn't a valid pill is usually finished by the
+            // user with typeahead, so by default we don't flag it as invalid.
             if (funcs.createPillonPaste()) {
-                funcs.insertManyPills(store.$input.text().trim());
+                funcs.insertManyPills(store.$input.text().trim(), store.shake_on_invalid_paste);
             }
         });
 
