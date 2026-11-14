@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
+const channel = mock_esm("../src/channel");
 mock_esm("../src/desktop_notifications", {close_notification: noop});
 mock_esm("../src/message_flags", {send_read: noop});
 mock_esm("../src/unread_ui", {
@@ -13,6 +14,7 @@ mock_esm("../src/unread_ui", {
 });
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 
+const {Filter} = zrequire("filter");
 const message_store = zrequire("message_store");
 const {get_topic_key} = zrequire("recent_view_util");
 const unread = zrequire("unread");
@@ -142,4 +144,29 @@ run_test("notify_server_messages_read", ({override}) => {
         new Set([get_topic_key(stream_id, "lunch"), dm_user_ids_string]),
     );
     assert.equal(unread.get_unread_message_count(), 0);
+});
+
+run_test("mark_narrow_as_read", ({override}) => {
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    const filter = new Filter([{operator: "dm-including", operand: [31, 32]}]);
+    unread_ops.mark_narrow_as_read(filter);
+
+    assert.equal(channel_post_opts.url, "/json/messages/flags/narrow");
+    assert.deepEqual(channel_post_opts.data, {
+        anchor: "oldest",
+        include_anchor: false,
+        num_before: 0,
+        num_after: 1000,
+        op: "add",
+        flag: "read",
+        narrow: JSON.stringify([
+            {operator: "is", operand: "unread", negated: false},
+            {operator: "dm-including", operand: 31, negated: false},
+            {operator: "dm-including", operand: 32, negated: false},
+        ]),
+    });
 });
