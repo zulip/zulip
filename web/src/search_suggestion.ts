@@ -22,6 +22,7 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -226,7 +227,14 @@ export function rewire_max_num_of_search_results(value: typeof max_num_of_search
 }
 
 function channel_matches_query(channel_name: string, q: string): boolean {
-    return common.phrase_match(q, channel_name);
+    const lower_name = channel_name.toLowerCase();
+    const lower_query = q.toLowerCase();
+    return (
+        lower_name.startsWith(lower_query) ||
+        [...typeahead.word_boundary_chars].some((separator) =>
+            lower_name.includes(separator + lower_query),
+        )
+    );
 }
 
 function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): boolean {
