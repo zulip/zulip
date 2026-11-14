@@ -399,7 +399,6 @@ export async function build_move_topic_to_stream_popover(
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
         stream: sub_store.StreamSubscription | undefined;
-        max_topic_length: number;
     } = {
         topic_name,
         empty_string_topic_display_name,
@@ -409,7 +408,6 @@ export async function build_move_topic_to_stream_popover(
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
-        max_topic_length: realm.max_topic_length,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -1111,6 +1109,24 @@ export async function build_move_topic_to_stream_popover(
             false,
         );
 
+        function handle_topic_input_change(stream_id: number): void {
+            if (
+                ui_util.truncate_input_to_max_code_points(
+                    util.the($topic_input),
+                    realm.max_topic_length,
+                )
+            ) {
+                $topic_input.addClass("input-validation-shake");
+            }
+            update_submit_button_disabled_state(stream_id);
+            maybe_show_topic_already_exists_warning();
+            update_topic_input_placeholder();
+        }
+
+        $topic_input.on("animationend", () => {
+            $topic_input.removeClass("input-validation-shake");
+        });
+
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
 
         if (topic_name === "" && stream_data.can_use_empty_topic(current_stream_id)) {
@@ -1142,9 +1158,7 @@ export async function build_move_topic_to_stream_popover(
             // to edit stream in topic-edit only UI.
             const select_stream_id = current_stream_id;
             $topic_input.on("input", () => {
-                update_submit_button_disabled_state(select_stream_id);
-                maybe_show_topic_already_exists_warning();
-                update_topic_input_placeholder();
+                handle_topic_input_change(select_stream_id);
             });
             return;
         }
@@ -1193,9 +1207,7 @@ export async function build_move_topic_to_stream_popover(
         $("#move_topic_to_stream_widget").prop("disabled", disable_stream_input);
         $topic_input.on("input", () => {
             assert(stream_widget_value !== undefined);
-            update_submit_button_disabled_state(stream_widget_value);
-            maybe_show_topic_already_exists_warning();
-            update_topic_input_placeholder();
+            handle_topic_input_change(stream_widget_value);
         });
 
         update_topic_input_placeholder();
