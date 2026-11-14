@@ -452,7 +452,7 @@ def remove_members_from_group_backend(
             allow_deactivated=True,
         )
 
-    group_member_ids = get_user_group_direct_member_ids(user_group)
+    group_member_ids = set(get_user_group_direct_member_ids(user_group))
     for member in members:
         if member not in group_member_ids:
             raise JsonableError(
