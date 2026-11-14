@@ -242,7 +242,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
 
         function on_error(xhr: JQuery.jqXHR): void {
             const error_message = channel.xhr_error_message(
-                $t_html({
+                $t({
                     defaultMessage: "Failed removing channel from the folder",
                 }),
                 xhr,
@@ -360,7 +360,7 @@ function render_add_channel_folder_widget(): void {
 
         function on_error(xhr: JQuery.jqXHR): void {
             const error_message = channel.xhr_error_message(
-                $t_html({
+                $t({
                     defaultMessage: "Failed adding channel to the folder",
                 }),
                 xhr,

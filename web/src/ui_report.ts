@@ -39,7 +39,7 @@ export function error(
     status_box: JQuery,
     remove_after?: number,
 ): void {
-    const msg = xhr ? channel.xhr_error_message(response_html, xhr) : response_html;
+    const msg = xhr ? channel.xhr_error_message_html(response_html, xhr) : response_html;
     message(msg, status_box, "alert-error", remove_after);
 }
 
