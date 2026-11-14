@@ -343,6 +343,24 @@
       "text_content": "A foo bar is a baz quux"
     },
     {
+      "name": "emphasis_single_character",
+      "input": "*a*",
+      "expected_output": "<p><em>a</em></p>",
+      "text_content": "a"
+    },
+    {
+      "name": "emphasis_single_digit",
+      "input": "*1*",
+      "expected_output": "<p><em>1</em></p>",
+      "text_content": "1"
+    },
+    {
+      "name": "emphasis_single_characters_in_sentence",
+      "input": "Pick *a* or *b*",
+      "expected_output": "<p>Pick <em>a</em> or <em>b</em></p>",
+      "text_content": "Pick a or b"
+    },
+    {
       "name": "emphasis_with_html",
       "input": "*<h1>Hello world</h1>*",
       "expected_output": "<p><em>&lt;h1&gt;Hello world&lt;/h1&gt;</em></p>"
