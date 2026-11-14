@@ -325,6 +325,13 @@ $(document).on("click", ".nav-zulip-logo", (e) => {
     }
 });
 
+// Keep the marketing page open behind links that leave the site. If
+// this script does not run, the link still works in the current tab.
+$(document).on("click", ".open-in-new-tab", function (this: HTMLAnchorElement, e) {
+    e.preventDefault();
+    window.open(this.href, "_blank", "noopener,noreferrer");
+});
+
 $(document).on("click", ".pricing-tab", function () {
     const id = $(this).attr("id")!;
     const $pricing_wrapper = $(".portico-pricing");

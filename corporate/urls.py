@@ -156,6 +156,7 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/slack-alternative.html"},
     ),
+    path("try-zulip/", landing_view, {"template_name": "corporate/try-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
     path("zulip-cloud/", landing_view, {"template_name": "corporate/zulip-cloud.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
