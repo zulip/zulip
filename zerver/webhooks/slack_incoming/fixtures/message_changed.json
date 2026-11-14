@@ -1,0 +1,20 @@
+{
+  "type": "message",
+  "subtype": "message_changed",
+  "hidden": true,
+  "channel": "general",
+  "message": {
+    "type": "message",
+    "user": "U12345",
+    "text": "Hello world from edited Slack message!",
+    "ts": "1358546515.000008"
+  },
+  "previous_message": {
+    "type": "message",
+    "user": "U12345",
+    "text": "Hello world",
+    "ts": "1358546513.000002"
+  },
+  "event_ts": "1358546515.000008",
+  "ts": "1358546515.000008"
+}

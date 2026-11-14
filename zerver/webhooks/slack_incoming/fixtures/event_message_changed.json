@@ -1,0 +1,13 @@
+{
+  "channel": "general",
+  "event": {
+    "type": "message",
+    "subtype": "message_changed",
+    "message": {
+      "type": "message",
+      "user": "U12345",
+      "text": "Hello world from edited Slack event message!",
+      "ts": "1358546515.000008"
+    }
+  }
+}
