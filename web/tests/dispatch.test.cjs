@@ -1389,9 +1389,12 @@ run_test("user_settings", ({override}) => {
         called = false;
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
+        const update_private_messages_stub = make_stub();
+        override(pm_list, "update_private_messages", update_private_messages_stub.f);
         override(user_settings, "emojiset", "text");
         dispatch(event);
         assert.equal(stub.num_calls, 1);
+        assert.equal(update_private_messages_stub.num_calls, 1);
         assert_same(called, true);
         assert_same(user_settings.emojiset, "google");
     }
