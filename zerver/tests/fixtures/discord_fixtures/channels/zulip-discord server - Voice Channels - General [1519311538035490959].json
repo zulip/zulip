@@ -1,0 +1,104 @@
+{
+  "guild": {
+    "id": "1519311536839983195",
+    "name": "zulip-discord server",
+    "iconUrl": "media\\0-eb806f2bcf037a33.png"
+  },
+  "channel": {
+    "id": "1519311538035490959",
+    "type": "GuildVoiceChat",
+    "categoryId": "1519311538035490957",
+    "category": "Voice Channels",
+    "name": "General",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "exportedAt": "2026-06-24T21:07:10.4966616+07:00",
+  "messages": [
+    {
+      "id": "1519315095317119009",
+      "type": "Default",
+      "timestamp": "2026-06-24T19:15:46.233+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Chat in side a voice channel",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519315140640768040",
+      "type": "Reply",
+      "timestamp": "2026-06-24T19:15:57.039+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "reply",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "reference": {
+        "type": "Default",
+        "messageId": "1519315095317119009",
+        "channelId": "1519311538035490959",
+        "guildId": "1519311536839983195"
+      },
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519337245818097805",
+      "type": "Default",
+      "timestamp": "2026-06-24T20:43:47.324+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "foo bar",
+      "author": {
+        "id": "1000000000000000002",
+        "name": "hamlet",
+        "discriminator": "0000",
+        "nickname": "hamlet",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\8c4e1e62ddcf9f302b96ee34ace7a857-316b13b517b81a03.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    }
+  ],
+  "messageCount": 3
+}
