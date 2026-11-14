@@ -229,6 +229,23 @@ def check_valid_interface_type(interface_type: int | None) -> None:
         raise JsonableError(_("Invalid interface type"))
 
 
+def check_valid_bot_service_and_config_update(
+    bot_type: int | None,
+    *,
+    service_payload_url: str | None,
+    config_data: Mapping[str, str] | None,
+    service_interface: int | None,
+) -> None:
+    if service_payload_url is not None and bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+        raise JsonableError(_("Only outgoing-webhook bots have service_payload_url."))
+    if service_interface is not None:
+        if bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+            raise JsonableError(_("Only outgoing-webhook bots have service_interface."))
+        check_valid_interface_type(service_interface)
+    if config_data is not None and bot_type != UserProfile.EMBEDDED_BOT:
+        raise JsonableError(_("Only embedded bots have config_data."))
+
+
 def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 
