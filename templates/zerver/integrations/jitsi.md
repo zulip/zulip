@@ -36,3 +36,4 @@ instance of Jitsi Meet.
 - [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [Galène integration](/integrations/galene)
