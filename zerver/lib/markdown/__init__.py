@@ -1995,6 +1995,46 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    # Override getLink to patch upstream Python-Markdown bug #1014 (Zulip #22569)
+    # When a URL contains a quote (' or ") followed by parentheses, upstream
+    # mistakes the quote for a title delimiter, truncating the href and
+    # returning out_index as -1.
+    @override
+    def getLink(self, data: str, index: int) -> tuple[str, str | None, int, bool]:
+        href, title, out_index, handled = super().getLink(data, index)
+        if not handled:
+            return href, title, out_index, handled
+
+        # Detect the upstream bug: out_index < 0 means upstream couldn't
+        # properly close the link. Combined with unbalanced parens and a
+        # quote in the href, this confirms the quote caused truncation.
+        if (
+            href
+            and out_index < 0
+            and ("'" in href or '"' in href)
+            and href.count("(") > href.count(")")
+        ):
+            # Re-scan with bracket_count starting at 1 to account for
+            # the outer '(' in the [text](url) syntax.
+            bracket_count = 1
+            for i in range(index + 1, len(data)):
+                if data[i] == "(":
+                    bracket_count += 1
+                elif data[i] == ")":
+                    bracket_count -= 1
+                    if bracket_count == 0:
+                        raw_content = data[index + 1 : i].strip()
+                        # Extract title if one exists
+                        title_match = re.search(r"[ ]+([\'\"])(?P<title>.*?)\1$", raw_content)
+                        new_title = None
+                        if title_match:
+                            new_title = title_match.group("title")
+                            raw_content = raw_content[: title_match.start()].strip()
+                        if raw_content.startswith("<") and raw_content.endswith(">"):
+                            raw_content = raw_content[1:-1]
+                        return self.unescape(raw_content), new_title, i + 1, True
+        return href, title, out_index, handled
+
     def zulip_specific_link_changes(self, el: Element) -> Element | None:
         href = el.get("href")
         assert href is not None
@@ -2027,11 +2067,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
     ) -> tuple[Element | str | None, int | None, int | None]:
         ret = super().handleMatch(m, data)
         if ret[0] is not None:
-            el, match_start, index = ret
+            el, match_start, match_index = ret
             assert isinstance(el, Element)
             el = self.zulip_specific_link_changes(el)
             if el is not None:
-                return el, match_start, index
+                return el, match_start, match_index
         return None, None, None
 
 
