@@ -687,8 +687,8 @@ new subscribers.
             """
 We make many improvements to Zulip beyond what we can share here. Learn about
 additional feature highlights, and other Zulip project updates since last
-April, in the [blog post]({blog_post_13_0_url}) announcing today's release of
-Zulip Server 13.0.
+April, in the [blog post]({blog_post_13_0_url}) announcing last week's release
+of Zulip Server 13.0.
 """
             if settings.CORPORATE_ENABLED
             else """
