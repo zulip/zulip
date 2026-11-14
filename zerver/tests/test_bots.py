@@ -2189,6 +2189,125 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
+    def test_create_outgoing_webhook_bot_with_whitespace_service_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Outgoing Webhook test bot",
+            "short_name": "outgoingservicebot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
+            "service_name": " ",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = get_user("outgoingservicebot-bot@zulip.testserver", get_realm("zulip"))
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.name, "outgoingservicebot")
+
+    def test_add_outgoing_webhook_bot_requires_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="outgoingservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            assert_json_error_msg="Outgoing-webhook bots require a payload_url.",
+        )
+
+    def test_add_default_bot_rejects_service_and_config_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=hamlet,
+            service_name="followup",
+            assert_json_error_msg="Only non-generic bots have service_name.",
+        )
+
+    def test_add_incoming_webhook_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="webhookbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_embedded_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            payload_url=orjson.dumps("http://embedded.example.com").decode(),
+            assert_json_error_msg="Only outgoing-webhook bots have payload_url.",
+        )
+
+    def test_add_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="outgoingservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="Only embedded bots and incoming-webhook bots have config_data.",
+        )
+
+    def test_add_default_bot_rejects_interface_type(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="hambot",
+            user_profile=self.example_user("hamlet"),
+            interface_type=Service.GENERIC,
+            assert_json_error_msg="Only outgoing-webhook bots have interface_type.",
+        )
+
+    def test_add_incoming_webhook_bot_rejects_interface_type(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="webhookbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            interface_type=Service.GENERIC,
+            assert_json_error_msg="Only outgoing-webhook bots have interface_type.",
+        )
+
+    def test_add_embedded_bot_rejects_interface_type(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            interface_type=Service.GENERIC,
+            assert_json_error_msg="Only outgoing-webhook bots have interface_type.",
+        )
+
+    def test_add_outgoing_webhook_bot_defaults_to_generic_interface(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Outgoing Webhook test bot",
+            "short_name": "outgoingservicebot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = get_user("outgoingservicebot-bot@zulip.testserver", get_realm("zulip"))
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.interface, Service.GENERIC)
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
