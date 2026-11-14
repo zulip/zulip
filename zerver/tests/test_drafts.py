@@ -5,8 +5,10 @@ from typing import Any
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import stub_event_queue_user_events
 from zerver.lib.users import check_can_access_user
-from zerver.models import Draft
+from zerver.models import Draft, UserProfile
+from zerver.tornado.django_api import EventQueueData
 
 
 class DraftCreationTests(ZulipTestCase):
@@ -639,3 +641,66 @@ class DraftFetchTest(ZulipTestCase):
         ]
 
         self.assertEqual(data["drafts"], expected_draft_contents)
+
+
+class DraftRegisterTests(ZulipTestCase):
+    """The event queue is created before the initial state is fetched, so a
+    draft event that arrives in between is already accounted for in the
+    fetched state."""
+
+    def create_draft(self, user_profile: UserProfile) -> int:
+        stream_id = self.get_stream_id(self.get_streams(user_profile)[0])
+        draft_dict = {
+            "type": "stream",
+            "to": [stream_id],
+            "topic": "drafts",
+            "content": "The API should be good",
+            "timestamp": 1595505700,
+        }
+        resp = self.api_post(
+            user_profile, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()}
+        )
+        return self.assert_json_success(resp)["ids"][0]
+
+    def register_with_queued_events(
+        self, user_profile: UserProfile, events: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        queue = EventQueueData(queue_id="15:11", idle_queue_timeout_secs=600)
+        with stub_event_queue_user_events(queue, events):
+            resp = self.api_post(
+                user_profile,
+                "/api/v1/register",
+                dict(fetch_event_types=orjson.dumps(["drafts"]).decode()),
+            )
+        return self.assert_json_success(resp)["drafts"]
+
+    def test_remove_event_for_draft_missing_from_state(self) -> None:
+        hamlet = self.example_user("hamlet")
+        draft_id = self.create_draft(hamlet)
+        self.assert_json_success(self.api_delete(hamlet, f"/api/v1/drafts/{draft_id}"))
+
+        drafts = self.register_with_queued_events(
+            hamlet, [dict(id=0, type="drafts", op="remove", draft_id=draft_id)]
+        )
+        self.assertEqual(drafts, [])
+
+    def test_update_event_for_draft_missing_from_state(self) -> None:
+        hamlet = self.example_user("hamlet")
+        draft_id = self.create_draft(hamlet)
+        draft = Draft.objects.get(id=draft_id).to_dict()
+        self.assert_json_success(self.api_delete(hamlet, f"/api/v1/drafts/{draft_id}"))
+
+        drafts = self.register_with_queued_events(
+            hamlet, [dict(id=0, type="drafts", op="update", draft=draft)]
+        )
+        self.assertEqual(drafts, [])
+
+    def test_add_event_for_draft_already_in_state(self) -> None:
+        hamlet = self.example_user("hamlet")
+        draft_id = self.create_draft(hamlet)
+        draft = Draft.objects.get(id=draft_id).to_dict()
+
+        drafts = self.register_with_queued_events(
+            hamlet, [dict(id=0, type="drafts", op="add", drafts=[draft])]
+        )
+        self.assertEqual([d["id"] for d in drafts], [draft_id])
