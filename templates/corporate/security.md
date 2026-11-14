@@ -111,7 +111,7 @@ security issues from being introduced in Zulip.
 
 ### Development process
 
-- **Comprehensive automated testing**: The Zulip server has an remarkably
+- **Comprehensive automated testing**: The Zulip server has a remarkably
   complete automated test suite, including [complete test
   coverage](https://app.codecov.io/gh/zulip/zulip/tree/main/zerver) in
   security-sensitive code paths.

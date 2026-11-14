@@ -507,7 +507,7 @@ Server or the mobile app is a version predating the 12.0 release
 non-E2EE protocol will be used.
 
 The central design goal of the legacy Push Notification Service
-service was to avoid any message content being stored or logged by the
+was to avoid any message content being stored or logged by the
 service, even in error cases.
 
 - The Push Notification Service only stores the necessary metadata for
