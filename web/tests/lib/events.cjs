@@ -876,10 +876,12 @@ exports.fixtures = {
             {
                 ...streams.devel,
                 stream_weekly_traffic: null,
+                default_color: null,
             },
             {
                 ...streams.test,
                 stream_weekly_traffic: null,
+                default_color: null,
             },
         ],
     },
@@ -942,6 +944,9 @@ exports.fixtures = {
                 ...streams.devel,
                 audible_notifications: true,
                 color: "blue",
+                default_color: null,
+                auto_color: "blue",
+                color_is_default: false,
                 desktop_notifications: false,
                 email_notifications: false,
                 in_home_view: false,

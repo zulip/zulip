@@ -300,6 +300,7 @@ def update_stream_backend(
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    default_color: Json[str | None] | MissingType = Missing,
     default_push_notifications: Json[bool] | None = None,
     description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
@@ -445,6 +446,16 @@ def update_stream_backend(
         do_set_stream_property(
             stream, "default_push_notifications", default_push_notifications, user_profile
         )
+
+    if not isinstance(default_color, MissingType):
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
+        if default_color is not None:
+            try:
+                default_color = check_color("default_color", default_color)
+            except ValueError as e:
+                raise JsonableError(str(e))
+        do_set_stream_property(stream, "default_color", default_color, user_profile)
 
     if is_archived is not None and not is_archived:
         do_unarchive_stream(stream, stream.name, acting_user=user_profile)
@@ -1386,7 +1397,7 @@ def json_get_stream_id(
 class SubscriptionPropertyChangeRequest(BaseModel):
     stream_id: int
     property: str
-    value: bool | str
+    value: bool | str | None
 
     @model_validator(mode="after")
     def validate_terms(self) -> "SubscriptionPropertyChangeRequest":
@@ -1402,11 +1413,12 @@ class SubscriptionPropertyChangeRequest(BaseModel):
         }
 
         if self.property == "color":
-            try:
-                self.value = check_color("color", self.value)
-            except ValueError as e:
-                # Raise JsonableError on validation failure to avoid 500.
-                raise JsonableError(str(e))
+            if self.value is not None:
+                try:
+                    self.value = check_color("color", self.value)
+                except ValueError as e:
+                    # Raise JsonableError on validation failure to avoid 500.
+                    raise JsonableError(str(e))
         elif self.property in boolean_properties:
             if not isinstance(self.value, bool):
                 raise JsonableError(_("{property} is not a boolean").format(property=self.property))
@@ -1424,7 +1436,7 @@ def update_subscriptions_property(
     *,
     property: str,
     stream_id: PathOnly[Json[int]],
-    value: Annotated[Json[bool] | str, Field(union_mode="left_to_right")],
+    value: Annotated[Json[bool | None] | str | None, Field(union_mode="left_to_right")],
 ) -> HttpResponse:
     change_request = SubscriptionPropertyChangeRequest(
         stream_id=stream_id, property=property, value=value

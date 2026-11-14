@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     SubscriberPeerInfo,
     get_active_subscriptions_for_stream_id,
@@ -99,6 +99,7 @@ def get_web_public_subs(
         )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
+        default_color = stream.default_color
         default_push_notifications = stream.default_push_notifications
         description = stream.description
         first_message_id = stream.first_message_id
@@ -123,7 +124,8 @@ def get_web_public_subs(
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
         audible_notifications = True
-        color = get_next_color()
+        auto_color = get_next_color()
+        color = default_color if default_color is not None else auto_color
         desktop_notifications = True
         email_notifications = True
         in_home_view = True
@@ -148,9 +150,12 @@ def get_web_public_subs(
             can_remove_subscribers_group=can_remove_subscribers_group,
             can_resolve_topics_group=can_resolve_topics_group,
             can_subscribe_group=can_subscribe_group,
+            auto_color=auto_color,
             color=color,
+            color_is_default=True,
             creator_id=creator_id,
             date_created=date_created,
+            default_color=default_color,
             default_push_notifications=default_push_notifications,
             description=description,
             desktop_notifications=desktop_notifications,
@@ -189,7 +194,12 @@ def get_web_public_subs(
 def build_unsubscribed_sub_from_stream_dict(
     user: UserProfile, sub_dict: RawSubscriptionDict, stream_dict: APIStreamDict
 ) -> SubscriptionStreamDict:
-    subscription_stream_dict = build_stream_dict_for_sub(user, sub_dict, stream_dict)
+    subscription_stream_dict = build_stream_dict_for_sub(
+        user,
+        sub_dict,
+        stream_dict,
+        sub_dict["auto_color"] or sub_dict["color"] or STREAM_ASSIGNMENT_COLORS[0],
+    )
 
     return subscription_stream_dict
 
@@ -260,6 +270,7 @@ def build_stream_api_dict(
         can_resolve_topics_group=can_resolve_topics_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
+        default_color=raw_stream_dict["default_color"],
         default_push_notifications=raw_stream_dict["default_push_notifications"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
@@ -285,6 +296,7 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub_dict: RawSubscriptionDict,
     stream_dict: APIStreamDict,
+    auto_color: str,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
@@ -300,6 +312,7 @@ def build_stream_dict_for_sub(
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
+    default_color = stream_dict["default_color"]
     default_push_notifications = stream_dict["default_push_notifications"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
@@ -320,7 +333,14 @@ def build_stream_dict_for_sub(
     topics_policy = stream_dict["topics_policy"]
 
     # Handle Subscription.API_FIELDS.
-    color = sub_dict["color"]
+    personal_color = sub_dict["color"]
+    color = (
+        personal_color
+        if personal_color is not None
+        else default_color
+        if default_color is not None
+        else auto_color
+    )
     is_muted = sub_dict["is_muted"]
     pin_to_top = sub_dict["pin_to_top"]
     audible_notifications = sub_dict["audible_notifications"]
@@ -347,9 +367,12 @@ def build_stream_dict_for_sub(
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
+        auto_color=auto_color,
         color=color,
+        color_is_default=personal_color is None,
         creator_id=creator_id,
         date_created=date_created,
+        default_color=default_color,
         default_push_notifications=default_push_notifications,
         description=description,
         desktop_notifications=desktop_notifications,
@@ -385,6 +408,7 @@ def build_stream_dict_for_never_sub(
 ) -> NeverSubscribedStreamDict:
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    default_color = raw_stream_dict["default_color"]
     default_push_notifications = raw_stream_dict["default_push_notifications"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
@@ -461,6 +485,7 @@ def build_stream_dict_for_never_sub(
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
+        default_color=default_color,
         default_push_notifications=default_push_notifications,
         description=description,
         first_message_id=first_message_id,
@@ -856,6 +881,7 @@ def gather_subscriptions_helper(
         get_stream_subscriptions_for_user(user_profile)
         .values(
             *Subscription.API_FIELDS,
+            "auto_color",
             "recipient_id",
             "active",
         )
@@ -871,6 +897,19 @@ def gather_subscriptions_helper(
 
     def get_stream_id(sub_dict: RawSubscriptionDict) -> int:
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
+
+    used_colors = {
+        color
+        for sub_dict in sub_dicts
+        for color in (sub_dict["color"], sub_dict["auto_color"])
+        if color is not None
+    }
+    missing_auto_color_recipient_ids = {
+        sub_dict["recipient_id"]
+        for sub_dict in sub_dicts
+        if sub_dict["auto_color"] is None and sub_dict["color"] is None
+    }
+    fallback_auto_colors = pick_colors(used_colors, {}, list(missing_auto_color_recipient_ids))
 
     recent_traffic = get_streams_traffic(realm=realm)
 
@@ -903,6 +942,11 @@ def gather_subscriptions_helper(
             user=user_profile,
             sub_dict=sub_dict,
             stream_dict=stream_api_dict,
+            auto_color=(
+                sub_dict["auto_color"]
+                or sub_dict["color"]
+                or fallback_auto_colors[sub_dict["recipient_id"]]
+            ),
         )
 
         # is_active is represented in this structure by which list we include it in.

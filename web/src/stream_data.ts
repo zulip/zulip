@@ -1178,13 +1178,16 @@ export function create_sub_from_server_data(
     const subscriber_user_ids = full_data
         ? server_attrs.subscribers
         : server_attrs.partial_subscribers;
+    const auto_color =
+        ("auto_color" in server_attrs && server_attrs.auto_color) || color_data.pick_color();
 
     // Omit properties not used for the sub object
     const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
 
     assert(server_attrs.subscriber_count !== undefined);
     peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
-
+    // console.log("SERVER DEFAULT COLOR:", server_attrs.default_color);
+    // console.log("SERVER DEFAULT COLOR TYPE:", typeof server_attrs.default_color);
     sub = {
         newly_subscribed: false,
         is_muted: false,
@@ -1194,7 +1197,11 @@ export function create_sub_from_server_data(
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        color: "color" in server_attrs ? server_attrs.color : color_data.pick_color(),
+        auto_color,
+        color_is_default: !("color_is_default" in server_attrs) || server_attrs.color_is_default,
+        color:
+            ("color" in server_attrs && server_attrs.color) ||
+            (server_attrs.default_color ?? auto_color),
         subscribed,
         previously_subscribed,
         ...attrs,

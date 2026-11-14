@@ -507,6 +507,11 @@ export function show_settings_for(node: HTMLElement): void {
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
+    // console.log("SUBSCRIPTION:", sub);
+    // console.log("DEFAULT COLOR:", sub.default_color);
+    // console.log("DEFAULT COLOR TYPE:", typeof sub.default_color);
+    // console.log("CHANNEL COLOR:", sub.color);
+    // console.log("CHANNEL COLOR TYPE:", typeof sub.color);
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
     stream_edit_toggler.toggler.get().prependTo("#stream_settings .tab-container");
@@ -530,6 +535,15 @@ export function show_settings_for(node: HTMLElement): void {
     stream_settings_components.set_up_folder_dropdown_widget(sub);
     stream_ui_updates.set_folder_dropdown_visibility($("#stream_settings"));
     stream_ui_updates.update_channel_email_section(sub);
+
+    const $settings = $("#stream_settings");
+    $settings.find(".stream-default-color-reset").on("click", () => {
+        stream_settings_api.set_default_color(
+            stream_id,
+            null,
+            $settings.find(".stream-settings-subsection .alert-notification"),
+        );
+    });
 
     $("#channels_overlay_container").on(
         "click",

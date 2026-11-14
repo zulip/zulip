@@ -19,6 +19,15 @@
         </div>
     </div>
     <ul role="menu" class="popover-menu-list">
+        {{#unless color_is_default}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="reset-channel-color popover-menu-link" tabindex="0">
+                <i class="zulip-icon zulip-icon-reset popover-menu-icon" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Reset to default"}}</span>
+            </a>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        {{/unless}}
         <li role="none">
             <div role="group" class="color-swatch-list" aria-label="{{t 'Stream color' }}">
                 {{#each stream_color_palette as |row|}}
