@@ -13,6 +13,7 @@ import * as util from "./util.ts";
 export let _old_width = $(window).width();
 
 let was_left_sidebar_overlay = false;
+let keyboard_height = 0;
 
 export function handler(): void {
     const new_width = $(window).width();
@@ -63,4 +64,26 @@ export function handler(): void {
     ) {
         message_viewport.scroll_to_selected();
     }
+}
+export function update_keyboard_height(): void {
+    const visual_viewport = window.visualViewport;
+    if (visual_viewport === null) {
+        return;
+    }
+
+    let new_keyboard_height = 0;
+
+    if (visual_viewport.scale <= 1) {
+        new_keyboard_height = Math.max(
+            0,
+            window.innerHeight - visual_viewport.height - visual_viewport.offsetTop,
+        );
+    }
+
+    if (new_keyboard_height === keyboard_height) {
+        return;
+    }
+
+    keyboard_height = new_keyboard_height;
+    document.documentElement.style.setProperty("--keyboard-height", `${keyboard_height}px`);
 }
