@@ -478,7 +478,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "afdian",
         ["financial"],
-        [WebhookScreenshotConfig("order.json")],
         display_name="Afdian",
     ),
     IncomingWebhookIntegration(
