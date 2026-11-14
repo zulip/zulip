@@ -170,6 +170,30 @@ function get_time_string(timestamp: number): string {
 export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            assert(message_lists.current !== undefined);
+            const current_filter = message_lists.current.data.filter;
+            // Don't show "Go to conversation" narrow tooltip in the recipient
+            // row if we're currently narrowed to that conversation.
+            if (
+                current_filter.is_conversation_view() &&
+                (instance.reference.matches(".narrows_by_topic") ||
+                    instance.reference.matches(
+                        ".message_header_private_message .narrows_by_recipient",
+                    ))
+            ) {
+                return false;
+            }
+            // Don't show "Go to channel" narrow tooltip in the recipient
+            // row if we're currently narrowed to that channel.
+            if (
+                current_filter.is_channel_view() &&
+                instance.reference.matches(".narrows_by_recipient")
+            ) {
+                return false;
+            }
+            return undefined;
+        },
         onCreate(instance) {
             // We sniff the href, rather than looking up the user's settings
             // so that the tooltip always matches the link.
