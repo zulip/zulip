@@ -1949,6 +1949,7 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         "!",
         "*",
         "`",
+        ">",
     }
 
     def __init__(self, zmd: "ZulipMarkdown") -> None:
