@@ -1554,7 +1554,7 @@ def extract_private_recipients(s: str) -> list[str] | list[int]:
     if isinstance(data[0], str):
         return get_validated_emails(data)
 
-    if not isinstance(data[0], int):
+    if type(data[0]) is not int:
         raise JsonableError(_("Invalid data type for recipients"))
 
     return get_validated_user_ids(data)
@@ -1562,7 +1562,7 @@ def extract_private_recipients(s: str) -> list[str] | list[int]:
 
 def get_validated_user_ids(user_ids: Collection[int]) -> list[int]:
     for user_id in user_ids:
-        if not isinstance(user_id, int):
+        if type(user_id) is not int:
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
 
     return list(set(user_ids))
