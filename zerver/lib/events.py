@@ -111,7 +111,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import rendered_custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
@@ -282,7 +282,7 @@ def fetch_initial_state_data(
             # personal settings, so we send an empty list.
             state["custom_profile_fields"] = []
         else:
-            fields = custom_profile_fields_for_realm(realm.id)
+            fields = rendered_custom_profile_fields_for_realm(realm.id)
             state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
             item[4]: {"id": item[0], "name": str(item[1])}
