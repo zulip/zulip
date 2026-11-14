@@ -212,11 +212,11 @@ def capture_streams_narrow_screenshot(
 ) -> None:
     stream = ensure_stream(realm, stream_name, acting_user=DEFAULT_USER)
 
-    narrow_uri = topic_narrow_url(realm=realm, stream=stream, topic_name=topic)
+    narrow_url = topic_narrow_url(realm=realm, stream=stream, topic_name=topic)
     narrow = f"{stream_name}/{topic}"
     screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
     subprocess.check_call(
-        ["node", screenshot_script, narrow_uri, narrow, str(unread_msg_id), image_path, realm.url]
+        ["node", screenshot_script, narrow_url, narrow, str(unread_msg_id), image_path, realm.url]
     )
 
 
