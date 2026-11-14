@@ -1,0 +1,39 @@
+{
+    "event": "unresolved",
+    "message": "[Billing API/production] NoMethodError unresolved by Jane Doe",
+    "actor": {
+        "id": 132624,
+        "email": "jane@example.com",
+        "name": "Jane Doe"
+    },
+    "fault": {
+        "project_id": 85736,
+        "klass": "NoMethodError",
+        "component": "InvoicesController",
+        "action": "show",
+        "environment": "production",
+        "resolved": false,
+        "ignored": false,
+        "created_at": "2026-10-18T12:36:26.482113Z",
+        "project_name": "Billing API",
+        "comments_count": 1,
+        "message": "undefined method 'total' for nil",
+        "notices_count": 1,
+        "last_notice_at": "2026-10-21T12:36:26.309680Z",
+        "tags": [
+            "billing"
+        ],
+        "id": 26225,
+        "assignee": null,
+        "url": "https://app.honeybadger.io/projects/85736/faults/26225",
+        "deploy": {
+            "environment": "production",
+            "revision": "850510ab072102729e6967cf89f28b740c61311b",
+            "repository": "https://github.com/acme/billing",
+            "local_username": "deploy-bot",
+            "created_at": "2026-10-21T12:16:26.482113Z",
+            "changelog": [],
+            "url": "https://github.com/acme/billing/commit/850510ab072102729e6967cf89f28b740c61311b"
+        }
+    }
+}

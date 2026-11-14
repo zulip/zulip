@@ -1,0 +1,142 @@
+{
+    "event": "occurred",
+    "message": "[Billing API/production] NoMethodError: undefined method 'total' for nil",
+    "project": {
+        "id": 85736,
+        "name": "Billing API",
+        "created_at": "2026-10-21T12:36:26.076894Z",
+        "disable_public_links": false,
+        "pivotal_project_id": null,
+        "asana_workspace_id": null,
+        "token": "hbp_EXAMPLE00000000000000000000000",
+        "github_project": null,
+        "environments": [
+            {
+                "id": 2819,
+                "project_id": 85736,
+                "name": "production",
+                "notifications": true,
+                "created_at": "2026-10-21T12:36:26.470494Z",
+                "updated_at": "2026-10-21T12:36:26.470494Z"
+            }
+        ],
+        "owner": {
+            "id": 92354,
+            "email": "user-1@example.com",
+            "name": "Acme"
+        },
+        "last_notice_at": null,
+        "earliest_notice_at": "2026-04-24T12:36:26.729872Z",
+        "unresolved_fault_count": 0,
+        "fault_count": 0,
+        "active": true,
+        "users": [
+            {
+                "id": 132624,
+                "email": "jane@example.com",
+                "name": "Jane Doe"
+            }
+        ],
+        "sites": [
+            {
+                "id": "8121ab91-87fd-4e92-ae23-a7b5bf915a2f",
+                "active": true,
+                "last_checked_at": null,
+                "name": "Checkout",
+                "state": "down",
+                "url": "https://billing.example.com/health"
+            }
+        ],
+        "team_id": null
+    },
+    "fault": {
+        "project_id": 85736,
+        "klass": "NoMethodError",
+        "component": "InvoicesController",
+        "action": "show",
+        "environment": "production",
+        "resolved": false,
+        "ignored": false,
+        "created_at": "2026-10-18T12:36:26.482113Z",
+        "project_name": "Billing API",
+        "comments_count": 1,
+        "message": "undefined method 'total' for nil",
+        "notices_count": 1,
+        "last_notice_at": "2026-10-21T12:36:26.309680Z",
+        "tags": [
+            "billing"
+        ],
+        "id": 26225,
+        "assignee": null,
+        "url": "https://app.honeybadger.io/projects/85736/faults/26225",
+        "deploy": {
+            "environment": "production",
+            "revision": "850510ab072102729e6967cf89f28b740c61311b",
+            "repository": "https://github.com/acme/billing",
+            "local_username": "deploy-bot",
+            "created_at": "2026-10-21T12:16:26.482113Z",
+            "changelog": [],
+            "url": "https://github.com/acme/billing/commit/850510ab072102729e6967cf89f28b740c61311b"
+        }
+    },
+    "notice": {
+        "id": 262251792586066,
+        "environment": {},
+        "created_at": "2026-10-21T12:34:26.482113Z",
+        "message": null,
+        "token": "65baebe0-d5cf-45d1-8604-c3a78619def7",
+        "fault_id": 26225,
+        "request": {
+            "url": "https://billing.example.com/invoices/1042",
+            "component": "InvoicesController",
+            "action": "show",
+            "params": {
+                "controller": "invoices",
+                "action": "show",
+                "id": "1042"
+            },
+            "session": {}
+        },
+        "backtrace": [
+            {
+                "number": "42",
+                "file": "[PROJECT_ROOT]/app/controllers/invoices_controller.rb",
+                "method": "show",
+                "application_file": "app/controllers/invoices_controller.rb",
+                "context": "app"
+            },
+            {
+                "number": "18",
+                "file": "[GEM_ROOT]/gems/actionpack-8.1.0/lib/action_controller/metal/basic_implicit_render.rb",
+                "method": "send_action",
+                "context": "all"
+            }
+        ],
+        "application_trace": [
+            {
+                "number": "42",
+                "file": "[PROJECT_ROOT]/app/controllers/invoices_controller.rb",
+                "method": "show",
+                "application_file": "app/controllers/invoices_controller.rb",
+                "context": "app"
+            }
+        ],
+        "web_environment": {
+            "REQUEST_METHOD": "GET",
+            "HTTP_USER_AGENT": "Mozilla/5.0"
+        },
+        "deploy": {
+            "environment": "production",
+            "revision": "850510ab072102729e6967cf89f28b740c61311b",
+            "repository": "https://github.com/acme/billing",
+            "local_username": "deploy-bot",
+            "created_at": "2026-10-21T12:16:26.482113Z",
+            "changelog": [],
+            "url": "https://github.com/acme/billing/commit/850510ab072102729e6967cf89f28b740c61311b"
+        },
+        "url": "https://app.honeybadger.io/projects/85736/faults/26225/01M5F79AHJ6GVQCB5TZ2R0QMKZ"
+    },
+    "context": {
+        "user_id": 381
+    }
+}

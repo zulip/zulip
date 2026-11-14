@@ -787,6 +787,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("reqwithtitle.json")],
         display_name="Home Assistant",
     ),
+    IncomingWebhookIntegration(
+        "honeybadger", ["monitoring"], [WebhookScreenshotConfig("test_error.json")]
+    ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
     IncomingWebhookIntegration("intercom", ["customer-support"]),
     IncomingWebhookIntegration(

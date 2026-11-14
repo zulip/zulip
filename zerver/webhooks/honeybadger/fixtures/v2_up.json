@@ -1,0 +1,80 @@
+{
+    "event": "up",
+    "message": "[Billing API] Checkout is back up after 7m 1s.",
+    "project": {
+        "id": 85736,
+        "name": "Billing API",
+        "created_at": "2026-10-21T12:36:26.076894Z",
+        "disable_public_links": false,
+        "pivotal_project_id": null,
+        "asana_workspace_id": null,
+        "token": "hbp_EXAMPLE00000000000000000000000",
+        "github_project": null,
+        "environments": [
+            {
+                "id": 2819,
+                "project_id": 85736,
+                "name": "production",
+                "notifications": true,
+                "created_at": "2026-10-21T12:36:26.470494Z",
+                "updated_at": "2026-10-21T12:36:26.470494Z"
+            }
+        ],
+        "owner": {
+            "id": 92354,
+            "email": "user-1@example.com",
+            "name": "Acme"
+        },
+        "last_notice_at": null,
+        "earliest_notice_at": "2026-04-24T12:36:27.720691Z",
+        "unresolved_fault_count": 0,
+        "fault_count": 0,
+        "active": true,
+        "users": [
+            {
+                "id": 132624,
+                "email": "jane@example.com",
+                "name": "Jane Doe"
+            }
+        ],
+        "sites": [
+            {
+                "id": "8121ab91-87fd-4e92-ae23-a7b5bf915a2f",
+                "active": true,
+                "last_checked_at": "2026-10-21T12:36:26.482113Z",
+                "name": "Checkout",
+                "state": "up",
+                "url": "https://billing.example.com/health"
+            }
+        ],
+        "team_id": null
+    },
+    "site": {
+        "id": "8121ab91-87fd-4e92-ae23-a7b5bf915a2f",
+        "name": "Checkout",
+        "url": "https://billing.example.com/health",
+        "frequency": 5,
+        "match_type": "success",
+        "match": null,
+        "state": "up",
+        "active": true,
+        "last_checked_at": "2026-10-21T12:36:26.482113Z",
+        "retries": 0,
+        "proxy": 0,
+        "cert_will_expire_at": null,
+        "timeout": null,
+        "response_headers": null,
+        "details_url": "https://app.honeybadger.io/projects/85736/sites/8121ab91-87fd-4e92-ae23-a7b5bf915a2f"
+    },
+    "outage": {
+        "down_at": "2026-10-21T12:29:26.482113Z",
+        "up_at": "2026-10-21T12:36:26.482113Z",
+        "status": 503,
+        "reason": "Service Unavailable",
+        "headers": {
+            "retry-after": "120",
+            "content-type": "text/html"
+        },
+        "details_url": "https://app.honeybadger.io/projects/85736/sites/8121ab91-87fd-4e92-ae23-a7b5bf915a2f"
+    }
+}
