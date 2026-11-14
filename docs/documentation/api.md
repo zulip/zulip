@@ -128,6 +128,10 @@ new behavior, when those belong in the main description.
 Endpoints that only administrators can use should be tagged with the
 custom `x-requires-administrator` field in the OpenAPI definition.
 
+Endpoints that don't follow the `api/v1` or `json` pattern should be
+tagged with the custom `x-non-api-v1-or-json-pattern` field in the OpenAPI
+definition.
+
 All of this information is rendered via a Markdown preprocessor,
 specifically the `APIHeaderPreprocessor` class defined in
 `zerver/openapi/markdown_extension.py`.
