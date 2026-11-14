@@ -380,7 +380,7 @@ def setup_routes(
 ) -> None:
     if enable_help_center:
         # Order of adding the rules matters. aiohttp will stop at the first
-        # match, and we want `/help` to be matched before Django URIs.
+        # match, and we want `/help` to be matched before Django URLs.
         try:
             app.router.add_static("/help", "starlight_help/dist")
         except ValueError:
