@@ -667,6 +667,11 @@ test("get_items_for_users", ({override}) => {
         WITH_AVATAR: false,
     };
 
+    const display_offline_users = {
+        AUTOMATIC: false,
+        NEVER: false,
+    };
+
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
             href: "#narrow/dm/1001-Human-Myself",
@@ -680,7 +685,9 @@ test("get_items_for_users", ({override}) => {
             user_circle_class: "user-circle-active",
             user_id: 1001,
             user_list_style,
+            display_offline_users,
             should_add_guest_user_indicator: false,
+            active_status: true,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -694,7 +701,9 @@ test("get_items_for_users", ({override}) => {
             user_circle_class: "user-circle-offline",
             user_id: 1002,
             user_list_style,
+            display_offline_users,
             should_add_guest_user_indicator: false,
+            active_status: false,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -708,7 +717,9 @@ test("get_items_for_users", ({override}) => {
             user_circle_class: "user-circle-offline",
             user_id: 1003,
             user_list_style,
+            display_offline_users,
             should_add_guest_user_indicator: false,
+            active_status: false,
         },
     ]);
 });

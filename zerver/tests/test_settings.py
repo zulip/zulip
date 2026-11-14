@@ -361,6 +361,7 @@ class ChangeSettingsTest(ZulipTestCase):
             web_mark_read_on_scroll_policy=2,
             web_channel_default_view=2,
             user_list_style=2,
+            display_offline_users=2,
             web_animate_image_previews="on_hover",
             web_stream_unreads_count_display_policy=2,
             web_font_size_px=14,
@@ -385,6 +386,7 @@ class ChangeSettingsTest(ZulipTestCase):
         if setting_name not in [
             "demote_inactive_streams",
             "user_list_style",
+            "display_offline_users",
             "color_scheme",
             "web_mark_read_on_scroll_policy",
             "web_channel_default_view",
