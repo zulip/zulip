@@ -63,7 +63,7 @@ from zerver.lib.rate_limiter import readable_expiry_string_for_html
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.sessions import set_expirable_session_var
+from zerver.lib.sessions import get_expirable_session_var, set_expirable_session_var
 from zerver.lib.subdomains import (
     get_subdomain,
     get_subdomain_from_hostname,
@@ -711,6 +711,12 @@ def oauth_redirect_to_root(
 
     # mobile_flow_otp is a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
+    if mobile_flow_otp is None:
+        mobile_flow_otp = get_expirable_session_var(request.session, "registration_mobile_flow_otp")
+    if desktop_flow_otp is None:
+        desktop_flow_otp = get_expirable_session_var(
+            request.session, "registration_desktop_flow_otp"
+        )
     validate_otp_params(mobile_flow_otp, desktop_flow_otp)
     if mobile_flow_otp is not None:
         params["mobile_flow_otp"] = mobile_flow_otp
@@ -962,8 +968,25 @@ def login_page(
     /,
     *,
     next: str = "/",
+    desktop_flow_otp: str | None = None,
+    mobile_flow_otp: str | None = None,
     **kwargs: Any,
 ) -> HttpResponse:
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
+    if mobile_flow_otp:
+        set_expirable_session_var(
+            request.session,
+            "registration_mobile_flow_otp",
+            mobile_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+        )
+    elif desktop_flow_otp:
+        set_expirable_session_var(
+            request.session,
+            "registration_desktop_flow_otp",
+            desktop_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+        )
     subdomain = get_subdomain(request)
     if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
