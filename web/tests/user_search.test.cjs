@@ -39,12 +39,14 @@ const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
 const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
 const realm = make_realm();
 set_realm(realm);
+set_current_user({});
 
 const me = make_user({
     email: "me@zulip.com",
@@ -182,6 +184,55 @@ test("fetch on search", async ({override}) => {
     await activity_ui.await_pending_promise_for_testing();
     assert.equal(get_call_count, 2);
     assert.equal(populate_call_count, 1);
+
+    // We need to reset these because the unit tests aren't isolated from each other.
+    message_lists.set_current(undefined);
+    activity_ui.clear_search();
+    set_input_val("");
+});
+
+test("search during topic subscriber fetch", async ({override}) => {
+    override(presence, "get_user_ids", () => all_user_ids);
+    override(presence, "get_status", () => "active");
+    const populate_calls_with_list_visible = [];
+    override(fake_buddy_list, "populate", () => {
+        populate_calls_with_list_visible.push($("#buddy_list_wrapper").visible());
+    });
+    override(popovers, "hide_all", noop);
+    stub_buddy_list_empty_list_message_lengths();
+
+    const garden = make_stream({stream_id: 27, name: "garden", subscribed: true});
+    stream_data.add_sub_for_tests(garden);
+    peer_data.set_subscriber_count(garden.stream_id, 2000);
+    message_lists.set_current(
+        make_message_list([
+            {operator: "stream", operand: garden.stream_id.toString()},
+            {operator: "topic", operand: "roses"},
+        ]),
+    );
+    let respond_to_fetch;
+    let get_call_count = 0;
+    mock_channel_get(channel, (opts) => {
+        get_call_count += 1;
+        respond_to_fetch = () => {
+            opts.success({subscribers: all_user_ids});
+        };
+    });
+
+    // Opening the topic starts a subscriber fetch, and the search
+    // waits for that same fetch.
+    $("#buddy_list_wrapper").show();
+    activity_ui.build_user_sidebar();
+    set_input_val("somevalue");
+    // `mock_channel_get` handles the request after a microtask.
+    await Promise.resolve();
+    respond_to_fetch();
+    await activity_ui.await_pending_promise_for_testing();
+
+    // The buddy list is only rebuilt by the search, after it shows
+    // the list again.
+    assert.equal(get_call_count, 1);
+    assert.deepEqual(populate_calls_with_list_visible, [true, true]);
 
     // We need to reset these because the unit tests aren't isolated from each other.
     message_lists.set_current(undefined);
