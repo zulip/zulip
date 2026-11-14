@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 from django.utils.translation import gettext_lazy
 from pydantic import BaseModel, Json, model_validator
 from pydantic.functional_validators import AfterValidator
@@ -540,6 +541,11 @@ def json_change_settings(
     for k, v in request_settings.items():
         if getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
+            if k == "default_language":
+                with override_language(v):
+                    result["msg"] = _(
+                        "Saved. Please <z-link>reload</z-link> for the change to take effect."
+                    )
 
     if timezone is not None and user_profile.timezone != timezone:
         do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
