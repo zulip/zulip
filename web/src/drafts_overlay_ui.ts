@@ -434,6 +434,9 @@ function rerender_drafts(): void {
 }
 
 export function launch(): void {
+    // Save any current draft, so that the drafts list is accurate.
+    drafts.update_draft({no_notify: true});
+
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
 
     $("#drafts_table").empty();
