@@ -1129,7 +1129,7 @@ class NarrowLibraryTest(ZulipTestCase):
         ###
 
         narrow_predicate = build_narrow_predicate(
-            [NeverNegatedNarrowTerm(operator="is", operand="alerted")]
+            [NeverNegatedNarrowTerm(operator="is", operand="mentioned")]
         )
 
         self.assertTrue(
@@ -1149,20 +1149,20 @@ class NarrowLibraryTest(ZulipTestCase):
         ###
 
         narrow_predicate = build_narrow_predicate(
-            [NeverNegatedNarrowTerm(operator="is", operand="mentioned")]
+            [NeverNegatedNarrowTerm(operator="is", operand="alerted")]
         )
 
         self.assertTrue(
             narrow_predicate(
                 message={},
-                flags=["mentioned"],
+                flags=["has_alert_word"],
             )
         )
 
         self.assertFalse(
             narrow_predicate(
                 message={},
-                flags=["starred"],
+                flags=["mentioned"],
             )
         )
 
