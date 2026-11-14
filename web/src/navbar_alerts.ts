@@ -15,12 +15,15 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_lists from "./message_lists.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as sticky_sender_demo from "./sticky_sender_demo.ts";
+import type {StickySenderDemoMode} from "./sticky_sender_demo.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
@@ -177,6 +180,28 @@ export function should_offer_to_update_timezone(): boolean {
         user_settings.web_suggest_update_timezone &&
         !timerender.is_browser_timezone_same_as(user_settings.timezone)
     );
+}
+
+const STICKY_SENDER_DEMO_MODES: {mode: StickySenderDemoMode; label: string}[] = [
+    {mode: "avatars", label: "Sticky avatars"},
+    {mode: "names", label: "Hovering names"},
+    {mode: "both", label: "Both"},
+];
+
+function sticky_sender_demo_banner(): AlertBanner {
+    const current_mode = sticky_sender_demo.get_mode();
+    return {
+        process: "sticky-sender-demo",
+        intent: "brand",
+        label: "Demo: keep the sender visible while scrolling through long messages.",
+        buttons: STICKY_SENDER_DEMO_MODES.map(({mode, label}) => ({
+            variant: mode === current_mode ? "solid" : "subtle",
+            label,
+            custom_classes: `sticky-sender-demo-mode sticky-sender-demo-mode-${mode}`,
+        })),
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
 }
 
 const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
@@ -551,7 +576,27 @@ export function initialize(): void {
         maybe_toggle_empty_required_profile_fields_banner();
     }
 
+    open_navbar_banner_and_resize(sticky_sender_demo_banner());
+
     // Configure click handlers.
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".sticky-sender-demo-mode",
+        function (this: HTMLElement) {
+            const selected = STICKY_SENDER_DEMO_MODES.find(({mode}) =>
+                this.classList.contains(`sticky-sender-demo-mode-${mode}`),
+            );
+            if (!selected) {
+                return;
+            }
+            sticky_sender_demo.set_mode(selected.mode);
+            open_navbar_banner_and_resize(sticky_sender_demo_banner());
+            for (const list of message_lists.all_rendered_message_lists()) {
+                list.view.rewrap_sender_blocks();
+            }
+        },
+    );
 
     $("#navbar_alerts_wrapper").on(
         "click",

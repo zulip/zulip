@@ -39,6 +39,7 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
+import * as sticky_sender_demo from "./sticky_sender_demo.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -173,6 +174,103 @@ function same_recipient(a: MessageContainer | undefined, b: MessageContainer | u
         return false;
     }
     return util.same_recipient(a.msg, b.msg);
+}
+
+function wrap_recipient_row_into_sender_blocks($recipient_row: JQuery): void {
+    // Within a recipient row, each "sender block" is a run of consecutive
+    // messages from the same sender. We wrap each such run in a `.sender-block`
+    // div, and lift the `.message-avatar` element out of the first message's
+    // grid cell to be a direct child of the wrapper. This lets the avatar
+    // become `position: sticky` and follow the user's scroll while they read
+    // a long block of messages from the same sender, releasing once the
+    // block ends.
+    const recipient_row = $recipient_row[0];
+    if (!recipient_row) {
+        return;
+    }
+
+    // Snapshot all message rows in document order, whether or not any are
+    // already wrapped in a `.sender-block`.
+    const message_rows = [...recipient_row.querySelectorAll<HTMLElement>(".message_row")];
+
+    // Unwrap any existing `.sender-block` wrappers from a prior pass.
+    // The promoted sticky avatar lives at the block level after wrapping,
+    // but a freshly re-rendered first row brings its own avatar back
+    // inside `.messagebox-content`. To make either case re-wrappable, put
+    // the promoted avatar back into the first row's `.messagebox-content`
+    // — and if the row already has its own (e.g., post-rerender) drop the
+    // promoted one so we don't end up with duplicates.
+    for (const sender_block of recipient_row.querySelectorAll<HTMLElement>(
+        ":scope > .sender-block",
+    )) {
+        const promoted_avatar = sender_block.querySelector<HTMLElement>(":scope > .message-avatar");
+        if (promoted_avatar) {
+            const first_row = sender_block.querySelector<HTMLElement>(".message_row");
+            const messagebox_content = first_row?.querySelector<HTMLElement>(".messagebox-content");
+            const existing_avatar = messagebox_content?.querySelector<HTMLElement>(
+                ":scope > .message-avatar",
+            );
+            if (existing_avatar) {
+                promoted_avatar.remove();
+            } else if (messagebox_content) {
+                messagebox_content.prepend(promoted_avatar);
+            } else {
+                promoted_avatar.remove();
+            }
+        }
+        sender_block.querySelector(":scope > .sticky-sender-rail")?.remove();
+        const parent = sender_block.parentNode!;
+        while (sender_block.firstChild) {
+            parent.insertBefore(sender_block.firstChild, sender_block);
+        }
+        sender_block.remove();
+    }
+
+    // Re-wrap consecutive same-sender rows. The first message of each run is
+    // the one that has `messagebox-includes-sender`; subsequent rows without
+    // that class are continuations of the same sender.
+    let current_block: HTMLDivElement | null = null;
+    for (const row of message_rows) {
+        if (row.classList.contains("messagebox-includes-sender")) {
+            current_block = document.createElement("div");
+            current_block.classList.add("sender-block");
+            row.parentNode!.insertBefore(current_block, row);
+
+            if (sticky_sender_demo.sticky_avatars_enabled()) {
+                const avatar = row.querySelector<HTMLElement>(
+                    ":scope > .messagebox > .messagebox-content > .message-avatar",
+                );
+                if (avatar) {
+                    current_block.append(avatar);
+                    current_block.classList.add("sender-block-sticky-avatar");
+                }
+            }
+            if (sticky_sender_demo.sticky_names_enabled()) {
+                // The rail spans the full height of the block, so the
+                // sticky sender name inside it is pushed out of view by
+                // the end of the block.
+                const rail = document.createElement("div");
+                rail.classList.add("sticky-sender-rail");
+                const sticky_sender = document.createElement("div");
+                sticky_sender.classList.add("sticky-sender");
+                const sender_name = document.createElement("span");
+                sender_name.classList.add("sticky-sender-name");
+                sender_name.setAttribute("aria-hidden", "true");
+                sender_name.textContent =
+                    row.querySelector(".sender_name_text")?.textContent.trim() ?? "";
+                sticky_sender.append(sender_name);
+                rail.append(sticky_sender);
+                current_block.append(rail);
+            }
+            current_block.classList.toggle(
+                "sender-block-me-message",
+                row.querySelector(".messagebox-content.is-me-message") !== null,
+            );
+            current_block.append(row);
+        } else if (current_block) {
+            current_block.append(row);
+        }
+    }
 }
 
 function get_group_display_date(message: Message, display_year: boolean): string {
@@ -1415,6 +1513,10 @@ export class MessageListView {
             new_dom_elements.push($rendered_groups);
 
             this._post_process($dom_messages);
+            const $recipient_rows = $rendered_groups.filter(".recipient_row");
+            for (const recipient_row of $recipient_rows) {
+                wrap_recipient_row_into_sender_blocks($(recipient_row));
+            }
 
             // The date row will be included in the message groups or will be
             // added in a rerendered in the group below
@@ -1441,6 +1543,10 @@ export class MessageListView {
                 // Not adding to new_dom_elements it is only used for autoscroll
 
                 this._post_process($dom_messages);
+                const $recipient_rows = $rendered_groups.filter(".recipient_row");
+                for (const recipient_row of $recipient_rows) {
+                    wrap_recipient_row_into_sender_blocks($(recipient_row));
+                }
                 $old_message_group.replaceWith($rendered_groups);
                 condense.condense_and_collapse($dom_messages);
             }
@@ -1458,6 +1564,7 @@ export class MessageListView {
 
             this._post_process($dom_messages);
             $last_group_row.append($dom_messages);
+            wrap_recipient_row_into_sender_blocks($last_group_row);
 
             condense.condense_and_collapse($dom_messages);
             new_dom_elements.push($dom_messages);
@@ -1477,6 +1584,10 @@ export class MessageListView {
             new_dom_elements.push($rendered_groups);
 
             this._post_process($dom_messages);
+            const $recipient_rows = $rendered_groups.filter(".recipient_row");
+            for (const recipient_row of $recipient_rows) {
+                wrap_recipient_row_into_sender_blocks($(recipient_row));
+            }
 
             // This next line is a workaround for a weird scrolling
             // bug on Chrome.  Basically, in Chrome 64, we had a
@@ -1875,8 +1986,12 @@ export class MessageListView {
             // rendered the message edit content in this new row.
             $rendered_msg.addClass("show_preview");
         }
+        const $recipient_row = $row.closest(".recipient_row");
         $row.replaceWith($rendered_msg);
         this._post_process($rendered_msg);
+        if ($recipient_row.length > 0) {
+            wrap_recipient_row_into_sender_blocks($recipient_row);
+        }
 
         message_list_hover.reapply_hover_on_row_replace($row, $rendered_msg, message_container.msg);
 
@@ -2208,11 +2323,60 @@ export class MessageListView {
         };
     }
 
+    rewrap_sender_blocks(): void {
+        for (const recipient_row of this.$list.find(".recipient_row")) {
+            wrap_recipient_row_into_sender_blocks($(recipient_row));
+        }
+        this.update_sticky_recipient_headers();
+    }
+
+    // Marks the sender block whose sticky sender name has scrolled away
+    // from its first message, so that we can display it in place of
+    // the one in the message.
+    update_stuck_sender_block(): void {
+        const $previously_stuck = this.$list.find(".sender-block.sender-name-stuck");
+        const list = this.$list[0];
+        const navbar = document.querySelector("#navbar-fixed-container");
+        if (!list || !navbar) {
+            return;
+        }
+        let stuck_block: Element | undefined;
+        // Only the block covering the position where sender names
+        // become sticky can be stuck.
+        const elements_at_sticky_position = document.elementsFromPoint(
+            list.getBoundingClientRect().left + 40,
+            navbar.getBoundingClientRect().bottom + 50 + 20,
+        );
+        for (const element of elements_at_sticky_position) {
+            const block = element.closest(".sender-block");
+            if (!block) {
+                continue;
+            }
+            const sticky_sender = block.querySelector(
+                ":scope > .sticky-sender-rail > .sticky-sender",
+            );
+            if (
+                sticky_sender &&
+                sticky_sender.getBoundingClientRect().top > block.getBoundingClientRect().top
+            ) {
+                stuck_block = block;
+            }
+            break;
+        }
+        for (const block of $previously_stuck) {
+            if (block !== stuck_block) {
+                block.classList.remove("sender-name-stuck");
+            }
+        }
+        stuck_block?.classList.add("sender-name-stuck");
+    }
+
     /* This function exist for two purposes:
         * To track the current `sticky_header` which have some different properties
           like date being always displayed.
         * Set date on message header corresponding to the message next to the header. */
     update_sticky_recipient_headers(): void {
+        this.update_stuck_sender_block();
         const rows_length = this._rows.size;
         if (!rows_length) {
             /* No headers are present */
@@ -2314,7 +2478,7 @@ export class MessageListView {
                We don't need to add `sticky_header` class here since date is already visible
                and header is not truly sticky at top of screen yet. */
             $sticky_header = $headers.first();
-            $message_row = $sticky_header.nextAll(".message_row").first();
+            $message_row = $sticky_header.parent().find(".message_row").first();
         } else {
             dom_updates.add_classes.push({$element: $sticky_header, class: "sticky_header"});
             const sticky_header_props = util.the($sticky_header).getBoundingClientRect();
@@ -2334,7 +2498,7 @@ export class MessageListView {
             if (message_rows.length === 0) {
                 /* If there is no message row under the header, it means it is not sticky yet,
                    so we just get the message next to the header. */
-                $message_row = $sticky_header.nextAll(".message_row").first();
+                $message_row = $sticky_header.parent().find(".message_row").first();
             } else {
                 $message_row = $(message_rows[0]!);
             }
