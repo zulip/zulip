@@ -52,4 +52,13 @@
             {{> dropdown_options_widget option_values=(object_values demote_inactive_streams_values)}}
         </select>
     </div>
+
+    <div class="input-group">
+        <label for="{{prefix}}pin_views_section" class="settings-field-label">
+            {{t "Automatically collapse views section in the left sidebar" }}
+        </label>
+        <select name="pin_views_section" class="setting_pin_views_section prop-element settings_select bootstrap-focus-style" id="{{prefix}}pin_views_section"  data-setting-widget-type="number">
+            {{> dropdown_options_widget option_values=(object_values pin_left_sidebar_views_section_values)}}
+        </select>
+    </div>
 </div>

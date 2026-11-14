@@ -348,6 +348,10 @@ def json_change_settings(
     timezone: Annotated[str, timezone_validator()] | None = None,
     translate_emoticons: Json[bool] | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
+    pin_views_section: Annotated[
+        Json[int], check_int_in_validator(UserProfile.VIEWS_SECTION_COLLAPSE_BEHAVIOR_CHOICES)
+    ]
+    | None = None,
     user_list_style: Annotated[
         Json[int], check_int_in_validator(UserProfile.USER_LIST_STYLE_CHOICES)
     ]
