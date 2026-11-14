@@ -38,9 +38,7 @@
             <li role="none" class="text-item popover-menu-list-item hidden-for-spectators">
                 <span class="personal-menu-status-wrapper">
                     {{#if status_emoji_info}}
-                        {{#if status_emoji_info.emoji_alt_code}}
-                            <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
-                        {{else if status_emoji_info.url}}
+                        {{#if status_emoji_info.url}}
                             <img src="{{status_emoji_info.url}}" class="emoji status_emoji" data-tippy-content=":{{status_emoji_info.emoji_name}}:"/>
                         {{else}}
                             <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}" data-tippy-content=":{{status_emoji_info.emoji_name}}:"></span>

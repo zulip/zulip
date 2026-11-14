@@ -1389,11 +1389,25 @@ run_test("user_settings", ({override}) => {
         called = false;
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
+        override(pm_list, "update_private_messages", noop);
         override(user_settings, "emojiset", "text");
+        // Status emoji are hidden with the plain-text emoji set, and
+        // restored on stored messages when switching away from it.
+        user_status.set_status_emoji({
+            ...event_fixtures.user_status__set_status_emoji,
+            user_id: test_message.sender_id,
+        });
+        const message = message_store.get(test_message.id);
+        message.status_emoji_info = undefined;
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
         assert_same(user_settings.emojiset, "google");
+        assert.deepEqual(message.status_emoji_info, {
+            emoji_name: "smiley",
+            emoji_code: "1f603",
+            reaction_type: "unicode_emoji",
+        });
     }
 
     event = event_fixtures.user_settings__starred_message_counts;
@@ -1754,8 +1768,6 @@ run_test("user_status", ({override}) => {
             emoji_name: "smiley",
             emoji_code: "1f603",
             reaction_type: "unicode_emoji",
-            // Extra parameters that were added by `emoji.get_emoji_details_by_name`
-            emoji_alt_code: false,
         });
     }
 

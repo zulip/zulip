@@ -12,7 +12,8 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -73,7 +74,6 @@ run_test("basics", () => {
     });
 
     assert.deepEqual(user_status.get_status_emoji(5), {
-        emoji_alt_code: false,
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
@@ -113,7 +113,6 @@ run_test("basics", () => {
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
-        emoji_alt_code: false,
     });
 
     user_status.set_status_emoji({
@@ -126,6 +125,24 @@ run_test("basics", () => {
         status_text: "",
     });
     assert.deepEqual(user_status.get_status_emoji(2), undefined);
+});
+
+run_test("plain-text emoji set", ({override}) => {
+    initialize();
+    const smiley = {
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+    };
+    assert.deepEqual(user_status.get_user_ids_with_status_emoji(), [4, 5]);
+
+    override(user_settings, "emojiset", "text");
+    assert.equal(user_status.get_status_emoji(4), undefined);
+    assert.deepEqual(user_status.get_status_emoji_for_editing(4), smiley);
+
+    override(user_settings, "emojiset", "google");
+    assert.deepEqual(user_status.get_status_emoji(4), smiley);
+    assert.deepEqual(user_status.get_status_emoji_for_editing(4), smiley);
 });
 
 run_test("server", () => {
