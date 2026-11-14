@@ -1622,6 +1622,7 @@ paths:
                                         "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
+                                        "default_color": null,
                                         "default_push_notifications": false,
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
@@ -19583,6 +19584,7 @@ paths:
                                 stream_post_policy: {}
                                 message_retention_days:
                                   nullable: true
+                                default_color: {}
                                 default_push_notifications: {}
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
@@ -24675,6 +24677,7 @@ paths:
                                 stream_post_policy: {}
                                 message_retention_days:
                                   nullable: true
+                                default_color: {}
                                 default_push_notifications: {}
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
@@ -24733,6 +24736,7 @@ paths:
                                 - is_web_public
                                 - stream_post_policy
                                 - message_retention_days
+                                - default_color
                                 - default_push_notifications
                                 - history_public_to_subscribers
                                 - first_message_id
@@ -24766,6 +24770,7 @@ paths:
                               "is_default": false,
                               "is_web_public": false,
                               "message_retention_days": null,
+                              "default_color": null,
                               "default_push_notifications": false,
                               "name": "management",
                               "rendered_description": "<p>A private channel</p>",
@@ -24791,6 +24796,7 @@ paths:
                               "is_default": true,
                               "is_web_public": false,
                               "message_retention_days": null,
+                              "default_color": null,
                               "default_push_notifications": false,
                               "name": "welcome",
                               "rendered_description": "<p>A default public channel</p>",
@@ -24848,6 +24854,7 @@ paths:
                             "is_archived": false,
                             "is_web_public": false,
                             "message_retention_days": null,
+                            "default_color": null,
                             "default_push_notifications": false,
                             "name": "Denmark",
                             "rendered_description": "<p>A Scandinavian country</p>",
@@ -25012,6 +25019,8 @@ paths:
                   example: false
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                default_color:
+                  $ref: "#/components/schemas/DefaultColor"
                 default_push_notifications:
                   $ref: "#/components/schemas/DefaultPushNotifications"
                 is_archived:
@@ -25331,6 +25340,8 @@ paths:
 
             encoding:
               is_private:
+                contentType: application/json
+              default_color:
                 contentType: application/json
               is_web_public:
                 contentType: application/json
@@ -27926,6 +27937,7 @@ components:
             stream_post_policy: {}
             message_retention_days:
               nullable: true
+            default_color: {}
             default_push_notifications: {}
             history_public_to_subscribers: {}
             topics_policy: {}
@@ -27975,6 +27987,7 @@ components:
             - stream_post_policy
             - subscriber_count
             - message_retention_days
+            - default_color
             - default_push_notifications
             - history_public_to_subscribers
             - first_message_id
@@ -28093,6 +28106,8 @@ components:
             - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        default_color:
+          $ref: "#/components/schemas/DefaultColor"
         default_push_notifications:
           $ref: "#/components/schemas/DefaultPushNotifications"
         history_public_to_subscribers:
@@ -29322,6 +29337,8 @@ components:
             - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        default_color:
+          $ref: "#/components/schemas/DefaultColor"
         default_push_notifications:
           $ref: "#/components/schemas/DefaultPushNotifications"
         history_public_to_subscribers:
@@ -31386,6 +31403,22 @@ components:
         - type: string
         - type: integer
       example: "20"
+    DefaultColor:
+      type: string
+      nullable: true
+      description: |
+        The color that new subscribers to this channel will be assigned,
+        overriding the automatic per-user color assignment that is used
+        when this is unset.
+
+        A `null` value, the default, means the channel has no configured
+        default color. Setting this parameter to `null` clears a
+        previously configured default color.
+
+        Only organization administrators can set or modify this value.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-ae29c3).
+      example: "#76ce90"
     DefaultPushNotifications:
       type: boolean
       description: |
