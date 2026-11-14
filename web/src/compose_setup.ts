@@ -44,6 +44,7 @@ import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -749,31 +750,16 @@ export function initialize(): void {
         $compose_recipient.addClass("recently-focused");
     });
 
-    function handle_topic_length_limit(): void {
-        let topic = compose_state.topic();
-        if (topic.length > realm.max_topic_length) {
-            topic = topic.slice(0, realm.max_topic_length);
-            compose_state.topic(topic);
-            $("input#stream_message_recipient_topic").addClass("input-validation-shake");
-        }
-    }
-
-    $("input#stream_message_recipient_topic").on("animationend", function () {
-        $(this).removeClass("input-validation-shake");
-    });
+    ui_util.set_up_shake_on_length_limit(
+        $<HTMLInputElement>("input#stream_message_recipient_topic"),
+        realm.max_topic_length,
+    );
 
     $("input#stream_message_recipient_topic").on("input", () => {
-        handle_topic_length_limit();
         compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
     });
 
-    $("input#stream_message_recipient_topic").on("paste", () => {
-        /* setTimeout is needed to allow the pasted content to be
-            added to the input before checking the topic length limit,
-            since the paste event fires before the input value is updated.*/
-        setTimeout(handle_topic_length_limit, 0);
-    });
     $("#private_message_recipient").on("focus", () => {
         // We don't want the `.recently-focused` class removed via
         // setTimeout from the "blur" event, if we're suddenly

@@ -327,6 +327,80 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
     }
 }
 
+// maxlength enforces the limit without losing undo history; this only shakes.
+export function set_up_shake_on_length_limit(
+    $input: JQuery<HTMLInputElement>,
+    max_length: number,
+): void {
+    const input_el = util.the($input);
+
+    // The length of the text that an insertion replacing the selection keeps.
+    function length_outside_selection(): number {
+        const selected_length = (input_el.selectionEnd ?? 0) - (input_el.selectionStart ?? 0);
+        return input_el.value.length - selected_length;
+    }
+
+    function check_insertion(
+        event: JQuery.TriggeredEvent,
+        kept_length: number,
+        text: string,
+    ): void {
+        if (kept_length + text.length > max_length) {
+            $input.addClass("input-validation-shake");
+        }
+        if (text !== "" && kept_length >= max_length) {
+            // An insertion truncated away entirely still adds an undo entry.
+            event.preventDefault();
+        }
+    }
+
+    // A composition's data replaces the selection from when it began.
+    let composition_kept_length = 0;
+    $input.on("compositionstart", () => {
+        composition_kept_length = length_outside_selection();
+    });
+
+    $input.on("beforeinput", (event) => {
+        const input_event = event.originalEvent;
+        if (!(input_event instanceof InputEvent) || input_event.data === null) {
+            return;
+        }
+        if (input_event.inputType === "insertText") {
+            check_insertion(event, length_outside_selection(), input_event.data);
+        } else if (input_event.inputType === "insertCompositionText") {
+            check_insertion(event, composition_kept_length, input_event.data);
+        }
+    });
+
+    // A paste's text is only available on the paste event.
+    $input.on("paste", (event) => {
+        if (!(event.originalEvent instanceof ClipboardEvent)) {
+            return;
+        }
+        const pasted_text = event.originalEvent.clipboardData?.getData("text/plain") ?? "";
+        check_insertion(event, length_outside_selection(), pasted_text);
+    });
+
+    // Text dragged out of the input itself is moved, not added.
+    let text_being_dragged = false;
+    $input.on("dragstart dragend", (event) => {
+        text_being_dragged = event.type === "dragstart";
+    });
+
+    $input.on("drop", (event) => {
+        if (!(event.originalEvent instanceof DragEvent) || text_being_dragged) {
+            return;
+        }
+        const dropped_text = event.originalEvent.dataTransfer?.getData("text/plain") ?? "";
+        // A drop inserts at the cursor rather than replacing the selection.
+        check_insertion(event, input_el.value.length, dropped_text);
+    });
+
+    $input.on("animationend", () => {
+        $input.removeClass("input-validation-shake");
+    });
+}
+
 export let get_left_sidebar_search_term = function (): string {
     const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
     const search_term = $search_box.val();
