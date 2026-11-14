@@ -1357,6 +1357,8 @@ export class MessageListView {
             return undefined;
         }
 
+        this.$list.attr("aria-live", messages_are_new ? "polite" : "off");
+
         capture_user_message_editing_state();
 
         const list = this.list; // for convenience
