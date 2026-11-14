@@ -187,6 +187,12 @@ automatically when you work on CSS files).
 Python rules can be found in `.claude/rules/python.md` (loaded
 automatically when you work on .py files).
 
+The web app's design system (colours, typography, focus, motion,
+accessibility) is described in `DESIGN.md`; component specs are in
+`.claude/rules/components/` (loaded automatically when you work on a
+component's files). The `/design-review` skill checks a UI change
+against them.
+
 See: `docs/contributing/code-style.md`
 
 ## Commit Discipline
