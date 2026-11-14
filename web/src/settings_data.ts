@@ -287,6 +287,17 @@ export function user_can_delete_own_message(): boolean {
     );
 }
 
+export function user_can_unsubscribe_from_channels(
+    user: CurrentUser | User = current_user,
+): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_unsubscribe_group,
+        "can_unsubscribe_group",
+        "realm",
+        user,
+    );
+}
+
 export function should_mask_unread_count(
     sub_muted: boolean,
     unmuted_unread_count: number,
