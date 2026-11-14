@@ -479,6 +479,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
     ),
     IncomingWebhookIntegration(
+        "afdian",
+        ["financial"],
+        display_name="Afdian",
+    ),
+    IncomingWebhookIntegration(
         "airbyte", ["deployment"], [WebhookScreenshotConfig("airbyte_job_payload_success.json")]
     ),
     IncomingWebhookIntegration(
