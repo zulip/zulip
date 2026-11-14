@@ -12,6 +12,7 @@ from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.digest import (
     DigestTopic,
     _enqueue_emails_for_realm,
@@ -26,8 +27,9 @@ from zerver.lib.digest import (
     get_recently_created_streams,
     get_user_stream_map,
 )
-from zerver.lib.email_notifications import get_channel_privacy_icon
+from zerver.lib.email_notifications import build_message_list, get_channel_privacy_icon
 from zerver.lib.message import get_last_message_id
+from zerver.lib.stream_color import get_stream_colors
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
@@ -35,6 +37,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Stream,
+    Subscription,
     UserActivityInterval,
     UserProfile,
     UserTopic,
@@ -74,7 +77,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -91,11 +94,38 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assertIn("some content", teaser_messages[0].content[0].plain)
         self.assertIn(teaser_messages[0].sender, expected_participants)
 
+        summary = kwargs["context"]["summary"]
+        self.assertEqual(summary.topics, len(kwargs["context"]["hot_conversations"]))
+        self.assertEqual(summary.messages, 5)
+        self.assertEqual(summary.channels, 1)
+        self.assertEqual(summary.days, 1)
+
+        # Senders are shown with their avatars, rather than with their
+        # names prepended to their first message.
+        sender = next(
+            self.example_user(name)
+            for name in senders
+            if self.example_user(name).full_name == teaser_messages[0].sender
+        )
+        self.assertEqual(teaser_messages[0].avatar_url, absolute_avatar_url(sender))
+        self.assertNotIn(f"<b>{sender.full_name}</b>", teaser_messages[0].content[0].html)
+
+        # The recipient bar uses Othello's own color for the channel.
+        verona = get_stream("Verona", othello.realm)
+        self.assertEqual(hot_convo.stream_id, verona.id)
+        othello_verona_color = Subscription.objects.get(
+            user_profile=othello, recipient=verona.recipient
+        ).color
+        self.assertEqual(
+            kwargs["context"]["channel_colors"],
+            {verona.id: get_stream_colors(othello_verona_color)},
+        )
+
         # If we run another batch, we reuse the topic queries; there
         # are 3 reused streams and one new one, for a net of two fewer
         # than before.
         iago = self.example_user("iago")
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([iago.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 3)
         self.assertEqual(get_recent_topics.cache_info().currsize, 6)
@@ -104,13 +134,13 @@ class TestDigestEmailMessages(ZulipTestCase):
         # the above.
         cordelia = self.example_user("cordelia")
         prospero = self.example_user("prospero")
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 7)
         self.assertEqual(get_recent_topics.cache_info().currsize, 7)
 
         # If we use a different cutoff, it clears the cache.
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff + 1)
         self.assertEqual(get_recent_topics.cache_info().hits, 1)
         self.assertEqual(get_recent_topics.cache_info().currsize, 4)
@@ -252,7 +282,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, "digest")
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([polonius.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -314,7 +344,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             get_recent_topics.cache_clear()
-            with self.assert_database_query_count(17), self.assert_memcached_count(0):
+            with self.assert_database_query_count(18), self.assert_memcached_count(0):
                 bulk_handle_digest_email(digest_user_ids, cutoff)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)
@@ -393,15 +423,15 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # make sure we don't mix up Othello and Cordelia
         streams = get_user_stream_map([othello.id, cordelia.id], one_hour_ago)
-        self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
-        self.assertEqual(streams[cordelia.id], {verona.id, scotland.id, denmark.id})
+        self.assertEqual(set(streams[othello.id]), {scotland.id, denmark.id})
+        self.assertEqual(set(streams[cordelia.id]), {verona.id, scotland.id, denmark.id})
 
         self.unsubscribe(cordelia, "Denmark")
         self.subscribe(cordelia, "Denmark")
 
         streams = get_user_stream_map([othello.id, cordelia.id], one_hour_ago)
-        self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
-        self.assertEqual(streams[cordelia.id], {verona.id, scotland.id})
+        self.assertEqual(set(streams[othello.id]), {scotland.id, denmark.id})
+        self.assertEqual(set(streams[cordelia.id]), {verona.id, scotland.id})
 
     def active_human_users(self, realm: Realm) -> list[UserProfile]:
         users = list(
@@ -781,12 +811,40 @@ class TestDigestEmailMessages(ZulipTestCase):
         header_plain = hot_convo.first_few_messages.header.plain
         self.assertIn("general chat", header_plain)
 
+    def test_teaser_senders_with_same_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        othello.full_name = hamlet.full_name
+        othello.save()
+        verona = get_stream("Verona", hamlet.realm)
+        message_ids = [
+            self.send_stream_message(hamlet, "Verona", "first", "topic"),
+            self.send_stream_message(othello, "Verona", "second", "topic"),
+        ]
+        messages = list(Message.objects.filter(id__in=message_ids))
+
+        # Two senders with the same name are separate sender blocks,
+        # each with their own avatar.
+        message_list = build_message_list(
+            hamlet, messages, stream_id_map={verona.id: verona}, with_sender_avatars=True
+        )
+        self.assertEqual(
+            [sender_block.avatar_url for sender_block in message_list.senders],
+            [absolute_avatar_url(hamlet), absolute_avatar_url(othello)],
+        )
+
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
         self.login("hamlet")
         result = self.client_get("/digest/")
         self.assert_in_success_response(["Log in to Zulip to catch up"], result)
+        # The email's <body> is embedded as a <div>, so that its
+        # attributes don't apply to the page's own <body>.
+        self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
+        # The page header shows the logo, so the email's own logo is
+        # left out of the page.
+        self.assert_not_in_success_response(["email_logo_color.png"], result)
 
 
 class TestDigestTopics(ZulipTestCase):
