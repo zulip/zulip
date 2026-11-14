@@ -3359,6 +3359,9 @@ class ExtractTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
             extract_stream_indicator("[{}]")
 
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for channel"):
+            extract_stream_indicator("true")
+
         with self.assertRaisesRegex(JsonableError, "Expected exactly one channel"):
             extract_stream_indicator('[1,2,"general"]')
 
@@ -3418,8 +3421,18 @@ class ExtractTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
             extract_private_recipients(ids)
 
+        ids = orjson.dumps([True]).decode()
+        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
+            extract_private_recipients(ids)
+
         # Heterogeneous lists are not supported
         mixed = orjson.dumps([3, 4, "eeshan@example.com"]).decode()
+        with self.assertRaisesRegex(
+            JsonableError, "Recipient lists may contain emails or user IDs, but not both."
+        ):
+            extract_private_recipients(mixed)
+
+        mixed = orjson.dumps([3, False]).decode()
         with self.assertRaisesRegex(
             JsonableError, "Recipient lists may contain emails or user IDs, but not both."
         ):
