@@ -1104,34 +1104,23 @@ def apply_event(
                     break
 
     elif event["type"] == "drafts":
+        # Updates and removals search linearly, since the drafts list
+        # is ordered by last edit time, not id.
         if event["op"] == "add":
             state_draft_ids = {draft["id"] for draft in state["drafts"]}
             state["drafts"].extend(
                 draft for draft in event["drafts"] if draft["id"] not in state_draft_ids
             )
-        else:
-            if event["op"] == "update":
-                event_draft_idx = event["draft"]["id"]
-
-                def _draft_update_action(i: int) -> None:
-                    state["drafts"][i] = event["draft"]
-
-            elif event["op"] == "remove":
-                event_draft_idx = event["draft_id"]
-
-                def _draft_update_action(i: int) -> None:
-                    del state["drafts"][i]
-
-            # We have to perform a linear search for the draft that
-            # was either edited or removed since we have a list
-            # ordered by the last edited timestamp and not id.
-            state_draft_idx = None
+        elif event["op"] == "update":
             for idx, draft in enumerate(state["drafts"]):
-                if draft["id"] == event_draft_idx:
-                    state_draft_idx = idx
+                if draft["id"] == event["draft"]["id"]:
+                    state["drafts"][idx] = event["draft"]
                     break
-            if state_draft_idx is not None:
-                _draft_update_action(state_draft_idx)
+        elif event["op"] == "remove":
+            for idx, draft in enumerate(state["drafts"]):
+                if draft["id"] == event["draft_id"]:
+                    del state["drafts"][idx]
+                    break
 
     elif event["type"] == "scheduled_messages":
         if event["op"] == "add":
