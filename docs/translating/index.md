@@ -8,6 +8,7 @@ maxdepth: 3
 translating
 internationalization
 chinese
+croatian
 finnish
 french
 german
