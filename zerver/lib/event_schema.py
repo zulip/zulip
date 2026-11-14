@@ -611,7 +611,7 @@ def check_stream_update(
 
 
 def check_subscription_update(
-    var_name: str, event: dict[str, object], property: str, value: bool
+    var_name: str, event: dict[str, object], property: str, value: bool | int
 ) -> None:
     _check_subscription_update(var_name, event)
     assert event["property"] == property
