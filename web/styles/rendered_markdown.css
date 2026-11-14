@@ -750,6 +750,13 @@
         width: 0;
     }
 
+    /* A deleted video shows a placeholder image instead,
+       so there is nothing to play. */
+    .message_inline_video.video-deleted::after {
+        background-image: none;
+        width: 0;
+    }
+
     .message_inline_video.video-format-unsupported {
         display: none;
     }
