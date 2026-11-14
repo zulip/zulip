@@ -78,15 +78,6 @@ CAPISTRANO = ScreenshotContent(
     content=f"The [deployment]() to **{PROJECT_STAGE}** (version {VERSION_NUMBER}) has been completed successfully! :rocket:",
 )
 
-CODEBASE = ScreenshotContent(
-    topic=f"Push to {BRANCH_GIT} on {PROJECT_NAME}",
-    content=f"""{BO_NAME} pushed 2 commit(s) to `{BRANCH_GIT}` in project {PROJECT_NAME}:
-
-* [{COMMIT_HASH_A[:10]}](): {COMMIT_MESSAGE_A}
-* [{COMMIT_HASH_B[:10]}](): {COMMIT_MESSAGE_B}
-""",
-)
-
 DISCOURSE = ScreenshotContent(
     topic="chat",
     content=f"""**@{BO_NAME}** posted in [Example channel]()
