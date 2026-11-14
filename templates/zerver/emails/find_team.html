@@ -1,9 +1,5 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
-{% block illustration %}
-<img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
-{% endblock %}
-
 {% block content %}
 {% if account_found %}
 <p>{{ _("Thanks for your request!") }}</p>

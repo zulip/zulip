@@ -4,12 +4,21 @@
    because hex color codes are rendered by all email clients
    consistently; HSL colors aren't supported by Hotmail. */
 
-.illustration img,
-img.bottom-illustration {
+:root {
+    color-scheme: light dark;
+}
+
+.email-logo img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
     vertical-align: bottom;
+}
+
+/* Centered Zulip logo above the content card. */
+.email-logo {
+    padding: 28px 0 24px;
+    text-align: center;
 }
 
 body.default-email-font-settings {
@@ -42,13 +51,14 @@ table.layout > tbody > tr > td {
    .body element will be the equivalent of our outer element. */
 .body {
     width: 100%;
-    background-color: #f5f9f8;
+    background-color: #ebebf5;
+    color: #0c0c0e;
 }
 
 .container {
     display: block;
     margin: 0 auto !important;
-    max-width: 500px;
+    max-width: 680px;
     padding: 10px;
 }
 
@@ -64,13 +74,11 @@ img.responsive-width {
     max-width: 700px;
 }
 
-/* Mystery: .container contains .content, but the max-widths for this
-   element are 80px wider than those for .container. */
 .content {
     box-sizing: border-box;
     display: block;
     margin: 20px auto 0;
-    max-width: 580px;
+    max-width: 660px;
     padding: 10px;
 }
 
@@ -83,14 +91,23 @@ img.responsive-width {
 */
 .main {
     background-color: #fff;
-    border-radius: 3px;
+    border-radius: 8px;
     width: 100%;
 }
 
-/* Right/left padding to keep content away from edges of email client winder. */
+/* For emails whose content brings its own surfaces, like the digest's
+   conversations, which sit directly on the email background. */
+.main.main-without-card {
+    background-color: transparent;
+}
+
+.main-without-card .wrapper {
+    padding: 0;
+}
+
 .wrapper {
     box-sizing: border-box;
-    padding: 0 20px 20px;
+    padding: 48px;
 }
 
 /* Footer section, containing unsubscribe links and the like. */
@@ -108,8 +125,8 @@ img.responsive-width {
 */
 .footer-content-block,
 .physical-address {
-    color: #5f5ec7;
-    font-size: 12px;
+    color: #0c0c0e;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -129,7 +146,6 @@ img.responsive-width {
 }
 
 .body p,
-p.digest_paragraph,
 .content ul,
 .content ol {
     font-family: sans-serif;
@@ -146,14 +162,21 @@ p.digest_paragraph,
 .body p li,
 .content ul li,
 .content ol li {
-    list-style-position: outside;
+    list-style: none;
     margin-left: 15px;
 }
 
 /* Link color styling carefully tuned to not apply to user content
    inside missed-message emails. */
-.body a,
-.digest_paragraph a,
+.body a {
+    color: #5f5fff;
+    text-decoration: underline;
+}
+
+.body a:hover {
+    color: #2e2eff !important;
+}
+
 .sponsorship_request_link,
 .support_request_link,
 .email-preferences a,
@@ -162,8 +185,6 @@ p.digest_paragraph,
     text-decoration: underline;
 }
 
-.body a:hover,
-.digest_paragraph a:hover,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
 .email-preferences a:hover,
@@ -174,11 +195,10 @@ p.digest_paragraph,
 .body .button {
     display: block;
     padding: 10px 0;
-    margin: 20px auto;
+    margin: 20px 0;
     width: 200px;
-    color: #5f5ec7;
-    border: 2px solid #5f5ec7;
-    background-color: #fff;
+    color: #fff; /* white for sufficient contrast on the filled button */
+    background-color: #5f5fff;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
@@ -189,7 +209,7 @@ p.digest_paragraph,
 }
 
 .body a.button:hover {
-    background-color: #5f5ec7;
+    background-color: #2e2eff;
     color: #fff;
     text-decoration: none;
 }
@@ -210,15 +230,6 @@ p.digest_paragraph,
     width: 0;
 }
 
-/* Illustrations appear over the top of the boundary between the
-   blank space at the top of the email and the content box; for
-   that reason they need a high z-index. */
-.illustration {
-    pointer-events: none;
-    cursor: default !important;
-    z-index: 100;
-}
-
 /* Styling for empty topic placeholders. */
 .empty-topic-display {
     font-style: italic;
@@ -226,32 +237,275 @@ p.digest_paragraph,
 
 /* CSS for digest email content. */
 .messages {
-    width: 600px;
-    font-size: 12px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    width: 100%;
+    font-size: 14px;
+    font-family: sans-serif;
     overflow-y: auto;
     margin-bottom: 12px;
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    background-color: #fff;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
 }
 
+/* Like the web app's recipient bar; the background color is the
+   recipient's own channel color, set in digest.html. */
 .hot_convo_recipient_header {
-    background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #d6d6d6;
+    /* 7px block radius less its 1px border, so the header's
+       background doesn't poke out past the rounded corners. */
+    border-radius: 6px 6px 0 0;
+    font-size: 15px;
     font-weight: bold;
-    padding: 2px;
+    line-height: 1.2;
+    padding: 5px 10px;
 }
 
-.hot_convo_message_content {
-    margin-left: 1px;
-    margin-right: 2px;
+.hot_convo_recipient_header a {
+    color: #0c0c0e;
+    text-decoration: none;
 }
 
-.hot_convo_message_content_block {
-    padding-left: 6px;
+.hot_convo_recipient_header a:hover {
+    color: #0c0c0e !important;
+}
+
+.hot_convo_separator {
+    color: #999;
     font-weight: normal;
+}
+
+/* Like the web app's message rows: avatar beside the sender's name,
+   with their messages below the name. */
+.hot_convo_avatar {
+    width: 35px;
+    padding: 8px 11px 8px 15px;
+}
+
+.hot_convo_avatar img {
+    display: block;
+    border-radius: 4px;
+}
+
+.hot_convo_sender_messages {
+    padding: 8px 10px 3px 0;
+}
+
+.hot_convo_sender_name {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+/* Sender names and message times link to the message, as the
+   message timestamps do in the web app. */
+.hot_convo_sender_name a {
+    color: #0c0c0e;
+    text-decoration: none;
+}
+
+.hot_convo_sender_name a:hover {
+    color: #0c0c0e !important;
+    text-decoration: underline;
+}
+
+.hot_convo_message_row {
+    width: 100%;
+}
+
+.hot_convo_message_time {
+    width: 1%;
+    padding-left: 12px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.hot_convo_message_time a {
+    color: #6c6c80;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.hot_convo_message_time a:hover {
+    color: #0c0c0e !important;
+    text-decoration: underline;
+}
+
+.hot_convo_message_content_block p {
+    margin: 0 0 5px;
+}
+
+/* Restore bullets on user-authored lists, which the .content list
+   rules above flatten for our hand-written onboarding emails. */
+.hot_convo_message_content ul,
+.hot_convo_message_content ol {
+    padding-left: 20px;
+}
+
+.hot_convo_message_content ul li {
+    list-style: disc;
+    margin-left: 0;
+}
+
+.hot_convo_message_content ol li {
+    list-style: decimal;
+    margin-left: 0;
+}
+
+/* Prototype digest variants, for the /digest page. */
+.digest-section-title {
+    margin: 24px 0 8px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c6c80;
+}
+
+.digest-reason {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #4b4bb3;
+    font-size: 12px;
+    font-weight: normal;
+    vertical-align: 1px;
+}
+
+/* "+ N more messages", shown as the block's last row and linking
+   to the topic. Left-aligned with the avatars above. */
+.hot_convo_recipient_block a.hot_convo_more {
+    display: block;
+    padding: 8px 10px 8px 15px;
+    border-top: 1px solid #ebebf5;
+    /* 7px block radius less its 1px border. */
+    border-radius: 0 0 6px 6px;
+    color: #6c6c80;
+    font-size: 13px;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hot_convo_recipient_block a.hot_convo_more:hover {
+    background-color: #f5f5fa;
+    color: #0c0c0e !important;
+}
+
+p.digest-emailed-note {
+    margin-top: 16px;
+    color: #6c6c80;
+    font-size: 13px;
+}
+
+.digest-index-block {
+    margin-bottom: 12px;
+}
+
+.digest-index {
+    width: 100%;
+}
+
+.digest-index td {
+    padding: 6px 10px;
+    border-top: 1px solid #ebebf5;
+    vertical-align: middle;
+}
+
+.digest-index tr:first-child td {
+    border-top: none;
+}
+
+.digest-index-meta {
+    color: #6c6c80;
+    font-size: 13px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.digest-index-meta b {
+    color: #0c0c0e;
+}
+
+.digest-chip {
+    display: inline-block;
+    color: #0c0c0e;
+    margin-right: 6px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Not !important: these get inlined, and the dark mode colors
+   below need to override them. */
+.digest-index a {
+    color: #0c0c0e;
+    text-decoration: none;
+}
+
+.digest-index a:hover {
+    color: #0c0c0e !important;
+}
+
+.digest-summary {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
+    background-color: #fff;
+}
+
+.digest-summary .digest-intro {
+    margin: 0 0 14px;
+    line-height: 1.5;
+}
+
+.digest-intro-label {
+    margin-bottom: 4px;
+    color: #6c6c80;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.digest-summary-title {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.digest-summary-stats {
+    table-layout: fixed;
+}
+
+.digest-summary-stats td {
+    width: 20%;
+    padding: 0 12px;
+    color: #6c6c80;
+    font-size: 13px;
+}
+
+/* The other cells' padding and divider, all on the right, so the
+   columns stay equal while the first lines up with the title. */
+.digest-summary-stats td:first-child {
+    padding: 0 25px 0 0; /* 12px + 12px padding + 1px divider */
+}
+
+.digest-summary-stats td.digest-summary-divided {
+    border-left: 1px solid #ebebf5;
+}
+
+.digest-stat {
+    display: block;
+    color: #0c0c0e;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.2;
 }
 
 /* Text and link colors for missed-message emails. */
@@ -272,10 +526,130 @@ p.digest_paragraph,
 .deactivated-user-text {
     padding: 0 0 0 15px;
     margin: 0 0 20px;
-    border-left: 5px solid #eee;
+    border-left: 5px solid #a1a2c9;
     white-space: pre-line;
     font-family: sans-serif;
     font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .body {
+        background-color: #17172b !important;
+        color: #e4e4e7 !important;
+    }
+
+    .main {
+        background-color: #272845 !important;
+    }
+
+    .footer-content-block,
+    .physical-address {
+        color: #e4e4e7 !important;
+    }
+
+    .body a {
+        color: #b8b8ff !important;
+    }
+
+    .body a:hover {
+        color: #e5e5ff !important;
+    }
+
+    .body a.button,
+    .body a.button:hover {
+        color: #fff !important;
+    }
+
+    .body a.button:hover {
+        background-color: #2e2eff !important;
+    }
+
+    .deactivated-user-text {
+        border-left-color: #3a3b64 !important;
+    }
+
+    .main.main-without-card {
+        background-color: transparent !important;
+    }
+
+    .hot_convo_recipient_block {
+        background-color: #272845 !important;
+    }
+
+    .hot_convo_recipient_block,
+    .hot_convo_recipient_header {
+        border-color: #3a3b64 !important;
+    }
+
+    .hot_convo_recipient_header a,
+    .hot_convo_recipient_header a:hover {
+        color: #e4e4e7 !important;
+    }
+
+    .hot_convo_sender_name a,
+    .hot_convo_sender_name a:hover,
+    .hot_convo_message_time a:hover {
+        color: #e4e4e7 !important;
+    }
+
+    .hot_convo_message_time a {
+        color: #a0a0b4 !important;
+    }
+
+    .digest-summary,
+    .digest-reason {
+        background-color: #272845 !important;
+    }
+
+    .digest-summary {
+        border-color: #3a3b64 !important;
+    }
+
+    .digest-reason {
+        color: #b8b8ff !important;
+    }
+
+    .digest-index td,
+    .hot_convo_recipient_block a.hot_convo_more {
+        border-top-color: #3a3b64 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more {
+        color: #a0a0b4 !important;
+    }
+
+    .hot_convo_recipient_block a.hot_convo_more:hover {
+        background-color: #30315a !important;
+        color: #e4e4e7 !important;
+    }
+
+    .digest-summary-stats td.digest-summary-divided {
+        border-left-color: #3a3b64 !important;
+    }
+
+    .digest-index tr:first-child td {
+        border-top: none !important;
+    }
+
+    .digest-index a,
+    .digest-index a:hover,
+    .digest-chip,
+    .digest-index-meta b,
+    .digest-stat {
+        color: #e4e4e7 !important;
+    }
+
+    .digest-section-title,
+    .digest-index-meta,
+    .digest-intro-label,
+    .digest-emailed-note,
+    .digest-summary-stats td {
+        color: #a0a0b4 !important;
+    }
+
+    .hot_convo_separator {
+        color: #8c8c99 !important;
+    }
 }
 
 @media only screen and (max-width: 620px) {
@@ -294,7 +668,7 @@ p.digest_paragraph,
     }
 
     table[class="body"] .wrapper {
-        padding: 0 10px 10px;
+        padding: 24px;
     }
 
     table[class="body"] .content {

@@ -26,7 +26,8 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.send_email import FromAddress, send_future_email
-from zerver.lib.url_encoding import stream_narrow_url
+from zerver.lib.stream_color import StreamColors, get_stream_colors
+from zerver.lib.url_encoding import stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Message,
     Realm,
@@ -53,9 +54,11 @@ TopicKey: TypeAlias = tuple[int, str]
 
 @dataclass
 class DigestTeaserData:
+    stream_id: int
     participants: list[str]
     count: int
     first_few_messages: MessageListPayload
+    topic_url: str
 
 
 class DigestTopic:
@@ -92,11 +95,18 @@ class DigestTopic:
             user=user,
             messages=self.sample_messages,
             stream_id_map=stream_id_map,
+            with_sender_avatars=True,
         )
         return DigestTeaserData(
+            stream_id=self.stream_id(),
             participants=sorted(self.human_senders),
             count=teaser_count,
             first_few_messages=first_few_messages,
+            topic_url=topic_narrow_url(
+                realm=user.realm,
+                stream=stream_id_map[self.stream_id()],
+                topic_name=self.sample_messages[0].topic_name(),
+            ),
         )
 
 
@@ -217,12 +227,21 @@ def get_recent_topics(
             "sender",  # we need the sender's full name
         )
         .defer(
-            # This construction, to only fetch the sender's full_name and is_bot,
-            # is because `.only()` doesn't work with select_related tables.
+            # This construction, to only fetch the sender's name, bot
+            # status, and the fields that determine their avatar URL, is
+            # because `.only()` doesn't work with select_related tables.
             *{
                 f"sender__{f.name}"
                 for f in UserProfile._meta.fields
-                if f.name not in {"full_name", "is_bot"}
+                if f.name
+                not in {
+                    "full_name",
+                    "is_bot",
+                    "realm",
+                    "delivery_email",
+                    "avatar_source",
+                    "avatar_version",
+                }
             }
         )
     )
@@ -337,7 +356,9 @@ def enough_traffic(
     return hot_conversations > 0
 
 
-def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int, set[int]]:
+def get_user_stream_map(
+    user_ids: list[int], cutoff_date: datetime
+) -> dict[int, dict[int, StreamColors]]:
     """Skipping streams where the user's subscription status has changed
     when constructing digests is critical to ensure correctness for
     streams without shared history, guest users, and long-term idle
@@ -376,13 +397,15 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
             )
         )
         .filter(was_modified=False)
-        .values("user_profile_id", "recipient__type_id")
+        .values("user_profile_id", "recipient__type_id", "color")
     )
 
-    # maps user_id -> {stream_id, stream_id, ...}
-    dct: dict[int, set[int]] = defaultdict(set)
+    # maps user_id -> {stream_id: colors, ...}, with each user's own
+    # color for the stream, so that recipient bars in their digest
+    # match the ones in their web app.
+    dct: dict[int, dict[int, StreamColors]] = defaultdict(dict)
     for row in rows:
-        dct[row["user_profile_id"]].add(row["recipient__type_id"])
+        dct[row["user_profile_id"]][row["recipient__type_id"]] = get_stream_colors(row["color"])
 
     return dct
 
@@ -427,7 +450,7 @@ def bulk_get_digest_context(
 
     user_ids = [user.id for user in users]
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
-    stream_ids = set().union(*user_stream_map.values())
+    stream_ids = set().union(*(stream_colors.keys() for stream_colors in user_stream_map.values()))
     stream_id_map = get_slim_stream_id_map(stream_ids)
     user_muted_topics_map = get_user_muted_topics_map(user_ids)
 
@@ -469,7 +492,8 @@ def bulk_get_digest_context(
             context["show_message_content"] = False
         else:
             # Otherwise, get context data for hot conversations.
-            stream_ids = user_stream_map[user.id]
+            stream_colors = user_stream_map[user.id]
+            stream_ids = set(stream_colors)
             muted_topics = user_muted_topics_map[user.id]
             recent_topics = []
             for stream_id in stream_ids:
@@ -486,6 +510,10 @@ def bulk_get_digest_context(
             context["hot_conversations"] = [
                 hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
             ]
+            context["channel_colors"] = {
+                hot_topic.stream_id(): stream_colors[hot_topic.stream_id()]
+                for hot_topic in hot_topics
+            }
             context["new_channels"] = new_streams
             context["new_messages_count"] = 0
             context["show_message_content"] = True
