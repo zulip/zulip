@@ -442,6 +442,10 @@ test("set_up", ({override, override_rewire}) => {
             id: 8,
             name: "Webex",
         },
+        google_meet: {
+            id: 9,
+            name: "Google Meet",
+        },
     });
     override(realm, "realm_message_retention_days", null);
 
