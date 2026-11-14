@@ -400,7 +400,22 @@ function language_select_callback(
     change_display_setting(
         data,
         $("#user-preferences").find(".general-settings-status"),
-        undefined,
+        (response_data) => {
+            const parsed = z.object({msg: z.string().optional()}).safeParse(response_data);
+            const msg = parsed.success ? parsed.data.msg : undefined;
+            if (msg) {
+                const translated_html = msg.replace(
+                    /<z-link>(.*?)<\/z-link>/,
+                    '<a class="reload_link">$1</a>',
+                );
+                ui_report.success(
+                    translated_html,
+                    $("#user-preferences").find(".general-settings-status"),
+                    undefined,
+                    true,
+                );
+            }
+        },
         undefined,
         language_select_message_html,
         true,
