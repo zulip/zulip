@@ -21,6 +21,7 @@ from zerver.data_import.import_util import (
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
+    build_direct_message_group,
     build_message,
     build_realm,
     build_recipient,
@@ -30,6 +31,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    data_import_session,
     get_attachment_path_and_content,
     get_data_file,
     make_subscriber_map,
@@ -48,7 +50,8 @@ from zerver.lib.markdown import get_markdown_image_for_url
 from zerver.lib.mime_types import bare_content_type
 from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
-from zerver.models.recipients import Recipient
+from zerver.models.messages import Message
+from zerver.models.recipients import Recipient, get_direct_message_group_hash
 from zerver.models.users import UserProfile
 
 
@@ -101,9 +104,17 @@ class ExportMessageAttachmentParameter:
     upload_file_request: UploadFileRequest
 
 
+@dataclass
+class DirectMessageRelatedData:
+    recipient: ZerverFieldsT
+    direct_message_group: ZerverFieldsT
+    subscriptions: list[ZerverFieldsT]
+
+
 AddedTeamsT: TypeAlias = dict[str, TeamMetadata]
 TeamIdToZulipRecipientIdT: TypeAlias = dict[str, int]
 MicrosoftTeamsUserIdToZulipUserIdT: TypeAlias = dict[str, int]
+ChatMemberDisplayNamesT: TypeAlias = dict[str, str | None]
 MicrosoftTeamsFieldsT: TypeAlias = dict[str, Any]
 
 MICROSOFT_TEAMS_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME = "All company"
@@ -237,7 +248,7 @@ def get_microsoft_graph_api_data(
     # https://learn.microsoft.com/en-us/graph/paging?tabs=http#server-side-paging
     next_link: str | None = api_url
     while next_link is not None:
-        response = requests.get(
+        response = data_import_session.get(
             next_link, headers={"Authorization": f"Bearer {token}"}, params=parameters
         )
 
@@ -318,6 +329,16 @@ def get_user_roles(api_token: str) -> MicrosoftTeamsUserRoleData:
     )
 
 
+def get_chat_members(api_token: str, chat_id: str) -> list[MicrosoftTeamsFieldsT]:
+    """
+    https://learn.microsoft.com/en-us/graph/api/chat-list-members?view=graph-rest-1.0
+    """
+    return get_microsoft_graph_api_data(
+        MICROSOFT_GRAPH_API_URL.format(endpoint=f"/chats/{chat_id}/members"),
+        token=api_token,
+    )
+
+
 def get_user_email(user: MicrosoftTeamsFieldsT) -> str:
     if user["Mail"]:
         return user["Mail"]
@@ -331,9 +352,9 @@ def create_is_mirror_dummy_user(
     realm: dict[str, Any],
     realm_id: int,
     domain_name: str,
+    user_full_name: str,
 ) -> None:
     zulip_user_id = NEXT_ID("user")
-    user_full_name = f"Deleted Teams user {microsoft_team_user_id}"
     email = Address(username=microsoft_team_user_id, domain=domain_name).addr_spec
     user_profile_dict = build_user_profile(
         avatar_source=UserProfile.DEFAULT_AVATAR_SOURCE,
@@ -361,7 +382,7 @@ def convert_users(
     users_list: list[MicrosoftTeamsFieldsT],
 ) -> MicrosoftTeamsUserIdToZulipUserIdT:
     zerver_user_profile: list[ZerverFieldsT] = []
-    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT = defaultdict(int)
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT = {}
     found_emails: dict[str, int] = {}
     has_owner = False
 
@@ -485,7 +506,6 @@ def download_and_export_microsoft_teams_upload_file(
 def process_hosted_content_attachments(
     content: str,
     do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
-    is_direct_message_type: bool,
     microsoft_graph_api_token: str,
     realm_id: int,
     teams_message_id: str,
@@ -546,33 +566,120 @@ def process_hosted_content_attachments(
         # content image's alt tag.
         return get_markdown_image_for_url(file_name, attachment_data.url)
 
-    if is_direct_message_type:
-        # TODO: hosted content URL for private chats have a different format, we
-        # can process it once we support converting direct messages.
-        return AttachmentConversionResult(updated_content=content, upload_records=upload_records)
-    else:
-        updated_content = regex.sub(
-            HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
-            export_file_and_get_zulip_url,
-            content,
-            flags=re.VERBOSE,
+    updated_content = regex.sub(
+        HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
+        export_file_and_get_zulip_url,
+        content,
+        flags=re.VERBOSE,
+    )
+    return AttachmentConversionResult(
+        updated_content=updated_content,
+        upload_records=upload_records,
+    )
+
+
+def get_exported_chat_members(
+    user_id_to_messages_file_path: dict[str, str],
+) -> dict[str, ChatMemberDisplayNamesT]:
+    """
+    The chat members API only lists a chat's current members, so this
+    collects the members recorded in the export: every user whose
+    messages file includes the chat, and every sender in the chat.
+    """
+    chat_id_to_exported_members: dict[str, ChatMemberDisplayNamesT] = {}
+    for user_id, messages_file_path in user_id_to_messages_file_path.items():
+        for message in get_data_file(messages_file_path):
+            exported_members = chat_id_to_exported_members.setdefault(message["ChatId"], {})
+            exported_members.setdefault(user_id, None)
+            if message["From"] is not None and message["From"]["User"] is not None:
+                sender = message["From"]["User"]
+                exported_members[sender["Id"]] = sender["DisplayName"]
+    return chat_id_to_exported_members
+
+
+def get_direct_message_member_ids(
+    chat_id: str,
+    domain_name: str,
+    exported_members: ChatMemberDisplayNamesT,
+    microsoft_graph_api_token: str,
+    microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    realm: dict[str, Any],
+    realm_id: int,
+) -> list[int]:
+    member_display_names = dict(exported_members)
+    for member in get_chat_members(microsoft_graph_api_token, chat_id):
+        microsoft_teams_user_id = member.get("userId")
+        if microsoft_teams_user_id is None:
+            # Members such as anonymous guests have no ID that
+            # identifies them across chats.
+            logging.warning(
+                "Skipping unidentifiable member %s of chat %s.", member.get("displayName"), chat_id
+            )
+            continue
+        if member_display_names.get(microsoft_teams_user_id) is None:
+            member_display_names[microsoft_teams_user_id] = member.get("displayName")
+
+    direct_message_members = []
+    for microsoft_teams_user_id, display_name in sorted(member_display_names.items()):
+        if microsoft_teams_user_id not in microsoft_teams_user_id_to_zulip_user_id:
+            # Such as users from other organizations, who aren't in
+            # usersList.json, and deleted users.
+            create_is_mirror_dummy_user(
+                microsoft_teams_user_id,
+                microsoft_teams_user_id_to_zulip_user_id,
+                realm,
+                realm_id,
+                domain_name,
+                user_full_name=display_name or f"Deleted Teams user {microsoft_teams_user_id}",
+            )
+        direct_message_members.append(
+            microsoft_teams_user_id_to_zulip_user_id[microsoft_teams_user_id]
         )
-        return AttachmentConversionResult(
-            updated_content=updated_content,
-            upload_records=upload_records,
-        )
+    return direct_message_members
+
+
+def build_related_data_for_direct_message(
+    direct_message_members: list[int],
+    subscriber_map: dict[int, set[int]],
+) -> DirectMessageRelatedData:
+    direct_message_group_id = NEXT_ID("direct_message_group")
+    direct_message_group = build_direct_message_group(
+        direct_message_group_id, len(direct_message_members)
+    )
+
+    recipient_id = NEXT_ID("recipient")
+    recipient = build_recipient(
+        type_id=direct_message_group_id,
+        recipient_id=recipient_id,
+        type=Recipient.DIRECT_MESSAGE_GROUP,
+    )
+
+    subscriber_map[recipient_id] = set(direct_message_members)
+    subscriptions = [
+        build_subscription(recipient_id, zulip_user_id, NEXT_ID("subscription"))
+        for zulip_user_id in direct_message_members
+    ]
+
+    return DirectMessageRelatedData(
+        direct_message_group=direct_message_group, recipient=recipient, subscriptions=subscriptions
+    )
 
 
 def process_messages(
     added_teams: dict[str, TeamMetadata],
     channel_metadata: dict[str, ChannelMetadata] | None,
+    chat_id_to_exported_members: dict[str, ChatMemberDisplayNamesT],
+    chat_id_to_zulip_recipient_id: dict[str, int],
+    direct_message_group_hashes: set[str],
     do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
     domain_name: str,
     messages: list[MicrosoftTeamsFieldsT],
     microsoft_graph_api_token: str,
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
+    processed_dm_ids: set[tuple[str, str]],
     realm: dict[str, Any],
     realm_id: int,
+    skipped_chat_ids: set[str],
     subscriber_map: dict[int, set[int]],
 ) -> MessageConversionResult:
     zerver_usermessage: list[ZerverFieldsT] = []
@@ -582,6 +689,84 @@ def process_messages(
     for message in messages:
         if is_microsoft_teams_event_message(message):
             continue
+
+        if message["DeletedDateTime"] is not None:
+            # Teams exports messages for a while after users delete them:
+            # https://learn.microsoft.com/en-us/microsoftteams/export-teams-content
+            logging.warning("Skipping deleted message %s.", message["Id"])
+            continue
+
+        if message["From"] is None or message["From"]["User"] is None:
+            # Messages sent by apps, such as bots, have a `From.Application`
+            # sender instead of a user, and system messages may have no sender:
+            # https://learn.microsoft.com/en-us/graph/api/resources/chatmessagefromidentityset?view=graph-rest-1.0
+            logging.warning("Skipping message %s, which wasn't sent by a user.", message["Id"])
+            continue
+
+        # Determine message type, private or channel.
+        if message["ChannelIdentity"] is not None:
+            if channel_metadata is None:
+                raise AssertionError("Failed to build channel data.")
+            current_channel = channel_metadata[message["ChannelIdentity"]["ChannelId"]]
+            if current_channel.membership_type == "private":
+                # Don't include private channel messages.
+                continue
+            topic_name = current_channel.display_name
+            is_direct_message_type = False
+            recipient_id = added_teams[message["ChannelIdentity"]["TeamId"]].zulip_recipient_id
+        elif message["ChatId"] is not None:
+            chat_id = message["ChatId"]
+            # Teams message IDs are only unique within a chat:
+            # https://learn.microsoft.com/en-us/graph/api/resources/chatmessage?view=graph-rest-1.0
+            dm_id = (chat_id, message["Id"])
+            if dm_id in processed_dm_ids:
+                # A copy of each DM appears in every participant's messages_{user_id}.json file,
+                # we only need to process one copy.
+                continue
+            if chat_id in skipped_chat_ids:
+                # There's already a converted group chat with the same members; see below.
+                # We currently don't have a way to handle multiple group chats with the same
+                # members. Skip its remaining messages too.
+                continue
+            topic_name = Message.DM_TOPIC
+            is_direct_message_type = True
+            if chat_id in chat_id_to_zulip_recipient_id:
+                recipient_id = chat_id_to_zulip_recipient_id[chat_id]
+            else:
+                direct_message_members = get_direct_message_member_ids(
+                    chat_id=chat_id,
+                    domain_name=domain_name,
+                    exported_members=chat_id_to_exported_members[chat_id],
+                    microsoft_graph_api_token=microsoft_graph_api_token,
+                    microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+                    realm=realm,
+                    realm_id=realm_id,
+                )
+                direct_message_group_hash = get_direct_message_group_hash(direct_message_members)
+                if direct_message_group_hash in direct_message_group_hashes:
+                    # Microsoft Teams allows multiple group chats with an
+                    # identical member set, but Zulip identifies a direct
+                    # message group by its members, so we can't create a
+                    # second group for the same members. Drop this chat.
+                    logging.warning(
+                        "Skipping group chat %s; there's already a converted group chat with the same members.",
+                        chat_id,
+                    )
+                    skipped_chat_ids.add(chat_id)
+                    continue
+                dm_tables = build_related_data_for_direct_message(
+                    direct_message_members,
+                    subscriber_map,
+                )
+                recipient_id = dm_tables.recipient["id"]
+                chat_id_to_zulip_recipient_id[chat_id] = recipient_id
+                direct_message_group_hashes.add(direct_message_group_hash)
+                realm["zerver_recipient"].append(dm_tables.recipient)
+                realm["zerver_huddle"].append(dm_tables.direct_message_group)
+                realm["zerver_subscription"] += dm_tables.subscriptions
+            processed_dm_ids.add(dm_id)
+        else:  # nocoverage
+            raise AssertionError(f"Unknown message type: {message!s}")
 
         message_content_type = message["Body"]["ContentType"]
         if message_content_type == "html":
@@ -598,34 +783,18 @@ def process_messages(
             logging.warning("Unable to convert this message content type: %s", message_content_type)
             continue
 
-        # Determine message type, private or channel.
-        if message["ChannelIdentity"] is not None:
-            if channel_metadata is None:
-                raise AssertionError("Failed to build channel data.")
-            current_channel = channel_metadata[message["ChannelIdentity"]["ChannelId"]]
-            if current_channel.membership_type == "private":
-                # Don't include private channel messages.
-                continue
-            topic_name = current_channel.display_name
-            is_direct_message_type = False
-            recipient_id = added_teams[message["ChannelIdentity"]["TeamId"]].zulip_recipient_id
-        else:  # nocoverage
-            assert message["ChatId"] is not None
-            # TODO: Converting direct messages is not yet supported. Since
-            # subscription list and recipient map of direct message conversations
-            # are not listed, we have to manually build them as we iterate over
-            # the user messages.
-            continue
-
         microsoft_teams_sender_id: str = get_microsoft_teams_sender_id_from_message(message)
 
         if microsoft_teams_sender_id not in microsoft_teams_user_id_to_zulip_user_id:
+            sender_display_name = message["From"]["User"]["DisplayName"]
             create_is_mirror_dummy_user(
                 microsoft_teams_sender_id,
                 microsoft_teams_user_id_to_zulip_user_id,
                 realm,
                 realm_id,
                 domain_name,
+                user_full_name=sender_display_name
+                or f"Deleted Teams user {microsoft_teams_sender_id}",
             )
 
         message_id = NEXT_ID("message")
@@ -633,7 +802,6 @@ def process_messages(
         attachment_result = process_hosted_content_attachments(
             content=content,
             do_download_and_export_upload_file=do_download_and_export_upload_file,
-            is_direct_message_type=is_direct_message_type,
             microsoft_graph_api_token=microsoft_graph_api_token,
             realm_id=realm_id,
             teams_message_id=message["Id"],
@@ -712,6 +880,7 @@ def convert_messages(
     realm_id: int,
     realm: dict[str, Any],
     teams_data_dir: str,
+    users_data_dir: str,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> tuple[list[UploadRecordData], list[AttachmentRecordData]]:
     microsoft_teams_channel_metadata: dict[str, ChannelMetadata] = {}
@@ -743,6 +912,16 @@ def convert_messages(
                 team_id=team_id,
             )
 
+    user_id_to_messages_file_path: dict[str, str] = {}
+    for user_id in os.listdir(users_data_dir):
+        user_data_folder = os.path.join(users_data_dir, user_id)
+        if os.path.isdir(user_data_folder):
+            user_id_to_messages_file_path[user_id] = os.path.join(
+                user_data_folder, f"messages_{user_id}.json"
+            )
+    message_file_paths += user_id_to_messages_file_path.values()
+    chat_id_to_exported_members = get_exported_chat_members(user_id_to_messages_file_path)
+
     # Attachment record data is only fully known after the file is
     # downloaded, so records must be built inside the download
     # workers. When processes > 1, workers run in separate processes
@@ -758,6 +937,11 @@ def convert_messages(
     )
 
     total_accumulated_upload_records: list[UploadRecordData] = []
+    processed_dm_ids: set[tuple[str, str]] = set()
+    chat_id_to_zulip_recipient_id: dict[str, int] = {}
+    direct_message_group_hashes: set[str] = set()
+    skipped_chat_ids: set[str] = set()
+
     with run_parallel_queue(
         partial(
             download_and_export_microsoft_teams_upload_file, total_attachment_records, output_dir
@@ -772,13 +956,18 @@ def convert_messages(
             conversion_result = process_messages(
                 added_teams=added_teams,
                 channel_metadata=microsoft_teams_channel_metadata,
+                chat_id_to_exported_members=chat_id_to_exported_members,
+                chat_id_to_zulip_recipient_id=chat_id_to_zulip_recipient_id,
+                direct_message_group_hashes=direct_message_group_hashes,
                 do_download_and_export_upload_file=do_download_and_export_upload_file,
                 domain_name=domain_name,
                 messages=message_chunk,
                 microsoft_graph_api_token=microsoft_graph_api_token,
                 microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+                processed_dm_ids=processed_dm_ids,
                 realm=realm,
                 realm_id=realm_id,
+                skipped_chat_ids=skipped_chat_ids,
                 subscriber_map=subscriber_map,
             )
             total_accumulated_upload_records += conversion_result.upload_records
@@ -863,7 +1052,10 @@ def do_convert_directory(
         realm_id=realm_id,
         realm=realm,
         teams_data_dir=teams_data_dir,
+        users_data_dir=users_data_dir,
     )
+
+    realm["sort_by_date"] = True
 
     create_converted_data_files(realm, output_dir, "/realm.json")
     create_converted_data_files(upload_records, output_dir, "/uploads/records.json")
