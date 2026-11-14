@@ -150,6 +150,7 @@ run_test("unread_ops", ({override}) => {
         url: "/json/messages/flags",
         data: {messages: "[50]", op: "add", flag: "read"},
         success: channel_post_opts.success,
+        error: channel_post_opts.error,
     });
 
     // Simulate a successful post (which also clears the queue
