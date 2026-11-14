@@ -1,5 +1,4 @@
 import "../sentry.ts";
-import "../../debug-require.cjs";
 import "../csrf.ts";
 import "../blueslip.ts";
 import "simplebar/dist/simplebar.css";
