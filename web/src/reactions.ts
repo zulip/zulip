@@ -13,13 +13,19 @@ import type {EmojiRenderingDetails} from "./emoji.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
-import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
+import type {
+    Message,
+    MessageCleanReaction,
+    MessageCleanReactionWithDisplaySettings,
+    RawMessage,
+} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
+import {type EmojiAnimationSetting, user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -449,7 +455,7 @@ export let insert_new_reaction = (
         count: 1,
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
-        emoji_alt_code: user_settings.emojiset === "text",
+        ...build_emoji_display_settings(),
         is_realm_emoji,
         vote_text: "", // Updated below
         class: reaction_class,
@@ -580,9 +586,13 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
     return names;
 }
 
-export function get_message_reactions(message: Message): MessageCleanReaction[] {
+export function get_message_reactions(message: Message): MessageCleanReactionWithDisplaySettings[] {
     update_clean_reactions(message);
-    return message.clean_reactions.values().toArray();
+    const emoji_display_settings = build_emoji_display_settings();
+    return message.clean_reactions
+        .values()
+        .map((clean_reaction) => ({...clean_reaction, ...emoji_display_settings}))
+        .toArray();
 }
 
 export function generate_clean_reactions(
@@ -685,7 +695,6 @@ function make_clean_reaction({
         emoji_code,
         reaction_type,
     });
-    const emoji_alt_code = user_settings.emojiset === "text";
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -694,9 +703,21 @@ function make_clean_reaction({
         local_id,
         user_ids,
         ...emoji_details,
-        emoji_alt_code,
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
+    };
+}
+
+function build_emoji_display_settings(): {
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
+} {
+    // These depend on user settings rather than on the reaction itself,
+    // so they're added when rendering instead of being stored in
+    // clean_reactions, where they would go stale when a setting changes.
+    return {
+        emoji_alt_code: user_settings.emojiset === "text",
+        emoji_animation_setting: util.effective_web_animate_image_previews(),
     };
 }
 

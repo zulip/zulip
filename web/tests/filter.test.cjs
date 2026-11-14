@@ -1546,7 +1546,6 @@ test("predicate_basics", ({override}) => {
                 "unicode_emoji,1f3b1": {
                     class: "message_reaction reacted",
                     count: 2,
-                    emoji_alt_code: false,
                     emoji_code: "1f3b1",
                     emoji_name: "8ball",
                     is_realm_emoji: false,
