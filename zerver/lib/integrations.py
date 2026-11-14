@@ -1205,7 +1205,7 @@ hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATION
 INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # The fixture's goal.losedate needs to be modified dynamically,
     # so the screenshot config is commented out.
-    {"beeminder"}
+    {"beeminder", "afdian"}
     # Disabled integrations that are in the process of being added or rewritten.
     | {"intercom", "notion"}
     # Integrations that call external API endpoints.
