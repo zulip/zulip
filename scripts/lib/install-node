@@ -37,5 +37,10 @@ if ! check_version 2>/dev/null; then
     # Clean up after previous versions of this script
     rm -rf /srv/zulip-yarn /usr/bin/yarn /usr/local/nvm
 
-    check_version
+    if ! check_version; then
+        set +x
+        echo >&2 "Error: Expected Node.js v$version, but found $(node --version 2>/dev/null || echo 'none')."
+        echo >&2 "If you are using NVM, try running 'nvm deactivate', or ensure your PATH is configured correctly, then re-run ./tools/provision."
+        exit 1
+    fi
 fi
