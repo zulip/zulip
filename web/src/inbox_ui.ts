@@ -2248,13 +2248,22 @@ export function update_internal(): void {
 
     // We want to avoid weird jumps when user is interacting with Inbox
     // and we are updating the view. So, we only reset current focus if
-    // the update was triggered by user. This can mean `row_focus` can
-    // be out of bounds, so we need to fix that.
+    // the update was triggered by user. Rows may have been added or
+    // removed above the focused row, so `row_focus` needs to follow
+    // the focused row to its new position. If the focused row itself
+    // is gone, `row_focus` can be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
         revive_current_focus();
         update_triggered_by_user = false;
     } else {
-        if (row_focus >= get_all_rows().length) {
+        const $all_rows = get_all_rows();
+        const focused_row_index =
+            is_navigated_to_list() && current_navigated_id !== undefined
+                ? $all_rows.index($(`#${CSS.escape(current_navigated_id)}`))
+                : -1;
+        if (focused_row_index !== -1) {
+            row_focus = focused_row_index;
+        } else if (row_focus >= $all_rows.length) {
             revive_current_focus();
         }
     }
