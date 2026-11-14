@@ -1,0 +1,64 @@
+{
+  "id": "cZF7qIxCEB_LROVOjKKur",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "deployment": {
+      "id": "dpl_2evS7Amj7rASb7RN4dpWz5sVeKeD",
+      "customEnvironmentId": null,
+      "meta": {
+        "githubCommitAuthorName": "ki3ani",
+        "githubCommitAuthorEmail": "ki3ani@users.noreply.github.com",
+        "githubCommitMessage": "Add contact section",
+        "githubCommitOrg": "ki3ani",
+        "githubCommitRef": "main",
+        "githubCommitRepo": "portfolio-site",
+        "githubCommitSha": "4bd9710e08b05213fce39dd4127ffe1263bde3e8",
+        "githubDeployment": "1",
+        "githubOrg": "ki3ani",
+        "githubRepo": "portfolio-site",
+        "githubRepoOwnerType": "User",
+        "githubCommitRepoId": "1435527271",
+        "githubRepoId": "1435527271",
+        "githubRepoVisibility": "private",
+        "githubHost": "github.com",
+        "githubCommitAuthorLogin": "ki3ani",
+        "githubCommitVerification": "unverified",
+        "repoPushedAt": "1793128012000",
+        "branchAlias": "portfolio-site-git-main-ki3anis-projects.vercel.app"
+      },
+      "name": "portfolio-site",
+      "url": "portfolio-site-qo9k6gmxw-ki3anis-projects.vercel.app",
+      "inspectorUrl": "https://vercel.com/ki3anis-projects/portfolio-site/2evS7Amj7rASb7RN4dpWz5sVeKeD"
+    },
+    "links": {
+      "deployment": "https://vercel.com/ki3anis-projects/portfolio-site/2evS7Amj7rASb7RN4dpWz5sVeKeD",
+      "project": "https://vercel.com/ki3anis-projects/portfolio-site"
+    },
+    "name": "portfolio-site",
+    "plan": "hobby",
+    "regions": [
+      "iad1"
+    ],
+    "target": "production",
+    "type": "LAMBDAS",
+    "url": "portfolio-site-qo9k6gmxw-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793128027427,
+  "type": "deployment.error"
+}
