@@ -570,6 +570,7 @@ export default defineConfig({
                         "manage-a-user",
                         "deactivate-or-reactivate-a-user",
                         "change-a-users-name",
+                        "change-a-users-profile-picture",
                         "manage-user-channel-subscriptions",
                         "manage-user-group-membership",
                         "reset-settings-for-users",

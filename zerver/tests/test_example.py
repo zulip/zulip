@@ -125,6 +125,7 @@ class TestFullStack(ZulipTestCase):
             dict(
                 avatar_url=content["user"]["avatar_url"],
                 avatar_version=1,
+                avatar_source=cordelia.avatar_source,
                 date_joined=content["user"]["date_joined"],
                 delivery_email=None,
                 email=cordelia.email,
