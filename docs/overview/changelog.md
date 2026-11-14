@@ -15,58 +15,31 @@ _Unreleased_
 
 ## Zulip Server 13.x series
 
-### Zulip Server 13.3
-
-_Released 2026-11-19_
-
-- GHSA-f7qf-999g-f6h9: On servers that store uploaded files on local
-  disk (the default), any user, including guests, could make the server
-  read, append data to, or delete arbitrary files accessible to the
-  `zulip` user. This could be used to obtain the server's secrets and
-  to run arbitrary code on the server. Servers that store uploaded files
-  in S3 were not affected. This vulnerability was reported by Thibault
-  Herard (@ThibHrrd) of OWN.
-- GHSA-6c7c-7xjc-qm48: Any user, including guests, could obtain a copy
-  of a file uploaded by another user, including one in another
-  organization on the same server, if they knew the file's URL. They
-  did not need access to the message the file was shared in. This
-  affected files uploaded through the resumable upload API, which the
-  web and desktop apps use for all uploads.
-- GHSA-2fx7-3vcm-hg62: On servers that allow importing from Slack while
-  creating an organization, anyone could obtain the confirmation link of
-  a person creating an organization that way, and take over that
-  organization, including its imported data. Users with an account on
-  the server could also delete another person's uploaded Slack export,
-  or obtain a copy of it (on local disk, even while it was still
-  uploading). Importing from Slack while creating an organization is
-  disabled by default on self-hosted servers.
-- OpenID Connect logins now always use PKCE. If your identity provider
-  rejects PKCE for Zulip's client, enable PKCE for that client, or set
-  `SOCIAL_AUTH_OIDC_USE_PKCE = False` in `/etc/zulip/settings.py` to
-  turn it off for all OpenID Connect providers. Turning it off is not
-  recommended, because PKCE protects against an authorization code
-  injection attack caused by a `python-social-auth` bug
-  ([GHSA-h2r5-x5m7-3935](https://github.com/advisories/GHSA-h2r5-x5m7-3935)).
-- Updated translations. New Croatian (hr) translation.
-
 ### Zulip Server 13.2
 
-_Released 2026-11-13_
+_Released 2026-11-12_
 
-- Fixed new installs failing because PostgreSQL could not start. This was caused
-  by a [bug in postgresql-common 294](https://bugs.debian.org/1153884), which
-  leaves `/var/log/postgresql` owned by root. Upgrades were not affected.
+- Fixed PostgreSQL failing to start on new installations.
 
 ### Zulip Server 13.1
 
 _Released 2026-11-12_
 
-- Fixed an error that stopped Zulip update announcements from being
-  sent after upgrading to 13.0.
+- Fixed a relative help link in the level 28 announcement.
 
 ### Zulip Server 13.0
 
 _Released 2026-11-12_
+
+- Added support for Norwegian Nynorsk (nn), Somali (so), Armenian (hy), Thai (th), and Croatian (hr).
+- Added a Google Meet video call integration.
+- Fixed several security issues related to bot ownership, organization exports, and guest access to files.
+- Fixed signup behavior when password authentication is disabled.
+- Send a notification when users are unsubscribed from channels.
+
+### Zulip Server 13.0-rc1
+
+_Released 2026-10-30_
 
 #### Highlights
 
@@ -105,11 +78,6 @@ _Released 2026-11-12_
 - The Combined feed now offers to view all messages in public channels
   once you reach its oldest messages.
 - Reporting a message now sends the reporter a confirmation message.
-- Notification Bot now sends a direct message to users who are
-  unsubscribed from a channel by someone else. The
-  `MAX_BULK_NEW_SUBSCRIPTION_MESSAGES` setting has been renamed to
-  `MAX_BULK_SUBSCRIPTION_MESSAGES`, and now also limits these
-  messages.
 - The OpenID Connect integration can now synchronize users' names,
   roles, custom profile fields, and group memberships when they log in.
   It can also optionally update users' email addresses when they change
@@ -157,8 +125,6 @@ _Released 2026-11-12_
   in the **Set status** dialog.
 - Alert words are now highlighted in topic links. Search highlights
   and alert words also have better contrast in the dark theme.
-- Added Google Meet as a video call provider option; see the
-  [setup instructions](../production/video-calls.md#google-meet).
 - Added a new webhook integration for Gong.
 - The Heroku integration now uses Heroku's app webhooks, with support
   for build and release events; Heroku's legacy deploy hooks are no
@@ -282,39 +248,6 @@ _Released 2026-11-12_
   integration again following the updated instructions.
 
 ## Zulip Server 12.x series
-
-### Zulip Server 12.5
-
-_Released 2026-11-19_
-
-- GHSA-f7qf-999g-f6h9: On servers that store uploaded files on local
-  disk (the default), any user, including guests, could make the server
-  read, append data to, or delete arbitrary files accessible to the
-  `zulip` user. This could be used to obtain the server's secrets and
-  to run arbitrary code on the server. Servers that store uploaded files
-  in S3 were not affected. This vulnerability was reported by Thibault
-  Herard (@ThibHrrd) of OWN.
-- GHSA-6c7c-7xjc-qm48: Any user, including guests, could obtain a copy
-  of a file uploaded by another user, including one in another
-  organization on the same server, if they knew the file's URL. They
-  did not need access to the message the file was shared in. This
-  affected files uploaded through the resumable upload API, which the
-  web and desktop apps use for all uploads.
-- GHSA-2fx7-3vcm-hg62: On servers that allow importing from Slack while
-  creating an organization, anyone could obtain the confirmation link of
-  a person creating an organization that way, and take over that
-  organization, including its imported data. Users with an account on
-  the server could also delete another person's uploaded Slack export,
-  or obtain a copy of it (on local disk, even while it was still
-  uploading). Importing from Slack while creating an organization is
-  disabled by default on self-hosted servers.
-- OpenID Connect logins now always use PKCE. If your identity provider
-  rejects PKCE for Zulip's client, enable PKCE for that client, or set
-  `SOCIAL_AUTH_OIDC_USE_PKCE = False` in `/etc/zulip/settings.py` to
-  turn it off for all OpenID Connect providers. Turning it off is not
-  recommended, because PKCE protects against an authorization code
-  injection attack caused by a `python-social-auth` bug
-  ([GHSA-h2r5-x5m7-3935](https://github.com/advisories/GHSA-h2r5-x5m7-3935)).
 
 ### Zulip Server 12.4
 
@@ -796,7 +729,7 @@ _Released 2026-04-27_
   and to correctly manage persistent-connection lifetime.
 - Improved the event queue subsystem to support long-lived client
   queues: after an idle period, such queues are marked offline and
-  missed-message notifications fire, while the queue itself is
+  missed-message notifications fire, while th:e queue itself is
   retained so that a mobile client can resume without a full
   re-fetch.
 - Migrated Tornado rate-limiting to the shared Redis GCRA backend,
@@ -1457,7 +1390,7 @@ _Released 2025-03-20_
   Permissions panel showing all the permissions that membership in the
   group grants.
 - Channel administration permissions have been restructured to be
-  based on groups, with new settings for administering channels,
+  based on groups, with new settings for administrering channels,
   adding subscribers, removing them, and being able to join channels.
 - The access control model for message content in channels has been
   generalized to allow users to be able to join a private channel at
@@ -1663,7 +1596,7 @@ _Released 2025-03-20_
   which collection of messages to move.
 - Improved compose user mention typeahead to de-prioritize bots.
 - Improved internationalization (emoji picker categories, joining
-  lists of names without hardcoding `,` as the separator, etc.)
+  lists of names without hardcoding `,` as a the separator, etc.)
 - Fixed a bug where new user accounts joining an organization that had
   been idle in recent months would be created with very few messages
   in their combined feed.
@@ -2414,7 +2347,7 @@ _Released 2023-12-15_
 - Linkifiers are now processed in a defined, editable order.
 - Scheduled messages are now displayed when viewing the conversation
   where they will be sent.
-- Message edit history has a Shift+H keyboard shortcut and is now
+- Message edit history has a Shift+H keyboard shortuct and is now
   accessed via the mouse exclusively by clicking on EDITED/MOVED
   notices, simplifying the main message actions popover.
 - Users can now delete messages sent by bots that they control as
@@ -2832,7 +2765,7 @@ _Released 2023-05-31_
   been migrated from a custom format string to RFC 6570 URL
   templates. A database migration will automatically migrate existing
   linkifiers correctly in the vast majority of cases, but some fancier
-  linkifiers may require manual adjustment to generate correct URLs
+  linkfiers may require manual adjustment to generate correct URLs
   following this upgrade.
 - PostgreSQL 11 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
