@@ -259,6 +259,13 @@ python_rules = RuleList(
                     'obj["subject"] = Message.EMPTY_TOPIC_FALLBACK_NAME',
                 ),
                 ("zerver/lib/push_notifications.py", '"subject",'),
+                # SQL referencing the legacy subject column, to update
+                # the search indexes by hand like test_message_fetch.
+                (
+                    "zerver/tests/test_mcp.py",
+                    "search_pgroonga = escape_html(subject) || ' ' || rendered_content",
+                ),
+                ("zerver/tests/test_mcp.py", "subject || rendered_content)"),
             },
             "include_only": {
                 "zerver/data_import/",
