@@ -476,10 +476,11 @@ EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
 
 INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
-            "afdian",
-            ["financial"],
-            display_name="Afdian",
-        ),
+        "afdian",
+        ["financial"],
+        [WebhookScreenshotConfig("order.json")],
+        display_name="Afdian",
+    ),
     IncomingWebhookIntegration(
         "airbrake", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
     ),
