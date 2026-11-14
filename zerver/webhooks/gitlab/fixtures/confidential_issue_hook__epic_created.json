@@ -1,0 +1,87 @@
+{
+    "object_kind": "work_item",
+    "event_type": "confidential_work_item",
+    "user": {
+        "id": 1,
+        "name": "Administrator",
+        "username": "root",
+        "avatar_url": "https://www.gravatar.com/avatar/172881a95fe2dc3aa477b7d744f6963fe1467ef84e2f6a9f680441e7819351c2?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project": null,
+    "object_attributes": {
+        "author_id": 1,
+        "closed_at": null,
+        "confidential": true,
+        "created_at": "2026-05-29T04:57:39.534Z",
+        "description": "",
+        "discussion_locked": null,
+        "due_date": null,
+        "id": 14,
+        "iid": 1,
+        "last_edited_at": null,
+        "last_edited_by_id": null,
+        "milestone_id": null,
+        "moved_to_id": null,
+        "duplicated_to_id": null,
+        "project_id": null,
+        "relative_position": null,
+        "state_id": 1,
+        "time_estimate": 0,
+        "title": "Sample Confidential Epic.",
+        "updated_at": "2026-05-29T04:57:39.534Z",
+        "updated_by_id": null,
+        "weight": null,
+        "health_status": null,
+        "type": "Epic",
+        "url": "http://gitlab.local/groups/test/-/work_items/1",
+        "total_time_spent": 0,
+        "time_change": 0,
+        "human_total_time_spent": null,
+        "human_time_change": null,
+        "human_time_estimate": null,
+        "assignee_ids": [],
+        "assignee_id": null,
+        "labels": [],
+        "state": "opened",
+        "severity": "unknown",
+        "customer_relations_contacts": [],
+        "action": "open"
+    },
+    "labels": [],
+    "changes": {
+        "author_id": {
+            "previous": null,
+            "current": 1
+        },
+        "confidential": {
+            "previous": false,
+            "current": true
+        },
+        "created_at": {
+            "previous": null,
+            "current": "2026-05-29T04:57:39.534Z"
+        },
+        "description": {
+            "previous": null,
+            "current": ""
+        },
+        "id": {
+            "previous": null,
+            "current": 14
+        },
+        "iid": {
+            "previous": null,
+            "current": 1
+        },
+        "title": {
+            "previous": null,
+            "current": "Sample Confidential Epic."
+        },
+        "updated_at": {
+            "previous": null,
+            "current": "2026-05-29T04:57:39.534Z"
+        }
+    },
+    "repository": null
+}

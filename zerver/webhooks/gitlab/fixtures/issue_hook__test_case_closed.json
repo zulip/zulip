@@ -1,0 +1,89 @@
+{
+    "object_kind": "issue",
+    "event_type": "issue",
+    "user": {
+        "id": 34850171,
+        "name": "Sathwik Shetty",
+        "username": "sathwikshetty33",
+        "avatar_url": "https://secure.gravatar.com/avatar/79b0d73b098ae394e65a2fe2002edb1a994627914e4889e35cd759fbbf326a5b?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project": {
+        "id": 80222147,
+        "name": "mVc",
+        "description": "",
+        "web_url": "https://gitlab.com/sathwikshetty33-group/mVc",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.com:sathwikshetty33-group/mVc.git",
+        "git_http_url": "https://gitlab.com/sathwikshetty33-group/mVc.git",
+        "namespace": "sathwikshetty33-group",
+        "visibility_level": 20,
+        "path_with_namespace": "sathwikshetty33-group/mVc",
+        "default_branch": "main",
+        "ci_config_path": "",
+        "homepage": "https://gitlab.com/sathwikshetty33-group/mVc",
+        "url": "git@gitlab.com:sathwikshetty33-group/mVc.git",
+        "ssh_url": "git@gitlab.com:sathwikshetty33-group/mVc.git",
+        "http_url": "https://gitlab.com/sathwikshetty33-group/mVc.git"
+    },
+    "object_attributes": {
+        "author_id": 34850171,
+        "closed_at": "2026-05-28T08:14:47.138Z",
+        "confidential": false,
+        "created_at": "2026-05-28T08:10:25.622Z",
+        "description": "Sample Test Case.",
+        "discussion_locked": null,
+        "due_date": null,
+        "id": 191212809,
+        "iid": 10,
+        "last_edited_at": "2026-05-28T08:11:58.573Z",
+        "last_edited_by_id": 34850171,
+        "milestone_id": null,
+        "moved_to_id": null,
+        "duplicated_to_id": null,
+        "project_id": 80222147,
+        "relative_position": 6156,
+        "state_id": 2,
+        "time_estimate": 0,
+        "title": "Sample Test case",
+        "updated_at": "2026-05-28T08:14:47.146Z",
+        "updated_by_id": 34850171,
+        "weight": null,
+        "health_status": null,
+        "type": "Test Case",
+        "url": "https://gitlab.com/sathwikshetty33-group/mVc/-/issues/10",
+        "total_time_spent": 0,
+        "time_change": 0,
+        "human_total_time_spent": null,
+        "human_time_change": null,
+        "human_time_estimate": null,
+        "assignee_ids": [],
+        "assignee_id": null,
+        "labels": [],
+        "state": "closed",
+        "severity": "unknown",
+        "customer_relations_contacts": [],
+        "action": "close"
+    },
+    "labels": [],
+    "changes": {
+        "closed_at": {
+            "previous": null,
+            "current": "2026-05-28T08:14:47.138Z"
+        },
+        "state_id": {
+            "previous": 1,
+            "current": 2
+        },
+        "updated_at": {
+            "previous": "2026-05-28T08:11:58.610Z",
+            "current": "2026-05-28T08:14:47.146Z"
+        }
+    },
+    "repository": {
+        "name": "mVc",
+        "url": "git@gitlab.com:sathwikshetty33-group/mVc.git",
+        "description": "",
+        "homepage": "https://gitlab.com/sathwikshetty33-group/mVc"
+    }
+}

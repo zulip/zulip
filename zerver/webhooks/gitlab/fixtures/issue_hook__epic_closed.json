@@ -1,0 +1,104 @@
+{
+    "object_kind": "work_item",
+    "event_type": "work_item",
+    "user": {
+        "id": 34850171,
+        "name": "Sathwik Shetty",
+        "username": "sathwikshetty33",
+        "avatar_url": "https://secure.gravatar.com/avatar/79b0d73b098ae394e65a2fe2002edb1a994627914e4889e35cd759fbbf326a5b?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project": null,
+    "object_attributes": {
+        "author_id": 34850171,
+        "closed_at": "2026-05-28T06:01:50.195Z",
+        "confidential": false,
+        "created_at": "2026-05-28T05:52:18.310Z",
+        "description": "Sample Epic.",
+        "discussion_locked": null,
+        "due_date": null,
+        "id": 191204099,
+        "iid": 2,
+        "last_edited_at": null,
+        "last_edited_by_id": null,
+        "milestone_id": null,
+        "moved_to_id": null,
+        "duplicated_to_id": null,
+        "project_id": null,
+        "relative_position": 3591,
+        "state_id": 2,
+        "time_estimate": 0,
+        "title": "Sample Zulip Epic",
+        "updated_at": "2026-05-28T06:01:50.200Z",
+        "updated_by_id": 34850171,
+        "weight": 33,
+        "health_status": null,
+        "type": "Epic",
+        "url": "https://gitlab.com/groups/sathwikshetty33-group/-/work_items/2",
+        "total_time_spent": 0,
+        "time_change": 0,
+        "human_total_time_spent": null,
+        "human_time_change": null,
+        "human_time_estimate": null,
+        "assignee_ids": [
+            34850171
+        ],
+        "assignee_id": 34850171,
+        "labels": [
+            {
+                "id": 51194461,
+                "title": "Priority",
+                "color": "#dc143c",
+                "project_id": null,
+                "created_at": "2026-05-28T05:44:56.814Z",
+                "updated_at": "2026-05-28T05:44:56.814Z",
+                "template": false,
+                "description": null,
+                "type": "GroupLabel",
+                "group_id": 125516758
+            }
+        ],
+        "state": "closed",
+        "severity": "unknown",
+        "customer_relations_contacts": [],
+        "action": "close"
+    },
+    "labels": [
+        {
+            "id": 51194461,
+            "title": "Priority",
+            "color": "#dc143c",
+            "project_id": null,
+            "created_at": "2026-05-28T05:44:56.814Z",
+            "updated_at": "2026-05-28T05:44:56.814Z",
+            "template": false,
+            "description": null,
+            "type": "GroupLabel",
+            "group_id": 125516758
+        }
+    ],
+    "changes": {
+        "closed_at": {
+            "previous": null,
+            "current": "2026-05-28T06:01:50.195Z"
+        },
+        "state_id": {
+            "previous": 1,
+            "current": 2
+        },
+        "updated_at": {
+            "previous": "2026-05-28T05:58:40.456Z",
+            "current": "2026-05-28T06:01:50.200Z"
+        }
+    },
+    "repository": null,
+    "assignees": [
+        {
+            "id": 34850171,
+            "name": "Sathwik Shetty",
+            "username": "sathwikshetty33",
+            "avatar_url": "https://secure.gravatar.com/avatar/79b0d73b098ae394e65a2fe2002edb1a994627914e4889e35cd759fbbf326a5b?s=80&d=identicon",
+            "email": "[REDACTED]"
+        }
+    ]
+}
