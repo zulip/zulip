@@ -108,10 +108,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = ["dm", "dm:"];
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
+            let expected_value = `<div class="search_list_item">\n            <div class="description">translated: Search for dm</div>\n    \n</div>\n`;
             assert.equal(opts.item_html("dm")(search_suggestions[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <i role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></i>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <i role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></i>\n    </div>\n</div>\n</span>\n            <div class="description">translated: Direct messages with</div>\n</div>\n`;
             assert.equal(opts.item_html("dm")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
@@ -122,12 +122,12 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = ["ver", "stream:Verona"];
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
+            let expected_value = `<div class="search_list_item">\n            <div class="description">translated: Search for ver</div>\n    \n</div>\n`;
             assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
 
             const search_string = "channel: Verona";
             const verona_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Verona</span></span>`;
-            const description_html = `Messages in ${verona_decorated}`;
+            const description_html = `translated: Messages in ${verona_decorated}`;
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <i role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></i>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
 
@@ -145,7 +145,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             ];
 
             /* Test highlighter */
-            const description_html = "Search for zo";
+            const description_html = "translated: Search for zo";
             let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
             assert.equal(opts.item_html("zo")(search_suggestions[0]), expected_value);
 
