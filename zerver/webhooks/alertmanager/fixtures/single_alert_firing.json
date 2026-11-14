@@ -1,0 +1,44 @@
+{
+  "receiver": "ops-zulip",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DiskSpaceRunningLow",
+        "instance": "web-prod-02",
+        "severity": "warning",
+        "team": "devops"
+      },
+      "annotations": {
+        "description": "Storage on instance  breached threshold (value: 1).",
+        "summary": "Disk space running low on "
+      },
+      "startsAt": "2026-11-13T05:13:24.167Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://archlinux:9090/graph?g0.expr=vector%281%29+%3E+0&g0.tab=1",
+      "fingerprint": "0cec3016a069fdf7"
+    }
+  ],
+  "notification_reason": "first notification",
+  "groupLabels": {
+    "alertname": "DiskSpaceRunningLow",
+    "instance": "web-prod-02",
+    "severity": "warning"
+  },
+  "commonLabels": {
+    "alertname": "DiskSpaceRunningLow",
+    "instance": "web-prod-02",
+    "severity": "warning",
+    "team": "devops"
+  },
+  "commonAnnotations": {
+    "description": "Storage on instance  breached threshold (value: 1).",
+    "summary": "Disk space running low on "
+  },
+  "routeLabels": {},
+  "externalURL": "http://archlinux:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"DiskSpaceRunningLow\", instance=\"web-prod-02\", severity=\"warning\"}",
+  "truncatedAlerts": 0
+}
