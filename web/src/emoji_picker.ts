@@ -82,7 +82,7 @@ class MessageReactionSession {
     }
 }
 
-class UserStatusSession {
+export class UserStatusSession {
     /*
         It's a little funny that this class has no constructor, but the
         intent is to be parallel in structure with ComposeIconSession
@@ -130,14 +130,12 @@ class UserStatusSession {
     */
 
     update_the_status_emoji_for_our_user(emoji_name: string): void {
-        // THIS IS THE MAIN POINT OF THE EXERCISE!
-        let emoji_info = {
-            emoji_name,
-            emoji_alt_code: user_settings.emojiset === "text",
-        };
-        if (!emoji_info.emoji_alt_code) {
-            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+        if (user_settings.emojiset === "text") {
+            // Suppression: do not set status emoji if text theme is active.
+            return;
         }
+
+        const emoji_info = emoji.get_emoji_details_by_name(emoji_name);
         user_status_ui.set_selected_emoji_info(emoji_info);
         user_status_ui.update_button();
         user_status_ui.toggle_clear_status_button();
