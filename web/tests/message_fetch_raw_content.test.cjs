@@ -191,6 +191,35 @@ run_test("get_raw_content_for_messages", ({override}) => {
     );
     assert.ok(success_called);
 
+    // Case: channels:all is kept as history-enabling.
+    success_called = false;
+    delete msg_2.raw_content;
+    override(narrow_state, "filter", () => fake_filter);
+    override(message_fetch, "get_narrow_for_message_fetch", () =>
+        JSON.stringify([{operator: "channels", operand: "all"}]),
+    );
+    override(channel, "get", (args) => {
+        channel_get_args = args;
+        args.success({
+            messages: [
+                {id: 2, content_type: "text/x-markdown", content: "Fetched markdown content"},
+            ],
+        });
+    });
+
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids: [1, 2],
+        on_success() {
+            success_called = true;
+        },
+    });
+
+    assert.equal(
+        channel_get_args.data.narrow,
+        JSON.stringify([{operator: "channels", operand: "all"}]),
+    );
+    assert.ok(success_called);
+
     // Case: For an is: operator, no history terms are present, so we omit narrow.
     success_called = false;
     delete msg_2.raw_content;
