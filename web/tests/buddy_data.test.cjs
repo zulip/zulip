@@ -30,6 +30,7 @@ const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
+const unread = zrequire("unread");
 const buddy_data = zrequire("buddy_data");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -134,6 +135,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
+        unread.declare_bankruptcy();
         message_lists.set_current(undefined);
 
         f(helpers);
@@ -461,6 +463,36 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
 });
 
+test("always show users with unread direct messages", () => {
+    // Add enough offline users that maybe_shrink_list hides them.
+    for (const i of _.range(2000, 2700)) {
+        people.add_active_user({
+            user_id: i,
+            full_name: `Human ${i}`,
+            email: `person${i}@example.com`,
+        });
+        set_presence(i, "offline");
+    }
+    // Fred has no presence data, like a user inactive for a long time.
+    people.add_active_user(fred);
+
+    // Fred is offline, so he is hidden.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+
+    // Fred sends us a direct message that we haven't read yet.
+    unread.process_unread_message({
+        id: 1,
+        type: "private",
+        user_ids_string: fred.user_id.toString(),
+        unread: true,
+        mentioned: false,
+        mentioned_me_directly: false,
+    });
+
+    // Now Fred is shown, even though he is offline.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, fred.user_id]);
+});
+
 test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
@@ -592,6 +624,57 @@ test("compare_function", () => {
             new Set([fred.user_id]),
             new Set(),
         ),
+    );
+});
+
+test("compare_function with unread direct messages", () => {
+    const first_user_shown_higher = -1;
+    const second_user_shown_higher = 1;
+
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+
+    function add_unread_dm(message_id, user) {
+        unread.process_unread_message({
+            id: message_id,
+            type: "private",
+            user_ids_string: user.user_id.toString(),
+            unread: true,
+            mentioned: false,
+            mentioned_me_directly: false,
+        });
+    }
+
+    // Both offline, no unreads: Alice is higher alphabetically.
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+
+    // Fred is higher because he has an unread DM and Alice doesn't.
+    add_unread_dm(1, fred);
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+    );
+
+    // Both have unread DMs, so back to alphabetical: Alice is higher.
+    add_unread_dm(2, alice);
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+
+    // An active user is still higher than an offline user with unreads.
+    set_presence(jill.user_id, "active");
+    assert.ok(
+        buddy_data.compare_function(jill.user_id, fred.user_id, undefined, new Set(), new Set()) <
+            0,
     );
 });
 

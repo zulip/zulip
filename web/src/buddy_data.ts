@@ -140,6 +140,18 @@ export function compare_function(
         return diff;
     }
 
+    // Place offline users with unread direct messages above other offline users
+    if (!user_is_recently_active(a)) {
+        const a_has_unread = get_num_unread(a) > 0;
+        const b_has_unread = get_num_unread(b) > 0;
+        if (a_has_unread && !b_has_unread) {
+            return -1;
+        }
+        if (!a_has_unread && b_has_unread) {
+            return 1;
+        }
+    }
+
     // Sort equivalent direct message names alphabetically
     const person_a = people.maybe_get_user_by_id(a);
     const person_b = people.maybe_get_user_by_id(b);
@@ -151,7 +163,6 @@ export function compare_function(
 }
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
-    // TODO sort by unread count first, once we support that
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) =>
@@ -385,7 +396,8 @@ function maybe_shrink_list(
                 pm_ids_set,
                 filter_by_stream_id ? stream_id : undefined,
             ) ||
-            conversation_participants.has(user_id),
+            conversation_participants.has(user_id) ||
+            get_num_unread(user_id) > 0,
     );
 
     return user_ids;
@@ -440,6 +452,16 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
 
+function get_user_ids_with_unread_dms(): number[] {
+    const user_ids = [];
+    for (const [user_ids_string, {count}] of unread.get_unread_pm().pm_dict) {
+        if (count > 0 && !user_ids_string.includes(",")) {
+            user_ids.push(Number.parseInt(user_ids_string, 10));
+        }
+    }
+    return user_ids;
+}
+
 function get_filtered_user_id_list(
     user_filter_text: string,
     conversation_participants: Set<number>,
@@ -466,6 +488,13 @@ function get_filtered_user_id_list(
         const pm_ids_set = narrow_state.pm_ids_set();
         if (pm_ids_set.size > 0) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
+            base_user_id_list = [...base_user_id_set];
+        }
+
+        // Always show users with unread direct messages, even without presence data.
+        const user_ids_with_unread_dms = get_user_ids_with_unread_dms();
+        if (user_ids_with_unread_dms.length > 0) {
+            const base_user_id_set = new Set([...base_user_id_list, ...user_ids_with_unread_dms]);
             base_user_id_list = [...base_user_id_set];
         }
 
