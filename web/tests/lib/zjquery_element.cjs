@@ -167,6 +167,7 @@ class FakeElement extends RejectMissing {
     style = new FakeStyle();
     textContent = "never-been-set";
     value = undefined;
+    files = undefined;
 
     #attributes = new Map();
 
