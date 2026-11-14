@@ -2519,6 +2519,32 @@ class MarkdownMentionTest(ZulipTestCase):
             self.assertFalse(rendering_result.mentions_stream_wildcard)
             self.assertEqual(rendering_result.mentions_user_ids, set())
 
+    def test_stream_links_in_url(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        for content, expected_href, text in [
+            ("[denmark stream](#**Denmark**)", f"{denmark.id}-Denmark", "denmark stream"),
+            (
+                "[topic 1]( #**Denmark>some topic**)",
+                f"{denmark.id}-Denmark/topic/some.20topic",
+                "topic 1",
+            ),
+            (
+                "[this message](#**Denmark>danish@123**)",
+                f"{denmark.id}-Denmark/topic/danish/near/123",
+                "this message",
+            ),
+        ]:
+            self.assertEqual(
+                render_message_markdown(msg, content).rendered_content,
+                f'<p><a href="/#narrow/channel/{expected_href}">{text}</a></p>',
+            )
+
     def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(
