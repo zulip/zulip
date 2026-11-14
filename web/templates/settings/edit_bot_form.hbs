@@ -110,7 +110,8 @@
           }}
     </div>
     {{/if}}
-    <div class="input-group">
+    <div class="input-group danger-zone">
+        <label class="modal-field-label">{{t "Danger zone" }}</label>
         {{#if is_active}}
         {{> ../components/action_button
           label=(t "Deactivate bot")

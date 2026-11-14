@@ -26,15 +26,16 @@
         </div>
         <div class="custom-profile-field-form"></div>
     </form>
-    <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
+    {{#unless is_deleted}}
+    <div class="input-group danger-zone {{#if hide_deactivate_button}}hide{{/if}}">
+        <label class="modal-field-label">{{t "Danger zone" }}</label>
         <div class="deactivate-user-container {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
             {{#if is_active}}
             {{> ../components/action_button custom_classes="deactivate-user-button" variant="subtle" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") disabled=user_is_only_organization_owner }}
             {{else}}
-            {{#unless is_deleted}}
             {{> ../components/action_button custom_classes="reactivate-user-button" variant="subtle" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
-            {{/unless}}
             {{/if}}
         </div>
     </div>
+    {{/unless}}
 </div>
