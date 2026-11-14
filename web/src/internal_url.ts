@@ -14,8 +14,8 @@ const hashReplacements = new Map([
     [".", ".2E"],
 ]);
 
-// Some browsers zealously URI-decode the contents of
-// window.location.hash.  So we hide our URI-encoding
+// Some browsers zealously URL-decode the contents of
+// window.location.hash.  So we hide our URL-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {
     return encodeURIComponent(str).replaceAll(/[%!'()*.]/g, (matched) =>
@@ -70,7 +70,7 @@ export function encode_stream_id(
     maybe_get_stream_name: MaybeGetStreamName,
 ): string {
     // stream_id_to_slug appends the stream name, but it does not do the
-    // URI encoding piece.
+    // URL encoding piece.
     const slug = stream_id_to_slug(stream_id, maybe_get_stream_name);
 
     return encode_slug(stream_id, slug);
