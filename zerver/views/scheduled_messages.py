@@ -23,6 +23,7 @@ from zerver.lib.typed_endpoint import (
     ApiParamConfig,
     OptionalTopic,
     PathOnly,
+    TimestampInDatetimeRange,
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
@@ -63,7 +64,7 @@ def update_scheduled_message_backend(
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)] | None,
         ApiParamConfig("type"),
     ] = None,
-    scheduled_delivery_timestamp: Json[int] | None = None,
+    scheduled_delivery_timestamp: Json[TimestampInDatetimeRange[int]] | None = None,
     scheduled_message_id: PathOnly[NonNegativeInt],
     to: Json[int | list[int]] | None = None,
     topic_name: OptionalTopic = None,
@@ -142,7 +143,7 @@ def create_scheduled_message_backend(
         Annotated[str, check_string_in_validator(Message.API_RECIPIENT_TYPES)],
         ApiParamConfig("type"),
     ],
-    scheduled_delivery_timestamp: Json[int],
+    scheduled_delivery_timestamp: Json[TimestampInDatetimeRange[int]],
     topic_name: OptionalTopic = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
