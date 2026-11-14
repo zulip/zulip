@@ -27,11 +27,15 @@ def sync_ldap_user_data(
     try:
         realms = {u.realm.string_id for u in user_profiles}
 
+        # Used for tracking which groups have already been synced across iterations,
+        # to avoid duplicate work.
+        already_synced_group_ids: set[int] = set()
+
         for u in user_profiles:
             # This will save the user if relevant, and will do nothing if the user
             # does not exist.
             try:
-                sync_user_from_ldap(u, logger)
+                sync_user_from_ldap(u, logger, already_synced_group_ids)
             except ZulipLDAPError as e:
                 logger.error("Error attempting to update user %s:", u.delivery_email)
                 logger.error(e.args[0])
