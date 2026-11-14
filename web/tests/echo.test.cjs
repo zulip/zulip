@@ -11,6 +11,11 @@ const {$} = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {
+        deleteDrafts: noop,
+    },
+});
 const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -116,11 +121,16 @@ run_test("process_from_server for un-echoed messages", () => {
     assert.deepEqual(non_echo_messages, server_messages);
 });
 
-run_test("process_from_server for differently rendered messages", ({override}) => {
+run_test("process_from_server for differently rendered messages", ({override, override_rewire}) => {
     let messages_to_rerender = [];
 
     override(home_msg_list.view, "rerender_messages", (msgs) => {
         messages_to_rerender = msgs;
+    });
+
+    let deleted_draft_ids;
+    override(drafts.draft_model, "deleteDrafts", (draft_ids) => {
+        deleted_draft_ids = draft_ids;
     });
 
     // Test that we update all the booleans and the content of the message
@@ -131,6 +141,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
         [
             "100.1",
             {
+                draft_id: "reified-draft",
                 content: "<p>A client rendered message</p>",
                 timestamp: old_value,
                 is_me_message: old_value,
@@ -150,12 +161,17 @@ run_test("process_from_server for differently rendered messages", ({override}) =
         },
     ];
     echo_state._patch_waiting_for_ack(waiting_for_ack);
+    echo_state.set_message_waiting_for_id("100.1", waiting_for_ack.get("100.1"));
+    override_rewire(echo, "reify_message_id", (local_id) => {
+        echo_state.remove_message_from_waiting_for_id(local_id);
+    });
     disparities = [];
     const non_echo_messages = echo.process_from_server(server_messages);
     assert.deepEqual(non_echo_messages, []);
     assert.equal(disparities.length, 1);
     assert.deepEqual(messages_to_rerender, [
         {
+            draft_id: "reified-draft",
             content: server_messages[0].content,
             timestamp: new_value,
             is_me_message: new_value,
@@ -163,6 +179,22 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ]);
+    assert.deepEqual(deleted_draft_ids, ["reified-draft"]);
+});
+
+run_test("process_from_server for an already reified message", ({disallow, override}) => {
+    override(home_msg_list.view, "rerender_messages", noop);
+    disallow(drafts.draft_model, "deleteDrafts");
+
+    // send_message_success has already reified this message, which removed
+    // it from waiting_for_id and deleted its draft_id.
+    echo_state._patch_waiting_for_ack(
+        new Map([["100.1", {content: "<p>message</p>", topic_links: []}]]),
+    );
+    const non_echo_messages = echo.process_from_server([
+        {local_id: "100.1", content: "<p>message</p>"},
+    ]);
+    assert.deepEqual(non_echo_messages, []);
 });
 
 run_test("process_from_server for messages to add to narrow", ({override}) => {

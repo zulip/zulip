@@ -11,6 +11,7 @@ import * as browser_history from "./browser_history.ts";
 import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -542,6 +543,7 @@ export function update_message_lists({old_id, new_id}: {old_id: number; new_id: 
 
 export function process_from_server(messages: ServerMessage[]): ServerMessage[] {
     const msgs_to_rerender_or_add_to_narrow = [];
+    const reified_draft_ids: string[] = [];
     // For messages that weren't locally echoed, we go through the
     // "main" codepath that doesn't have to id reconciliation.  We
     // simply return non-echo messages to our caller.
@@ -568,6 +570,12 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
             continue;
         }
 
+        // If send_message_success already reified this message, it deleted
+        // the draft too. Otherwise, collect draft_id now, since
+        // reify_message_id deletes it from the message.
+        if (echo_state.get_message_waiting_for_id(local_id) !== undefined) {
+            reified_draft_ids.push(client_message.draft_id);
+        }
         reify_message_id(local_id, message.id);
 
         if (message_store.get(message.id)?.failed_request) {
@@ -601,6 +609,12 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
         msgs_to_rerender_or_add_to_narrow.push(client_message);
         echo_state.remove_message_from_waiting_for_ack(local_id);
+    }
+
+    if (reified_draft_ids.length > 0) {
+        // send_message_success also deletes these drafts, but its response
+        // may arrive after this event, or not at all if the request errored.
+        drafts.draft_model.deleteDrafts(reified_draft_ids);
     }
 
     if (msgs_to_rerender_or_add_to_narrow.length > 0) {
