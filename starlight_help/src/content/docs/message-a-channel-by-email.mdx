@@ -9,6 +9,8 @@ import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
 
+import CopyIcon from "~icons/zulip-icon/copy";
+
 <ZulipTip>
   This feature is not available on self-hosted Zulip servers where
   the [incoming email gateway][email-gateway] has not been
@@ -46,7 +48,8 @@ API](/api/send-message).
   1. Select **Who should be the sender of the Zulip messages for this email
      address**.
   1. Toggle the configuration options as desired.
-  1. Click **Copy address** to add the channel email address to your clipboard.
+  1. Click the **copy email address** (<CopyIcon />) icon to add the channel email
+     address to your clipboard.
   1. Send an email to that address.
 </FlattenedSteps>
 
