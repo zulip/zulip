@@ -50,7 +50,13 @@ from zerver.lib.markdown import (
     url_embed_preview_enabled,
     url_to_a,
 )
-from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor, close_unclosed_fences
+from zerver.lib.markdown.fenced_code import (
+    FencedBlockPreprocessor,
+    close_unclosed_fences,
+    wrap_in_code_block,
+    wrap_in_quote_block,
+    wrap_in_spoiler_block,
+)
 from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
@@ -246,6 +252,64 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         self.assertEqual(closed_content, content + "\n```\n```")
         rendered_content = markdown_convert_wrapper(closed_content + "\n\nafter")
         self.assertTrue(rendered_content.endswith("\n<p>after</p>"))
+
+    def test_wrap_in_quote_block(self) -> None:
+        cases = [
+            ("no fences", "hello", "```"),
+            ("closed code block", "```\ncode\n```", "````"),
+            ("unclosed code block", "```\ncode", "````"),
+            ("longest fence wins", "```\n`````\n````", "``````"),
+            ("tilde fences", "~~~\ncode\n~~~", "```"),
+            ("indented fence", "text\n   ````", "`````"),
+            ("indented code, not a fence", "text\n    ````", "```"),
+        ]
+        for case, content, fence in cases:
+            with self.subTest(case=case):
+                wrapped_content = wrap_in_quote_block(content, default_language=None)
+                self.assertTrue(wrapped_content.startswith(f"{fence}quote\n{content}\n"))
+                self.assertTrue(wrapped_content.endswith(f"\n{fence}"))
+                rendered_content = markdown_convert_wrapper(wrapped_content + "\n\nafter")
+                self.assertTrue(rendered_content.startswith("<blockquote>\n"))
+                self.assertTrue(rendered_content.endswith("\n</blockquote>\n<p>after</p>"))
+
+    def test_wrap_in_spoiler_block(self) -> None:
+        content = "```\n````quote\ncode"
+        wrapped_content = wrap_in_spoiler_block(content, "Header")
+        self.assertEqual(wrapped_content, "`````spoiler Header\n" + content + "\n```\n`````")
+        rendered_content = markdown_convert_wrapper(wrapped_content + "\n\nafter")
+        self.assertTrue(rendered_content.startswith('<div class="spoiler-block">'))
+        self.assertTrue(rendered_content.endswith("</div></div>\n<p>after</p>"))
+
+    def test_wrap_in_code_block(self) -> None:
+        content = "```quote\n````"
+        wrapped_content = wrap_in_code_block(content)
+        self.assertEqual(wrapped_content, "`````\n" + content + "\n`````")
+        rendered_content = markdown_convert_wrapper(wrapped_content + "\n\nafter")
+        self.assertEqual(
+            rendered_content,
+            '<div class="codehilite"><pre><span></span><code>```quote\n````\n</code></pre></div>\n'
+            "<p>after</p>",
+        )
+
+    def test_wrap_with_default_code_block_language(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "default_code_block_language", "quote", acting_user=None)
+
+        # With quote as the default language, an unlabeled fence opens a
+        # quote block when nested in a quote block, but a code block when
+        # nested in a spoiler block.
+        content = "```\n```py\ncode"
+        wrapped_content = wrap_in_quote_block(
+            content, default_language=realm.default_code_block_language
+        )
+        self.assertEqual(wrapped_content, "````quote\n" + content + "\n```\n```\n````")
+        rendered_content = markdown_convert_wrapper(wrapped_content + "\n\nafter")
+        self.assertTrue(rendered_content.endswith("\n</blockquote>\n<p>after</p>"))
+
+        wrapped_content = wrap_in_spoiler_block(content, "Header")
+        self.assertEqual(wrapped_content, "````spoiler Header\n" + content + "\n```\n````")
+        rendered_content = markdown_convert_wrapper(wrapped_content + "\n\nafter")
+        self.assertTrue(rendered_content.endswith("</div></div>\n<p>after</p>"))
 
 
 def markdown_convert_wrapper(content: str) -> str:

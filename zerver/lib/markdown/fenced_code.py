@@ -622,6 +622,38 @@ def close_unclosed_fences(content: str, default_language: str | None = None) -> 
     return "\n".join([content, *unclosed_fences])
 
 
+def wrap_in_quote_block(content: str, *, default_language: str | None) -> str:
+    """Wraps content in a quote block that nothing in content can end
+    early or extend past its closing fence. default_language is the
+    realm's default code block language, which applies to fences
+    nested in a quote block.
+    """
+    fence = get_unused_fence(content)
+    content = close_unclosed_fences(content, default_language)
+    return f"{fence}quote\n{content}\n{fence}"
+
+
+def wrap_in_spoiler_block(content: str, header: str) -> str:
+    """Wraps content in a spoiler block that nothing in content can end
+    early or extend past its closing fence. header must not contain
+    backticks or tildes, which would keep the opening fence from
+    being recognized.
+    """
+    fence = get_unused_fence(content)
+    # The realm's default code block language doesn't apply to fences
+    # nested in a spoiler block.
+    content = close_unclosed_fences(content)
+    return f"{fence}spoiler {header}\n{content}\n{fence}"
+
+
+def wrap_in_code_block(content: str) -> str:
+    """Wraps content in a code block that nothing in content can end
+    early.
+    """
+    fence = get_unused_fence(content)
+    return f"{fence}\n{content}\n{fence}"
+
+
 def makeExtension(*args: Any, **kwargs: Any) -> FencedCodeExtension:
     return FencedCodeExtension(kwargs)
 
