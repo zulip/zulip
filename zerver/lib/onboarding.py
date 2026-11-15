@@ -17,7 +17,7 @@ from zerver.actions.message_send import (
 from zerver.actions.reactions import do_add_reaction
 from zerver.lib.demo_organizations import get_scheduled_deletion_global_time
 from zerver.lib.emoji import get_emoji_data
-from zerver.lib.markdown.fenced_code import get_unused_fence
+from zerver.lib.markdown.fenced_code import wrap_in_quote_block
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
 from zerver.models.groups import SystemGroups
@@ -57,16 +57,17 @@ def get_custom_welcome_message_string(realm: Realm, welcome_message_custom_text:
     # it's not worth doing a database query to get the NamedUserGroup,
     # so some refactoring is required to do that.
     mention_syntax = f"@_*{SystemGroups.ADMINISTRATORS}*"
-    fence = get_unused_fence(welcome_message_custom_text)
     welcome_bot_custom_message_intro_string = _("A note from {admin_group_syntax}:").format(
         admin_group_syntax=mention_syntax
     )
 
+    welcome_message_custom_quote = wrap_in_quote_block(
+        welcome_message_custom_text, default_language=realm.default_code_block_language
+    )
+
     welcome_bot_custom_message_string = f"""
 {welcome_bot_custom_message_intro_string}
-{fence}quote
-{welcome_message_custom_text}
-{fence}
+{welcome_message_custom_quote}
 """
 
     return welcome_bot_custom_message_string
