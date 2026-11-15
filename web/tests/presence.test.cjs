@@ -367,6 +367,20 @@ test("update_info_from_event", () => {
     });
 });
 
+test("set_current_user_active", ({override}) => {
+    const now = 1_000_000;
+    override(Date, "now", () => now * 1000);
+
+    presence.set_current_user_active();
+
+    assert.equal(presence.get_status(me.user_id), "active");
+    assert.deepEqual(presence.presence_info.get(me.user_id), {
+        status: "active",
+        last_active: now,
+    });
+    assert.deepEqual(presence.last_active_date(me.user_id), new Date(now * 1000));
+});
+
 test("user_last_seen_response_schema", () => {
     // Modern format with both timestamps.
     const with_both_timestamps = {

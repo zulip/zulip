@@ -206,6 +206,17 @@ export function update_info_from_event(
     presence_info.set(user_id, status);
 }
 
+export function set_current_user_active(): void {
+    const now = Date.now() / 1000;
+    const raw: RawPresence = {
+        server_timestamp: now,
+        active_timestamp: now,
+    };
+    const user_id = people.my_current_user_id();
+    raw_info.set(user_id, raw);
+    presence_info.set(user_id, status_from_raw(raw, people.maybe_get_user_by_id(user_id)));
+}
+
 export function set_info(
     presences: Record<number, z.infer<typeof presence_schema>>,
     server_timestamp: number,

@@ -19,18 +19,17 @@ mock_esm("../src/electron_bridge", {
 
 const activity = zrequire("activity");
 
-run_test("activity.initialize", ({override}) => {
+run_test("activity.initialize", ({override, override_rewire}) => {
     /*
         VERSION THAT WAS ORIGINALLY TESTED:
-        export function initialize(): void {
+        export function initialize(opts: {redraw_user: (user_id: number) => void}): void {
             $(document).on("mousemove", () => {
                 set_new_user_input(true);
             });
 
-            $(window).on(
-                "focus keydown mousedown mousemove touchmove touchstart wheel",
-                mark_client_active,
-            );
+            $(window).on("focus keydown mousedown mousemove touchmove touchstart wheel", () => {
+                mark_client_active(opts.redraw_user);
+            });
             if (client_is_active) {
                 mark_client_idle_later();
             }
@@ -45,12 +44,20 @@ run_test("activity.initialize", ({override}) => {
     activity.set_new_user_input(false);
     assert.equal(activity.new_user_input, false);
 
-    activity.initialize();
+    const redraw_user = () => {};
+    activity.initialize({redraw_user});
 
-    assert.equal(
-        $window_stub.get_on_handler("focus keydown mousedown mousemove touchmove touchstart wheel"),
-        activity.mark_client_active,
+    const handler = $window_stub.get_on_handler(
+        "focus keydown mousedown mousemove touchmove touchstart wheel",
     );
+    let send_presence_args;
+    override_rewire(activity, "send_presence_to_server", (...args) => {
+        send_presence_args = args;
+    });
+    activity.clear_for_testing();
+    handler();
+    assert.deepEqual(send_presence_args, [undefined, redraw_user]);
+
     $document_stub.trigger("mousemove"); // should be set_new_user_input(true)
     assert.equal(activity.new_user_input, true);
 });

@@ -14,6 +14,8 @@ mock_esm("../src/watchdog", {
 const channel = mock_esm("../src/channel");
 const presence = mock_esm("../src/presence");
 
+const people = zrequire("people");
+
 set_global("document", {hasFocus: () => true});
 
 const activity = zrequire("activity");
@@ -52,6 +54,50 @@ run_test("send_presence_to_server (no redraw)", ({override}) => {
 
     success_function(response);
     assert.equal(activity.new_user_input, false);
+});
+
+run_test("send_presence_to_server (no redraw, redraw_user)", ({override}) => {
+    const me_id = 101;
+    people.initialize_current_user(me_id);
+
+    let success_function;
+
+    activity.set_new_user_input(true);
+    assert.equal(activity.new_user_input, true);
+
+    override(channel, "post", ({url, data, success}) => {
+        success_function = success;
+        assert.equal(url, "/json/users/me/presence");
+        assert.deepEqual(data, {
+            status: "active",
+            ping_only: true,
+            new_user_input: true,
+            last_update_id: 42,
+        });
+    });
+
+    let num_set_active_calls = 0;
+    override(presence, "set_current_user_active", () => {
+        num_set_active_calls += 1;
+    });
+
+    const redrawn_user_ids = [];
+    function redraw_user(user_id) {
+        redrawn_user_ids.push(user_id);
+    }
+
+    override(presence, "presence_last_update_id", 42);
+    activity.send_presence_to_server(undefined, redraw_user);
+
+    const response = {
+        msg: "",
+        result: "success",
+    };
+
+    success_function(response);
+
+    assert.equal(num_set_active_calls, 1);
+    assert.deepEqual(redrawn_user_ids, [me_id]);
 });
 
 run_test("send_presence_to_server (redraw)", ({override}) => {
