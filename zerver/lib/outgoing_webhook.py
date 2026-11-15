@@ -15,6 +15,7 @@ from typing_extensions import override
 from version import ZULIP_VERSION
 from zerver.actions.message_send import check_send_message
 from zerver.lib.exceptions import JsonableError, StreamDoesNotExistError
+from zerver.lib.markdown.fenced_code import wrap_in_code_block
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
@@ -273,7 +274,7 @@ def notify_bot_owner(
     if exception:
         notification_message += (
             "\nWhen trying to send a request to the webhook service, an exception "
-            f"of type {type(exception).__name__} occurred:\n```\n{exception}\n```"
+            f"of type {type(exception).__name__} occurred:\n{wrap_in_code_block(str(exception))}"
         )
     elif failure_message:
         notification_message += "\n" + failure_message
