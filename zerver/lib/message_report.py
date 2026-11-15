@@ -4,7 +4,7 @@ from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.lib.display_recipient import get_display_recipient
-from zerver.lib.markdown.fenced_code import get_unused_fence
+from zerver.lib.markdown.fenced_code import wrap_in_quote_block, wrap_in_spoiler_block
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import (
     get_user_mentions_for_display,
@@ -130,21 +130,18 @@ def send_message_report(
     reported_message_content = truncate_content(
         reported_message.content, MAX_REPORT_MESSAGE_SNIPPET_LENGTH, "\n[message truncated]"
     )
-    reported_message_preview_block = """
-```quote
-**{report_reason}**. {description}
-```
-
-{fence} spoiler {original_message_string}
-{reported_message}
-{fence}
-""".format(
-        report_reason=report_reason,
-        description=description,
-        original_message_string=original_message_string,
-        reported_message=reported_message_content,
-        fence=get_unused_fence(reported_message_content),
+    report_reason_block = wrap_in_quote_block(
+        f"**{report_reason}**. {description}",
+        default_language=realm.default_code_block_language,
     )
+    reported_message_block = wrap_in_spoiler_block(
+        reported_message_content, original_message_string
+    )
+    reported_message_preview_block = f"""
+{report_reason_block}
+
+{reported_message_block}
+"""
     content += reported_message_preview_block
 
     topic_name = _("{fullname} moderation").format(fullname=reported_user.full_name)

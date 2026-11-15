@@ -91,7 +91,7 @@ class ReportMessageTest(ZulipTestCase):
 **{report_type}**. {description}
 ```
 
-{fence} spoiler Original message at {channel_message_link}
+{fence}spoiler Original message at {channel_message_link}
 {reported_message}
 {fence}
 """.format(
@@ -138,7 +138,7 @@ class ReportMessageTest(ZulipTestCase):
 **{report_type}**. {description}
 ```
 
-{fence} spoiler [Original message]({direct_message_link})
+{fence}spoiler [Original message]({direct_message_link})
 {reported_message}
 {fence}
 """.format(
@@ -300,6 +300,36 @@ class ReportMessageTest(ZulipTestCase):
         )
 
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
+    def test_report_with_fences(self) -> None:
+        self.send_stream_message(
+            self.reported_user,
+            "Denmark",
+            topic_name="civillized discussions",
+            content="Unclosed:\n```\n**In code block**",
+        )
+        reported_message_id = self.get_last_message().id
+        description = "Breaking out:\n```\n**Not quoted**"
+
+        result = self.report_message(self.hamlet, reported_message_id, "other", description)
+        self.assert_json_success(result)
+        submitted_report = self.get_submitted_moderation_requests().last()
+        assert submitted_report is not None
+        assert submitted_report.rendered_content is not None
+        self.assertIn(
+            "<blockquote>\n<p><strong>Other reason</strong>. Breaking out:</p>\n"
+            '<p><div class="codehilite"><pre><span></span><code>**Not quoted**\n'
+            "</code></pre></div><br>\n</p>\n</blockquote>\n"
+            '<div class="spoiler-block">',
+            submitted_report.rendered_content,
+        )
+        self.assertTrue(
+            submitted_report.rendered_content.endswith(
+                '<div class="spoiler-content" aria-hidden="true">\n<p>Unclosed:</p>\n'
+                '<div class="codehilite"><pre><span></span><code>**In code block**\n'
+                "</code></pre></div>\n</div></div>"
+            )
+        )
+
     def test_private_channel_message_report(self) -> None:
         reporting_user = self.example_user("hamlet")
         report_type = "harassment"
