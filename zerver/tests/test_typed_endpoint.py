@@ -31,6 +31,10 @@ ParamTypes: TypeAlias = Literal["none", "json_only", "both"]
 T = TypeVar("T")
 
 
+class NullByteModel(BaseModel):
+    text: str
+
+
 def call_endpoint(
     view: Callable[..., T], request: HttpRequest, *args: object, **kwargs: object
 ) -> T:
@@ -64,6 +68,39 @@ class TestEndpoint(ZulipTestCase):
         # This is the same as orjson.dumps(10).decode()
         self.assertEqual(call_endpoint(view2, HostRequestMock({"strict_int": "10"})), 20)
         self.assertEqual(call_endpoint(view2, HostRequestMock({"strict_int": 10})), 20)
+
+    def test_reject_null_bytes(self) -> None:
+        @typed_endpoint
+        def view(
+            request: HttpRequest,
+            *,
+            name: str,
+            names: Json[list[str]] | None = None,
+            data: Json[dict[str, str]] | None = None,
+            model: Json[NullByteModel] | None = None,
+        ) -> str:
+            return name
+
+        def assert_rejected(param: str, value: object) -> None:
+            params = {"name": "ok", param: value}
+            with self.assertRaisesMessage(
+                ApiParamValidationError, f"{param} cannot contain null bytes"
+            ):
+                call_endpoint(view, HostRequestMock(params))
+
+        assert_rejected("name", "a\x00b")
+        assert_rejected("names", orjson.dumps(["fine", "a\x00b"]).decode())
+        assert_rejected("data", orjson.dumps({"key": "a\x00b"}).decode())
+        assert_rejected("data", orjson.dumps({"a\x00b": "value"}).decode())
+        assert_rejected("model", orjson.dumps({"text": "a\x00b"}).decode())
+
+        self.assertEqual(
+            call_endpoint(
+                view,
+                HostRequestMock({"name": "fine", "names": orjson.dumps(["a", "b"]).decode()}),
+            ),
+            "fine",
+        )
 
     def test_json(self) -> None:
         @dataclass(frozen=True)

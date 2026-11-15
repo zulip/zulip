@@ -1484,7 +1484,7 @@ class MessagePOSTTest(ZulipTestCase):
             "topic": "Test topic",
         }
         result = self.client_post("/json/messages", post_data)
-        self.assert_json_error(result, "Message must not contain null bytes")
+        self.assert_json_error(result, "content cannot contain null bytes")
 
     def test_strip_message(self) -> None:
         """
@@ -3527,6 +3527,23 @@ class InternalPrepTest(ZulipTestCase):
                 "cordelia@zulip.com",
                 "You can't send direct messages outside of your organization.",
             ),
+        )
+
+    def test_null_bytes_in_internal_message(self) -> None:
+        # Internal sends (e.g. the email gateway) don't go through
+        # typed_endpoint, so normalize_body must reject null bytes itself.
+        sender = self.example_user("cordelia")
+        recipient_user = self.example_user("hamlet")
+        with self.assertLogs(level="ERROR") as m:
+            result = internal_prep_private_message(
+                sender=sender, recipient_user=recipient_user, content="null \x00 byte"
+            )
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            m.output[0].split("\n")[0],
+            "ERROR:root:Error queueing internal message by cordelia@zulip.com: "
+            "Message must not contain null bytes",
         )
 
     def test_ensure_stream_gets_called(self) -> None:

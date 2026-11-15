@@ -73,8 +73,6 @@ def further_validated_draft_dict(
     to = draft_dict.to
     if draft_dict.type == "stream":
         topic_name = truncate_topic(draft_dict.topic)
-        if "\0" in topic_name:
-            raise JsonableError(_("Topic must not contain null bytes"))
         if len(to) != 1:
             raise JsonableError(_("Must specify exactly 1 channel ID for channel messages"))
         stream, _sub = access_stream_by_id(user_profile, to[0])

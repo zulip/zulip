@@ -24,15 +24,6 @@ def check_default_stream_group_name(group_name: str) -> None:
                 max_length=DefaultStreamGroup.MAX_NAME_LENGTH,
             )
         )
-    for i in group_name:
-        if ord(i) == 0:
-            raise JsonableError(
-                _(
-                    "Default channel group name '{group_name}' contains NULL (0x00) characters."
-                ).format(
-                    group_name=group_name,
-                )
-            )
 
 
 def lookup_default_stream_groups(

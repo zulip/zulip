@@ -116,10 +116,14 @@ class ChannelFolderCreationTest(ZulipTestCase):
         result = self.client_post("/json/channel_folders/create", params)
         self.assert_json_error(result, "Channel folder name can't be empty.")
 
-        invalid_name = "abc\000"
+        invalid_name = "abc\x07"
         params = {"name": invalid_name, "description": "Channels for frontend discussions"}
         result = self.client_post("/json/channel_folders/create", params)
         self.assert_json_error(result, "Invalid character in channel folder name, at position 4.")
+
+        params = {"name": "abc\x00", "description": "Channels for frontend discussions"}
+        result = self.client_post("/json/channel_folders/create", params)
+        self.assert_json_error(result, "name cannot contain null bytes")
 
         long_name = "a" * (ChannelFolder.MAX_NAME_LENGTH + 1)
         params = {"name": long_name, "description": "Channels for frontend discussions"}
@@ -274,7 +278,7 @@ class UpdateChannelFoldersTest(ChannelFoldersTestCase):
         result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
         self.assert_json_error(result, "Channel folder name already in use")
 
-        invalid_name = "abc\000"
+        invalid_name = "abc\x07"
         params = {"name": invalid_name}
         result = self.client_patch(f"/json/channel_folders/{channel_folder_id}", params)
         self.assert_json_error(result, "Invalid character in channel folder name, at position 4.")

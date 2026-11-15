@@ -4023,7 +4023,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             "subscriptions": orjson.dumps([stream_name]).decode(),
         }
         result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
-        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
+        self.assert_json_error(result, "subscriptions cannot contain null bytes")
 
 
 class SubscriptionAPITest(ZulipTestCase):
@@ -4450,7 +4450,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         stream_name = "abc\000"
         result = self.subscribe_via_post(self.test_user, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Invalid character in channel name, at position 4.")
+        self.assert_json_error(result, "subscriptions cannot contain null bytes")
 
     def _test_group_based_settings_for_creating_streams(
         self,
