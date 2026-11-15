@@ -114,7 +114,7 @@ export function initialize(): void {
         }
 
         // Widget for adjusting the height of a message.
-        if ($target.is("button.message_expander") || $target.is("button.message_condenser")) {
+        if ($target.closest(".message_length_toggle").length > 0) {
             return true;
         }
 
