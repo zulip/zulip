@@ -51,6 +51,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_invite_users, do_revoke_user_invite
 from zerver.actions.realm_settings import (
+    do_add_deactivated_redirect,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -7292,6 +7293,28 @@ class FetchAuthBackends(ZulipTestCase):
             # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
             result = self.client_get("/api/v1/server_settings", subdomain="")
             self.assert_json_error_contains(result, "Subdomain required", 400)
+
+        # Verify deactivated realm
+        realm = get_realm("zulip")
+        do_deactivate_realm(
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        response_dict = self.assert_json_success(result)
+        self.assertTrue(response_dict["realm_deactivated"])
+        self.assertNotIn("realm_deactivated_redirect", response_dict)
+        self.assertNotIn("deactivated_redirect", response_dict)
+
+        # Verify moved realm (deactivated with redirect)
+        do_add_deactivated_redirect(realm, "https://chat.zulip.org")
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        response_dict = self.assert_json_success(result)
+        self.assertTrue(response_dict["realm_deactivated"])
+        self.assertEqual(response_dict["realm_deactivated_redirect"], "https://chat.zulip.org")
+        self.assertEqual(response_dict["deactivated_redirect"], "https://chat.zulip.org")
 
 
 class TestTwoFactor(ZulipTestCase):
