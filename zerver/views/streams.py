@@ -58,6 +58,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     OrganizationOwnerRequiredError,
 )
+from zerver.lib.markdown.fenced_code import wrap_in_quote_block
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
 from zerver.lib.response import json_success
@@ -1177,7 +1178,11 @@ def send_user_subscribed_and_new_channel_notifications(
                             content=new_channel_message.format(
                                 user_name=silent_mention_syntax_for_user(user_profile),
                             )
-                            + f"\n```` quote\n{stream_description}\n````",
+                            + "\n"
+                            + wrap_in_quote_block(
+                                stream_description,
+                                default_language=stream.realm.default_code_block_language,
+                            ),
                         ),
                     )
 

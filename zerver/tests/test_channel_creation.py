@@ -329,7 +329,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(message.sender_id, self.notification_bot(user_profile.realm).id)
         expected_message_content = (
             f"**Public** channel created by @_**{user_profile.full_name}|{user_profile.id}**. **Description:**\n"
-            "```` quote\ntest channel\n````"
+            "```quote\ntest channel\n```"
         )
         self.assertEqual(message.content, expected_message_content)
 
