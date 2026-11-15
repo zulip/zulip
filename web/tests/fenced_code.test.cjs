@@ -30,6 +30,9 @@ run_test("get_unused_fence", () => {
         fenced_code.get_unused_fence("```code\nterminating fence is extra indented\n    ````"),
         "`".repeat(4),
     );
+    assert.equal(fenced_code.get_unused_fence("text\r```\rmore"), "`".repeat(4));
+    assert.equal(fenced_code.get_unused_fence("text\r\n````\r\nmore"), "`".repeat(5));
+    assert.equal(fenced_code.get_unused_fence("text\n\u{2}```\u{3}\nmore"), "`".repeat(4));
     let large_testcase = "";
     // ```
     // ````

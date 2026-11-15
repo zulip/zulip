@@ -262,6 +262,9 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             ("tilde fences", "~~~\ncode\n~~~", "```"),
             ("indented fence", "text\n   ````", "`````"),
             ("indented code, not a fence", "text\n    ````", "```"),
+            ("lone carriage returns", "text\r````\rmore", "`````"),
+            ("windows line endings", "text\r\n````\r\nmore", "`````"),
+            ("control characters in the fence", "text\n\x02````\x03\nmore", "`````"),
         ]
         for case, content, fence in cases:
             with self.subTest(case=case):
