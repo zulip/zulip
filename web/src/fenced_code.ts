@@ -247,10 +247,17 @@ export function process_fenced_code(content: string): string {
 const fence_length_re = /^ {0,3}(`{3,})/gm;
 export function get_unused_fence(content: string): string {
     // we only return ``` fences, not ~~~.
+
+    // The server's Markdown processor removes the STX and ETX characters
+    // and treats a lone \r as a line break before parsing fenced blocks.
+    const normalized_content = content
+        // eslint-disable-next-line no-control-regex
+        .replaceAll(/[\u{2}\u{3}]/gu, "")
+        .replaceAll("\r", "\n");
     let length = 3;
     let match;
     fence_length_re.lastIndex = 0;
-    while ((match = fence_length_re.exec(content)) !== null) {
+    while ((match = fence_length_re.exec(normalized_content)) !== null) {
         length = Math.max(length, match[1]!.length + 1);
     }
     return "`".repeat(length);

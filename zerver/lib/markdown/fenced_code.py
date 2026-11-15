@@ -156,9 +156,12 @@ def get_unused_fence(content: str) -> str:
     # Define the regular expression pattern to match ``` fences
     fence_length_re = re.compile(r"^ {0,3}(`{3,})", re.MULTILINE)
 
+    # Markdown normalizes whitespace before parsing fenced blocks.
+    lines = NormalizeWhitespace(Markdown()).run(content.split("\n"))
+
     # Initialize the length variable to 3, corresponding to default fence length
     length = 3
-    matches = fence_length_re.findall(content)
+    matches = fence_length_re.findall("\n".join(lines))
     for match in matches:
         length = max(length, len(match) + 1)
 
