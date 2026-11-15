@@ -31,6 +31,15 @@ ParamTypes: TypeAlias = Literal["none", "json_only", "both"]
 T = TypeVar("T")
 
 
+class NullByteModel(BaseModel):
+    text: str
+
+
+@dataclass
+class NullByteDataclass:
+    text: str
+
+
 def call_endpoint(
     view: Callable[..., T], request: HttpRequest, *args: object, **kwargs: object
 ) -> T:
@@ -64,6 +73,80 @@ class TestEndpoint(ZulipTestCase):
         # This is the same as orjson.dumps(10).decode()
         self.assertEqual(call_endpoint(view2, HostRequestMock({"strict_int": "10"})), 20)
         self.assertEqual(call_endpoint(view2, HostRequestMock({"strict_int": 10})), 20)
+
+    def test_reject_null_bytes(self) -> None:
+        @typed_endpoint
+        def view(
+            request: HttpRequest,
+            *,
+            name: str,
+            maybe_name: str | None = None,
+            names: Json[list[str]] | None = None,
+            data: Json[dict[str, str]] | None = None,
+            model: Json[NullByteModel] | None = None,
+            dataclass_param: Json[NullByteDataclass] | None = None,
+            count: Json[int] | None = None,
+        ) -> str:
+            return name
+
+        # A plain string parameter is rejected with a clear error.
+        with self.assertRaisesMessage(ApiParamValidationError, "name cannot contain null bytes"):
+            call_endpoint(view, HostRequestMock({"name": "a\x00b"}))
+
+        # So is an optional string parameter.
+        with self.assertRaisesMessage(
+            ApiParamValidationError, "maybe_name cannot contain null bytes"
+        ):
+            call_endpoint(view, HostRequestMock({"name": "ok", "maybe_name": "a\x00b"}))
+
+        # Null bytes nested inside JSON are caught, and the error names the
+        # exact location of the offending value.
+        with self.assertRaisesMessage(
+            ApiParamValidationError, "names[1] cannot contain null bytes"
+        ):
+            call_endpoint(
+                view,
+                HostRequestMock({"name": "ok", "names": orjson.dumps(["fine", "a\x00b"]).decode()}),
+            )
+        with self.assertRaisesMessage(
+            ApiParamValidationError, 'data["key"] cannot contain null bytes'
+        ):
+            call_endpoint(
+                view,
+                HostRequestMock({"name": "ok", "data": orjson.dumps({"key": "a\x00b"}).decode()}),
+            )
+        with self.assertRaisesMessage(
+            ApiParamValidationError, 'model["text"] cannot contain null bytes'
+        ):
+            call_endpoint(
+                view,
+                HostRequestMock({"name": "ok", "model": orjson.dumps({"text": "a\x00b"}).decode()}),
+            )
+        with self.assertRaisesMessage(
+            ApiParamValidationError, 'dataclass_param["text"] cannot contain null bytes'
+        ):
+            call_endpoint(
+                view,
+                HostRequestMock(
+                    {"name": "ok", "dataclass_param": orjson.dumps({"text": "a\x00b"}).decode()}
+                ),
+            )
+
+        # Values without null bytes, including non-string parameters, are
+        # accepted.
+        self.assertEqual(
+            call_endpoint(
+                view,
+                HostRequestMock(
+                    {
+                        "name": "fine",
+                        "names": orjson.dumps(["a", "b"]).decode(),
+                        "count": "3",
+                    }
+                ),
+            ),
+            "fine",
+        )
 
     def test_json(self) -> None:
         @dataclass(frozen=True)

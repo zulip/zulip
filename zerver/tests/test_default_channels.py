@@ -532,9 +532,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
                 "stream_names": orjson.dumps(stream_names).decode(),
             },
         )
-        self.assert_json_error(
-            result, "Default channel group name 'abc\000' contains NULL (0x00) characters."
-        )
+        self.assert_json_error(result, "group_name cannot contain null bytes")
 
         # Also test that lookup_default_stream_groups raises an
         # error if we pass it a bad name.  This function is used

@@ -330,7 +330,9 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 15954790199,
             }
         ]
-        self.create_and_check_drafts_for_error(draft_dicts, "Message must not contain null bytes")
+        self.create_and_check_drafts_for_error(
+            draft_dicts, 'drafts[0]["content"] cannot contain null bytes'
+        )
 
         draft_dicts = [
             {
@@ -341,7 +343,9 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 15954790199,
             }
         ]
-        self.create_and_check_drafts_for_error(draft_dicts, "Topic must not contain null bytes")
+        self.create_and_check_drafts_for_error(
+            draft_dicts, 'drafts[0]["topic"] cannot contain null bytes'
+        )
 
 
 class DraftEditTests(ZulipTestCase):

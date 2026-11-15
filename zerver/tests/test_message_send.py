@@ -1484,7 +1484,7 @@ class MessagePOSTTest(ZulipTestCase):
             "topic": "Test topic",
         }
         result = self.client_post("/json/messages", post_data)
-        self.assert_json_error(result, "Message must not contain null bytes")
+        self.assert_json_error(result, "content cannot contain null bytes")
 
     def test_strip_message(self) -> None:
         """

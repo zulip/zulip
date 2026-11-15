@@ -1,8 +1,8 @@
 import inspect
 import json
 import types
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum, auto
 from functools import wraps
 from typing import (
@@ -19,7 +19,7 @@ from typing import (
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
-from pydantic import Json, StringConstraints, TypeAdapter, ValidationError
+from pydantic import BaseModel, Json, StringConstraints, TypeAdapter, ValidationError
 from typing_extensions import ParamSpec
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
@@ -344,9 +344,43 @@ ERROR_TEMPLATES = {
 }
 
 
+def reject_null_bytes(var_name: str, value: object, loc: tuple[object, ...] = ()) -> None:
+    """PostgreSQL text columns cannot store NUL (0x00) bytes, so letting one
+    reach the database surfaces as an uncaught error and a 500 response rather
+    than a clean client error. We reject null bytes while parsing request
+    parameters, so that every typed_endpoint string parameter behaves
+    consistently, instead of each endpoint having to guard against this
+    individually.
+
+    loc tracks the location within a nested parameter, so the error names the
+    exact offending field, matching how parse_value_for_parameter reports other
+    validation errors.
+    """
+    if isinstance(value, str):
+        if "\x00" in value:
+            full_var_name = var_name + "".join(f"[{json.dumps(part)}]" for part in loc)
+            raise ApiParamValidationError(
+                _("{var_name} cannot contain null bytes").format(var_name=full_var_name),
+                "null_bytes",
+            )
+    elif isinstance(value, Mapping):
+        for key, item in value.items():
+            reject_null_bytes(var_name, key, loc)
+            reject_null_bytes(var_name, item, (*loc, key))
+    elif isinstance(value, (list, tuple, set, frozenset)):
+        for index, item in enumerate(value):
+            reject_null_bytes(var_name, item, (*loc, index))
+    elif isinstance(value, BaseModel):
+        for key, item in value.__dict__.items():
+            reject_null_bytes(var_name, item, (*loc, key))
+    elif is_dataclass(value) and not isinstance(value, type):
+        for field in fields(value):
+            reject_null_bytes(var_name, getattr(value, field.name), (*loc, field.name))
+
+
 def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
     try:
-        return parameter.type_adapter.validate_python(value, strict=True)
+        parsed_value = parameter.type_adapter.validate_python(value, strict=True)
     except ValidationError as exc:
         # If the validation fails, it is possible to get multiple errors from
         # Pydantic. We only send the first error back to the client.
@@ -390,6 +424,13 @@ def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
             error=json.dumps(error, indent=4),
         )
         raise ApiParamValidationError(error_template.format(**context), error["type"])
+
+    # Webhook payloads (parsed as the request body) are excluded, so that
+    # third-party integrations that happen to send a null byte keep their
+    # existing behavior rather than being rejected here.
+    if not parameter.argument_type_is_body:
+        reject_null_bytes(parameter.request_var_name, parsed_value)
+    return parsed_value
 
 
 MISSING_ERROR_TEMPLATE = f"""
