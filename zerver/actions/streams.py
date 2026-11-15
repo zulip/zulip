@@ -36,6 +36,7 @@ from zerver.lib.event_types import (
     SubscriptionUpdateEvent,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.markdown.fenced_code import wrap_in_quote_block
 from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_event_on_commit
@@ -1567,16 +1568,17 @@ def send_change_stream_description_notification(
         if old_description == "":
             old_description = "*" + _("No description.") + "*"
 
+        default_language = stream.realm.default_code_block_language
         notification_string = (
             _("{user} changed the description for this channel.").format(user=user_mention)
             + "\n\n* **"
             + _("Old description")
-            + ":**"
-            + f"\n```` quote\n{old_description}\n````\n"
-            + "* **"
+            + ":**\n"
+            + wrap_in_quote_block(old_description, default_language=default_language)
+            + "\n* **"
             + _("New description")
-            + ":**"
-            + f"\n```` quote\n{new_description}\n````"
+            + ":**\n"
+            + wrap_in_quote_block(new_description, default_language=default_language)
         )
 
         maybe_send_channel_events_notice(

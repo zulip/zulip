@@ -2166,13 +2166,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "Test description\n"
-            "````\n"
+            "```\n"
             "* **New description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "*No description.*\n"
-            "````"
+            "```"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -2188,13 +2188,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "*No description.*\n"
-            "````\n"
+            "```\n"
             "* **New description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "Test description\n"
-            "````"
+            "```"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -2210,13 +2210,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this channel.\n\n"
             "* **Old description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "Test description\n"
-            "````\n"
+            "```\n"
             "* **New description:**\n"
-            "```` quote\n"
+            "```quote\n"
             "a multi line description\n"
-            "````"
+            "```"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -2231,6 +2231,25 @@ class StreamAdminTest(ZulipTestCase):
             "property": "description",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "Breaking out\r````\r**Not quoted**"},
+        )
+        self.assert_json_success(result)
+        messages = get_topic_messages(user_profile, stream, "channel events")
+        self.assertTrue(
+            messages[-1].content.endswith(
+                "* **New description:**\n"
+                "`````quote\n"
+                "Breaking out\r````\r**Not quoted**\n"
+                "````\n"
+                "`````"
+            )
+        )
+        assert messages[-1].rendered_content is not None
+        self.assertNotIn("<strong>Not quoted</strong>", messages[-1].rendered_content)
+        self.assertTrue(messages[-1].rendered_content.endswith("</blockquote>"))
 
         # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
         do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
@@ -4307,7 +4326,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
             f"**Public** channel created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
-            "```` quote\n*No description.*\n````"
+            "```quote\n*No description.*\n```"
         )
         self.assertEqual(msg.content, expected_msg)
 
@@ -4653,7 +4672,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn(
             f"**{policy_name}** channel created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
-            "```` quote",
+            "```quote",
             msg.content,
         )
 
@@ -5901,7 +5920,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(
             new_channel_message[0].content,
             f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
-            "```` quote\n*No description.*\n````",
+            "```quote\n*No description.*\n```",
         )
 
         # When subscribing to an already existing channel, if the number of new
@@ -5991,7 +6010,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(
             new_channel_message[0].content,
             f"**Public** channel created by @_**{desdemona.full_name}|{desdemona.id}**. **Description:**\n"
-            "```` quote\n*No description.*\n````",
+            "```quote\n*No description.*\n```",
         )
 
         # When send_new_subscription_messages is false, confirm that the
