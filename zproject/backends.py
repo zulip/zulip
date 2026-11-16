@@ -4092,6 +4092,10 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
+    # PKCE protects against authorization code interception and
+    # injection; python-social-auth leaves it off by default for OIDC.
+    DEFAULT_USE_PKCE = True
+
     available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
