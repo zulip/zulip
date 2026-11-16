@@ -48,6 +48,7 @@ export const stream_schema = z.object({
     can_subscribe_group: group_setting_value_schema,
     creator_id: z.nullable(z.number()),
     date_created: z.number(),
+    default_color: z.nullable(z.string()),
     default_push_notifications: z.boolean(),
     description: z.string(),
     first_message_id: z.nullable(z.number()),
@@ -102,6 +103,8 @@ export const stream_properties_schema = z.object({
 export const api_stream_subscription_schema = z.object({
     ...api_stream_schema.shape,
     ...stream_properties_schema.shape,
+    auto_color: z.string(),
+    color_is_default: z.boolean(),
     subscribers: z.optional(z.array(z.number())),
     partial_subscribers: z.optional(z.array(z.number())),
 });

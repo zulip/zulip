@@ -1,0 +1,9 @@
+corporate/lib/stripe.py:1396: error: Unexpected keyword argument "allowed_payment_method_types" for "create" of "Session"; did you mean "excluded_payment_method_types" or "payment_method_types"?  [call-arg]
+corporate/lib/stripe.py:1396: note: "create" defined in "stripe.checkout._session"
+corporate/lib/stripe.py:1422: error: Unexpected keyword argument "allowed_payment_method_types" for "create" of "Session"; did you mean "excluded_payment_method_types" or "payment_method_types"?  [call-arg]
+corporate/lib/stripe.py:1422: note: "create" defined in "stripe.checkout._session"
+zerver/lib/email_mirror.py:298: error: Skipping analyzing "talon": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+zerver/lib/email_mirror.py:298: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+Found 3 errors in 2 files (checked 2134 source files)
+
+See https://zulip.readthedocs.io/en/latest/testing/mypy.html for debugging tips.

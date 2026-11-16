@@ -150,10 +150,28 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         };
 
     const updaters: {
-        [P in keyof UpdatableStreamProperties]?: (value: UpdatableStreamProperties[P]) => void;
+        [P in keyof UpdatableStreamProperties]?: (
+            value: UpdatableStreamProperties[P] | (P extends "color" ? null : never),
+        ) => void;
     } = {
         color(value) {
-            stream_color_events.update_stream_color(sub, value);
+            if (value === null) {
+                sub.color_is_default = true;
+                stream_color_events.update_stream_color(sub, sub.default_color ?? sub.auto_color);
+            } else {
+                sub.color_is_default = false;
+                stream_color_events.update_stream_color(sub, value);
+            }
+        },
+        default_color(value) {
+            sub.default_color = value;
+            if (sub.color_is_default) {
+                stream_color_events.update_stream_color(sub, value ?? sub.auto_color);
+            }
+            $("#stream_settings .stream-default-color-preview").css(
+                "background-color",
+                value ?? "transparent",
+            );
         },
         in_home_view(_value) {
             // Legacy in_home_view events are only sent as duplicates of

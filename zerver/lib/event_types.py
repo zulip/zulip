@@ -895,6 +895,7 @@ class BasicStreamFields(BaseEventModel):
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_color: str | None
     default_push_notifications: bool
     description: str
     first_message_id: int | None
@@ -969,6 +970,7 @@ class SingleSubscription(BaseEventModel):
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_color: str | None
     default_push_notifications: bool
     description: str
     first_message_id: int | None
@@ -984,8 +986,10 @@ class SingleSubscription(BaseEventModel):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    auto_color: str
     audible_notifications: bool | None
     color: str
+    color_is_default: bool
     desktop_notifications: bool | None
     email_notifications: bool | None
     in_home_view: bool
@@ -1034,7 +1038,7 @@ class SubscriptionUpdateEvent(BaseEvent):
     op: Literal["update"] = "update"
     property: str
     stream_id: int
-    value: bool | int | str
+    value: bool | int | str | None
 
 
 class TypingPerson(BaseEventModel):

@@ -1623,6 +1623,7 @@ paths:
                                         "is_recently_active": true,
                                         "message_retention_days": null,
                                         "default_push_notifications": false,
+                                        "default_color": null,
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
@@ -19584,6 +19585,8 @@ paths:
                                 message_retention_days:
                                   nullable: true
                                 default_push_notifications: {}
+                                default_color:
+                                  nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
                                 first_message_id:
@@ -24676,6 +24679,8 @@ paths:
                                 message_retention_days:
                                   nullable: true
                                 default_push_notifications: {}
+                                default_color:
+                                  nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
                                 first_message_id:
@@ -24734,6 +24739,7 @@ paths:
                                 - stream_post_policy
                                 - message_retention_days
                                 - default_push_notifications
+                                - default_color
                                 - history_public_to_subscribers
                                 - first_message_id
                                 - folder_id
@@ -24767,6 +24773,7 @@ paths:
                               "is_web_public": false,
                               "message_retention_days": null,
                               "default_push_notifications": false,
+                              "default_color": null,
                               "name": "management",
                               "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
@@ -24792,6 +24799,7 @@ paths:
                               "is_web_public": false,
                               "message_retention_days": null,
                               "default_push_notifications": false,
+                              "default_color": null,
                               "name": "welcome",
                               "rendered_description": "<p>A default public channel</p>",
                               "stream_id": 1,
@@ -24849,6 +24857,7 @@ paths:
                             "is_web_public": false,
                             "message_retention_days": null,
                             "default_push_notifications": false,
+                            "default_color": null,
                             "name": "Denmark",
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
@@ -24903,6 +24912,9 @@ paths:
         - Channel [permissions](/help/channel-permissions), including
           [privacy](/help/change-the-privacy-of-a-channel) and [who can
           send](/help/channel-posting-policy).
+        - Channel [default color](/help/change-the-color-of-a-channel),
+          which determines the display color for users who have not set
+          a personal color override.
 
         Note that an organization administrator's ability to change a
         [private channel's permissions](/help/channel-permissions#private-channels)
@@ -25014,6 +25026,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 default_push_notifications:
                   $ref: "#/components/schemas/DefaultPushNotifications"
+                default_color:
+                  $ref: "#/components/schemas/DefaultChannelColor"
                 is_archived:
                   description: |
                     A boolean indicating whether the channel is
@@ -25339,6 +25353,8 @@ paths:
               is_default_stream:
                 contentType: application/json
               folder_id:
+                contentType: application/json
+              default_color:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -27927,6 +27943,8 @@ components:
             message_retention_days:
               nullable: true
             default_push_notifications: {}
+            default_color:
+              nullable: true
             history_public_to_subscribers: {}
             topics_policy: {}
             first_message_id:
@@ -27976,6 +27994,7 @@ components:
             - subscriber_count
             - message_retention_days
             - default_push_notifications
+            - default_color
             - history_public_to_subscribers
             - first_message_id
             - folder_id
@@ -28095,6 +28114,8 @@ components:
             **Changes**: New in Zulip 3.0 (feature level 17).
         default_push_notifications:
           $ref: "#/components/schemas/DefaultPushNotifications"
+        default_color:
+          $ref: "#/components/schemas/DefaultChannelColor"
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -29282,7 +29303,24 @@ components:
         color:
           type: string
           description: |
-            The user's personal color for the channel.
+            The effective display color for the channel in the user's interface.
+            This is the user's personal color override, if set; otherwise, it is
+            the channel's organization-defined default color, if set; otherwise,
+            it is the automatically assigned color.
+        color_is_default:
+          type: boolean
+          description: |
+            Whether the user has no personal color override and follows the channel's default
+            behavior (the organization-defined color if set, otherwise the automatic color).
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-76a8a6).
+        auto_color:
+          type: string
+          description: |
+            The automatically assigned color used when the user follows the channel default
+            and no organization-defined color is configured.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-76a8a6).
         stream_post_policy:
           type: integer
           deprecated: true
@@ -29324,6 +29362,8 @@ components:
             **Changes**: New in Zulip 3.0 (feature level 17).
         default_push_notifications:
           $ref: "#/components/schemas/DefaultPushNotifications"
+        default_color:
+          $ref: "#/components/schemas/DefaultChannelColor"
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -31403,6 +31443,15 @@ components:
 
         **Changes**: New in Zulip 13.0 (feature level 507).
       example: true
+    DefaultChannelColor:
+      type: string
+      nullable: true
+      description: |
+        The organization-defined default color for the channel. A `null` value means the
+        channel has no organization-defined color. Only organization administrators can
+        set or modify this value.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-76a8a6).
     TopicsPolicy:
       type: string
       enum:
@@ -31729,7 +31778,7 @@ components:
       description: |
         One of the channel properties described below:
 
-        - `"color"`: The hex value of the user's display color for the channel.
+        - `"color"`: The hex value of the user's personal display color for the channel. Passing `null` resets the user to follow the channel default.
 
         - `"is_muted"`: Whether the channel is [muted](/help/mute-a-channel).<br>
           **Changes**: As of Zulip 6.0 (feature level 139), updating either
@@ -31766,15 +31815,15 @@ components:
           description: |
             The new boolean value for the specified property.
         - type: string
+          nullable: true
           description: |
             The hex value of the user's display color for the channel.
       description: |
         The new value of the property being modified.
 
-        If the property is `"color"`, then `value` is a string
-        representing the hex value of the user's display
-        color for the channel. For all other above properties,
-        `value` is a boolean.
+        If the property is `"color"`, then `value` is either a string representing
+        the user's personal color, or `null` to follow the channel default. For all
+        other above properties, `value` is a boolean.
       example: "true"
 
   ###################

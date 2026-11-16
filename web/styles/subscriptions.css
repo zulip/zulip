@@ -1618,6 +1618,18 @@
     }
 }
 
+.stream-default-color-setting {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
+
+    .settings-field-label {
+        width: 100%;
+        margin-bottom: 0;
+    }
+}
+
 .stream-settings-color-preview {
     /* 28px at 16px font size */
     width: 1.75em;

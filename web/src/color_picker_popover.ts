@@ -7,8 +7,10 @@ import render_color_picker_popover from "../templates/popovers/color_picker_popo
 import * as blueslip from "./blueslip.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as stream_color from "./stream_color.ts";
+import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 
 const update_color_picker_preview = (color: string, $popper: JQuery): void => {
@@ -17,9 +19,13 @@ const update_color_picker_preview = (color: string, $popper: JQuery): void => {
 };
 
 const update_stream_color_debounced = _.debounce(
-    (new_color: string, stream_id: number, $popper: JQuery) => {
+    (new_color: string, stream_id: number, $popper: JQuery, is_default_color: boolean) => {
         update_color_picker_preview(new_color, $popper);
-        stream_settings_api.set_color(stream_id, new_color);
+        if (is_default_color) {
+            stream_settings_api.set_default_color(stream_id, new_color);
+        } else {
+            stream_settings_api.set_color(stream_id, new_color);
+        }
     },
     // Wait for 200ms of inactivity
     200,
@@ -114,6 +120,7 @@ export function handle_keyboard(key: string): void {
 export function toggle_color_picker_popover(
     target: tippy.ReferenceElement,
     stream_id: number,
+    is_default_color = false,
 ): void {
     popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
@@ -134,7 +141,10 @@ export function toggle_color_picker_popover(
             popover_menus.on_show_prep(instance);
 
             const stream_name = stream_data.get_stream_name_from_id(stream_id);
-            const color = stream_data.get_color(stream_id);
+            const sub = sub_store.get(stream_id);
+            const color = is_default_color
+                ? (sub?.default_color ?? sub?.auto_color ?? stream_data.get_color(stream_id))
+                : stream_data.get_color(stream_id);
             const recipient_bar_color = stream_color.get_recipient_bar_color(color);
             const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
             const invite_only = stream_data.is_invite_only_by_stream_id(stream_id);
@@ -152,6 +162,7 @@ export function toggle_color_picker_popover(
                         invite_only,
                         is_web_public,
                         stream_color_palette,
+                        color_is_default: is_default_color || (sub?.color_is_default ?? false),
                     }),
                 ),
             );
@@ -160,7 +171,10 @@ export function toggle_color_picker_popover(
             const $popper = $(instance.popper);
 
             const $color_picker_input = $popper.find(".color-picker-input");
-            const color = stream_data.get_color(stream_id);
+            const sub = sub_store.get(stream_id);
+            const color = is_default_color
+                ? (sub?.default_color ?? sub?.auto_color ?? stream_data.get_color(stream_id))
+                : stream_data.get_color(stream_id);
 
             $color_picker_input.val(color);
 
@@ -168,13 +182,17 @@ export function toggle_color_picker_popover(
                 "change",
                 "input[name='color-picker-select']",
                 function (this: HTMLInputElement, _e: JQuery.Event) {
-                    const prev_color = stream_data.get_color(stream_id);
+                    const prev_color = is_default_color
+                        ? (sub?.default_color ??
+                          sub?.auto_color ??
+                          stream_data.get_color(stream_id))
+                        : stream_data.get_color(stream_id);
                     const new_color = $(this).attr("data-swatch-color")!;
                     if (prev_color === new_color) {
                         return;
                     }
                     $color_picker_input.val(new_color);
-                    update_stream_color_debounced(new_color, stream_id, $popper);
+                    update_stream_color_debounced(new_color, stream_id, $popper, is_default_color);
                 },
             );
 
@@ -191,11 +209,26 @@ export function toggle_color_picker_popover(
                         "input[name='color-picker-select']:checked",
                     );
                     $swatch_color_checked.prop("checked", false);
-                    update_stream_color_debounced(new_color, stream_id, $popper);
+                    update_stream_color_debounced(new_color, stream_id, $popper, is_default_color);
                 },
             );
 
             $popper.on("click", ".color_picker_confirm_button", () => {
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.on("click", ".reset-channel-color", () => {
+                if (is_default_color) {
+                    return;
+                }
+                const sub = sub_store.get(stream_id);
+                if (!sub) {
+                    return;
+                }
+                const color = sub.default_color ?? sub.auto_color;
+                sub.color_is_default = true;
+                stream_color_events.update_stream_color(sub, color);
+                stream_settings_api.set_color(stream_id, null);
                 popover_menus.hide_current_popover_if_visible(instance);
             });
         },
@@ -243,6 +276,16 @@ export function initialize(): void {
             e.preventDefault();
             const $button = $(this).siblings(".choose_stream_color");
             $button.trigger("click");
+        },
+    );
+    $("body").on(
+        "click",
+        ".choose_default_stream_color",
+        function (this: HTMLElement, e: JQuery.ClickEvent) {
+            e.stopPropagation();
+            e.preventDefault();
+            const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);
+            toggle_color_picker_popover(this, stream_id, true);
         },
     );
 }

@@ -1510,12 +1510,20 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             acting_user=admin,
         )
         self.login_user(non_admin)
+
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"default_push_notifications": orjson.dumps(True).decode()},
         )
         self.assert_json_error(result, "Insufficient permission")
 
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#123456").decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Realm admin can update default_push_notifications.
         self.login_user(admin)
         with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_patch(

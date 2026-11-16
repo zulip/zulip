@@ -203,7 +203,6 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
 
 export function ajaxSubscribe(
     stream: string,
-    color: string,
     $stream_row: JQuery | undefined,
     $button_elem: JQuery | undefined,
 ): void {
@@ -216,7 +215,7 @@ export function ajaxSubscribe(
     }
     void channel.post({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([{name: stream, color}])},
+        data: {subscriptions: JSON.stringify([{name: stream}])},
         success(_resp, _statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
@@ -351,7 +350,7 @@ export function sub_or_unsub(
         }
         ajaxUnsubscribe(sub, $stream_row, $button_elem);
     } else {
-        ajaxSubscribe(sub.name, sub.color, $stream_row, $button_elem);
+        ajaxSubscribe(sub.name, $stream_row, $button_elem);
     }
 }
 

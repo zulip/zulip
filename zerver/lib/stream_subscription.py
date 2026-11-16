@@ -10,6 +10,7 @@ from django.db.models import F, Q, QuerySet
 from psycopg2 import sql
 from psycopg2.extras import execute_values
 
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.models import AlertWord, Recipient, Stream, Subscription, UserProfile, UserTopic
 
 
@@ -18,6 +19,7 @@ class SubInfo:
     user: UserProfile
     sub: Subscription
     stream: Stream
+    auto_color: str | None = None
 
 
 @dataclass
@@ -97,14 +99,17 @@ def get_used_colors_for_user_ids(user_ids: list[int]) -> dict[int, set[str]]:
             user_profile_id__in=user_ids,
             recipient__type=Recipient.STREAM,
         )
-        .values("user_profile_id", "color")
+        .values("user_profile_id", "color", "auto_color")
         .distinct()
     )
 
     result: dict[int, set[str]] = defaultdict(set)
 
     for row in query:
-        result[row["user_profile_id"]].add(row["color"])
+        if row["color"] is not None:
+            result[row["user_profile_id"]].add(row["color"])
+        if row["auto_color"] is not None:
+            result[row["user_profile_id"]].add(row["auto_color"])
 
     return result
 
@@ -377,7 +382,8 @@ def create_stream_subscription(
     user_profile: UserProfile,
     recipient: Recipient,
     stream: Stream,
-    color: str = Subscription.DEFAULT_STREAM_COLOR,
+    color: str | None = None,
+    auto_color: str = STREAM_ASSIGNMENT_COLORS[0],
 ) -> None:
     """
     Creates a single stream Subscription object, incrementing
@@ -393,6 +399,7 @@ def create_stream_subscription(
         user_profile=user_profile,
         is_user_active=user_profile.is_active,
         color=color,
+        auto_color=auto_color,
     )
 
     if user_profile.is_active:

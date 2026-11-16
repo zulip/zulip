@@ -39,7 +39,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.stream_color import pick_colors
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
     SubscriberPeerInfo,
@@ -465,10 +465,25 @@ def send_subscription_add_events(
             stream_dict = stream_to_dict(stream, recent_traffic, anonymous_group_membership)
             # mypy rejects unpacking stream_dict here: its is_default
             # key is not a model field.
+            auto_color = (
+                sub_info.auto_color
+                or subscription.auto_color
+                or subscription.color
+                or STREAM_ASSIGNMENT_COLORS[0]
+            )
+            color = (
+                subscription.color
+                if subscription.color is not None
+                else stream.default_color
+                if stream.default_color is not None
+                else auto_color
+            )
             sub_dict = SingleSubscription(
                 # Fields from Subscription.API_FIELDS
                 audible_notifications=subscription.audible_notifications,
-                color=subscription.color,
+                auto_color=auto_color,
+                color=color,
+                color_is_default=subscription.color is None,
                 desktop_notifications=subscription.desktop_notifications,
                 email_notifications=subscription.email_notifications,
                 is_muted=subscription.is_muted,
@@ -498,6 +513,7 @@ def send_subscription_add_events(
                 can_subscribe_group=stream_dict["can_subscribe_group"],
                 creator_id=stream_dict["creator_id"],
                 date_created=stream_dict["date_created"],
+                default_color=stream.default_color,
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
                 folder_id=stream_dict["folder_id"],
@@ -536,8 +552,12 @@ def bulk_add_subs_to_db_with_logging(
     subs_to_activate: list[SubInfo],
 ) -> None:
     Subscription.objects.bulk_create(info.sub for info in subs_to_add)
-    sub_ids = [info.sub.id for info in subs_to_activate]
-    Subscription.objects.filter(id__in=sub_ids).update(active=True)
+    if subs_to_activate:
+        for sub_info in subs_to_activate:
+            sub_info.sub.active = True
+        Subscription.objects.bulk_update(
+            [info.sub for info in subs_to_activate], ["active", "auto_color"]
+        )
 
     # Log subscription activities in RealmAuditLog
     event_time = timezone_now()
@@ -830,17 +850,34 @@ def bulk_add_subscriptions(
                     subs_to_activate.append(sub_info)
 
         used_colors = used_colors_for_user_ids.get(user_profile.id, set())
-        user_color_map = pick_colors(used_colors, recipient_color_map, list(new_recipient_ids))
+        recipient_ids_needing_auto_color = set(new_recipient_ids)
+        recipient_ids_needing_auto_color.update(
+            sub.recipient_id for sub in my_subs if sub.color is None and sub.auto_color is None
+        )
+        user_color_map = pick_colors(
+            used_colors,
+            recipient_color_map,
+            list(recipient_ids_needing_auto_color),
+        )
+
+        for sub_info in subs_to_activate:
+            if sub_info.sub.auto_color is None:
+                sub_info.auto_color = (
+                    sub_info.sub.color or user_color_map[sub_info.sub.recipient_id]
+                )
+                sub_info.sub.auto_color = sub_info.auto_color
 
         for recipient_id in new_recipient_ids:
             stream = recipient_id_to_stream[recipient_id]
-            color = user_color_map[recipient_id]
+            auto_color = user_color_map[recipient_id]
+            personal_color = color_map.get(stream.name)
 
             sub = Subscription(
                 user_profile=user_profile,
                 is_user_active=user_profile.is_active,
                 active=True,
-                color=color,
+                color=personal_color,
+                auto_color=auto_color,
                 recipient_id=recipient_id,
             )
             # The channel default only applies to brand-new subscriptions.
@@ -849,7 +886,7 @@ def bulk_add_subscriptions(
             # on their existing subscription.
             if stream.default_push_notifications:
                 sub.push_notifications = True
-            sub_info = SubInfo(user_profile, sub, stream)
+            sub_info = SubInfo(user_profile, sub, stream, auto_color)
             subs_to_add.append(sub_info)
 
     if len(subs_to_add) == 0 and len(subs_to_activate) == 0:
@@ -1200,6 +1237,7 @@ def do_change_subscription_property(
 ) -> None:
     database_property_name = property_name
     database_value = value
+    update_fields = [database_property_name]
 
     # For this property, is_muted is used in the database, but
     # in_home_view is still in the API, since we haven't fully
@@ -1207,10 +1245,24 @@ def do_change_subscription_property(
     if property_name == "in_home_view":
         database_property_name = "is_muted"
         database_value = not value
+        update_fields = [database_property_name]
+
+    if property_name == "color" and database_value is None and sub.auto_color is None:
+        if sub.color is not None:
+            sub.auto_color = sub.color
+        else:
+            used_colors = get_used_colors_for_user_ids([user_profile.id]).get(
+                user_profile.id, set()
+            )
+            assert stream.recipient_id is not None
+            sub.auto_color = pick_colors(used_colors, {}, [stream.recipient_id])[
+                stream.recipient_id
+            ]
+        update_fields.append("auto_color")
 
     old_value = getattr(sub, database_property_name)
     setattr(sub, database_property_name, database_value)
-    sub.save(update_fields=[database_property_name])
+    sub.save(update_fields=update_fields)
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,

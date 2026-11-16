@@ -134,7 +134,12 @@ test("update_property", ({override, override_rewire}) => {
     override(compose_recipient, "on_compose_select_recipient_update", noop);
     override(realm, "server_supported_permission_settings", server_supported_permission_settings);
     override(user_group_edit, "update_stream_setting_in_permissions_panel", noop);
-    const sub = {...frontend};
+    const sub = {
+        ...frontend,
+        default_color: "#123456",
+        auto_color: "yellow",
+        color_is_default: true,
+    };
     stream_data.add_sub_for_tests(sub);
 
     const stream_id = sub.stream_id;
@@ -159,6 +164,32 @@ test("update_property", ({override, override_rewire}) => {
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);
         assert.equal(args.val, "blue");
+    }
+
+    // Test resetting a personal color follows the default color.
+    {
+        const stub = make_stub();
+        override(stream_color_events, "update_stream_color", stub.f);
+        stream_events.update_property(stream_id, "color", null);
+
+        assert.equal(sub.color_is_default, true);
+        assert.equal(stub.num_calls, 1);
+
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.val, "#123456");
+
+        // Updating the default color updates subscriptions that follow it.
+        stream_events.update_property(stream_id, "default_color", "#654321");
+
+        assert.equal(stub.num_calls, 2);
+        assert.equal(sub.default_color, "#654321");
+
+        // But it must not overwrite a personal color override.
+        sub.color_is_default = false;
+        stream_events.update_property(stream_id, "default_color", "#abcdef");
+
+        assert.equal(stub.num_calls, 2);
+        assert.equal(sub.default_color, "#abcdef");
     }
 
     // Test in home view (code coverage; until event/property removed)
