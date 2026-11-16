@@ -15996,7 +15996,7 @@ paths:
                     - 1 - All topics in order of recent activity
                     - 2 - Resolved topics after unresolved topics
 
-                    **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                    **Changes**: New in Zulip 14.0 (feature level 525).
                   type: integer
                   enum:
                     - 1
@@ -20190,7 +20190,7 @@ paths:
                               - 1 - All topics in order of recent activity
                               - 2 - Resolved topics after unresolved topics
 
-                              **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                              **Changes**: New in Zulip 14.0 (feature level 525).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -22639,7 +22639,7 @@ paths:
                               - 1 - All topics in order of recent activity
                               - 2 - Resolved topics after unresolved topics
 
-                              **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                              **Changes**: New in Zulip 14.0 (feature level 525).
                           web_left_sidebar_show_channel_folders:
                             type: boolean
                             description: |
@@ -24028,7 +24028,7 @@ paths:
                     - 1 - All topics in order of recent activity
                     - 2 - Resolved topics after unresolved topics
 
-                    **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+                    **Changes**: New in Zulip 14.0 (feature level 525).
                   type: integer
                   enum:
                     - 1
@@ -29337,7 +29337,7 @@ components:
             - 1 - All topics in order of recent activity
             - 2 - Resolved topics after unresolved topics
 
-            **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+            **Changes**: New in Zulip 14.0 (feature level 525).
         in_home_view:
           type: boolean
           deprecated: true
@@ -31847,7 +31847,7 @@ components:
           `web_left_sidebar_topics_order` setting, 1 for all topics in
           order of recent activity, 2 for resolved topics after unresolved
           topics.<br>
-          **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
+          **Changes**: New in Zulip 14.0 (feature level 525).
       example: "pin_to_top"
     SubscriptionPropertyValue:
       oneOf:
@@ -31869,8 +31869,7 @@ components:
         `"web_left_sidebar_topics_order"`, then `value` is an integer.
         For all other above properties, `value` is a boolean.
 
-        **Changes**: Integer values are new in Zulip 14.0 (feature level
-        ZF-02efb5).
+        **Changes**: Integer values are new in Zulip 14.0 (feature level 525).
       example: "true"
 
   ###################
