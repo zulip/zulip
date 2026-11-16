@@ -1,5 +1,6 @@
 import base64
 import copy
+import hashlib
 import json
 import logging
 import os
@@ -5376,6 +5377,16 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
                 self.JWKS_URL = original_JWKS_URL
                 self.USER_INFO_URL = original_USER_INFO_URL
                 self.AUTH_FINISH_URL = original_AUTH_FINISH_URL
+
+    def test_social_auth_oidc_pkce(self) -> None:
+        with self.mock_oidc_discovery(self.BASE_OIDC_URL):
+            result = self.client_get(self.LOGIN_URL, subdomain="zulip")
+            result = self.client_get(result["Location"])
+        params = parse_qs(urlsplit(result["Location"]).query)
+        self.assertEqual(params["code_challenge_method"], ["S256"])
+        digest = hashlib.sha256(self.client.session["oidc_code_verifier"].encode()).digest()
+        code_challenge = base64.urlsafe_b64encode(digest).decode().rstrip("=")
+        self.assertEqual(params["code_challenge"], [code_challenge])
 
     def test_no_idp_parameter(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:
