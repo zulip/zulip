@@ -36,7 +36,7 @@ development environment:
 
 ## Slow internet connections
 
-If you have a very slow network connection, however, you may want to
+If you have a very slow network connection, you may want to
 avoid using Vagrant (which involves downloading an Ubuntu virtual
 machine or Linux container) and [install directly][install-direct] on
 a Linux system.
