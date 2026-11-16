@@ -538,8 +538,13 @@ export function initialize(): void {
         }
         const draft_row = e.target.closest(".overlay-message-info-box");
         if (draft_row instanceof HTMLElement) {
-            // A draft gained focus; mark it as the selected draft.
-            messages_overlay_ui.activate_element(draft_row, keyboard_handling_context);
+            // A draft, or a control inside it, gained focus; mark it as
+            // the selected draft.
+            messages_overlay_ui.handle_row_focus(
+                draft_row,
+                e.target === draft_row,
+                keyboard_handling_context,
+            );
         } else if (e.target.matches(overlay_util.OVERLAY_FOCUSABLE_SELECTOR)) {
             // Another focusable element (e.g. a header button) gained focus;
             // draft info-boxes are already handled by the branch above, so

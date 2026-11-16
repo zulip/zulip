@@ -38,6 +38,23 @@ export function activate_element(elem: HTMLElement, context: Context): void {
     elem.focus({preventScroll: true});
 }
 
+// Called when something inside a row gets focus. If it's the row itself,
+// we select and focus the row as usual. If it's a control inside the row
+// (e.g. a Delete button reached with Tab), we only mark the row as
+// selected, and leave focus on the control so that it can be used.
+export function handle_row_focus(
+    row: HTMLElement,
+    focus_is_on_row: boolean,
+    context: Context,
+): void {
+    if (focus_is_on_row) {
+        activate_element(row, context);
+        return;
+    }
+    $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
+    row.classList.add("active");
+}
+
 export function get_focused_element_id(context: Context): string | undefined {
     return row_with_focus(context).attr(context.id_attribute_name);
 }

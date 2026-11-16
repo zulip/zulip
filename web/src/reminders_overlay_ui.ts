@@ -149,8 +149,8 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement) {
-        messages_overlay_ui.activate_element(this, keyboard_handling_context);
+    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement, e) {
+        messages_overlay_ui.handle_row_focus(this, e.target === this, keyboard_handling_context);
     });
 
     $("body").on("click", ".message-reminder-overlay-link", function (e) {
