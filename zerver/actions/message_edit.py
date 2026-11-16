@@ -73,6 +73,7 @@ from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     RESOLVED_TOPIC_PREFIX,
+    get_latest_message_for_user_in_topic,
     get_topic_display_name,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
@@ -81,7 +82,10 @@ from zerver.lib.topic import (
     update_edit_history,
     update_messages_for_topic_edit,
 )
-from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import (
+    get_stream_topic_link_syntax,
+    topic_link_needs_fallback_markdown_link,
+)
 from zerver.lib.types import (
     DirectMessageEditRequest,
     EditHistoryEvent,
@@ -334,6 +338,27 @@ def maybe_delete_previous_resolve_topic_notification(
     return True
 
 
+def get_topic_link_syntax_for_move_notification(
+    stream: Stream, topic_name: str, user_profile: UserProfile
+) -> str:
+    # The #**channel>topic** syntax gets its `with` operand when it is
+    # rendered, so we only look one up when that syntax can't be used.
+    with_message_id = None
+    if topic_link_needs_fallback_markdown_link(stream.name, topic_name):
+        assert stream.recipient_id is not None
+        with_message_id = get_latest_message_for_user_in_topic(
+            stream.realm_id,
+            user_profile,
+            stream.recipient_id,
+            topic_name,
+            stream.is_history_public_to_subscribers(),
+            acting_user_has_channel_content_access=True,
+        )
+    return get_stream_topic_link_syntax(
+        stream.id, stream.name, topic_name, with_message_id=with_message_id
+    )
+
+
 def send_message_moved_breadcrumbs(
     target_message: Message,
     user_profile: UserProfile,
@@ -352,8 +377,6 @@ def send_message_moved_breadcrumbs(
     old_topic_name = message_edit_request.orig_topic_name
     new_stream = message_edit_request.target_stream
     new_topic_name = message_edit_request.target_topic_name
-    old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
-    new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
     message = {
         "id": target_message.id,
         "stream_id": new_stream.id,
@@ -363,6 +386,9 @@ def send_message_moved_breadcrumbs(
     moved_message_link = stream_message_url(target_message.realm, message)
 
     if new_thread_notification_string is not None:
+        old_topic_link = get_topic_link_syntax_for_move_notification(
+            old_stream, old_topic_name, user_profile
+        )
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
                 sender,
@@ -379,6 +405,9 @@ def send_message_moved_breadcrumbs(
             )
 
     if old_thread_notification_string is not None:
+        new_topic_link = get_topic_link_syntax_for_move_notification(
+            new_stream, new_topic_name, user_profile
+        )
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(

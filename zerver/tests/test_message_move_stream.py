@@ -446,6 +446,70 @@ class MessageMoveStreamTest(ZulipTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
+    def test_move_message_to_topic_name_unsupported_by_topic_link_syntax(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "topic": "new `code` topic",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, new_stream, "new `code` topic")
+        self.assert_length(messages, 4)
+        latest_message_id_in_new_topic = messages[3].id
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to [#new stream > new &#96;code&#96; topic](#narrow/channel/{new_stream.id}-new-stream/topic/new.20.60code.60.20topic/with/{latest_message_id_in_new_topic}) by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_from_topic_name_unsupported_by_topic_link_syntax(self) -> None:
+        (user_profile, old_stream, new_stream, _msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "old `code` topic"
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id_later}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "old `code` topic")
+        self.assert_length(messages, 2)
+        latest_message_id_in_old_topic = messages[1].id
+
+        messages = get_topic_messages(user_profile, new_stream, "old `code` topic")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].id, msg_id_later)
+        moved_message_link = stream_message_url(
+            user_profile.realm,
+            {
+                "id": msg_id_later,
+                "stream_id": new_stream.id,
+                "display_recipient": new_stream.name,
+                "topic": "old `code` topic",
+            },
+        )
+        self.assertEqual(
+            messages[1].content,
+            f"[A message]({moved_message_link}) was moved here from [#test move stream > old &#96;code&#96; topic](#narrow/channel/{old_stream.id}-test-move-stream/topic/old.20.60code.60.20topic/with/{latest_message_id_in_old_topic}) by @_**Iago|{user_profile.id}**.",
+        )
+
     def test_move_message_to_preexisting_topic(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, _msg_id_lt) = self.prepare_move_topics(
             "iago",

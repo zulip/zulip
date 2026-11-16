@@ -58,7 +58,12 @@ def get_message_link_label(
 
 
 def get_fallback_markdown_link(
-    stream_id: int, stream_name: str, topic_name: str | None = None, message_id: int | None = None
+    stream_id: int,
+    stream_name: str,
+    topic_name: str | None = None,
+    message_id: int | None = None,
+    *,
+    with_message_id: int | None = None,
 ) -> str:
     """
     Helper that should only be called by other methods in this file.
@@ -66,10 +71,17 @@ def get_fallback_markdown_link(
     Generates the vanilla markdown link syntax for a stream/topic/message link, as
     a fallback for cases where the nicer Zulip link syntax would not
     render properly due to special characters in the channel or topic name.
+
+    `with_message_id` makes a topic link follow that message if the
+    topic is later moved or renamed, as the `#**channel>topic**` syntax
+    does when rendered.
     """
     link = f"#narrow/channel/{encode_channel(stream_id, stream_name)}"
     if topic_name is not None:
         link += f"/topic/{encode_hash_component(topic_name)}"
+
+    if with_message_id is not None:
+        link += f"/with/{with_message_id}"
 
     if message_id is not None:
         link += f"/near/{message_id}"
@@ -95,11 +107,15 @@ def get_message_link_syntax(
     return f"#**{stream_name}>{topic_name}@{message_id}**"
 
 
-def get_stream_topic_link_syntax(stream_id: int, stream_name: str, topic_name: str) -> str:
+def get_stream_topic_link_syntax(
+    stream_id: int, stream_name: str, topic_name: str, *, with_message_id: int | None = None
+) -> str:
     # If the stream/topic name is such that it will generate an invalid #**stream>topic** syntax,
     # we revert to generating the normal markdown syntax for a link.
     if topic_link_needs_fallback_markdown_link(stream_name, topic_name):
-        return get_fallback_markdown_link(stream_id, stream_name, topic_name)
+        return get_fallback_markdown_link(
+            stream_id, stream_name, topic_name, with_message_id=with_message_id
+        )
     return f"#**{stream_name}>{topic_name}**"
 
 

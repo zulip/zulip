@@ -33,6 +33,16 @@ class TestTopicLinkUtil(ZulipTestCase):
             get_stream_topic_link_syntax(sweden_id, "Sweden", "topic"), "#**Sweden>topic**"
         )
         self.assertEqual(
+            get_stream_topic_link_syntax(sweden_id, "Sweden", "topic", with_message_id=123),
+            "#**Sweden>topic**",
+        )
+        self.assertEqual(
+            get_stream_topic_link_syntax(
+                sweden_id, "Sweden", "test `test` test", with_message_id=123
+            ),
+            f"[#Sweden > test &#96;test&#96; test](#narrow/channel/{sweden_id}-Sweden/topic/test.20.60test.60.20test/with/123)",
+        )
+        self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sweden", "test `test` test"),
             f"[#Sweden > test &#96;test&#96; test](#narrow/channel/{sweden_id}-Sweden/topic/test.20.60test.60.20test)",
         )
