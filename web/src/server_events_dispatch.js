@@ -98,6 +98,7 @@ import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
+import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_events from "./user_events.ts";
@@ -117,6 +118,7 @@ export function dispatch_normal_event(event) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
             alert_words_ui.rerender_alert_words_ui();
+            sidebar_ui.update_expanded_views_for_search(ui_util.get_left_sidebar_search_term());
             break;
 
         case "attachment":
