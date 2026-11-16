@@ -78,15 +78,19 @@ def get_fallback_markdown_link(
     return f"[{text}]({link})"
 
 
+def topic_link_needs_fallback_markdown_link(stream_name: str, topic_name: str) -> bool:
+    return will_produce_broken_stream_topic_link(
+        stream_name
+    ) or will_produce_broken_stream_topic_link(topic_name)
+
+
 def get_message_link_syntax(
     stream_id: int, stream_name: str, topic_name: str, message_id: int
 ) -> str:
     # If the stream/topic name is such that it will
     # generate an invalid #**stream>topic@message_id** syntax,
     # we revert to generating the normal markdown syntax for a link.
-    if will_produce_broken_stream_topic_link(topic_name) or will_produce_broken_stream_topic_link(
-        stream_name
-    ):
+    if topic_link_needs_fallback_markdown_link(stream_name, topic_name):
         return get_fallback_markdown_link(stream_id, stream_name, topic_name, message_id)
     return f"#**{stream_name}>{topic_name}@{message_id}**"
 
@@ -94,9 +98,7 @@ def get_message_link_syntax(
 def get_stream_topic_link_syntax(stream_id: int, stream_name: str, topic_name: str) -> str:
     # If the stream/topic name is such that it will generate an invalid #**stream>topic** syntax,
     # we revert to generating the normal markdown syntax for a link.
-    if will_produce_broken_stream_topic_link(topic_name) or will_produce_broken_stream_topic_link(
-        stream_name
-    ):
+    if topic_link_needs_fallback_markdown_link(stream_name, topic_name):
         return get_fallback_markdown_link(stream_id, stream_name, topic_name)
     return f"#**{stream_name}>{topic_name}**"
 
