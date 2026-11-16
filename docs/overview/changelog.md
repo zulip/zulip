@@ -15,9 +15,27 @@ _Unreleased_
 
 ## Zulip Server 13.x series
 
+### Zulip Server 13.2
+
+_Released 2026-11-12_
+
+- Fixed PostgreSQL failing to start on new installations.
+
+### Zulip Server 13.1
+
+_Released 2026-11-12_
+
+- Fixed a relative help link in the level 28 announcement.
+
 ### Zulip Server 13.0
 
 _Released 2026-11-12_
+
+- Added support for Norwegian Nynorsk (nn), Somali (so), Armenian (hy), Thai (th), and Croatian (hr).
+- Added a Google Meet video call integration.
+- Fixed several security issues related to bot ownership, organization exports, and guest access to files.
+- Fixed signup behavior when password authentication is disabled.
+- Send a notification when users are unsubscribed from channels.
 
 ### Zulip Server 13.0-rc1
 
@@ -711,7 +729,7 @@ _Released 2026-04-27_
   and to correctly manage persistent-connection lifetime.
 - Improved the event queue subsystem to support long-lived client
   queues: after an idle period, such queues are marked offline and
-  missed-message notifications fire, while the queue itself is
+  missed-message notifications fire, while th:e queue itself is
   retained so that a mobile client can resume without a full
   re-fetch.
 - Migrated Tornado rate-limiting to the shared Redis GCRA backend,
