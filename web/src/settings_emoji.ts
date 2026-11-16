@@ -27,6 +27,62 @@ const meta = {
     loaded: false,
 };
 
+const MAX_EMOJI_CANVAS_DIMENSION = 512;
+
+export type AspectRatioMode = "pad" | "crop";
+
+let current_aspect_ratio_mode: AspectRatioMode = "pad";
+let current_padded_file: File | null = null;
+let is_non_square = false;
+
+export function get_current_aspect_ratio_mode(): AspectRatioMode {
+    return current_aspect_ratio_mode;
+}
+
+export function reset_custom_emoji_upload_state(): void {
+    current_aspect_ratio_mode = "pad";
+    current_padded_file = null;
+    is_non_square = false;
+}
+
+export async function pad_image_to_square(image: HTMLImageElement, file: File): Promise<File> {
+    if (typeof document === "undefined" || !("createElement" in document)) {
+        return file;
+    }
+
+    const max_original_dim = Math.max(image.naturalWidth, image.naturalHeight);
+    const canvas_size = Math.min(MAX_EMOJI_CANVAS_DIMENSION, max_original_dim);
+    const scale = canvas_size / max_original_dim;
+    const scaled_width = Math.round(image.naturalWidth * scale);
+    const scaled_height = Math.round(image.naturalHeight * scale);
+    const dx = Math.round((canvas_size - scaled_width) / 2);
+    const dy = Math.round((canvas_size - scaled_height) / 2);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas_size;
+    canvas.height = canvas_size;
+    const ctx = canvas.getContext("2d");
+    if (ctx !== null) {
+        ctx.clearRect(0, 0, canvas_size, canvas_size);
+        ctx.drawImage(image, dx, dy, scaled_width, scaled_height);
+    }
+
+    if (typeof canvas.toBlob !== "function") {
+        return file;
+    }
+
+    return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+            if (blob === null) {
+                resolve(file);
+                return;
+            }
+            const new_name = file.name.replace(/\.[^.]+$/, "") + ".png";
+            resolve(new File([blob], new_name, {type: "image/png"}));
+        }, "image/png");
+    });
+}
+
 function can_delete_emoji(emoji: ServerEmoji): boolean {
     if (current_user.is_admin) {
         return true;
@@ -173,12 +229,15 @@ export function add_custom_emoji_post_render(): void {
     const $file_name_field = $("#emoji-file-name");
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
+    const $toggle_button = $("#emoji_aspect_ratio_toggle_button");
+    const $toggle_button_label = $("#emoji_aspect_ratio_toggle_button .action-button-label");
     const $upload_button = $("#emoji_upload_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
 
     $preview_image.hide();
+    $toggle_button.hide();
 
     upload_widget.build_widget(
         get_file_input,
@@ -189,6 +248,81 @@ export function add_custom_emoji_post_render(): void {
         $preview_text,
         $preview_image,
     );
+
+    $toggle_button.on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!is_non_square) {
+            return;
+        }
+
+        if (current_aspect_ratio_mode === "pad") {
+            current_aspect_ratio_mode = "crop";
+            if ($toggle_button_label.length > 0) {
+                $toggle_button_label.text($t({defaultMessage: "Pad to square"}));
+            } else {
+                $toggle_button.text($t({defaultMessage: "Pad to square"}));
+            }
+            $preview_image.removeClass("preview-pad").addClass("preview-crop");
+        } else {
+            current_aspect_ratio_mode = "pad";
+            if ($toggle_button_label.length > 0) {
+                $toggle_button_label.text($t({defaultMessage: "Crop to square"}));
+            } else {
+                $toggle_button.text($t({defaultMessage: "Crop to square"}));
+            }
+            $preview_image.removeClass("preview-crop").addClass("preview-pad");
+        }
+    });
+
+    get_file_input().on("change", () => {
+        reset_custom_emoji_upload_state();
+        $toggle_button.hide();
+        $preview_image.removeClass("preview-crop preview-pad");
+
+        const input = util.the(get_file_input());
+        const file = input.files?.[0];
+        if (file === undefined) {
+            return;
+        }
+
+        if (file.type === "image/gif") {
+            return;
+        }
+
+        if (
+            typeof Image === "undefined" ||
+            typeof URL === "undefined" ||
+            typeof URL.createObjectURL !== "function"
+        ) {
+            return;
+        }
+
+        const temp_url = URL.createObjectURL(file);
+        const img = new Image();
+        img.addEventListener("load", () => {
+            if (typeof URL.revokeObjectURL === "function") {
+                URL.revokeObjectURL(temp_url);
+            }
+            void (async () => {
+                if (img.naturalWidth !== img.naturalHeight) {
+                    is_non_square = true;
+                    current_aspect_ratio_mode = "pad";
+                    $toggle_button.show();
+                    if ($toggle_button_label.length > 0) {
+                        $toggle_button_label.text($t({defaultMessage: "Crop to square"}));
+                    } else {
+                        $toggle_button.text($t({defaultMessage: "Crop to square"}));
+                    }
+                    $preview_image.addClass("preview-pad");
+
+                    current_padded_file = await pad_image_to_square(img, file);
+                }
+            })();
+        });
+        img.src = temp_url;
+    });
 
     get_file_input().on("input", () => {
         $placeholder_icon.hide();
@@ -202,6 +336,9 @@ export function add_custom_emoji_post_render(): void {
 
         $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
+        reset_custom_emoji_upload_state();
+        $toggle_button.hide();
+        $preview_image.removeClass("preview-crop preview-pad");
         $preview_image.hide();
         $placeholder_icon.show();
         $preview_text.show();
@@ -227,6 +364,7 @@ function show_modal(): void {
                 contentType: false,
                 success() {
                     dialog_widget.close();
+                    reset_custom_emoji_upload_state();
                 },
                 error(xhr) {
                     $("#dialog_error").hide();
@@ -265,7 +403,11 @@ function show_modal(): void {
         const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
         assert(files !== null);
         for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
+            if (i === 0 && current_aspect_ratio_mode === "pad" && current_padded_file !== null) {
+                formData.append("file-" + i, current_padded_file);
+            } else {
+                formData.append("file-" + i, file);
+            }
         }
 
         if (is_default_emoji(emoji["name"])) {

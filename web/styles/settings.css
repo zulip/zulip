@@ -977,6 +977,16 @@ input[type="checkbox"] {
 
     #emoji_preview_text {
         margin-top: 6px;
+
+        #emoji_preview_image {
+            &.preview-crop {
+                object-fit: cover;
+            }
+
+            &.preview-pad {
+                object-fit: contain;
+            }
+        }
     }
 }
 
