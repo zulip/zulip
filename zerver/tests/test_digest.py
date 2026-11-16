@@ -28,7 +28,11 @@ from zerver.lib.digest import (
     get_recently_created_streams,
     get_user_stream_map,
 )
-from zerver.lib.email_notifications import build_message_list, get_channel_privacy_icon
+from zerver.lib.email_notifications import (
+    build_message_list,
+    format_message_time,
+    get_channel_privacy_icon,
+)
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_color import get_stream_colors
 from zerver.lib.streams import create_stream_if_needed
@@ -832,6 +836,26 @@ class TestDigestEmailMessages(ZulipTestCase):
             [sender_block.avatar_url for sender_block in message_list.senders],
             [absolute_avatar_url(hamlet), absolute_avatar_url(othello)],
         )
+
+        # Each message links to itself, with when it was sent.
+        first_message = message_list.senders[0].content[0]
+        assert first_message.url is not None
+        self.assertTrue(first_message.url.endswith(f"/near/{message_ids[0]}"))
+        self.assertIsNotNone(first_message.time)
+
+    def test_format_message_time(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.timezone = "America/New_York"
+        now = datetime(2026, 11, 16, 15, 0, tzinfo=timezone.utc)
+        with time_machine.travel(now, tick=False):
+            # Messages from today show only the time, in the
+            # recipient's time zone and time format.
+            self.assertEqual(format_message_time(now - timedelta(hours=1), hamlet), "9:00 AM")
+            self.assertEqual(
+                format_message_time(now - timedelta(days=2), hamlet), "Nov 14, 10:00 AM"
+            )
+            hamlet.twenty_four_hour_time = True
+            self.assertEqual(format_message_time(now - timedelta(days=2), hamlet), "Nov 14, 10:00")
 
 
 class TestDigestContentInBrowser(ZulipTestCase):

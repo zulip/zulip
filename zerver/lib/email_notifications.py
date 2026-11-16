@@ -36,12 +36,13 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
-from zerver.lib.timestamp import format_datetime_to_string
+from zerver.lib.timestamp import format_datetime_to_string, format_datetime_with_skeleton
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
+    stream_message_url,
     stream_narrow_url,
     topic_narrow_url,
 )
@@ -55,6 +56,10 @@ from zerver.models.users import get_user_profile_by_id
 class FormattedText:
     plain: str
     html: Markup
+    # For messages shown with sender avatars, in digests: a link to the
+    # message, and when it was sent.
+    url: str | None = None
+    time: str | None = None
 
 
 @dataclass
@@ -269,6 +274,17 @@ def get_channel_privacy_icon(channel: Stream) -> str:
     return "#"
 
 
+def format_message_time(date_sent: datetime, user: UserProfile) -> str:
+    # Like message timestamps in the web app: in the recipient's time
+    # zone and time format, with the date when it isn't today.
+    user_tz = zoneinfo.ZoneInfo(user.timezone or timezone_get_current_timezone_name())
+    local_time = date_sent.astimezone(user_tz)
+    skeleton = "Hm" if user.twenty_four_hour_time else "hm"
+    if local_time.date() != timezone_now().astimezone(user_tz).date():
+        skeleton = "MMMd" + skeleton
+    return format_datetime_with_skeleton(local_time, skeleton)
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
@@ -339,6 +355,23 @@ def build_message_list(
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
+        if with_sender_avatars:
+            assert stream_id_map is not None
+            stream = stream_id_map[message.recipient.type_id]
+            return FormattedText(
+                plain=plain,
+                html=html,
+                url=stream_message_url(
+                    user.realm,
+                    dict(
+                        id=message.id,
+                        stream_id=stream.id,
+                        display_recipient=stream.name,
+                        topic=message.topic_name(),
+                    ),
+                ),
+                time=format_message_time(message.date_sent, user),
+            )
         return FormattedText(plain=plain, html=html)
 
     def build_sender_payload(message: Message) -> SenderPayload:

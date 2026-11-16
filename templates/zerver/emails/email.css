@@ -243,6 +243,7 @@ img.responsive-width {
     background-color: #fff;
     border: 1px solid #d6d6d6;
     border-radius: 7px;
+    overflow: hidden;
 }
 
 /* Like the web app's recipient bar; the background color is the
@@ -272,11 +273,37 @@ img.responsive-width {
     font-weight: normal;
 }
 
-/* Like the web app's message rows: avatar beside the sender's name,
-   with their messages below the name. */
+/* Like the web app's message rows: each message is a row, with the
+   avatar and sender's name on the first of a sender's messages. */
+.hot_convo_message {
+    position: relative;
+}
+
+/* On the /digest page, the whole row links to the message, while
+   links inside the message stay clickable on top. Email clients
+   that drop these rules still link the time. The outline matches
+   the web app's selected message. */
+.hot_convo_message:hover,
+.hot_convo_message:focus-within {
+    outline: 1px solid hsl(217deg 64% 59% / 60%);
+    outline-offset: -1px;
+    border-radius: 5px;
+}
+
+.hot_convo_message_time a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.hot_convo_message_content_block a {
+    position: relative;
+    z-index: 1;
+}
+
 .hot_convo_avatar {
     width: 35px;
-    padding: 8px 11px 8px 15px;
+    padding: 8px 11px 3px 15px;
 }
 
 .hot_convo_avatar img {
@@ -284,13 +311,39 @@ img.responsive-width {
     border-radius: 4px;
 }
 
-.hot_convo_sender_messages {
-    padding: 8px 10px 3px 0;
+.hot_convo_message_body {
+    padding: 8px 0 3px;
 }
 
 .hot_convo_sender_name {
+    color: #0c0c0e;
     font-weight: bold;
     margin-bottom: 2px;
+}
+
+.hot_convo_message_time {
+    width: 1%;
+    padding: 8px 10px 3px 12px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.hot_convo_message_continued .hot_convo_avatar,
+.hot_convo_message_continued .hot_convo_message_body,
+.hot_convo_message_continued .hot_convo_message_time {
+    padding-top: 0;
+}
+
+.hot_convo_message_time a {
+    color: #6c6c80;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.hot_convo_message:hover .hot_convo_message_time a,
+.hot_convo_message_time a:focus-visible {
+    color: #0c0c0e !important;
+    text-decoration: underline;
 }
 
 .hot_convo_message_content_block p {
@@ -418,6 +471,21 @@ img.responsive-width {
     .hot_convo_recipient_header a,
     .hot_convo_recipient_header a:hover {
         color: #e4e4e7 !important;
+    }
+
+    .hot_convo_sender_name,
+    .hot_convo_message:hover .hot_convo_message_time a,
+    .hot_convo_message_time a:focus-visible {
+        color: #e4e4e7 !important;
+    }
+
+    .hot_convo_message_time a {
+        color: #a0a0b4 !important;
+    }
+
+    .hot_convo_message:hover,
+    .hot_convo_message:focus-within {
+        outline-color: hsl(217deg 64% 59% / 70%) !important;
     }
 
     .hot_convo_separator {
