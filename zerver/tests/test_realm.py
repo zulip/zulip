@@ -1207,7 +1207,7 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             message_retention_days=10,
-            video_chat_provider=10,
+            video_chat_provider=15,
             gif_rating_policy=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
@@ -1250,7 +1250,7 @@ class RealmTest(ZulipTestCase):
         )
         self.login("iago")
 
-        invalid_video_chat_provider_value = 10
+        invalid_video_chat_provider_value = 15
         req = {"video_chat_provider": orjson.dumps(invalid_video_chat_provider_value).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(
