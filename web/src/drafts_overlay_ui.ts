@@ -398,9 +398,10 @@ function setup_event_handlers(): void {
         update_bulk_delete_ui();
     });
 
-    $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
-        const is_checked = is_checkbox_icon_checked($(e.target));
-        toggle_checkbox_icon_state($(e.target), !is_checked);
+    $("#drafts_table .overlay_message_controls .draft-selection-tooltip").on("click", function () {
+        const $checkbox = $(this).find(".draft-selection-checkbox");
+        const is_checked = is_checkbox_icon_checked($checkbox);
+        toggle_checkbox_icon_state($checkbox, !is_checked);
         update_bulk_delete_ui();
     });
 }
