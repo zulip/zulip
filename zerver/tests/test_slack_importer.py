@@ -20,6 +20,8 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from requests.adapters import HTTPAdapter
+from requests.exceptions import RetryError
 from requests.models import PreparedRequest
 
 from confirmation import settings as confirmation_settings
@@ -33,6 +35,7 @@ from zerver.data_import.import_util import (
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
+    _data_import_session,
     build_defaultstream,
     build_usermessages,
     build_zerver_realm,
@@ -4054,6 +4057,54 @@ To Do
             logs.output,
         )
         self.assertEqual("Failed downloading file.", str(e.exception))
+
+    @responses.activate
+    def test_download_and_export_upload_file_rate_limited(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/DEF.png?token=xoxe-AAA-BBB-CCC-DDD"
+        output_dir = self.make_import_output_dir("slack")
+
+        for _ in range(6):
+            responses.add(responses.GET, request_url, status=429)
+        responses.add(responses.GET, request_url, body=b"file contents")
+        download_and_export_upload_file(
+            output_dir,
+            UploadFileRequest(
+                output_file_path_id="DEF.png",
+                request_url=request_url,
+                params=None,
+                headers=None,
+                kwargs={},
+            ),
+        )
+        self.assert_length(responses.calls, 7)
+        with open(os.path.join(output_dir, "uploads", "DEF.png"), "rb") as f:
+            self.assertEqual(f.read(), b"file contents")
+
+        # A 7th rate-limited response gives up on the file.
+        responses.reset()
+        for _ in range(7):
+            responses.add(responses.GET, request_url, status=429)
+        with self.assertRaises(RetryError):
+            download_and_export_upload_file(
+                output_dir,
+                UploadFileRequest(
+                    output_file_path_id="GHI.png",
+                    request_url=request_url,
+                    params=None,
+                    headers=None,
+                    kwargs={},
+                ),
+            )
+        self.assert_length(responses.calls, 7)
+
+        # responses doesn't sleep between retries, so check the retry
+        # settings that determine the backoff instead.
+        adapter = _data_import_session.get_adapter(request_url)
+        assert isinstance(adapter, HTTPAdapter)
+        self.assertEqual(adapter.max_retries.total, 6)
+        self.assertEqual(adapter.max_retries.backoff_factor, 2)
+        self.assertEqual(adapter.max_retries.backoff_jitter, 4)
+        self.assertTrue(adapter.max_retries.respect_retry_after_header)
 
     @responses.activate
     def test_slack_get_emojis(self) -> None:
