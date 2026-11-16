@@ -20,6 +20,20 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 14.0
 
+**Feature level 524**
+
+* `PATCH /bots/{bot_id}`: Sending `service_payload_url` for a bot
+  that is not an outgoing-webhook bot now returns an HTTP 400 error.
+* `PATCH /bots/{bot_id}`: `service_interface` and
+  `service_payload_url` can now be updated independently.
+  Sending only `service_payload_url` no longer resets the
+  interface to generic. Sending `service_interface` for a
+  bot that is not an outgoing-webhook bot, or with an invalid
+  value, now returns an error instead of being ignored.
+* `PATCH /bots/{bot_id}`: The endpoint no longer returns the current
+  state of the bot in the response data; on success, it now returns
+  a standard JSON success response with no additional fields.
+
 **Feature level 523**
 
 No changes; start of Zulip 14.0 development branch.
