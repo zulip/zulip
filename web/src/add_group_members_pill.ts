@@ -118,22 +118,13 @@ export function create({
     });
 
     if (onPillCreateAction) {
-        // Each pill starts its own subscriber fetch, and a fetch waits
-        // only for the pills present when it started, so only the most
-        // recent fetch knows about every pill and may hide the spinner.
-        let latest_fetch_id = 0;
         const $loading_spinner = $parent_container.find(".add-group-member-loading-spinner");
         pill_widget.onPillCreate(() => {
             void (async () => {
-                latest_fetch_id += 1;
-                const fetch_id = latest_fetch_id;
                 loading.make_indicator($loading_spinner, {
                     height: 28, // 2em at 14px / 1em
                 });
                 const result = await get_pill_user_ids(pill_widget);
-                if (fetch_id !== latest_fetch_id) {
-                    return;
-                }
                 if (result.status === "success") {
                     onPillCreateAction(result.user_ids, get_pill_group_ids(pill_widget));
                 }
