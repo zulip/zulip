@@ -682,12 +682,20 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    // Like for drafts above, let the browser handle Enter on a focused
+    // button, like Delete, instead of opening the focused message.
     if (overlays.scheduled_messages_open()) {
+        if ($("#scheduled_messages_overlay").find("button:focus").length > 0) {
+            return false;
+        }
         scheduled_messages_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
 
     if (overlays.reminders_open()) {
+        if ($("#reminders-overlay").find("button:focus").length > 0) {
+            return false;
+        }
         reminders_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
