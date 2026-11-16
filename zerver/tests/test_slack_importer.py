@@ -81,7 +81,14 @@ from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
-from zerver.models import Message, PreregistrationRealm, Realm, RealmAuditLog, UserProfile
+from zerver.models import (
+    Attachment,
+    Message,
+    PreregistrationRealm,
+    Realm,
+    RealmAuditLog,
+    UserProfile,
+)
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
@@ -282,6 +289,7 @@ class SlackImporter(ZulipTestCase):
                 thread_counter=thread_counter,
                 thread_map=thread_map,
                 thread_reply_counts=thread_reply_counts,
+                slack_file_id_to_attachment={},
             )
 
     @responses.activate
@@ -1400,6 +1408,7 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
                 "files": [
                     {
+                        "id": "F0APPLE",
                         "url_private": "https://files.slack.com/apple.png",
                         "title": "Apple",
                         "name": "apple.png",
@@ -1443,6 +1452,7 @@ class SlackImporter(ZulipTestCase):
             thread_counter=defaultdict(int),
             thread_map={},
             thread_reply_counts=count_thread_replies(iter(all_messages), False),
+            slack_file_id_to_attachment={},
         )
 
         zerver_message = conversion_result.zerver_message
@@ -2195,6 +2205,7 @@ message body text
             thread_counter=defaultdict(int),
             thread_map={},
             thread_reply_counts=count_thread_replies(iter(all_messages), True),
+            slack_file_id_to_attachment={},
         )
 
         zerver_message = conversion_result.zerver_message
@@ -2356,7 +2367,6 @@ To Do
         self.assertEqual(test_reactions, reactions)
 
     @responses.activate
-    @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
@@ -2367,7 +2377,6 @@ To Do
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
-        mock_attachment: mock.Mock,
     ) -> None:
         test_slack_dir = os.path.join(
             settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "slack_fixtures"
@@ -2487,7 +2496,14 @@ To Do
         # All auth backends are enabled initially.
         self.assertTrue(all(realm.authentication_methods_dict().values()))
 
-        Realm.objects.filter(name=test_realm_subdomain).delete()
+        attachments = Attachment.objects.filter(realm=realm)
+        self.assertSetEqual(
+            {attachment.file_name for attachment in attachments}, {"IMG_0677.JPG", "dirac72.md"}
+        )
+        for attachment in attachments:
+            [message] = attachment.messages.all()
+            self.assertIn(f"/user_uploads/{attachment.path_id})", message.content)
+            self.assertTrue(message.has_attachment)
 
         remove_folder(output_dir)
         self.assertFalse(os.path.exists(output_dir))
@@ -2502,6 +2518,7 @@ To Do
         )
         files = [
             dict(
+                id="F0APPLE",
                 url_private="https://files.slack.com/apple.png",
                 title="Apple",
                 name="apple.png",
@@ -2517,6 +2534,7 @@ To Do
             # A Slack-hosted non-image after the image guards against
             # has_image getting reassigned to False.
             dict(
+                id="F0NOTES",
                 url_private="https://files.slack.com/notes.pdf",
                 title="Notes",
                 name="notes.pdf",
@@ -2541,6 +2559,8 @@ To Do
 
         zerver_attachment: list[AttachmentRecordData] = []
         uploads_list: list[UploadRecordData] = []
+        download_requests: list[UploadFileRequest] = []
+        slack_file_id_to_attachment: dict[str, AttachmentRecordData] = {}
 
         info = process_message_files(
             message=message,
@@ -2552,10 +2572,12 @@ To Do
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
-            do_download_and_export_upload_file=lambda request: None,
+            do_download_and_export_upload_file=download_requests.append,
+            slack_file_id_to_attachment=slack_file_id_to_attachment,
         )
         self.assert_length(zerver_attachment, 2)
         self.assert_length(uploads_list, 2)
+        self.assert_length(download_requests, 2)
 
         image_path = zerver_attachment[0].path_id
         pdf_path = zerver_attachment[1].path_id
@@ -2572,6 +2594,48 @@ To Do
         self.assertEqual(uploads_list[0].s3_path, image_path)
         self.assertEqual(uploads_list[0].realm_id, realm_id)
         self.assertEqual(uploads_list[0].user_profile_id, alice_id)
+
+        # A file shared again in a later message is attached to it
+        # without being downloaded again.
+        info = process_message_files(
+            message=dict(user=alice_id, files=files[:1]),
+            domain_name=domain_name,
+            realm_id=realm_id,
+            message_id=100,
+            slack_user_id=slack_user_id,
+            users=users,
+            slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
+            zerver_attachment=zerver_attachment,
+            uploads_list=uploads_list,
+            do_download_and_export_upload_file=download_requests.append,
+            slack_file_id_to_attachment=slack_file_id_to_attachment,
+        )
+        self.assert_length(zerver_attachment, 2)
+        self.assert_length(uploads_list, 2)
+        self.assert_length(download_requests, 2)
+        self.assertEqual(zerver_attachment[0].messages, [99, 100])
+        self.assertEqual(zerver_attachment[1].messages, [99])
+        self.assertEqual(info["content"], f"[Apple](/user_uploads/{image_path})")
+        self.assertTrue(info["has_link"])
+        self.assertTrue(info["has_image"])
+
+        # A message that lists the same file twice is attached to it
+        # only once.
+        process_message_files(
+            message=dict(user=alice_id, files=[files[0], files[0]]),
+            domain_name=domain_name,
+            realm_id=realm_id,
+            message_id=101,
+            slack_user_id=slack_user_id,
+            users=users,
+            slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
+            zerver_attachment=zerver_attachment,
+            uploads_list=uploads_list,
+            do_download_and_export_upload_file=download_requests.append,
+            slack_file_id_to_attachment=slack_file_id_to_attachment,
+        )
+        self.assert_length(download_requests, 2)
+        self.assertEqual(zerver_attachment[0].messages, [99, 100, 101])
 
     def test_bot_duplicates(self) -> None:
         self.assertEqual(

@@ -595,7 +595,7 @@ def build_attachment(
     fileinfo: ZerverFieldsT,
     s3_path: str,
     zerver_attachment: list[AttachmentRecordData],
-) -> None:
+) -> AttachmentRecordData:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
     information about 'size', 'created' (created time) and ['name'] (filename).
@@ -617,7 +617,9 @@ def build_attachment(
     attachment_dict["messages"] = list(message_ids)
     attachment_dict["realm"] = realm_id
 
-    zerver_attachment.append(AttachmentRecordData(**attachment_dict))
+    attachment_record = AttachmentRecordData(**attachment_dict)
+    zerver_attachment.append(attachment_record)
+    return attachment_record
 
 
 def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:

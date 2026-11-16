@@ -8,6 +8,7 @@
         "channel_name": "random",
         "files": [
             {
+                "id": "F0APPLE",
                 "url_private": "https://files.slack.com/apple.png",
                 "title": "Apple",
                 "name": "apple.png",
