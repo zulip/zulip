@@ -774,7 +774,8 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": new_stream.name,
             "topic": "test",
         }
-        moved_message_link = stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(messages[1].realm, message, conversation_link=True)
+        self.assertIn(f"/with/{msg_id_later}", moved_message_link)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -819,7 +820,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": new_stream.name,
             "topic": "test",
         }
-        moved_message_link = stream_message_url(messages[2].realm, message)
+        moved_message_link = stream_message_url(messages[2].realm, message, conversation_link=True)
         self.assert_length(messages, 3)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -1884,7 +1885,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": stream.name,
             "topic": "edited",
         }
-        moved_message_link = stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(messages[1].realm, message, conversation_link=True)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
@@ -1931,7 +1932,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "display_recipient": stream.name,
             "topic": "edited",
         }
-        moved_message_link = stream_message_url(messages[0].realm, message)
+        moved_message_link = stream_message_url(messages[0].realm, message, conversation_link=True)
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(

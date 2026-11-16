@@ -360,7 +360,7 @@ def send_message_moved_breadcrumbs(
         "display_recipient": new_stream.name,
         "topic": new_topic_name,
     }
-    moved_message_link = stream_message_url(target_message.realm, message)
+    moved_message_link = stream_message_url(target_message.realm, message, conversation_link=True)
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
