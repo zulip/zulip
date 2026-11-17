@@ -19,7 +19,11 @@ def digest_page(request: HttpRequest) -> HttpResponse:
     cutoff = time.mktime((timezone_now() - timedelta(days=DIGEST_CUTOFF)).timetuple())
 
     context = get_digest_context(user_profile, cutoff)
-    context.update(physical_address=settings.PHYSICAL_ADDRESS)
+    assert settings.STATIC_URL is not None
+    context.update(
+        email_images_base_url=settings.STATIC_URL + "images/emails",
+        physical_address=settings.PHYSICAL_ADDRESS,
+    )
 
     email_body_html = render_to_string("zerver/emails/digest.html", context, request=request)
 

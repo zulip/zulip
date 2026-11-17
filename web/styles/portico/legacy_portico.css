@@ -31,13 +31,6 @@ html {
     position: fixed;
 }
 
-.digest-address-link {
-    margin-top: 10px;
-    color: hsl(0deg 0% 60%);
-    font-size: 12px;
-    text-align: center;
-}
-
 .normal {
     font-weight: normal;
 }

@@ -136,7 +136,6 @@ img.responsive-width {
 }
 
 .body p,
-p.digest_paragraph,
 .content ul,
 .content ol {
     font-family: sans-serif;
@@ -168,7 +167,6 @@ p.digest_paragraph,
     color: #2e2eff !important;
 }
 
-.digest_paragraph a,
 .sponsorship_request_link,
 .support_request_link,
 .email-preferences a,
@@ -177,7 +175,6 @@ p.digest_paragraph,
     text-decoration: underline;
 }
 
-.digest_paragraph a:hover,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
 .email-preferences a:hover,
@@ -230,9 +227,9 @@ p.digest_paragraph,
 
 /* CSS for digest email content. */
 .messages {
-    width: 600px;
-    font-size: 12px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    width: 100%;
+    font-size: 14px;
+    font-family: sans-serif;
     overflow-y: auto;
     margin-bottom: 12px;
 }
@@ -256,6 +253,23 @@ p.digest_paragraph,
 .hot_convo_message_content_block {
     padding-left: 6px;
     font-weight: normal;
+}
+
+/* Restore bullets on user-authored lists, which the .content list
+   rules above flatten for our hand-written onboarding emails. */
+.hot_convo_message_content ul,
+.hot_convo_message_content ol {
+    padding-left: 20px;
+}
+
+.hot_convo_message_content ul li {
+    list-style: disc;
+    margin-left: 0;
+}
+
+.hot_convo_message_content ol li {
+    list-style: decimal;
+    margin-left: 0;
 }
 
 /* Text and link colors for missed-message emails. */

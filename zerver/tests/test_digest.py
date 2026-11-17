@@ -790,6 +790,9 @@ class TestDigestContentInBrowser(ZulipTestCase):
         # Only the page's own <html> and <body>; the email's are left out.
         self.assertEqual(result.content.decode().count("<body"), 1)
         self.assertEqual(result.content.decode().count("<html"), 1)
+        # The email's <body> is embedded as a <div>, so that its
+        # attributes don't apply to the page's own <body>.
+        self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
 
 
 class TestDigestTopics(ZulipTestCase):
