@@ -1,5 +1,6 @@
 import time
 from datetime import timedelta
+from urllib.parse import urlencode
 
 import lxml.html
 from django.conf import settings
@@ -11,6 +12,18 @@ from zerver.decorator import zulip_login_required
 from zerver.lib.digest import DIGEST_CUTOFF, get_digest_context
 from zerver.lib.send_email import get_inliner_instance
 
+# Prototype: introduction variants to preview, while we figure out
+# which organization settings the intro needs.
+DIGEST_INTRO_PREVIEWS = {
+    "default": "Default",
+    "custom": "Custom",
+    "none": "None",
+}
+DIGEST_CUSTOM_INTRO_EXAMPLE = (
+    "Welcome back to {realm_name}! Our community call is every Thursday at "
+    "16:00 UTC, and new members are always welcome to say hi in #social."
+)
+
 
 @zulip_login_required
 def digest_page(request: HttpRequest) -> HttpResponse:
@@ -20,6 +33,27 @@ def digest_page(request: HttpRequest) -> HttpResponse:
 
     context = get_digest_context(user_profile, cutoff)
     context.update(physical_address=settings.PHYSICAL_ADDRESS, page_is_digest=True)
+
+    selected = {"intro": request.GET.get("intro", "default")}
+    if selected["intro"] not in DIGEST_INTRO_PREVIEWS:
+        selected["intro"] = "default"
+
+    def switch(name: str, label: str, options: dict[str, str]) -> dict[str, object]:
+        return {
+            "name": name,
+            "label": label,
+            "selected_label": options[selected[name]],
+            "links": [
+                (option_label, f"?{urlencode({**selected, name: key})}", key == selected[name])
+                for key, option_label in options.items()
+            ],
+        }
+
+    context.update(
+        digest_intro=selected["intro"],
+        digest_custom_intro=DIGEST_CUSTOM_INTRO_EXAMPLE.format(realm_name=user_profile.realm.name),
+        digest_switches=[switch("intro", "Intro", DIGEST_INTRO_PREVIEWS)],
+    )
 
     email_body_html = render_to_string("zerver/emails/digest.html", context, request=request)
 
