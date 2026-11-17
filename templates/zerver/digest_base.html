@@ -16,8 +16,12 @@
             </div>
             <br />
             <br />
-            <h2 class="digest-page-title">Plain text version</h2>
-            <pre class="digest-plain-text">{% include 'zerver/emails/digest.txt' %}</pre>
+            <details class="digest-plain-text-section">
+                <summary class="digest-plain-text-summary">
+                    <h3 class="digest-plain-text-title">{{ _("Plain text version") }}</h3>
+                </summary>
+                <pre class="digest-plain-text">{% include 'zerver/emails/digest.txt' %}</pre>
+            </details>
         </div>
         {% include 'zerver/footer.html' %}
     </div>

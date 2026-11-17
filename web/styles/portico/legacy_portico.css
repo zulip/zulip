@@ -385,9 +385,49 @@ html {
     margin-bottom: 60px;
 }
 
-.digest-page-title {
-    text-align: center;
+/* Lines up with the conversations in the email above, which are
+   inset by the email's .container and .content padding plus its
+   table cell spacing. */
+.digest-plain-text-section {
+    box-sizing: border-box;
+    max-width: 688px;
+    margin: 0 auto;
+    padding: 0 26px;
+}
+
+.digest-plain-text-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+
+    /* Chevron pointing right, turned down while open. */
+    &::before {
+        content: "";
+        width: 0.5em;
+        height: 0.5em;
+        border-right: 2px solid currentcolor;
+        border-bottom: 2px solid currentcolor;
+        transform: rotate(-45deg);
+    }
+}
+
+.digest-plain-text-section[open] .digest-plain-text-summary::before {
+    transform: rotate(45deg);
+}
+
+.digest-plain-text-title {
+    margin: 0;
     font-weight: 400;
+}
+
+.digest-plain-text-section .digest-plain-text {
+    margin-top: 15px;
 }
 
 /* The digest email follows the system color scheme, so the page
