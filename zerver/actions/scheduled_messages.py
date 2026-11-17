@@ -36,7 +36,8 @@ from zerver.lib.reminders import get_reminder_formatted_content, notify_remove_r
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_global_time
-from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.models import Client, Realm, ScheduledMessage, Stream, Subscription, UserProfile
 from zerver.models.users import get_system_bot, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -426,6 +427,46 @@ def send_failed_scheduled_message_notification(
         user_profile,
         content,
     )
+
+
+def notify_senders_of_scheduled_messages_to_moved_topic(stream: Stream, topic_name: str) -> None:
+    # Scheduled messages are not moved along with a topic, since the
+    # sender might not want their message in the new location. Instead,
+    # we let them know, so that they can edit or delete it.
+    scheduled_messages = list(
+        ScheduledMessage.objects.filter(
+            realm_id=stream.realm_id,
+            stream_id=stream.id,
+            subject__iexact=topic_name,
+            delivered=False,
+            failed=False,
+            delivery_type=ScheduledMessage.SEND_LATER,
+        ).select_related("sender")
+    )
+    if not scheduled_messages:
+        return
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
+    topic_link = get_stream_topic_link_syntax(stream.id, stream.name, topic_name)
+    for scheduled_message in scheduled_messages:
+        sender = scheduled_message.sender
+        with override_language(sender.default_language):
+            content = "".join(
+                [
+                    _(
+                        "The topic {topic_link} was moved. Your message scheduled for {delivery_datetime} will still be sent to the original topic."
+                    ),
+                    "\n\n",
+                    _("[View scheduled messages](#scheduled)"),
+                ]
+            )
+
+        content = content.format(
+            topic_link=topic_link,
+            delivery_datetime=datetime_to_global_time(scheduled_message.scheduled_timestamp),
+        )
+
+        internal_send_private_message(notification_bot, sender, content)
 
 
 @transaction.atomic(durable=True)

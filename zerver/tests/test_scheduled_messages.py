@@ -19,7 +19,7 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.message import is_message_to_self
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.users import get_system_bot
@@ -458,6 +458,76 @@ class ScheduledMessageTest(ZulipTestCase):
             "channel", verona_stream_id, f"{content} 1", scheduled_delivery_timestamp
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
+
+    def test_notify_sender_when_topic_of_scheduled_message_is_moved(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        notification_bot = self.notification_bot(hamlet.realm)
+        verona_id = self.get_stream_id("Verona")
+        first_message_id = self.send_stream_message(hamlet, "Verona", topic_name="Test topic")
+        second_message_id = self.send_stream_message(hamlet, "Verona", topic_name="Test topic")
+        self.do_schedule_message("channel", verona_id, "Later", int(time.time() + 86400))
+        scheduled_message = self.last_scheduled_message()
+
+        def get_notifications() -> list[str]:
+            return list(
+                Message.objects.filter(
+                    realm_id=hamlet.realm_id,
+                    sender=notification_bot,
+                    content__contains="(#scheduled)",
+                )
+                .order_by("id")
+                .values_list("content", flat=True)
+            )
+
+        # Moving one message leaves the topic in place, so the scheduled
+        # message still goes where the sender expects.
+        result = self.api_patch(
+            iago,
+            f"/api/v1/messages/{second_message_id}",
+            {"topic": "Split topic", "propagate_mode": "change_one"},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_notifications(), [])
+
+        result = self.api_patch(
+            iago,
+            f"/api/v1/messages/{first_message_id}",
+            {"topic": "\N{HEAVY CHECK MARK} Test topic", "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+        delivery_datetime = datetime_to_global_time(scheduled_message.scheduled_timestamp)
+        self.assertEqual(
+            get_notifications(),
+            [
+                f"The topic #**Verona>Test topic** was moved. Your message scheduled for {delivery_datetime} will still be sent to the original topic.\n\n[View scheduled messages](#scheduled)"
+            ],
+        )
+        scheduled_message.refresh_from_db()
+        self.assertEqual(scheduled_message.topic_name(), "Test topic")
+
+        # Moving a topic to another channel notifies the sender too.
+        message_id = self.send_stream_message(hamlet, "Verona", topic_name="Other topic")
+        self.api_post(
+            hamlet,
+            "/api/v1/scheduled_messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(verona_id).decode(),
+                "topic": "Other topic",
+                "content": "Later",
+                "scheduled_delivery_timestamp": int(time.time() + 86400),
+            },
+        )
+        result = self.api_patch(
+            iago,
+            f"/api/v1/messages/{message_id}",
+            {"stream_id": self.get_stream_id("Denmark"), "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+        notifications = get_notifications()
+        self.assert_length(notifications, 2)
+        self.assertIn("#**Verona>Other topic** was moved.", notifications[1])
 
     def test_edit_schedule_message(self) -> None:
         content = "Original test message"
