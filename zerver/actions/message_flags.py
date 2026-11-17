@@ -109,7 +109,7 @@ def do_mark_stream_messages_as_read(
         )
     )
 
-    if topic_name:
+    if topic_name is not None:
         query = filter_by_topic_name_via_message(
             query=query,
             topic_name=topic_name,

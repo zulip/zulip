@@ -766,6 +766,47 @@ class UnreadCountTests(ZulipTestCase):
             if msg.user_profile_id == hamlet.id:
                 self.assertFalse(msg.flags.read)
 
+    def test_mark_all_in_empty_topic_read(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        for user in [hamlet, cordelia, iago]:
+            self.subscribe(user, "test_stream")
+            self.subscribe(user, "second_stream")
+        stream = get_stream("test_stream", hamlet.realm)
+
+        for topic_name in ["", Message.EMPTY_TOPIC_FALLBACK_NAME]:
+            with self.subTest(topic_name=topic_name):
+                message_id = self.send_stream_message(cordelia, "test_stream", topic_name="")
+                unrelated_message_id = self.send_stream_message(
+                    cordelia, "test_stream", topic_name="other_topic"
+                )
+                other_stream_message_id = self.send_stream_message(
+                    cordelia, "second_stream", topic_name=""
+                )
+
+                with self.capture_send_event_calls(expected_num_events=1) as events:
+                    result = self.client_post(
+                        "/json/mark_topic_as_read",
+                        {"stream_id": stream.id, "topic_name": topic_name},
+                    )
+
+                self.assert_json_success(result)
+                self.assertEqual(events[0]["event"]["messages"], [message_id])
+                self.assertTrue(
+                    UserMessage.objects.get(user_profile=hamlet, message_id=message_id).flags.read
+                )
+                for unread_message_id in [unrelated_message_id, other_stream_message_id]:
+                    self.assertFalse(
+                        UserMessage.objects.get(
+                            user_profile=hamlet, message_id=unread_message_id
+                        ).flags.read
+                    )
+                self.assertFalse(
+                    UserMessage.objects.get(user_profile=iago, message_id=message_id).flags.read
+                )
+
     def test_mark_all_in_invalid_topic_read(self) -> None:
         self.login("hamlet")
         invalid_topic_name = "abc"
@@ -959,7 +1000,20 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         third_message_id = self.send_stream_message(
             cordelia, "second_stream", "hello", "test_topic"
         )
+        empty_topic_message_id = self.send_stream_message(cordelia, "test_stream", "hello", "")
 
+        self.assertEqual(
+            self.get_mobile_push_notification_ids(user_profile),
+            [message_id, second_message_id, third_message_id, empty_topic_message_id],
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_post(
+                "/json/mark_topic_as_read",
+                {"stream_id": str(stream.id), "topic_name": ""},
+            )
+
+        self.assert_json_success(result)
         self.assertEqual(
             self.get_mobile_push_notification_ids(user_profile),
             [message_id, second_message_id, third_message_id],
