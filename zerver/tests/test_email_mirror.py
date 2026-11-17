@@ -1867,6 +1867,94 @@ class TestReplyExtraction(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, text)
 
+    def test_receive_html_with_invalid_xml_characters(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+
+        incoming_message = EmailMessage()
+        incoming_message.set_content("<p>Hello\x0bworld</p>", subtype="html")
+        incoming_message["Subject"] = "Invalid XML characters"
+        incoming_message["From"] = user_profile.delivery_email
+        incoming_message["To"] = encode_email_address(stream.name, email_token)
+
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Helloworld")
+
+    def test_receive_html_with_invalid_xml_decimal_reference(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+
+        incoming_message = EmailMessage()
+        incoming_message.set_content("<p>Hello&#11;world</p>", subtype="html")
+        incoming_message["Subject"] = "Invalid XML decimal reference"
+        incoming_message["From"] = user_profile.delivery_email
+        incoming_message["To"] = encode_email_address(stream.name, email_token)
+
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Helloworld")
+
+    def test_receive_html_with_invalid_xml_hex_reference_in_attribute(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+
+        incoming_message = EmailMessage()
+        incoming_message.set_content('<p title="&#xB;">Helloworld</p>', subtype="html")
+        incoming_message["Subject"] = "Invalid XML hex reference"
+        incoming_message["From"] = user_profile.delivery_email
+        incoming_message["To"] = encode_email_address(stream.name, email_token)
+
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Helloworld")
+
+    def test_receive_html_with_oversized_xml_decimal_reference(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+
+        for digits, expected_content in [
+            ("9" * 5000, "Helloworld"),
+            ("0" * 5000 + "128512", "Hello😀world"),
+        ]:
+            with self.subTest(expected_content=expected_content):
+                incoming_message = EmailMessage()
+                incoming_message.set_content(f"<p>Hello&#{digits};world</p>", subtype="html")
+                incoming_message["Subject"] = "Oversized XML decimal reference"
+                incoming_message["From"] = user_profile.delivery_email
+                incoming_message["To"] = encode_email_address(stream.name, email_token)
+
+                process_message(incoming_message)
+                message = most_recent_message(user_profile)
+                self.assertEqual(message.content, expected_content)
+
+    def test_receive_html_with_valid_and_invalid_xml_references(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+
+        incoming_message = EmailMessage()
+        incoming_message.set_content(
+            "<p>café &lt;b&gt; &amp; &#128512; &#xFDD0;</p><p>bad &#1114112; &#x110000; &#xB;</p>",
+            subtype="html",
+        )
+        incoming_message["Subject"] = "Valid and invalid XML references"
+        incoming_message["From"] = user_profile.delivery_email
+        incoming_message["To"] = encode_email_address(stream.name, email_token)
+
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "café <b> & 😀 \ufdd0\n\nbad")
+
     def test_reply_is_extracted_from_html(self) -> None:
         # build dummy messages for stream
         # test valid incoming stream message is processed properly

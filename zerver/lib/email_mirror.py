@@ -325,6 +325,26 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> st
         if include_quotes:
             return convert_html_to_markdown(html_content)
         else:
+            invalid_xml_characters = re.compile(
+                r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]"
+            )
+            html_content = invalid_xml_characters.sub("", html_content)
+
+            def strip_invalid_xml_reference(match: Match[str]) -> str:
+                digits = match[1]
+                try:
+                    codepoint = (
+                        int(digits[1:], 16) if digits[0] in "xX" else int(digits.lstrip("0") or "0")
+                    )
+                except ValueError:
+                    return ""
+                if codepoint > 0x10FFFF or invalid_xml_characters.fullmatch(chr(codepoint)):
+                    return ""
+                return f"&#{codepoint};"
+
+            html_content = re.sub(
+                r"&#([xX][0-9a-fA-F]+|[0-9]+);?", strip_invalid_xml_reference, html_content
+            )
             return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
     else:
         return None
