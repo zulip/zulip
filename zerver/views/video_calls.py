@@ -568,6 +568,9 @@ def make_zoom_video_call(
     *,
     is_video_call: Json[bool] = True,
 ) -> HttpResponse:
+    if not user.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     # The meeting host has the ability to configure both their own and
     # participants' default video on/off state for the meeting. That's
     # why when creating a meeting, configure the video on/off default
@@ -591,6 +594,9 @@ def make_zoom_video_call(
 
 @typed_endpoint_without_parameters
 def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    if not user.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     room_id = WebexOAuthProvider().maybe_generate_public_room_id(user)
     payload: WebexAdhocMeetingPayload | WebexPersonalRoomMeetingPayload
 
@@ -621,6 +627,9 @@ def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpRespon
 
 @typed_endpoint_without_parameters
 def make_google_meet_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    if not user.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     return GoogleMeetOAuthProvider().make_video_call(request, user)
 
 
@@ -639,6 +648,9 @@ def get_bigbluebutton_url(
     meeting_name: str,
     voice_only: Json[bool] = False,
 ) -> HttpResponse:
+    if not user_profile.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
@@ -748,6 +760,9 @@ def make_constructor_groups_video_call(
     request: HttpRequest,
     user_profile: UserProfile,
 ) -> HttpResponse:
+    if not user_profile.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     service = ConstructorGroupsService()
     room_name = _("{full_name}'s Zulip room").format(full_name=user_profile.full_name)
 
@@ -773,6 +788,9 @@ MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH = 255
 def create_nextcloud_talk_url(
     request: HttpRequest, user: UserProfile, *, room_name: str
 ) -> HttpResponse:
+    if not user.can_create_video_calls():
+        raise JsonableError(_("Insufficient permission"))
+
     if (
         settings.NEXTCLOUD_SERVER is None
         or settings.NEXTCLOUD_TALK_USERNAME is None

@@ -118,6 +118,7 @@ def update_realm(
     can_create_groups: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_create_video_calls_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_write_only_bots_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
