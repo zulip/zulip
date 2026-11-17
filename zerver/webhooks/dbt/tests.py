@@ -22,6 +22,21 @@ Job #123 was kicked off from the UI by bwilliams@example.com at <time:2025-10-05
 Job #123 was kicked off from the UI by bwilliams@example.com at <time:2023-01-31T21:14:41Z>."""
         self.check_webhook("job_run_errored", "Example Project", expected_message)
 
+    def test_job_run_cancelled(self) -> None:
+        expected_topic = "Zulip Analytics"
+        expected_message = """:cross_mark: Analytics Build deployment cancelled in **Production**.\n
+Job #12345 was cancelled by user at <time:2023-10-27T10:00:00Z>."""
+        self.check_webhook("job_run_cancelled", expected_topic, expected_message)
+
+    def test_ping_event_without_data(self) -> None:
+        payload = {"accountId": 1, "eventType": "webhooks.ping"}
+        result = self.client_post(
+            self.url,
+            payload,
+            content_type="application/json",
+        )
+        self.assert_json_error(result, "Event 'webhooks.ping' is not supported")
+
 
 class DbtHookWithAccessUrlTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/dbt?&api_key={api_key}&stream={stream}&access_url=https%3A%2F%2Fexample.us1.dbt.com"

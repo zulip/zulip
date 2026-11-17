@@ -1,0 +1,15 @@
+{
+  "accountId": 1,
+  "eventType": "job.run.cancelled",
+  "data": {
+    "jobId": "12345",
+    "jobName": "Analytics Build",
+    "projectName": "Zulip Analytics",
+    "projectId": "6789",
+    "environmentName": "Production",
+    "runId": "98765",
+    "runStartedAt": "2023-10-27T10:00:00Z",
+    "runStatus": "Cancelled",
+    "runReason": "Cancelled by user"
+  }
+}

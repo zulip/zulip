@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
@@ -26,15 +27,27 @@ EVENT_TYPE_MAPPER = {
     "job.run.errored": {
         "errored": (":cross_mark:", "failed"),
     },
+    "job.run.cancelled": {
+        "cancelled": (":cross_mark:", "cancelled"),
+    },
 }
 
 ALL_EVENT_TYPES = list(EVENT_TYPE_MAPPER.keys())
 
 
 def extract_data_from_payload(payload: JsonBodyPayload[WildValue]) -> dict[str, str]:
+    event_type = payload["eventType"].tame(check_string)
+
+    if "data" not in payload:
+        raise UnsupportedWebhookEventType(event_type)
+
+    run_status = payload["data"]["runStatus"].tame(check_string).lower()
+
+    if event_type not in EVENT_TYPE_MAPPER or run_status not in EVENT_TYPE_MAPPER[event_type]:
+        raise UnsupportedWebhookEventType(f"{event_type}:{run_status}")
     data: dict[str, str] = {
         "account_id": str(payload["accountId"].tame(check_int)),
-        "event_type": payload["eventType"].tame(check_string),
+        "event_type": event_type,
         "job_id": payload["data"]["jobId"].tame(check_string),
         "job_name": payload["data"]["jobName"].tame(check_string),
         "project_name": payload["data"]["projectName"].tame(check_string),
@@ -42,7 +55,7 @@ def extract_data_from_payload(payload: JsonBodyPayload[WildValue]) -> dict[str, 
         "environment": payload["data"]["environmentName"].tame(check_string),
         "run_id": payload["data"]["runId"].tame(check_string),
         "start_time": payload["data"]["runStartedAt"].tame(check_string),
-        "run_status": payload["data"]["runStatus"].tame(check_string).lower(),
+        "run_status": run_status,
     }
     # We only change the capitalization of the first letter in this
     # string for the formatting of our notification template.
