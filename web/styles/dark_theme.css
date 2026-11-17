@@ -74,10 +74,6 @@
         opacity: 0.2;
     }
 
-    #recent-view-content-table {
-        border-bottom-width: 1px;
-    }
-
     .overlay-message-row
         .message_header_private_message
         .message_label_clickable {
