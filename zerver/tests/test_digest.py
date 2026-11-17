@@ -838,7 +838,9 @@ class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
         self.login("hamlet")
         result = self.client_get("/digest/")
-        self.assert_in_success_response(["Log in to Zulip to catch up"], result)
+        self.assert_in_success_response(
+            ["Open Zulip</a> to catch up.", "Open Zulip to catch up:"], result
+        )
         # Only the page's own <html> and <body>; the email's are left out.
         self.assertEqual(result.content.decode().count("<body"), 1)
         self.assertEqual(result.content.decode().count("<html"), 1)
