@@ -46,7 +46,10 @@ offered by most popular AI model API providers.
 - **Server settings**: You can control costs using `INPUT_COST_PER_GIGATOKEN`,
   `OUTPUT_COST_PER_GIGATOKEN`, and `MAX_PER_USER_MONTHLY_AI_COST` settings,
   which let you set a monthly per-user AI usage budget with whatever pricing is
-  appropriate for your selected model.
+  appropriate for your selected model. When a budget is configured, summary
+  requests for the same user run one at a time and check the recorded usage
+  before contacting the model. A final request can exceed the remaining budget,
+  since its cost is only known after the model responds.
 - **Organization settings**: Administrators can specify who can use each AI
   feature that is enabled by the server. The permission can be assigned to any
   combination of roles, groups, and individual users.

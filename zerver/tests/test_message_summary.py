@@ -8,8 +8,11 @@ from openai.resources.chat.completions import Completions
 from openai.types.chat import ChatCompletion
 from typing_extensions import override
 
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import UserCount
+from zerver.actions.message_summary import get_topic_summary_completion
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import NamedUserGroup
 from zerver.models.groups import SystemGroups
@@ -133,6 +136,87 @@ class MessagesSummaryTestCase(ZulipTestCase):
         ):
             response = self.client_get("/json/messages/summary")
             self.assert_json_error_contains(response, "Reached monthly limit for AI credits.")
+
+    def test_budget_rechecked_before_completion(self) -> None:
+        do_increment_logging_stat(
+            self.user,
+            COUNT_STATS["ai_credit_usage::day"],
+            None,
+            datetime(2025, 2, 18, tzinfo=timezone.utc),
+            1_000_000_000,
+        )
+        with (
+            self.settings(MAX_PER_USER_MONTHLY_AI_COST=1),
+            mock.patch.object(Completions, "create") as create,
+            self.assertRaisesRegex(JsonableError, "Reached monthly limit for AI credits"),
+        ):
+            get_topic_summary_completion(self.user, "test-model", [])
+        create.assert_not_called()
+
+    def test_completion_without_budget(self) -> None:
+        with open(LLM_FIXTURES_FILE, "rb") as f:
+            fake_response = ChatCompletion.model_validate(orjson.loads(f.read())["response"])
+
+        with (
+            self.settings(
+                MAX_PER_USER_MONTHLY_AI_COST=None,
+                TOPIC_SUMMARIZATION_API_KEY="test",
+                INPUT_COST_PER_GIGATOKEN=1,
+                OUTPUT_COST_PER_GIGATOKEN=1,
+            ),
+            mock.patch.object(Completions, "create", return_value=fake_response),
+            mock.patch(
+                "zerver.actions.message_summary.UserProfile.objects.select_for_update"
+            ) as lock,
+        ):
+            self.assertEqual(
+                get_topic_summary_completion(self.user, "test-model", []), fake_response
+            )
+        lock.assert_not_called()
+        assert fake_response.usage is not None
+        self.assertEqual(
+            COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(self.user),
+            fake_response.usage.total_tokens,
+        )
+
+    def test_provider_failure_does_not_charge_budget(self) -> None:
+        with (
+            self.settings(MAX_PER_USER_MONTHLY_AI_COST=1, TOPIC_SUMMARIZATION_API_KEY="test"),
+            mock.patch.object(Completions, "create", side_effect=RuntimeError("Provider failed")),
+            self.assertRaisesRegex(RuntimeError, "Provider failed"),
+        ):
+            get_topic_summary_completion(self.user, "test-model", [])
+
+        self.assertEqual(
+            COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(self.user),
+            0,
+        )
+
+    def test_rendering_failure_preserves_usage(self) -> None:
+        with open(LLM_FIXTURES_FILE, "rb") as f:
+            fake_response = ChatCompletion.model_validate(orjson.loads(f.read())["response"])
+
+        with (
+            self.settings(
+                TOPIC_SUMMARIZATION_MODEL="test-model",
+                TOPIC_SUMMARIZATION_API_KEY="test",
+                INPUT_COST_PER_GIGATOKEN=1,
+                OUTPUT_COST_PER_GIGATOKEN=1,
+            ),
+            mock.patch.object(Completions, "create", return_value=fake_response),
+            mock.patch(
+                "zerver.actions.message_summary.markdown_convert",
+                side_effect=RuntimeError("Rendering failed"),
+            ),
+            self.assertRaisesRegex(RuntimeError, "Rendering failed"),
+        ):
+            self.client_get("/json/messages/summary")
+
+        assert fake_response.usage is not None
+        self.assertEqual(
+            COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(self.user),
+            fake_response.usage.total_tokens,
+        )
 
     def test_permission_to_summarize_message_in_topics(self) -> None:
         narrow = orjson.dumps([["channel", self.channel_name], ["topic", self.topic_name]]).decode()

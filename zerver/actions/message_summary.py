@@ -3,11 +3,14 @@ from typing import Any, Literal
 
 import orjson
 from django.conf import settings
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from openai import OpenAI
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.message import messages_for_ids
 from zerver.lib.narrow import (
@@ -81,6 +84,53 @@ def get_max_summary_length(conversation_length: int) -> int:
     # Longer summaries work better for longer conversation.
     # TODO: Test more with message content length.
     return min(6, 4 + int((conversation_length - 10) / 10))
+
+
+def check_ai_credit_usage(user_profile: UserProfile) -> None:
+    if settings.MAX_PER_USER_MONTHLY_AI_COST is not None:
+        used_credits = COUNT_STATS["ai_credit_usage::day"].current_month_accumulated_count_for_user(
+            user_profile
+        )
+        if used_credits >= settings.MAX_PER_USER_MONTHLY_AI_COST * 1000000000:
+            raise JsonableError(_("Reached monthly limit for AI credits."))
+
+
+@transaction.atomic(durable=True)
+def get_topic_summary_completion(
+    user_profile: UserProfile, model: str, messages: list[ChatCompletionMessageParam]
+) -> ChatCompletion:
+    if settings.MAX_PER_USER_MONTHLY_AI_COST is not None:
+        # Serialize the budget check and usage recording across requests for
+        # this user. The lock must outlive the provider call, since its cost
+        # is only known when the response arrives.
+        UserProfile.objects.select_for_update(no_key=True).only("id").get(id=user_profile.id)
+        check_ai_credit_usage(user_profile)
+
+    # Stats for database queries are tracked separately.
+    ai_stats_start()
+    client = OpenAI(
+        api_key=settings.TOPIC_SUMMARIZATION_API_KEY,
+        base_url=settings.TOPIC_SUMMARIZATION_API_BASE,
+    )
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        **settings.TOPIC_SUMMARIZATION_PARAMETERS,
+    )
+    assert response.usage is not None
+    input_tokens = response.usage.prompt_tokens
+    output_tokens = response.usage.completion_tokens
+
+    # Divide by 1 billion to get actual cost in USD.
+    credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
+        input_tokens * settings.INPUT_COST_PER_GIGATOKEN
+    )
+    ai_stats_finish()
+
+    do_increment_logging_stat(
+        user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
+    )
+    return response
 
 
 def do_summarize_narrow(
@@ -166,45 +216,7 @@ def do_summarize_narrow(
         make_message(prompt),
     ]
 
-    # Stats for database queries are tracked separately.
-    ai_stats_start()
-
-    # TODO when implementing user plans:
-    # - Before querying the model, check whether we've enough tokens left using
-    # an estimated token count.
-    # - Then increase the `LoggingCountStat` using the estimated token count.
-    # (These first two steps should be a short database transaction that
-    # locks the `LoggingCountStat` row).
-    # - Then query the model.
-    # - Then adjust the `LoggingCountStat` by `(actual - estimated)`,
-    # being careful to avoid doing this to the next day if the query
-    # happened milliseconds before midnight; changing the
-    # `LoggingCountStat` we added the estimate to.
-    # That way, you can't easily get extra tokens by sending
-    # 25 requests all at once when you're just below the limit.
-
-    client = OpenAI(
-        api_key=settings.TOPIC_SUMMARIZATION_API_KEY,
-        base_url=settings.TOPIC_SUMMARIZATION_API_BASE,
-    )
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        **settings.TOPIC_SUMMARIZATION_PARAMETERS,
-    )
-    assert response.usage is not None
-    input_tokens = response.usage.prompt_tokens
-    output_tokens = response.usage.completion_tokens
-
-    # Divide by 1 billion to get actual cost in USD.
-    credits_used = (output_tokens * settings.OUTPUT_COST_PER_GIGATOKEN) + (
-        input_tokens * settings.INPUT_COST_PER_GIGATOKEN
-    )
-    ai_stats_finish()
-
-    do_increment_logging_stat(
-        user_profile, COUNT_STATS["ai_credit_usage::day"], None, timezone_now(), credits_used
-    )
+    response = get_topic_summary_completion(user_profile, model, messages)
 
     summary = response.choices[0].message.content
     assert summary is not None
