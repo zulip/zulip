@@ -55,6 +55,7 @@ class Command(BaseCommand):
             "-hooks-http-forward-headers=Cookie,Authorization",
             "--hooks-enabled-events=pre-create,pre-finish,pre-terminate",
             "-disable-download",
+            "-disable-concatenation",
             "--show-startup-logs=false",
         ]
         env_vars = os.environ.copy()

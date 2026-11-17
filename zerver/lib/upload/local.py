@@ -79,6 +79,12 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
+        # tusd uses this directory too, and trusts any "<upload ID>.info"
+        # file in it as that upload's metadata, which can point it at
+        # arbitrary paths on disk. So uploaded files must never have
+        # such a name.
+        if sanitized_file_name.lower().endswith(".info"):
+            sanitized_file_name += "-file"
         # Split into 256 subdirectories to prevent directories from getting too big
         return "/".join(
             [

@@ -51,6 +51,12 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assert_length(b"zulip!", uploaded_file.size)
 
+    def test_upload_message_attachment_info_suffix(self) -> None:
+        # Files named like tusd's metadata files get a different path.
+        user_profile = self.example_user("hamlet")
+        url = upload_message_attachment("evil.INFO", "text/plain", b"zulip!", user_profile)[0]
+        self.assertTrue(url.endswith("/evil.INFO-file"))
+
     def test_save_attachment_contents(self) -> None:
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
