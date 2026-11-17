@@ -2,6 +2,7 @@
 {% if hot_conversations %}
 {% for convo in hot_conversations %}{% with recipient_block=convo.first_few_messages %}{{ recipient_block.header.plain }}
 {% for sender_block in recipient_block.senders %}
+{{ sender_block.sender }}:
 {% for message_block in sender_block.content %}{{ message_block.plain }}
 {% endfor %}{% endfor %}
 {% if convo.count > 0 %}{% trans count=convo.count, participants=convo.participants|display_list(2), topic_url=convo.topic_url %}{{ count }} more message by {{ participants }}: {{ topic_url }}{% pluralize %}{{ count }} more messages by {{ participants }}: {{ topic_url }}{% endtrans %}

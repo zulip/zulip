@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 import time_machine
+from django.template.loader import render_to_string
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -103,6 +104,11 @@ class TestDigestEmailMessages(ZulipTestCase):
         )
         self.assertEqual(teaser_messages[0].avatar_url, absolute_avatar_url(sender))
         self.assertNotIn(f"<b>{sender.full_name}</b>", teaser_messages[0].content[0].html)
+        # The plain text version names the sender above their messages.
+        plain_text = render_to_string(
+            "zerver/emails/digest.txt", kwargs["context"], using="Jinja2_plaintext"
+        )
+        self.assertIn(f"{sender.full_name}:\n{teaser_messages[0].content[0].plain}", plain_text)
 
         # The recipient bar uses Othello's own color for the channel.
         verona = get_stream("Verona", othello.realm)
