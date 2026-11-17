@@ -297,6 +297,107 @@ img.responsive-width {
     margin: 0 0 5px;
 }
 
+/* Code blocks: keep a light grey background so Pygments syntax highlighting stays readable */
+.hot_convo_message_content_block .codehilite {
+    display: block;
+    border: none;
+    background: none;
+    margin: 0 0 5px;
+}
+
+.hot_convo_message_content_block pre {
+    background-color: #f6f6f9;
+    border: 1px solid #d6d6d6;
+    border-radius: 4px;
+    color: #0c0c0e;
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+    padding: 8px 10px;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.hot_convo_message_content_block pre code {
+    background-color: transparent;
+    border: 0;
+    color: inherit;
+    font-size: inherit;
+    padding: 0;
+    white-space: inherit;
+}
+
+/* Inline code */
+.hot_convo_message_content_block code {
+    background-color: #f0f0f5;
+    border: 1px solid #e1e1e8;
+    border-radius: 3px;
+    color: #c7254e;
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-size: 12px;
+    padding: 1px 4px;
+}
+
+/* Blockquotes: plain indented text without a left border bar */
+.hot_convo_message_content_block blockquote {
+    border-left: none;
+    margin: 0 0 5px;
+    padding: 0 0 0 15px;
+}
+
+/* Markdown tables */
+.hot_convo_message_content_block table {
+    border-collapse: collapse;
+    margin: 0 0 5px;
+}
+
+.hot_convo_message_content_block th,
+.hot_convo_message_content_block td {
+    border: 1px solid #d6d6d6;
+    padding: 4px 8px;
+}
+
+.hot_convo_message_content_block th {
+    background-color: #f5f5fa;
+    font-weight: bold;
+}
+
+/* Images & inline media previews */
+.hot_convo_message_content_block img {
+    max-width: 100%;
+    height: auto;
+}
+
+.hot_convo_message_content_block .message_inline_image img {
+    max-height: 300px;
+    border: 1px solid #d6d6d6;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+/* Emojis */
+.hot_convo_message_content_block img.emoji {
+    height: 18px;
+    width: 18px;
+    vertical-align: text-bottom;
+    border: none;
+    padding: 0;
+}
+
+/* Spoilers */
+.hot_convo_message_content_block .spoiler-block {
+    border: 1px solid #808080;
+    border-radius: 8px;
+    margin: 0 0 5px;
+    padding: 4px 10px;
+}
+
+.hot_convo_message_content_block .spoiler-header {
+    font-weight: bold;
+    padding: 4px 0;
+}
+
 /* Restore bullets on user-authored lists, which the .content list
    rules above flatten for our hand-written onboarding emails. */
 .hot_convo_message_content ul,
@@ -425,6 +526,37 @@ img.responsive-width {
     .hot_convo_recipient_block .hot_convo_more:hover {
         background-color: #30315a !important;
         color: #e4e4e7 !important;
+    }
+    .hot_convo_message_content_block .codehilite,
+    .hot_convo_message_content_block pre {
+        background-color: #f6f6f9 !important;
+        border-color: #d6d6d6 !important;
+        color: #0c0c0e !important;
+    }
+
+    .hot_convo_message_content_block code {
+        background-color: #343554 !important;
+        border-color: #494b73 !important;
+        color: #f28b9f !important;
+    }
+
+    .hot_convo_message_content_block pre code {
+        background-color: transparent !important;
+        border: none !important;
+        color: inherit !important;
+    }
+
+    .hot_convo_message_content_block th,
+    .hot_convo_message_content_block td {
+        border-color: #3a3b64 !important;
+    }
+
+    .hot_convo_message_content_block th {
+        background-color: #30315a !important;
+    }
+
+    .hot_convo_message_content_block .message_inline_image img {
+        border-color: #3a3b64 !important;
     }
 }
 

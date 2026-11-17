@@ -150,7 +150,7 @@ def _lab_to_rgb(lab: Lab) -> RGB:
 def _parse_hex(hex_color: str) -> RGB:
     # Subscription colors are validated by check_color, which also
     # accepts 3- to 5-digit codes. Like colord, ignore the alpha digit
-    # of a 4-digit code, and treat an unparseable 5-digit one as black.
+    # of a 4-digit code, and treat an unparsable 5-digit one as black.
     hex_digits = hex_color.removeprefix("#")
     if len(hex_digits) in (3, 4):
         hex_digits = "".join(digit * 2 for digit in hex_digits[:3])
