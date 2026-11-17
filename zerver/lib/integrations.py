@@ -170,7 +170,6 @@ class Integration:
         self.client_name = client_name if client_name is not None else name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
-        self.doc = doc
         self.url_options = url_options
 
         self.screenshot_configs: (
