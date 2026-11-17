@@ -330,9 +330,9 @@ class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
 
 
 def rate_limit_spectator_attachment_access_by_file(path_id: str) -> None:
-    ratelimited, _ = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
+    ratelimited, secs_to_freedom = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
     if ratelimited:
-        raise RateLimitedError
+        raise RateLimitedError(secs_to_freedom)
 
 
 def is_local_addr(addr: str) -> bool:

@@ -1542,6 +1542,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(429, response.status_code)
 
+        # The rate limit error tells the spectator how long to wait.
+        now = timezone_now()
+        with ratelimit_rule(86400, 1, domain="spectator_attachment_access_by_file"):
+            with time_machine.travel(now, tick=False):
+                response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+                self.assertEqual(302, response.status_code)
+            with time_machine.travel(now + timedelta(seconds=0.5), tick=False):
+                response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+                self.assertEqual(429, response.status_code)
+                self.assertEqual(response.json()["retry-after"], 86400)
+                self.assertEqual(response["Retry-After"], "86400")
+
     def test_get_user_avatar_medium(self) -> None:
         cordelia = self.example_user("cordelia")
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
