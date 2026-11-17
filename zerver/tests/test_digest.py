@@ -790,6 +790,10 @@ class TestDigestContentInBrowser(ZulipTestCase):
         # Only the page's own <html> and <body>; the email's are left out.
         self.assertEqual(result.content.decode().count("<body"), 1)
         self.assertEqual(result.content.decode().count("<html"), 1)
+        self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
+        # The page header shows the logo, so the email's own logo is
+        # left out of the page.
+        self.assert_not_in_success_response(["email_logo_color.png"], result)
 
 
 class TestDigestTopics(ZulipTestCase):
