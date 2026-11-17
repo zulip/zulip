@@ -347,6 +347,57 @@
               help_link="/help/guest-users#configure-whether-guests-can-see-all-other-users"}}
         </div>
 
+        <div id="org-call-settings" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3 class="settings-subsection-title">{{t "Call settings" }}
+                    {{> ../help_link_widget link="/help/configure-call-provider" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="call-settings" show_save_discard_buttons=true }}
+            </div>
+
+            <div class="input-group">
+                <label for="id_realm_video_chat_provider" class="settings-field-label">
+                    {{t 'Call provider' }}
+                </label>
+                <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
+                    {{#each (object_values realm_available_video_chat_providers)}}
+                        <option value='{{this.id}}'>{{this.name}}</option>
+                    {{/each}}
+                </select>
+
+                <div class="dependent-settings-block" id="realm_jitsi_server_url_setting">
+                    <div>
+                        <label for="id_realm_jitsi_server_url" class="settings-field-label">
+                            {{t "Jitsi server URL" }}
+                            {{> ../help_link_widget link="/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet" }}
+                        </label>
+                        <select name="realm_jitsi_server_url" id="id_realm_jitsi_server_url" class="setting-widget prop-element settings_select bootstrap-focus-style" data-setting-widget-type="jitsi-server-url-setting">
+                            {{#if server_jitsi_server_url}}
+                                <option value="server_default">
+                                    {{#tr}}{server_jitsi_server_url} (default){{/tr}}
+                                </option>
+                            {{else}}
+                                <option value="server_default">{{t 'Disabled' }}</option>
+                            {{/if}}
+                            <option value="custom">{{t 'Custom URL' }}</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="id_realm_jitsi_server_url_custom_input" class="jitsi_server_url_custom_input_label">
+                            {{t 'URL' }}
+                        </label>
+                        <input type="text" id="id_realm_jitsi_server_url_custom_input" autocomplete="off"
+                          name="realm_jitsi_server_url_custom_input" class="realm_jitsi_server_url_custom_input settings_url_input" maxlength="200" />
+                    </div>
+                </div>
+            </div>
+
+            {{> group_setting_value_pill_input
+              setting_name="realm_can_create_video_calls_group"
+              label=group_setting_labels.can_create_video_calls_group}}
+        </div>
+
         <div id="org-other-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3 class="settings-subsection-title">{{t "Other permissions" }}</h3>

@@ -18,6 +18,9 @@ const message_store = mock_esm("../src/message_store");
 mock_esm("../src/resize", {
     watch_manual_resize() {},
 });
+const settings_data = mock_esm("../src/settings_data", {
+    user_can_create_video_calls: () => true,
+});
 set_global("document", {
     hasFocus: () => true,
     querySelector() {},
@@ -701,4 +704,18 @@ test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) =>
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("test_video_and_audio_chat_buttons_hidden_without_permission", ({override}) => {
+    override(settings_data, "user_can_create_video_calls", () => false);
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.jitsi_meet.id,
+    );
+    override(realm, "realm_jitsi_server_url", "https://meet.jit.si");
+    override(window, "to_$", () => $("window-stub"));
+    compose_setup.initialize();
+    assert.equal($(".compose-control-buttons-container .video_link").visible(), false);
+    assert.equal($(".compose-control-buttons-container .audio_link").visible(), false);
 });

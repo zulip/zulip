@@ -807,6 +807,9 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can view all other users in the organization",
         }),
         can_summarize_topics_group: $t({defaultMessage: "Who can use AI summaries"}),
+        can_create_video_calls_group: $t({
+            defaultMessage: "Who can create voice and video call links",
+        }),
         can_create_write_only_bots_group: $t({
             defaultMessage: "Who can create bots that send messages into Zulip",
         }),
@@ -918,6 +921,11 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Guests"}),
         subsection_key: "org-guests-permissions",
         settings: ["can_access_all_users_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Call settings"}),
+        subsection_key: "org-call-settings",
+        settings: ["can_create_video_calls_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Other permissions"}),

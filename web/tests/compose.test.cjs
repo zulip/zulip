@@ -56,6 +56,7 @@ const onboarding_steps = mock_esm("../src/onboarding_steps", {
     ONE_TIME_NOTICES_TO_DISPLAY: new Set(),
 });
 mock_esm("../src/settings_data", {
+    user_can_create_video_calls: () => true,
     user_has_permission_for_group_setting: () => true,
 });
 

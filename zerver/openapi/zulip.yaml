@@ -5334,6 +5334,17 @@ paths:
                                             **Changes**: New in Zulip 9.0 (feature level 266). Previously
                                             `realm_create_private_stream_policy` field used to control the
                                             permission to create private channels.
+                                    can_create_video_calls_group:
+                                      allOf:
+                                        - $ref: "#/components/schemas/GroupSettingValue"
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining
+                                            the set of users who have permission to create voice and
+                                            video call links in this organization. When a user is not in
+                                            this group, the server rejects requests to call-provider
+                                            link-creation endpoints.
+
+                                            **Changes**: New in Zulip 14.0 (feature level ZF-4015ca).
                                     can_create_web_public_channel_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -20968,6 +20979,19 @@ paths:
                               **Changes**: New in Zulip 9.0 (feature level 266). Previously
                               `realm_create_private_stream_policy` field used to control the
                               permission to create private channels.
+                      realm_can_create_video_calls_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining
+                              the set of users who have permission to create voice and
+                              video call links in this organization. When a user is not in
+                              this group, the server rejects requests to call-provider
+                              link-creation endpoints.
+
+                              **Changes**: New in Zulip 14.0 (feature level ZF-4015ca).
                       realm_can_create_web_public_channel_group:
                         allOf:
                           - $ref: "#/components/schemas/GroupSettingValue"
@@ -27699,13 +27723,20 @@ paths:
       description: |
         Create a video call URL for a BigBlueButton video call.
         Requires [BigBlueButton 2.4+](/integrations/big-blue-button)
-        to be configured on the Zulip server.
+        to be configured on the Zulip server, and the current user
+        to have permission under the organization's
+        `can_create_video_calls_group` realm setting.
 
         The acting user will be given the moderator role on the call.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 337), every
-        user was given the moderator role on BigBlueButton calls, via
-        encoding a moderator password in the generated URLs.
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-4015ca),
+        any user in the organization could create
+        BigBlueButton call links if it was configured on the Zulip
+        server.
+
+        Prior to Zulip 10.0 (feature level 337), every user was given
+        the moderator role on BigBlueButton calls, via encoding a
+        moderator password in the generated URLs.
       parameters:
         - in: query
           name: meeting_name
@@ -27760,9 +27791,14 @@ paths:
       description: |
         Create a video call URL for a Nextcloud Talk video call. Requires
         [Nextcloud Talk](/integrations/nextcloud-talk) to be configured on the
-        Zulip server.
+        Zulip server, and the current user to have permission under the
+        organization's `can_create_video_calls_group` realm setting.
 
-        **Changes**: New in Zulip 12.0 (feature level 465).
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-4015ca),
+        any user in the organization could create Nextcloud
+        Talk call links if it was configured on the Zulip server.
+
+        New in Zulip 12.0 (feature level 465).
       requestBody:
         required: true
         content:
@@ -27811,7 +27847,8 @@ paths:
         Create a video call URL for a Webex video call.
 
         Requires [Webex integration](/integrations/webex) to be configured
-        on the Zulip server.
+        on the Zulip server, and the current user to have permission under
+        the organization's `can_create_video_calls_group` realm setting.
 
         Clients should confirm that the user has completed the OAuth process
         with Webex and has a Webex token before attempting to create a video
@@ -27819,7 +27856,11 @@ paths:
         response](/api/register-queue), as well as the [`has_webex_token`
         event type](/api/get-events#has_webex_token).
 
-        **Changes**: New in Zulip 12.0 (feature level 493).
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-4015ca),
+        any user in the organization could create Webex call
+        links if it was configured on the Zulip server.
+
+        New in Zulip 12.0 (feature level 493).
       responses:
         "200":
           description: Success.
@@ -27853,7 +27894,8 @@ paths:
         Create a video call URL for a Google Meet video call.
 
         Requires the [Google Meet integration](/integrations/google-meet) to be
-        configured on the Zulip server.
+        configured on the Zulip server, and the current user to have permission
+        under the organization's `can_create_video_calls_group` realm setting.
 
         Clients should confirm that the user has completed the OAuth process
         with Google and has a Google Meet token before attempting to create a
@@ -27861,7 +27903,11 @@ paths:
         /register` response](/api/register-queue), as well as the
         [`has_google_meet_token` event type](/api/get-events#has_google_meet_token).
 
-        **Changes**: New in Zulip 13.0 (feature level 514).
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-4015ca),
+        any user in the organization could create Google Meet
+        call links if it was configured on the Zulip server.
+
+        New in Zulip 13.0 (feature level 514).
       responses:
         "200":
           description: Success.
@@ -27894,9 +27940,15 @@ paths:
       description: |
         Create a video call URL for a Constructor Groups video call.
         Requires [Constructor Groups](/integrations/constructor-groups)
-        to be configured on the Zulip server.
+        to be configured on the Zulip server, and the current user to
+        have permission under the organization's
+        `can_create_video_calls_group` realm setting.
 
-        **Changes**: New in Zulip 12.0 (feature level 460).
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-4015ca),
+        any user in the organization could create Constructor
+        Groups call links if it was configured on the Zulip server.
+
+        New in Zulip 12.0 (feature level 460).
       responses:
         "200":
           description: Success.

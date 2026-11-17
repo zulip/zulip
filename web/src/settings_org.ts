@@ -284,6 +284,27 @@ function set_video_chat_provider_dropdown(): void {
     set_jitsi_server_url_dropdown();
 }
 
+export function check_disable_can_create_video_calls_group_widget(): void {
+    const widget = settings_components.get_group_setting_widget(
+        "realm_can_create_video_calls_group",
+    );
+    if (widget === null) {
+        return;
+    }
+    const $pill_container = $("#id_realm_can_create_video_calls_group");
+    if (settings_components.is_video_chat_provider_disabled()) {
+        settings_components.disable_group_permission_setting(
+            $pill_container,
+            NOBODY_DISABLED_PLACEHOLDER,
+        );
+    } else if (current_user.is_admin) {
+        settings_components.enable_group_permission_setting(
+            $pill_container,
+            NOBODY_ENABLED_PLACEHOLDER,
+        );
+    }
+}
+
 function set_gif_rating_policy_dropdown(): void {
     const rating_id = realm.realm_gif_rating_policy;
     $("#id_realm_gif_rating_policy").val(rating_id);
@@ -678,6 +699,10 @@ function update_dependent_subsettings(property_name: string): void {
         case "realm_workplace_users_group":
             set_two_tier_billing_settings_visibility();
             break;
+        case "realm_video_chat_provider":
+        case "realm_can_create_video_calls_group":
+            check_disable_can_create_video_calls_group_widget();
+            break;
     }
 }
 
@@ -714,6 +739,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_video_calls_group":
         case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
@@ -1664,6 +1690,7 @@ export function build_page(): void {
 
     set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
+    check_disable_can_create_video_calls_group_widget();
     set_gif_rating_policy_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
@@ -1728,6 +1755,7 @@ export function build_page(): void {
 
     $("#id_realm_video_chat_provider").on("change", () => {
         set_jitsi_server_url_dropdown();
+        check_disable_can_create_video_calls_group_widget();
     });
 
     $<HTMLSelectOneElement>("select:not([multiple])#id_realm_jitsi_server_url").on(

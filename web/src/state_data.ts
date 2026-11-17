@@ -494,6 +494,7 @@ export const realm_schema = z.object({
     realm_can_create_groups: group_setting_value_schema,
     realm_can_create_public_channel_group: group_setting_value_schema,
     realm_can_create_private_channel_group: group_setting_value_schema,
+    realm_can_create_video_calls_group: group_setting_value_schema,
     realm_can_create_web_public_channel_group: z.number(),
     realm_can_create_write_only_bots_group: group_setting_value_schema,
     realm_can_delete_any_message_group: group_setting_value_schema,
