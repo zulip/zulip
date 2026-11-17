@@ -232,8 +232,8 @@ DEMO_ORG_DEADLINE_DAYS = 30
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
 
-TOPIC_SUMMARIZATION_MODEL = "llama-3.3-70b-versatile"
-TOPIC_SUMMARIZATION_API_BASE = "https://api.groq.com/openai/v1"
+TOPIC_SUMMARIZATION_MODEL = "gemini-3.6-flash"
+TOPIC_SUMMARIZATION_API_BASE = "https://generativelanguage.googleapis.com/v1beta/openai/"
 # Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
 # https://groq.com/pricing/
 OUTPUT_COST_PER_GIGATOKEN = 590

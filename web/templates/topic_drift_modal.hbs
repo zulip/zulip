@@ -1,0 +1,38 @@
+{{#if has_drift}}
+<div class="topic-drift-modal-container">
+    <div class="alert alert-warning">
+        <strong>{{t "Topic drift detected!" }}</strong>
+        <p>{{#if reason}}{{reason}}{{else}}{{t "Recent messages in this conversation have drifted onto a new topic." }}{{/if}}</p>
+    </div>
+    <div class="input-group">
+        <label for="suggested-topic-title-input">
+            {{t "Suggested new topic title:" }}
+        </label>
+        <input
+          type="text"
+          id="suggested-topic-title-input"
+          class="input-element modal_text_input"
+          value="{{suggested_title}}"
+          maxlength="60"
+          />
+    </div>
+    <div class="topic-drift-actions">
+        <button
+          type="button"
+          id="apply-improved-topic-title-btn"
+          class="button rounded sea-green"
+          >
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            {{t "Update Topic Title" }}
+        </button>
+    </div>
+</div>
+{{else}}
+<div class="topic-drift-no-drift-container">
+    <div class="alert alert-success">
+        <i class="fa fa-check-circle" aria-hidden="true"></i>
+        <strong>{{t "Topic title is accurate!" }}</strong>
+        <p>{{t "The discussion matches" }} '<strong>{{current_title}}</strong>'. {{t "No drift was detected in recent messages." }}</p>
+    </div>
+</div>
+{{/if}}
