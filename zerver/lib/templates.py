@@ -91,6 +91,17 @@ docs_without_macros = [
 ]
 
 
+def get_markdown_source(markdown_file_path: str) -> str:
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            return fp.read()
+
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    assert jinja.env.loader is not None
+    return jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+
 # render_markdown_path is passed a context dictionary (unhashable), which
 # results in the calls not being cached. To work around this, we convert the
 # dict to a tuple of dict items to cache the results.
@@ -169,14 +180,7 @@ def render_markdown_path(
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
 
-    jinja = engines["Jinja2"]
-    assert isinstance(jinja, Jinja2)
-    if markdown_file_path.startswith("/"):
-        with open(markdown_file_path) as fp:
-            markdown_string = fp.read()
-    else:
-        assert jinja.env.loader is not None
-        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+    markdown_string = get_markdown_source(markdown_file_path)
 
     if (
         settings.DEVELOPMENT
@@ -193,6 +197,8 @@ def render_markdown_path(
     if context is None:
         return mark_safe(html)  # noqa: S308
 
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
     return mark_safe(jinja.from_string(html).render(context))  # noqa: S308
 
 
