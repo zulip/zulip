@@ -8,6 +8,7 @@ const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json")
 const {parse} = require("../src/markdown.ts");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
@@ -24,6 +25,7 @@ const linkifiers = zrequire("linkifiers");
 const markdown = zrequire("markdown");
 const markdown_config = zrequire("markdown_config");
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -35,6 +37,7 @@ class ClipboardEvent {
     }
 }
 set_global("ClipboardEvent", ClipboardEvent);
+set_realm(make_realm({realm_empty_topic_display_name: "general chat"}));
 initialize_user_settings({
     user_settings: {
         translate_emoticons: false,
@@ -127,8 +130,24 @@ run_test("try_stream_topic_syntax_text", () => {
             "[#Romeo&#96;s lair > normal](#narrow/channel/5-Romeo.60s-lair/topic/normal)",
         ],
         [
+            "http://zulip.zulipdev.com/#narrow/channel/5-Romeo.60s-lair/topic/normal/with/20",
+            "[#Romeo&#96;s lair > normal](#narrow/channel/5-Romeo.60s-lair/topic/normal/with/20)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/channel/5-Romeo.60s-lair/topic//with/20",
+            "[#Romeo&#96;s lair > translated: general chat](#narrow/channel/5-Romeo.60s-lair/topic//with/20)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/channel/5-Romeo.60s-lair/topic/normal/near/20",
+            "[#Romeo&#96;s lair > normal @ 💬](#narrow/channel/5-Romeo.60s-lair/topic/normal/near/20)",
+        ],
+        [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20profits.60/near/20",
             "[#Rome > 100% profits&#96; @ 💬](#narrow/channel/4-Rome/topic/100.25.20profits.60/near/20)",
+        ],
+        [
+            "http://zulip.zulipdev.com/#narrow/channel/4-Rome/topic/100.25.20profits.60/with/20",
+            "[#Rome > 100% profits&#96;](#narrow/channel/4-Rome/topic/100.25.20profits.60/with/20)",
         ],
     ];
 

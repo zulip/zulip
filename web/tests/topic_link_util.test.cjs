@@ -146,6 +146,16 @@ run_test("stream_topic_link_syntax_test", () => {
         "[#Sweden > translated: general chat @ 💬](#narrow/channel/1-Sweden/topic//near/123)",
     );
 
+    assert.equal(
+        topic_link_util.get_stream_topic_link_syntax("Sweden", "test `test` test", 456),
+        "[#Sweden > test &#96;test&#96; test](#narrow/channel/1-Sweden/topic/test.20.60test.60.20test/with/456)",
+    );
+
+    assert.equal(
+        topic_link_util.get_fallback_markdown_link("Sweden", "abc", 123, 456),
+        "[#Sweden > abc @ 💬](#narrow/channel/1-Sweden/topic/abc/with/456/near/123)",
+    );
+
     // Only for full coverage of the module.
     assert.equal(topic_link_util.escape_invalid_stream_topic_characters("Sweden"), "Sweden");
     assert.equal(
@@ -185,6 +195,20 @@ run_test("get_topic_link_content_with_stream_name", () => {
             url: "#narrow/channel/1-Sweden/topic/a.21.5Bb.5D.28c.29/near/123",
         },
     );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "abc",
+            message_id: undefined,
+            with_message_id: 456,
+        }),
+        {
+            label_text_markdown: "#Sweden > abc",
+            label_text_plain: "#Sweden > abc",
+            url: "#narrow/channel/1-Sweden/topic/abc/with/456",
+        },
+    );
 });
 
 run_test("get_topic_link_content_with_stream_id", () => {
@@ -211,6 +235,20 @@ run_test("get_topic_link_content_with_stream_id", () => {
             label_text_markdown: "#Sweden > <abc&gt; @ 💬",
             label_text_plain: "#Sweden > <abc> @ 💬",
             url: "#narrow/channel/1-Sweden/topic/.3Cabc.3E/near/123",
+        },
+    );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "abc",
+            message_id: undefined,
+            with_message_id: 456,
+        }),
+        {
+            label_text_markdown: "#Sweden > abc",
+            label_text_plain: "#Sweden > abc",
+            url: "#narrow/channel/1-Sweden/topic/abc/with/456",
         },
     );
 });

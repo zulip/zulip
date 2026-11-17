@@ -800,6 +800,7 @@ export function try_stream_topic_syntax_text(text: string): string | null {
             stream_name,
             stream_topic.topic_name,
             stream_topic.message_id,
+            stream_topic.with_message_id,
         );
     }
 
@@ -811,6 +812,7 @@ export function try_stream_topic_syntax_text(text: string): string | null {
             stream_name,
             stream_topic.topic_name,
             stream_topic.message_id,
+            stream_topic.with_message_id,
         );
     }
 

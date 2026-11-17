@@ -87,6 +87,8 @@ run_test("copy_link_to_clipboard", async ({override}) => {
         "http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic";
     const normal_stream_with_topic_and_message =
         "http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic/near/1";
+    const normal_stream_with_topic_and_anchor =
+        "http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic/with/7";
     const normal_stream = "http://zulip.zulipdev.com/#narrow/channel/1-Stream/";
     const dm_message = "http://zulip.zulipdev.com/#narrow/dm/15-dm/near/43";
 
@@ -110,6 +112,17 @@ run_test("copy_link_to_clipboard", async ({override}) => {
     assert.equal(
         clipboardDataResult.markdownText,
         `[#Stream > normal topic @ 💬](http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic/near/1)`,
+    );
+
+    clipboardDataResult = await simulateClipboardData(normal_stream_with_topic_and_anchor);
+    assert.equal(clipboardDataResult.plainText, normal_stream_with_topic_and_anchor);
+    assert.equal(
+        clipboardDataResult.htmlText,
+        `<a href="http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic/with/7">#Stream > normal topic</a>`,
+    );
+    assert.equal(
+        clipboardDataResult.markdownText,
+        `[#Stream > normal topic](http://zulip.zulipdev.com/#narrow/channel/1-Stream/topic/normal.20topic/with/7)`,
     );
 
     clipboardDataResult = await simulateClipboardData(normal_stream);
