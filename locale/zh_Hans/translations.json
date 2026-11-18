@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "管理员提供了以下信息：",
   "The application has been updated; Reloading…": "该应用程序已更新，正在重新加载…",
   "The basics": "基础操作",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "频道 <z-highlight>#{channel_name}</z-highlight> 不存在。请<z-link>在您的频道页面</z-link>管理您的订阅。",
   "The channel description cannot contain newline characters.": "频道描述不能包含换行字符。",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "以下<z-link>已上传文件</z-link>不再附加任何消息。仍然可以从此消息的编辑历史记录中访问它们。您想完全删除它们吗？",

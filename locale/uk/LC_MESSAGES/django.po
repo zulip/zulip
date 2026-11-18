@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:18+0000\n"
 "PO-Revision-Date: 2026-03-31 18:59+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/zulip/django/"
@@ -4207,6 +4207,25 @@ msgstr ""
 "Ви можете скасувати цю зміну або переглянути свої налаштування в <a "
 "href=\"%(realm_url)s/#settings/notifications\">налаштуваннях сповіщень</a>."
 
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
+
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
 msgstr "Недійсне відображення порядку."
@@ -4723,13 +4742,29 @@ msgid "New description"
 msgstr "Новий опис"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "No organization found"
+msgid "Forever (organization default)"
+msgstr "Організацію не знайдено"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Назавжди"
+
+#: zerver/actions/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{number_of_days} days"
+msgid "{number_of_days} days (organization default)"
+msgstr "{number_of_days} днів"
 
 #: zerver/actions/streams.py
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} днів"
+
+#: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr "Повідомлення в цьому каналі тепер зберігатимуться назавжди."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4739,10 +4774,6 @@ msgid ""
 msgstr ""
 "Повідомлення в цьому каналі тепер автоматично видалятимуться через "
 "{number_of_days} днів після їх надсилання."
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
-msgstr "Повідомлення в цьому каналі тепер зберігатимуться назавжди."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4872,7 +4903,7 @@ msgstr "Піддомен не може починатись або закінч�
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "Піддомен може містити лише малі літери, цифри та '-'."
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "Субдомен вже використовується. Будь ласка, виберіть інший."
 
@@ -6782,6 +6813,20 @@ msgid "Invalid interface type"
 msgstr "Недійсний тип інтерфейсу"
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Невірне ім'я вбудованого бота."
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr "Недійсний ідентифікатор користувача: {user_id}"
@@ -7899,6 +7944,12 @@ msgid "{property} is not a boolean"
 msgstr "{property} не є логічним значенням"
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid property {property}"
+msgid "Invalid {property}"
+msgstr "Недійсна властивість {property}"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Невідома властивість підписки: {property}"
@@ -8151,12 +8202,6 @@ msgstr "Не вдалося змінити власника, користува�
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "Не вдалося змінити власника, боти не можуть володіти іншими ботами"
-
-#: zerver/views/users.py
-#, fuzzy
-#| msgid "Invalid embedded bot name."
-msgid "Only embedded bots have config_data."
-msgstr "Невірне ім'я вбудованого бота."
 
 #: zerver/views/users.py
 msgid ""

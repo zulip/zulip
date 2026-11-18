@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:18+0000\n"
 "PO-Revision-Date: 2026-11-13 11:31+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
@@ -402,7 +402,8 @@ msgstr "發生了一些問題，很抱歉造成困擾！Zulip 將會在問題解
 msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
-msgstr "<a href=\"mailto:%(support_email)s\">聯繫此伺服器的管理員</a> 尋求協助。"
+msgstr ""
+"<a href=\"mailto:%(support_email)s\">聯繫此伺服器的管理員</a> 尋求協助。"
 
 #: templates/500.html
 #, python-format
@@ -682,8 +683,8 @@ msgid ""
 "To move the plan from the server to this organization, or for other "
 "questions, <a href=\"mailto:{{ support_email }}\">contact support</a>."
 msgstr ""
-"若要將方案從伺服器轉移到此組織， 或有其他問題，請 <a href=\"mailto:{{ "
-"support_email }}\">聯繫技術支援</a>。"
+"若要將方案從伺服器轉移到此組織， 或有其他問題，請 <a href=\"mailto:"
+"{{ support_email }}\">聯繫技術支援</a>。"
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 msgid ""
@@ -700,8 +701,8 @@ msgid ""
 "%(support_email)s'>contact support</a> with any questions."
 msgstr ""
 "請改為 <a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">"
-"登入</a> 您組織的方案管理， 或有任何問題請 <a href='mailto:%(support_email)"
-"s'>聯繫技術支援</a>。"
+"登入</a> 您組織的方案管理， 或有任何問題請 <a href='mailto:"
+"%(support_email)s'>聯繫技術支援</a>。"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
@@ -1110,8 +1111,8 @@ msgid ""
 "how to configure push notifications, please see the <a "
 "href=\"%(doc_url)s\">documentation</a>."
 msgstr ""
-"此伺服器未設定為使用推播通知。關於如何設定推播通知的說明， 請參閱 <a href=\"%"
-"(doc_url)s\">文件</a>。"
+"此伺服器未設定為使用推播通知。關於如何設定推播通知的說明， 請參閱 <a "
+"href=\"%(doc_url)s\">文件</a>。"
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Account not found"
@@ -2274,8 +2275,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
-"直接回覆此郵件，<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中查看</a>"
-"，或 <a href=\"%(notif_url)s\">管理電子郵件 偏好</a>。"
+"直接回覆此郵件，<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中查看</"
+"a>，或 <a href=\"%(notif_url)s\">管理電子郵件 偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html
 #, python-format
@@ -2292,8 +2293,8 @@ msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
-"<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中回覆</a>，或 <a href=\"%"
-"(notif_url)s\">管理電子郵件偏好</a>。"
+"<a href=\"%(narrow_url)s\">在 %(realm_name)s Zulip 中回覆</a>，或 <a "
+"href=\"%(notif_url)s\">管理電子郵件偏好</a>。"
 
 #: templates/zerver/emails/missed_message.html
 #, python-format
@@ -2432,8 +2433,8 @@ msgid ""
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
 msgstr ""
-"如果你對這次登入感到陌生，或認為你的帳號可能已遭入侵，請 <a href=\"%"
-"(reset_link)s\">重設你的密碼</a>，或立即聯絡我們：%(support_email)s。"
+"如果你對這次登入感到陌生，或認為你的帳號可能已遭入侵，請 <a "
+"href=\"%(reset_link)s\">重設你的密碼</a>，或立即聯絡我們：%(support_email)s。"
 
 #: templates/zerver/emails/notify_new_login.html
 #: templates/zerver/emails/notify_new_login.txt
@@ -2476,14 +2477,15 @@ msgid ""
 "can use our <a href=\"%(get_organization_started)s\">guide for moving to "
 "Zulip</a> to get started."
 msgstr ""
-"如果您已經決定為您的組織使用 Zulip，歡迎您！您可以使用我們的 <a href=\"%"
-"(get_organization_started)s\">Zulip 遷移指南</a> 來開始使用。"
+"如果您已經決定為您的組織使用 Zulip，歡迎您！您可以使用我們的 <a "
+"href=\"%(get_organization_started)s\">Zulip 遷移指南</a> 來開始使用。"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html
 msgid ""
 "Otherwise, here is some advice we often hear from customers for evaluating "
 "<i>any</i> team chat product:"
-msgstr "否則，以下是我們經常從客戶那裡聽到的關於評估 <i>任何</i> 團隊聊天產品的建議："
+msgstr ""
+"否則，以下是我們經常從客戶那裡聽到的關於評估 <i>任何</i> 團隊聊天產品的建議："
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html
 #, python-format
@@ -2656,8 +2658,8 @@ msgid ""
 "In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
 msgstr ""
-"在 Zulip 中，<b>頻道</b> 決定誰會收到訊息。<b>話題</b> 告訴您訊息的內容是什麼"
-"。"
+"在 Zulip 中，<b>頻道</b> 決定誰會收到訊息。<b>話題</b> 告訴您訊息的內容是什"
+"麼。"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html
 #: templates/zerver/emails/onboarding_zulip_topics.txt
@@ -2697,9 +2699,9 @@ msgid ""
 "href=\"%(move_channels_link)s\">move a topic to a different channel</a>."
 msgstr ""
 "不要為您的話題挑選完美名稱而感到壓力。如果有任何內容放錯位置，您可以輕鬆地 "
-"<a href=\"%(move_messages_link)s\">移動訊息</a>、<a href=\"%"
-"(rename_topics_link)s\">重新命名話題</a>，甚至 <a href=\"%"
-"(move_channels_link)s\">將話題移動到不同頻道</a>。"
+"<a href=\"%(move_messages_link)s\">移動訊息</a>、<a "
+"href=\"%(rename_topics_link)s\">重新命名話題</a>，甚至 <a "
+"href=\"%(move_channels_link)s\">將話題移動到不同頻道</a>。"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html
 #: templates/zerver/emails/onboarding_zulip_topics.txt
@@ -2978,8 +2980,8 @@ msgid ""
 "Questions? <a href=\"%(billing_help_link)s\">Learn more</a> or contact "
 "%(billing_contact_email)s."
 msgstr ""
-"有問題嗎？<a href=\"%(billing_help_link)s\">了解更多</a> 或聯絡 %"
-"(billing_contact_email)s。"
+"有問題嗎？<a href=\"%(billing_help_link)s\">了解更多</a> 或聯絡 "
+"%(billing_contact_email)s。"
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.subject.txt
 msgid "Log in to Zulip plan management"
@@ -3040,8 +3042,8 @@ msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
 msgstr ""
-"您的 Zulip 贊助申請已獲核准！您的組織已升級至 <a href=\"%(plans_link)s\">"
-"Zulip 社群方案</a>。"
+"您的 Zulip 贊助申請已獲核准！您的組織已升級至 <a "
+"href=\"%(plans_link)s\">Zulip 社群方案</a>。"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html
 #, python-format
@@ -3786,8 +3788,8 @@ msgid ""
 msgstr ""
 "請按照 <a href=\"https://zulip.com/help//import-from-slack#export-your-slack-"
 "data:~:text=Export%%20user%%20data%%20and%%20custom%%20emoji\" "
-"rel=\"noopener noreferrer\" target=\"_blank\">這些說明</a> 來取得 <strong>"
-"Bot User OAuth Token</strong>。"
+"rel=\"noopener noreferrer\" target=\"_blank\">這些說明</a> 來取得 "
+"<strong>Bot User OAuth Token</strong>。"
 
 #: templates/zerver/slack_import.html
 msgid "Slack bot user OAuth token"
@@ -3912,8 +3914,8 @@ msgid ""
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
 msgstr ""
-"請再次檢查您是否有完整的網址並重新嘗試，或 <a href=\"mailto:%(support_email)"
-"s\">傳送電子郵件給我們</a>，我們會為您解決！"
+"請再次檢查您是否有完整的網址並重新嘗試，或 <a href=\"mailto:"
+"%(support_email)s\">傳送電子郵件給我們</a>，我們會為您解決！"
 
 #: templates/zerver/unsubscribe_success.html
 msgid "Email settings updated"
@@ -3936,6 +3938,25 @@ msgid ""
 msgstr ""
 "您可以在 <a href=\"%(realm_url)s/#settings/notifications\">通知設定</a> 中 撤"
 "銷此變更或檢查您的偏好設定。"
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
 
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
@@ -4128,7 +4149,8 @@ msgstr "一則訊息已被 {user} 從此話題移動到 {new_location}。"
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
-msgstr "{changed_messages_count} 則訊息已被 {user} 從此話題移動到 {new_location}。"
+msgstr ""
+"{changed_messages_count} 則訊息已被 {user} 從此話題移動到 {new_location}。"
 
 #: zerver/actions/message_edit.py
 #, python-brace-format
@@ -4408,8 +4430,20 @@ msgid "New description"
 msgstr "新描述"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "No organization found"
+msgid "Forever (organization default)"
+msgstr "找不到組織"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "永遠"
+
+#: zerver/actions/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{number_of_days} days"
+msgid "{number_of_days} days (organization default)"
+msgstr "{number_of_days} 天"
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4417,15 +4451,15 @@ msgid "{number_of_days} days"
 msgstr "{number_of_days} 天"
 
 #: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr "此頻道中的訊息現在將永久保留。"
+
+#: zerver/actions/streams.py
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
 msgstr "此頻道中的訊息現在將在發送後 {number_of_days} 天自動刪除。"
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
-msgstr "此頻道中的訊息現在將永久保留。"
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4550,7 +4584,7 @@ msgstr "子域名不能開頭或結尾有 '-'。"
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "子域名只能是英文字母、數字、'-'。"
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "子域名已被使用。請選擇不同的子域名。"
 
@@ -4711,7 +4745,8 @@ msgstr "頻道資料夾 ID 無效"
 #, python-brace-format
 msgid ""
 "{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"
-msgstr "{user_silent_mention} 在 {topic_pretty_link} [說]({conversation_url})："
+msgstr ""
+"{user_silent_mention} 在 {topic_pretty_link} [說]({conversation_url})："
 
 #: zerver/lib/compose_reply.py
 #, python-brace-format
@@ -4719,8 +4754,8 @@ msgid ""
 "{user_silent_mention} [said]({conversation_url}) to "
 "{list_of_recipient_mentions}:"
 msgstr ""
-"{user_silent_mention} 對 {list_of_recipient_mentions} [說]("
-"{conversation_url})："
+"{user_silent_mention} 對 {list_of_recipient_mentions} [說]"
+"({conversation_url})："
 
 #: zerver/lib/demo_organizations.py
 msgid "Configure owner account email address."
@@ -5613,10 +5648,10 @@ msgid ""
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
 "\n"
-"若有任何內容位置不當，您可以輕易地 [移動訊息]("
-"{move_content_another_topic_help_url}),\n"
-"[重新命名]({rename_topic_help_url}) and [分割]("
-"{move_content_another_topic_help_url}) 話題，\n"
+"若有任何內容位置不當，您可以輕易地 [移動訊息]"
+"({move_content_another_topic_help_url}),\n"
+"[重新命名]({rename_topic_help_url}) and [分割]"
+"({move_content_another_topic_help_url}) 話題，\n"
 "甚至將話題 [移動至不同頻道]({move_content_another_channel_help_url}).\n"
 
 #: zerver/lib/onboarding.py
@@ -5711,8 +5746,8 @@ msgid ""
 "({format_message_help_url}).\n"
 msgstr ""
 "\n"
-":point_right: 使用這個話題來試用 [Zulip 的訊息功能]("
-"{format_message_help_url})。\n"
+":point_right: 使用這個話題來試用 [Zulip 的訊息功能]"
+"({format_message_help_url})。\n"
 
 #: zerver/lib/onboarding.py
 #, python-brace-format
@@ -6278,8 +6313,8 @@ msgid ""
 "'{setting_name}' must be restricted to organization administrators for "
 "groups used in 'workplace_users_group'."
 msgstr ""
-"用於「workplace_users_group」的群組，其「{setting_name}」必須限定為組織管理員"
-"。"
+"用於「workplace_users_group」的群組，其「{setting_name}」必須限定為組織管理"
+"員。"
 
 #: zerver/lib/user_groups.py
 msgid ""
@@ -6356,6 +6391,18 @@ msgstr "無效的機器人類型"
 #: zerver/lib/users.py
 msgid "Invalid interface type"
 msgstr "無效的介面類型"
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only embedded bots have config_data."
+msgstr "只有嵌入式機器人才有 config_data。"
 
 #: zerver/lib/users.py
 #, python-brace-format
@@ -7429,6 +7476,12 @@ msgid "{property} is not a boolean"
 msgstr "{property} 不是布林值"
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid property {property}"
+msgid "Invalid {property}"
+msgstr "無效的屬性 {property}"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "未知的訂閱屬性：{property}"
@@ -7552,8 +7605,8 @@ msgid ""
 "Subgroups of a group used for 'workplace_users_group' must allow only "
 "organization administrators to manage their membership."
 msgstr ""
-"用於「workplace_users_group」的群組，其子群組必須僅允許組織管理員管理成員資格"
-"。"
+"用於「workplace_users_group」的群組，其子群組必須僅允許組織管理員管理成員資"
+"格。"
 
 #: zerver/views/user_groups.py
 #, python-brace-format
@@ -7668,10 +7721,6 @@ msgstr "變更擁有者失敗，使用者已停用"
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "變更擁有者失敗，機器人不能擁有其他機器人"
-
-#: zerver/views/users.py
-msgid "Only embedded bots have config_data."
-msgstr "只有嵌入式機器人才有 config_data。"
 
 #: zerver/views/users.py
 msgid ""

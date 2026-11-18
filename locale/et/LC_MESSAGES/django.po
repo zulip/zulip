@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:18+0000\n"
 "PO-Revision-Date: 2026-07-20 12:19+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/zulip/django/et/"
@@ -3790,6 +3790,25 @@ msgid ""
 "href=\"%(realm_url)s/#settings/notifications\">notification settings</a>."
 msgstr ""
 
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
+
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
 msgstr ""
@@ -4241,8 +4260,19 @@ msgid "New description"
 msgstr ""
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "Create organization"
+msgid "Forever (organization default)"
+msgstr "Loo organisatsioon"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Igavesti"
+
+#: zerver/actions/streams.py
+#, python-brace-format
+msgid "{number_of_days} days (organization default)"
+msgstr ""
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4250,14 +4280,14 @@ msgid "{number_of_days} days"
 msgstr ""
 
 #: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr ""
+
+#: zerver/actions/streams.py
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
-msgstr ""
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
 msgstr ""
 
 #: zerver/actions/streams.py
@@ -4378,7 +4408,7 @@ msgstr ""
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr ""
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr ""
 
@@ -6025,6 +6055,18 @@ msgid "Invalid interface type"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only embedded bots have config_data."
+msgstr ""
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -7091,6 +7133,12 @@ msgid "{property} is not a boolean"
 msgstr ""
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid API key"
+msgid "Invalid {property}"
+msgstr "Vigane API võti"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
@@ -7323,10 +7371,6 @@ msgstr ""
 
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
-msgstr ""
-
-#: zerver/views/users.py
-msgid "Only embedded bots have config_data."
 msgstr ""
 
 #: zerver/views/users.py

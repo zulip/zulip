@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "நிர்வாகிகள் பின்வரும் கருத்தை வழங்கினர்:",
   "The application has been updated; Reloading…": "பயன்பாடு புதுப்பிக்கப்பட்டுள்ளது; மீண்டும் ஏற்றுதல்…",
   "The basics": "அடிப்படைகள்",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "",
   "The channel description cannot contain newline characters.": "சேனல் விளக்கத்தில் நியூலைன் எழுத்துக்கள் இருக்க முடியாது.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "பின்வரும் <z-link>பதிவேற்றிய கோப்புகள்</z-link> இனி எந்த செய்திகளிலும் இணைக்கப்படவில்லை. இந்த செய்தியின் திருத்து வரலாற்றிலிருந்து அவற்றை இன்னும் அணுகலாம். அவற்றை முழுவதுமாக நீக்க விரும்புகிறீர்களா?",

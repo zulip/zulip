@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "Les administrateurs ont fourni le commentaire suivant :",
   "The application has been updated; Reloading…": "L’application a été mise à jour ; rechargement en cours…",
   "The basics": "Les bases",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "Le canal <z-highlight>#{channel_name}</z-highlight> n’existe pas. Gérez vos abonnements <z-link>sur votre page Canaux</z-link>.",
   "The channel description cannot contain newline characters.": "La description du canal ne peut pas contenir de sauts de ligne.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "Les <z-link>fichiers téléversés</z-link> suivants ne sont plus attachés à aucun message. Ils restent accessibles depuis l’historique des modifications de ce message. Souhaitez-vous les supprimer définitivement ?",

@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "Administratörerna lämnade följande kommentar:",
   "The application has been updated; Reloading…": "Programmet har uppdaterats. Läser in igen…",
   "The basics": "Grunderna",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "Kanalen <z-highlight>#{channel_name}</z-highlight> finns inte. Hantera dina prenumerationer <z-link>på sidan Kanaler</z-link>.",
   "The channel description cannot contain newline characters.": "Kanalbeskrivningen kan inte innehålla nyhetskaraktärer.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "Följande <z-link>uploaded-filer</z-link> är inte längre kopplade till några meddelanden. De kan fortfarande nås från det här meddelandets redigeringshistorik. Vill du radera dem helt?",

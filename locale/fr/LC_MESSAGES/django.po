@@ -34,12 +34,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:18+0000\n"
 "PO-Revision-Date: 2026-11-09 13:51+0000\n"
-"Last-Translator: Raphaël Hertzog <rhertzog@users.noreply.hosted.weblate.org>"
-"\n"
-"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/>"
-"\n"
+"Last-Translator: Raphaël Hertzog <rhertzog@users.noreply.hosted.weblate."
+"org>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/"
+">\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1160,16 +1160,16 @@ msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\" "
 "href=\"\">reloading</a> the page."
 msgstr ""
-"Si ce message ne disparaît pas, essayez de <a class=\"reload-lnk\" href=\"\">"
-"recharger</a> la page."
+"Si ce message ne disparaît pas, essayez de <a class=\"reload-lnk\" "
+"href=\"\">recharger</a> la page."
 
 #: templates/zerver/app/index.html
 msgid ""
 "Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
 "page."
 msgstr ""
-"Erreur de chargement de Zulip. Essayez de <a class=\"reload-lnk\" href=\"\">"
-"recharger</a> la page."
+"Erreur de chargement de Zulip. Essayez de <a class=\"reload-lnk\" "
+"href=\"\">recharger</a> la page."
 
 #: templates/zerver/app/index.html
 msgid "No conversations match your filters."
@@ -4262,6 +4262,25 @@ msgstr ""
 "href=\"%(realm_url)s/#settings/notifications\">paramètres de notification</"
 "a>."
 
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
+
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
 msgstr "Ordre de mappage non valide."
@@ -4774,13 +4793,29 @@ msgid "New description"
 msgstr "Nouvelle description"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "No organization found"
+msgid "Forever (organization default)"
+msgstr "Aucune organisation trouvée"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Pour toujours"
+
+#: zerver/actions/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{number_of_days} days"
+msgid "{number_of_days} days (organization default)"
+msgstr "{number_of_days} jours"
 
 #: zerver/actions/streams.py
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} jours"
+
+#: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr "Les messages de ce canal seront désormais conservés indéfiniment."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4790,10 +4825,6 @@ msgid ""
 msgstr ""
 "Les messages de ce canal seront désormais supprimés automatiquement "
 "{number_of_days} jours après leur envoi."
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
-msgstr "Les messages de ce canal seront désormais conservés indéfiniment."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4924,7 +4955,7 @@ msgstr ""
 "Le sous-domaine ne peut contenir que des lettres minuscules, des nombres et "
 "des '-'."
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "Ce sous-domaine est déjà utilisé. Veuillez en choisir un autre."
 
@@ -5221,7 +5252,8 @@ msgstr "Courriel sans objet"
 
 #: zerver/lib/email_mirror.py
 msgid "Sending user is not active. Ignoring this message notification email."
-msgstr "L'expéditeur n'est pas actif. Le courriel de notification a été ignoré."
+msgstr ""
+"L'expéditeur n'est pas actif. Le courriel de notification a été ignoré."
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -6844,6 +6876,18 @@ msgid "Invalid interface type"
 msgstr "Type d'interface non valide"
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only embedded bots have config_data."
+msgstr "Seuls les robots intégrés ont config_data."
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr "ID d'utilisateur non valide : {user_id}"
@@ -7811,13 +7855,13 @@ msgstr[0] ""
 msgstr[1] ""
 "{count} utilisateurs Slack ont une adresse électronique invalide. Corrigez "
 "les dans Slack, puis démarrez l'import à nouveau. Si vous ne pouvez pas les "
-"corriger, contactez {support_email} pour avoir de l'aide. Adresses invalides "
-": {emails}"
+"corriger, contactez {support_email} pour avoir de l'aide. Adresses "
+"invalides : {emails}"
 msgstr[2] ""
 "{count} utilisateurs Slack ont une adresse électronique invalide. Corrigez "
 "les dans Slack, puis démarrez l'import à nouveau. Si vous ne pouvez pas les "
-"corriger, contactez {support_email} pour avoir de l'aide. Adresses invalides "
-": {emails}"
+"corriger, contactez {support_email} pour avoir de l'aide. Adresses "
+"invalides : {emails}"
 
 #: zerver/views/registration.py
 msgid ""
@@ -7990,6 +8034,12 @@ msgstr ""
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} n’est pas une valeur booléenne"
+
+#: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid property {property}"
+msgid "Invalid {property}"
+msgstr "Propriété non valide {property}"
 
 #: zerver/views/streams.py
 #, python-brace-format
@@ -8257,10 +8307,6 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 "Échec du changement de propriétaire, les robots ne peuvent pas détenir "
 "d'autres bots"
-
-#: zerver/views/users.py
-msgid "Only embedded bots have config_data."
-msgstr "Seuls les robots intégrés ont config_data."
 
 #: zerver/views/users.py
 msgid ""

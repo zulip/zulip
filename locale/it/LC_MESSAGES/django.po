@@ -19,17 +19,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:18+0000\n"
 "PO-Revision-Date: 2026-11-11 14:05+0000\n"
 "Last-Translator: g-fabiani <g-fabiani@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django/it/>"
-"\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django/it/"
+">\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 "
-": 2;\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
 "X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
@@ -1136,8 +1136,8 @@ msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\" "
 "href=\"\">reloading</a> the page."
 msgstr ""
-"Se questo messaggio non scompare, prova a <a class=\"reload-lnk\" href=\"\">"
-"ricaricare</a> la pagina."
+"Se questo messaggio non scompare, prova a <a class=\"reload-lnk\" "
+"href=\"\">ricaricare</a> la pagina."
 
 #: templates/zerver/app/index.html
 msgid ""
@@ -1188,8 +1188,8 @@ msgid ""
 "href=\"%(doc_url)s\">documentation</a>."
 msgstr ""
 "Questo server non è configurato per utilizzare le notifiche push. Per "
-"istruzioni su come configurare le notifiche push, consulta la <a href=\"%"
-"(doc_url)s\">documentazione</a>."
+"istruzioni su come configurare le notifiche push, consulta la <a "
+"href=\"%(doc_url)s\">documentazione</a>."
 
 #: templates/zerver/confirm_continue_registration.html
 msgid "Account not found"
@@ -1244,8 +1244,9 @@ msgid ""
 "Or <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)s/"
 "new/demo/\">create a demo organization</a> — no email required!"
 msgstr ""
-"Oppure <a class=\"registration-lead-subtitle-link\" href=\"%(root_domain_url)"
-"s/new/demo/\">crea un'organizzazione demo</a>: non è richiesta alcuna email!"
+"Oppure <a class=\"registration-lead-subtitle-link\" "
+"href=\"%(root_domain_url)s/new/demo/\">crea un'organizzazione demo</a>: non "
+"è richiesta alcuna email!"
 
 #: templates/zerver/create_realm/create_realm.html templates/zerver/reset.html
 msgid "Enter your email address"
@@ -1611,8 +1612,8 @@ msgid ""
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"Se sei un propietario di questa organizzazione, puoi <a href=\"mailto:%"
-"(support_email)s\">contattare gli amministratori di questo server Zulip</a> "
+"Se sei un propietario di questa organizzazione, puoi <a href=\"mailto:"
+"%(support_email)s\">contattare gli amministratori di questo server Zulip</a> "
 "per riattivarlo."
 
 #: templates/zerver/desktop_login.html
@@ -2058,8 +2059,8 @@ msgid ""
 "You have %(new_messages_count)s new messages in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Sono presenti %(new_messages_count)s nuovi messaggi in <a href=\"%(realm_url)"
-"s\">%(realm_name)s</a>."
+"Sono presenti %(new_messages_count)s nuovi messaggi in <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -2067,8 +2068,8 @@ msgid ""
 "There are %(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Ci sono %(new_streams_count)s nuovi canali in <a href=\"%(realm_url)s\">%"
-"(realm_name)s</a>."
+"Ci sono %(new_streams_count)s nuovi canali in <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/missed_message.html
@@ -2079,8 +2080,9 @@ msgid ""
 "content</a> in email notifications."
 msgstr ""
 "Questa e-mail non include il contenuto del messaggio perché la tua "
-"organizzazione <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">"
-"nasconde il contenuto dei messaggi</a> nelle notifiche e-mail."
+"organizzazione <a class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">nasconde il contenuto dei messaggi</a> nelle notifiche "
+"e-mail."
 
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/missed_message.html
@@ -2147,8 +2149,8 @@ msgid ""
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
 "Questa e-mail non include il contenuto del messaggio perché hai deciso di "
-"nascondere il contenuto dei messaggi nelle notifiche e-mail. Ved i%(help_url)"
-"s per ulteriori dettagli."
+"nascondere il contenuto dei messaggi nelle notifiche e-mail. Ved "
+"i%(help_url)s per ulteriori dettagli."
 
 #: templates/zerver/emails/digest.txt
 #, python-format
@@ -2252,8 +2254,8 @@ msgid ""
 "You can check for accounts with another email (%(find_accounts_link)s), or "
 "try another way to find your account (%(help_logging_in_link)s)."
 msgstr ""
-"Puoi cercare account associati a un altro indirizzo e-mail (%"
-"(find_accounts_link)s), oppure provare un altro sistema per trovare il tuo "
+"Puoi cercare account associati a un altro indirizzo e-mail "
+"(%(find_accounts_link)s), oppure provare un altro sistema per trovare il tuo "
 "account (%(help_logging_in_link)s)."
 
 #: templates/zerver/emails/invitation.html
@@ -3020,8 +3022,8 @@ msgid ""
 "You have deactivated your Zulip demo organization, %(realm_name)s, on "
 "%(localized_date)s."
 msgstr ""
-"Hai disattivato la tua organizzazione demo Zulip,%(realm_name)s, il %"
-"(localized_date)s."
+"Hai disattivato la tua organizzazione demo Zulip,%(realm_name)s, il "
+"%(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html
 #: templates/zerver/emails/realm_deactivated.txt
@@ -3030,8 +3032,8 @@ msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"La tua organizzazione demo Zulip, %(realm_name)s, è stata disattivata da %"
-"(deactivating_owner)s il %(localized_date)s."
+"La tua organizzazione demo Zulip, %(realm_name)s, è stata disattivata da "
+"%(deactivating_owner)s il %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html
 #: templates/zerver/emails/realm_deactivated.txt
@@ -3040,8 +3042,8 @@ msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s."
 msgstr ""
-"La tua organizzazione demo Zulip, %(realm_name)s, è stata disattivata il %"
-"(localized_date)s."
+"La tua organizzazione demo Zulip, %(realm_name)s, è stata disattivata il "
+"%(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html
 #: templates/zerver/emails/realm_deactivated.txt
@@ -3050,8 +3052,8 @@ msgid ""
 "You have deactivated your Zulip organization, %(realm_name)s, on "
 "%(localized_date)s."
 msgstr ""
-"Hai disattivato la tua organizzazione Zulip,%(realm_name)s, il %"
-"(localized_date)s."
+"Hai disattivato la tua organizzazione Zulip,%(realm_name)s, il "
+"%(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html
 #: templates/zerver/emails/realm_deactivated.txt
@@ -3060,8 +3062,8 @@ msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"La tua organizzazione Zulip, %(realm_name)s, è stata disattivata da %"
-"(deactivating_owner)s il %(localized_date)s."
+"La tua organizzazione Zulip, %(realm_name)s, è stata disattivata da "
+"%(deactivating_owner)s il %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html
 #: templates/zerver/emails/realm_deactivated.txt
@@ -3119,8 +3121,8 @@ msgid ""
 "deactivated Zulip demo organization hosted at %(realm_url)s."
 msgstr ""
 "Uno dei tuoi amministratori ha richiesto la reattivazione "
-"dell'organizzazione demo Zulip precedentemente disattivata ospitata su %"
-"(realm_url)s."
+"dell'organizzazione demo Zulip precedentemente disattivata ospitata su "
+"%(realm_url)s."
 
 #: templates/zerver/emails/realm_reactivation.html
 #: templates/zerver/emails/realm_reactivation.txt
@@ -3130,8 +3132,8 @@ msgid ""
 "deactivated Zulip organization hosted at %(realm_url)s."
 msgstr ""
 "Uno dei tuoi amministratori ha richiesto la riattivazione "
-"dell'organizzazione Zulip precedentemente disattivata ospitata su %"
-"(realm_url)s."
+"dell'organizzazione Zulip precedentemente disattivata ospitata su "
+"%(realm_url)s."
 
 #: templates/zerver/emails/realm_reactivation.html
 msgid "Click the button below to reactivate your organization."
@@ -3556,9 +3558,9 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
-"L'organizzazione a cui stai tentando di iscriverti, <a href=\"%(realm_url)"
-"s\">%(realm_name)s</a>, non consente iscrizioni tramite e-mail con il tuo "
-"dominio di posta elettronica."
+"L'organizzazione a cui stai tentando di iscriverti, <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a>, non consente iscrizioni tramite e-"
+"mail con il tuo dominio di posta elettronica."
 
 #: templates/zerver/invalid_email.html
 #, python-format
@@ -3567,9 +3569,9 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
-"L'organizzazione a cui stai tentando di iscriverti, <a href=\"%(realm_url)"
-"s\">%(realm_name)s</a>, non consente iscrizioni con indirizzi e-mail usa e "
-"getta."
+"L'organizzazione a cui stai tentando di iscriverti, <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a>, non consente iscrizioni con "
+"indirizzi e-mail usa e getta."
 
 #: templates/zerver/invalid_email.html
 #, python-format
@@ -3578,9 +3580,9 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
 msgstr ""
-"L'organizzazione a cui stai tentando di iscriverti, <a href=\"%(realm_url)"
-"s\">%(realm_name)s</a>, non consente iscrizioni tramite indirizzi e-mail che "
-"contengono \"+\"."
+"L'organizzazione a cui stai tentando di iscriverti, <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a>, non consente iscrizioni tramite "
+"indirizzi e-mail che contengono \"+\"."
 
 #: templates/zerver/invalid_email.html
 msgid "Please sign up using a valid email address."
@@ -3688,8 +3690,9 @@ msgid ""
 "New members cannot currently join <a href=\"%(realm_url)s\">%(realm_name)s</"
 "a> because all Zulip Cloud licenses are in use."
 msgstr ""
-"Nuovi membri non possono iscriversi a <a href=\"%(realm_url)s\">%(realm_name)"
-"s</a> perché tutte le licenze Zulip Cloud sono in uso."
+"Nuovi membri non possono iscriversi a <a "
+"href=\"%(realm_url)s\">%(realm_name)s</a> perché tutte le licenze Zulip "
+"Cloud sono in uso."
 
 #: templates/zerver/no_spare_licenses.html
 msgid ""
@@ -3802,9 +3805,9 @@ msgid ""
 "Zulip support</a> for assistance in resolving this issue."
 msgstr ""
 "La tua organizzazione Zulip è registrata come associata a un'altra "
-"installazione del server Zulip. <a href=\"mailto:%(support_email)s\">"
-"Contatta il supporto di Zulip</a> per assistenza nella risoluzione di questo "
-"problema."
+"installazione del server Zulip. <a href=\"mailto:"
+"%(support_email)s\">Contatta il supporto di Zulip</a> per assistenza nella "
+"risoluzione di questo problema."
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html
 msgid "Unsupported browser"
@@ -4192,6 +4195,25 @@ msgstr ""
 "Puoi annullare questa modifica o rivedere le tue preferenze nelle tue <a "
 "href=\"%(realm_url)s/#settings/notifications\">impostazioni delle notifiche</"
 "a>."
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
 
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
@@ -4705,13 +4727,29 @@ msgid "New description"
 msgstr "Nuova descrizione"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "No organization found"
+msgid "Forever (organization default)"
+msgstr "Nessuna organizzazione trovata"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Per sempre"
+
+#: zerver/actions/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{number_of_days} days"
+msgid "{number_of_days} days (organization default)"
+msgstr "{number_of_days} giorni"
 
 #: zerver/actions/streams.py
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} giorni"
+
+#: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr "I messaggi in questo canale verranno ora conservati per sempre."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4721,10 +4759,6 @@ msgid ""
 msgstr ""
 "I messaggi in questo canale verranno ora automaticamente eliminati "
 "{number_of_days} days after they are sent."
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
-msgstr "I messaggi in questo canale verranno ora conservati per sempre."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4852,7 +4886,7 @@ msgstr "Il sottodominio non può iniziare o finire con '-'."
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "Il sottodominio può solo avere lettere minuscole, numeri, e '-'s."
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "Il sottodominio è già in uso. Scegline uno diverso."
 
@@ -5894,8 +5928,8 @@ msgstr ""
 "\n"
 "Quando inizi una conversazione, etichettala con un nuovo argomento. Per "
 "trovare un buon\n"
-"nome per l'argomento, pensa di completare la frase: “Ehi, possiamo parlare di"
-"…?”\n"
+"nome per l'argomento, pensa di completare la frase: “Ehi, possiamo parlare "
+"di…?”\n"
 "\n"
 "Dai un'occhiata alle [Conversazioni recenti](#recent) per una lista degli "
 "argomenti che\n"
@@ -5975,12 +6009,12 @@ msgid ""
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
 "\n"
-"Se qualcosa è fuori posto, è facile [spostare messaggi]("
-"{move_content_another_topic_help_url}),\n"
-"[rinominare]({rename_topic_help_url}) e [suddividere]("
-"{move_content_another_topic_help_url}) argomenti,\n"
-"o addirittura spostare un topic [in un altro canale]("
-"{move_content_another_channel_help_url}).\n"
+"Se qualcosa è fuori posto, è facile [spostare messaggi]"
+"({move_content_another_topic_help_url}),\n"
+"[rinominare]({rename_topic_help_url}) e [suddividere]"
+"({move_content_another_topic_help_url}) argomenti,\n"
+"o addirittura spostare un topic [in un altro canale]"
+"({move_content_another_channel_help_url}).\n"
 
 #: zerver/lib/onboarding.py
 msgid ""
@@ -6748,6 +6782,18 @@ msgid "Invalid interface type"
 msgstr "Tipo di interfaccia non valido"
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only embedded bots have config_data."
+msgstr "Solo i bot incorporati hanno config_data."
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr "ID utente non valido: {user_id}"
@@ -6998,7 +7044,8 @@ msgstr "L'input di esempio non corrisponde al modello del linkifier."
 
 #: zerver/models/linkifiers.py
 msgid "Example text does not match auto-conversion field."
-msgstr "Il testo di esempio non corrisponde al campo di conversione automatica."
+msgstr ""
+"Il testo di esempio non corrisponde al campo di conversione automatica."
 
 #: zerver/models/linkifiers.py
 #, python-format
@@ -7881,6 +7928,12 @@ msgid "{property} is not a boolean"
 msgstr "{property} non è un booleano"
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid property {property}"
+msgid "Invalid {property}"
+msgstr "Proprietà {property} non valida"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Proprietà di sottoscrizione sconosciuta: {property}"
@@ -7918,8 +7971,8 @@ msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
 "MiB)."
 msgstr ""
-"Il file caricato supera la dimensione massima dei file per le importazioni ("
-"{max_file_size} MiB)."
+"Il file caricato supera la dimensione massima dei file per le importazioni "
+"({max_file_size} MiB)."
 
 #: zerver/views/typing.py
 msgid "User has disabled typing notifications for channel messages"
@@ -8137,10 +8190,6 @@ msgstr "Cambio proprietario fallito, l'utente è disattivato"
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 "Impossibile cambiare proprietario, i bot non possono possedere altri bot"
-
-#: zerver/views/users.py
-msgid "Only embedded bots have config_data."
-msgstr "Solo i bot incorporati hanno config_data."
 
 #: zerver/views/users.py
 msgid ""

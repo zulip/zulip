@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "Администраторы предоставили следующий комментарий:",
   "The application has been updated; Reloading…": "Приложение было обновлено; идет загрузка…",
   "The basics": "Основы",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "Канал <z-highlight>#{channel_name}</z-highlight> отсутствует. Управляйте подписками <z-link>на своей странице каналов</z-link>.",
   "The channel description cannot contain newline characters.": "В описании канала нельзя использовать перенос строки.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "Следующие <z-link>загруженные файлы</z-link> больше не прикреплены к сообщениям. Они по-прежнему доступны в истории редактирования этого сообщения. Вы хотите удалить их полностью?",
