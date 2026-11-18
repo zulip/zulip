@@ -278,6 +278,12 @@
       "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
     },
     {
+      "name": "ulist_nested_ulist_tab_indent",
+      "input": "- outer\n\t- inner first\n\t- inner second\n\t\t- deep nested",
+      "expected_output": "<ul>\n<li>outer<ul>\n<li>inner first</li>\n<li>inner second<ul>\n<li>deep nested</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>",
+      "text_content": "\nouter\ninner first\ninner second\ndeep nested\n\n\n"
+    },
+    {
       "name": "ulist_list_two_space_indent",
       "input": "* I am outer list\n  I am something inside",
       "expected_output": "<ul>\n<li>I am outer list<br>\n  I am something inside</li>\n</ul>",
