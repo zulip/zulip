@@ -1851,7 +1851,7 @@
   "Type": "Typ",
   "URL": "Adresa (URL)",
   "URL for your integration": "Adresa URL pro váš doplněk",
-  "URL pattern": "Vzor adresy (URL) ",
+  "URL pattern": "Vzor adresy (URL)",
   "URL template": "Předloha URL",
   "Unable to connect to Zulip. Trying to reconnect soon…": "",
   "Unable to connect to Zulip. {retry_delay_secs, plural, one {Trying to reconnect in {retry_delay_secs} second…} other {Trying to reconnect in {retry_delay_secs} seconds…}}": "",

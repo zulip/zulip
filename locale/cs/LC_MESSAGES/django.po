@@ -17,16 +17,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-09 15:42+0000\n"
-"PO-Revision-Date: 2026-07-23 14:11+0000\n"
-"Last-Translator: Jaromír Matýšek <kerray@kerray.cz>\n"
-"Language-Team: Czech <https://hosted.weblate.org/projects/zulip/django/cs/>\n"
+"PO-Revision-Date: 2026-11-11 14:05+0000\n"
+"Last-Translator: Mateusz Mandera "
+"<mateusz.mandera@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Czech <https://hosted.weblate.org/projects/zulip/django-13-x/"
+"cs/>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
 "<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -83,8 +85,8 @@ msgid ""
 msgstr ""
 "Vaše organizace nemá již žádné zbývající Zulip licence a nemůže proto "
 "příjmat nové uživatele. Pokud chcete zapojit další uživatele, [navyšte počet "
-"vašich licencí]({billing_page_link}) nebo [deaktivujte neaktivní uživatele]"
-"({deactivate_user_help_page_link})."
+"vašich licencí]({billing_page_link}) nebo [deaktivujte neaktivní uživatele]("
+"{deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -94,9 +96,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "Vaší organizaci zbývá již jen poslední Zulip licence. Pokud chcete umožnit "
-"dalším uživatelům se zapojit, [navyšte počet vašich licencí]"
-"({billing_page_link}) nebo [deaktivujte neaktivní uživatele]"
-"({deactivate_user_help_page_link})."
+"dalším uživatelům se zapojit, [navyšte počet vašich licencí]("
+"{billing_page_link}) nebo [deaktivujte neaktivní uživatele]("
+"{deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -106,9 +108,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "Vaší organizaci zbývají již jen poslední dvě Zulip licence. Pokud chcete "
-"umožnit dalším uživatelům se zapojit, [navyšte počet vašich licencí]"
-"({billing_page_link}) nebo [deaktivujte neaktivní uživatele]"
-"({deactivate_user_help_page_link})."
+"umožnit dalším uživatelům se zapojit, [navyšte počet vašich licencí]("
+"{billing_page_link}) nebo [deaktivujte neaktivní uživatele]("
+"{deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -118,9 +120,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "Vaší organizaci zbývá již jen poslední tři Zulip licence. Pokud chcete "
-"umožnit dalším uživatelům se zapojit, [navyšte počet vašich licencí]"
-"({billing_page_link}) nebo [deaktivujte neaktivní uživatele]"
-"({deactivate_user_help_page_link})."
+"umožnit dalším uživatelům se zapojit, [navyšte počet vašich licencí]("
+"{billing_page_link}) nebo [deaktivujte neaktivní uživatele]("
+"{deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -132,8 +134,8 @@ msgid ""
 msgstr ""
 "Nový uživatel ({email}) se nemohl připojit, protože vaše organizace nemá "
 "dostatek licencí pro Zulip. Chcete-li novým uživatelům umožnit připojení, "
-"ujistěte se, že [počet licencí pro aktuální a následující zúčtovací období]"
-"({billing_page_link}) je vyšší než aktuální počet uživatelů."
+"ujistěte se, že [počet licencí pro aktuální a následující zúčtovací období]("
+"{billing_page_link}) je vyšší než aktuální počet uživatelů."
 
 #: corporate/lib/registration.py
 msgid ""
@@ -367,8 +369,8 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
-"Pokud jste tuto chybu nečekali, můžete <a href=\"mailto:"
-"%(support_email)s\">kontaktovat podporu</a>."
+"Pokud jste tuto chybu nečekali, můžete <a href=\"mailto:%(support_email)s\">"
+"kontaktovat podporu</a>."
 
 #: templates/4xx.html
 msgid "Access forbidden (403)"
@@ -589,8 +591,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Toto potvrzuje, že e-mailová adresa pro váš Zulip účet se změnila z "
-"%(old_email_html_tag)s na %(new_email_html_tag)s"
+"Toto potvrzuje, že e-mailová adresa pro váš Zulip účet se změnila z %"
+"(old_email_html_tag)s na %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
@@ -1347,8 +1349,8 @@ msgid ""
 "noreferrer\">after you join</a>."
 msgstr ""
 "Toto nastavení můžete také změnit <a href=\"%(root_domain_url)s/help/"
-"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">poté, co se připojíte</a>."
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">"
+"poté, co se připojíte</a>."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
@@ -1655,8 +1657,8 @@ msgid ""
 "Congratulations, you have created a new Zulip organization: "
 "<b>%(realm_name)s</b>."
 msgstr ""
-"Vytvořili jste novou organizaci na Zulipu blahopřejeme: <b>%(realm_name)s</"
-"b>."
+"Vytvořili jste novou organizaci na Zulipu blahopřejeme: <b>%(realm_name)s</b>"
+"."
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
@@ -1674,8 +1676,8 @@ msgid ""
 "You will use the following info to log into the Zulip web, <a "
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
 msgstr ""
-"Následující informaci použijete pro přihlášení se do webové, <a "
-"href=\"%(apps_page_link)s\">mobilní a desktopové aplikace</a> Zulip:"
+"Následující informaci použijete pro přihlášení se do webové, <a href=\"%"
+"(apps_page_link)s\">mobilní a desktopové aplikace</a> Zulip:"
 
 #: templates/zerver/emails/account_registered.html
 #: templates/zerver/emails/account_registered.txt
@@ -1789,8 +1791,8 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at %(support_email)s."
 msgstr ""
-"V případě jakýchkoli dotazů se obraťte na správce tohoto serveru Zulip na "
-"%(support_email)s."
+"V případě jakýchkoli dotazů se obraťte na správce tohoto serveru Zulip na %"
+"(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html
 #: templates/zerver/emails/confirm_demo_organization_email.txt
@@ -1821,8 +1823,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
 msgstr ""
-"Pokud jste tuto změnu neiniciovali, neprodleně se s námi spojte "
-"na%(support_email)s."
+"Pokud jste tuto změnu neiniciovali, neprodleně se s námi spojte na%"
+"(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt
 #, fuzzy
@@ -1837,8 +1839,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
 msgstr ""
-"Pokud jste nedali podnět k této změně, neprodleně se s námi spojte na "
-"<%(support_email)s>."
+"Pokud jste nedali podnět k této změně, neprodleně se s námi spojte na <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/confirm_new_email.html
 #: templates/zerver/emails/confirm_new_email.txt
@@ -2241,8 +2243,8 @@ msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
 msgstr ""
-"Toto pozvání vyprší za dva dny. Pokud pozvání vyprší, musíte "
-"požádat%(referrer_name)s o další."
+"Toto pozvání vyprší za dva dny. Pokud pozvání vyprší, musíte požádat%"
+"(referrer_name)s o další."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt
 #, python-format
@@ -2377,8 +2379,8 @@ msgstr "Nové zprávy"
 #, python-format
 msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
 msgstr ""
-"Odpovědět na tento elektronický dopis přímo, nebo jej zobrazit v "
-"%(realm_name)s Zulipu:"
+"Odpovědět na tento elektronický dopis přímo, nebo jej zobrazit v %"
+"(realm_name)s Zulipu:"
 
 #: templates/zerver/emails/missed_message.txt
 #, python-format
@@ -2406,8 +2408,8 @@ msgid ""
 "immediately at %(support_email)s."
 msgstr ""
 "E-mailová adresa vašeho Zulip účtu byla nedávno změněna na %(new_email)s. "
-"Pokud jste tuto změnu nevyžádal/a, neprodleně nás kontaktujte na "
-"%(support_email)s."
+"Pokud jste tuto změnu nevyžádal/a, neprodleně nás kontaktujte na %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html
 #: templates/zerver/emails/notify_change_in_email.txt
@@ -2432,8 +2434,8 @@ msgid ""
 "immediately at <%(support_email)s>."
 msgstr ""
 "E-mailová adresa vašeho Zulip účtu byla nedávno změněna na %(new_email)s. "
-"Pokud jste tuto změnu nevyžádal/a, neprodleně nás kontaktujte na "
-"<%(support_email)s>."
+"Pokud jste tuto změnu nevyžádal/a, neprodleně nás kontaktujte na <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html
 #, python-format
@@ -2849,8 +2851,8 @@ msgid ""
 "To continue on the Zulip Cloud Standard plan, please upgrade again by going "
 "to %(upgrade_url)s."
 msgstr ""
-"Chcete-li pokračovat v plánu Zulip Cloud Standard, povyšte znovu na adrese "
-"%(upgrade_url)s."
+"Chcete-li pokračovat v plánu Zulip Cloud Standard, povyšte znovu na adrese %"
+"(upgrade_url)s."
 
 #: templates/zerver/emails/realm_auto_downgraded.html
 #, python-format
