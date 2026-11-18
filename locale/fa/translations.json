@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "ادمین‌ها نظر زیر را ارائه کرده‌اند:",
   "The application has been updated; Reloading…": "برنامه به‌روزرسانی شده‌است؛ بارگیری مجدد…",
   "The basics": "پایه‌ها",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "کانال <z-highlight>#{channel_name}</z-highlight> وجود ندارد. اشتراک‌های خود را <z-link>در صفحه کانال‌های خود</z-link> مدیریت کنید.",
   "The channel description cannot contain newline characters.": "شرح کاتال نمی‌تواند شامل رفتن به خط بعد باشد.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "<z-link>فایل‌های آپلود شده‌ی</z-link> زیر دیگر به هیچ پیامی پیوست نشده‌اند. همچنان می‌توانید از طریق تاریخچه‌ی ویرایش این پیام، به آن‌ها دسترسی داشته باشید. آیا می‌خواهید آن‌ها را به طور کامل حذف کنید؟",

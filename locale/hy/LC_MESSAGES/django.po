@@ -6,10 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-09 14:50+0000\n"
+"POT-Creation-Date: 2026-11-18 11:46+0000\n"
 "PO-Revision-Date: 2026-11-09 14:50+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Armenian <https://hosted.weblate.org/projects/zulip/django/hy/>\n"
+"Language-Team: Armenian <https://hosted.weblate.org/projects/zulip/django/hy/"
+">\n"
 "Language: hy\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4092,7 +4093,16 @@ msgid "New description"
 msgstr ""
 
 #: zerver/actions/streams.py
+msgid "Forever (organization default)"
+msgstr ""
+
+#: zerver/actions/streams.py
 msgid "Forever"
+msgstr ""
+
+#: zerver/actions/streams.py
+#, python-brace-format
+msgid "{number_of_days} days (organization default)"
 msgstr ""
 
 #: zerver/actions/streams.py
@@ -4101,14 +4111,14 @@ msgid "{number_of_days} days"
 msgstr ""
 
 #: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr ""
+
+#: zerver/actions/streams.py
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
-msgstr ""
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
 msgstr ""
 
 #: zerver/actions/streams.py
@@ -4227,7 +4237,7 @@ msgstr ""
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr ""
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr ""
 
@@ -5872,6 +5882,18 @@ msgid "Invalid interface type"
 msgstr ""
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only embedded bots have config_data."
+msgstr ""
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -6937,6 +6959,11 @@ msgstr ""
 
 #: zerver/views/streams.py
 #, python-brace-format
+msgid "Invalid {property}"
+msgstr ""
+
+#: zerver/views/streams.py
+#, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
@@ -7168,10 +7195,6 @@ msgstr ""
 
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
-msgstr ""
-
-#: zerver/views/users.py
-msgid "Only embedded bots have config_data."
 msgstr ""
 
 #: zerver/views/users.py

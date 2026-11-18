@@ -17,12 +17,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:46+0000\n"
 "PO-Revision-Date: 2026-11-10 14:55+0000\n"
-"Last-Translator: qywter11 qywter11 "
-"<qywter11@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
-"\n"
+"Last-Translator: qywter11 qywter11 <qywter11@users.noreply.hosted.weblate."
+"org>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
+">\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -4124,6 +4124,25 @@ msgstr ""
 "Voit perua tämän muutoksen tai muuttaa asetuksia <a href=\"%(realm_url)s/"
 "#settings/notifications\">ilmoitusasetuksista</a>."
 
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
+
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
 msgstr "Virheellinen order mapping."
@@ -4620,13 +4639,29 @@ msgid "New description"
 msgstr "Uusi kuvaus"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "No organization found"
+msgid "Forever (organization default)"
+msgstr "Ei organisaatioita löytynyt"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Ikuisesti"
+
+#: zerver/actions/streams.py
+#, fuzzy, python-brace-format
+#| msgid "{number_of_days} days"
+msgid "{number_of_days} days (organization default)"
+msgstr "{number_of_days} days"
 
 #: zerver/actions/streams.py
 #, python-brace-format
 msgid "{number_of_days} days"
 msgstr "{number_of_days} days"
+
+#: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr "Tällä kanavalla viestit säilytetään nyt ikuisesti."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4636,10 +4671,6 @@ msgid ""
 msgstr ""
 "Tämän kanavan viestit poistetaan automaattisesti {number_of_days} päivää "
 "lähettämisen jälkeen."
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
-msgstr "Tällä kanavalla viestit säilytetään nyt ikuisesti."
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4770,7 +4801,7 @@ msgstr ""
 "Aliverkkotunnus voi sisältää vain pieniä kirjaimia, numeroita, ja '-' "
 "merkkejä."
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr "Alidomain on jo käytössä, valitse joku toinen."
 
@@ -6617,6 +6648,20 @@ msgid "Invalid interface type"
 msgstr "Virheellinen käyttöliittymätyyppi"
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Virheellinen sulautetun botin nimi."
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr "Virheelllinen käyttäjätunnus {user_id}"
@@ -7720,6 +7765,12 @@ msgid "{property} is not a boolean"
 msgstr "{property} ei ole boolenarvo"
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid property {property}"
+msgid "Invalid {property}"
+msgstr "Virheellinen ominaisuus {property}"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Tuntematon tilausominaisuus: {property}"
@@ -7963,12 +8014,6 @@ msgstr "Omistajan vaihto epäonnistui, käyttäjä on poistettu käytöstä"
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "Omistajan vaihto epäonnistui, botit eivät voi omistaa toisia botteja"
-
-#: zerver/views/users.py
-#, fuzzy
-#| msgid "Invalid embedded bot name."
-msgid "Only embedded bots have config_data."
-msgstr "Virheellinen sulautetun botin nimi."
 
 #: zerver/views/users.py
 msgid ""
