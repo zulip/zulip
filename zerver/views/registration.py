@@ -372,7 +372,7 @@ def registration_helper(
         if start_slack_import:
             assert is_realm_import_enabled()
             assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
-            assert prereg_realm.data_import_metadata.get("uploaded_import_file_name") is not None
+            assert prereg_realm.data_import_metadata.get("uploaded_import_file_path_id") is not None
             assert prereg_realm.data_import_metadata.get("is_import_work_queued") is not True
             assert prereg_realm.created_realm is None
 
@@ -385,7 +385,7 @@ def registration_helper(
                 {
                     "type": "import_slack_data",
                     "preregistration_realm_id": prereg_realm.id,
-                    "filename": f"import/{prereg_realm.id}/slack.zip",
+                    "filename": prereg_realm.data_import_metadata["uploaded_import_file_path_id"],
                     "slack_access_token": prereg_realm.data_import_metadata["slack_access_token"],
                 },
             )

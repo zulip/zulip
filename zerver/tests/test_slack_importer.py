@@ -2373,6 +2373,9 @@ To Do
 
         # Assume user uploaded a file.
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
+        prereg_realm.data_import_metadata["uploaded_import_file_path_id"] = (
+            f"import/{prereg_realm.id}/test/slack.zip"
+        )
         prereg_realm.save()
 
         # Set by the user performing the import.
@@ -2400,7 +2403,7 @@ To Do
             {
                 "type": "import_slack_data",
                 "preregistration_realm_id": prereg_realm.id,
-                "filename": f"import/{prereg_realm.id}/slack.zip",
+                "filename": f"import/{prereg_realm.id}/test/slack.zip",
                 "slack_access_token": access_token,
             },
         )
