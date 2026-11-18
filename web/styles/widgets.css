@@ -25,15 +25,6 @@
 }
 
 .todo-widget {
-    .todo-task-list-title-bar {
-        flex: 1 1 auto;
-        display: flex;
-        /* Ensure controls remain visible on narrower screens. */
-        flex-flow: row wrap;
-        gap: 5px;
-        margin-bottom: var(--markdown-interelement-space-px);
-    }
-
     .add-task-bar {
         display: flex;
         /* Ensure controls remain visible on narrower screens. */
@@ -333,14 +324,17 @@ input {
     }
 }
 
-.poll-question-bar {
+.poll-question-bar,
+.todo-task-list-title-bar {
     flex: 1 1 auto;
     display: flex;
     /* Ensure controls remain visible on narrower screens. */
     flex-flow: row wrap;
-    gap: 5px;
-    /* Reserve space for the focus outline to prevent it from being cut off */
-    margin-right: 2px;
+    /* The row gap spaces the rows when the buttons wrapper wraps
+       below.  The buttons wrapper reserves 2px of inline margin
+       for its focus outline, so the 3px column gap preserves the
+       5px of space between the input and the buttons wrapper. */
+    gap: 5px 3px;
     margin-bottom: var(--markdown-interelement-space-px);
 }
 
@@ -351,6 +345,8 @@ input {
        a single unit instead. */
     flex: 0 0 auto;
     gap: 5px;
+    /* Reserve space for the focus outline to prevent it from being cut off */
+    margin-inline: 2px;
 }
 
 .poll-widget-header-area,
