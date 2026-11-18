@@ -13,19 +13,19 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-05 04:43+0000\n"
-"PO-Revision-Date: 2026-09-20 11:51+0000\n"
-"Last-Translator: Arthur <unmapped-treble@posteo.com>\n"
+"PO-Revision-Date: 2026-11-18 11:45+0000\n"
+"Last-Translator: Ebbe <ebbez@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/zulip/django/nl/>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.10.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
-msgstr "Geen toegang voor gastgebruikers"
+msgstr "Niet toegestaan voor gastgebruikers"
 
 #: analytics/views/stats.py
 msgid "Invalid organization"
@@ -44,7 +44,6 @@ msgid "Direct messages"
 msgstr "Privéberichten"
 
 #: analytics/views/stats.py
-#, fuzzy
 msgid "Group direct messages"
 msgstr "Groepsberichten"
 
@@ -151,7 +150,7 @@ msgstr "Registratie is gedeactiveerd"
 
 #: corporate/lib/remote_billing_util.py
 msgid "Invalid remote server."
-msgstr "Ongeldig serveradres"
+msgstr "Ongeldige remote-server."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -393,10 +392,12 @@ msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"Controleer of je browser privacy-instellingen of extensies heeft die Referer-"
+"headers blokker en schakel ze uit voor deze website."
 
 #: templates/4xx.html
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Methode niet toegestaan (405)"
 
 #: templates/500.html zerver/actions/scheduled_messages.py zerver/middleware.py
 #: zerver/tornado/views.py
@@ -408,6 +409,9 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Er is iets foutgegaan. Sorry hiervoor! We zijn op de hoogte van het probleem "
+"en werken aan een oplossing. Zulip zal automatisch herladen wanneer het weer "
+"werkt."
 
 #: templates/500.html
 #, python-format
@@ -416,12 +420,17 @@ msgid ""
 "information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
 "a> with any questions."
 msgstr ""
+"Kijk op <a href=\"%(status_url)s\">Zulip Cloud-status</a> voor meer "
+"informatie en <a href=\"mailto:%(support_email)s\">neem contact op met Zulip-"
+"support</a> als je vragen hebt."
 
 #: templates/500.html
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"Er is iets foutgegaan. Sorry hiervoor! Zulip zal automatisch herladen "
+"wanneer het weer werkt."
 
 #: templates/500.html
 #, python-format
@@ -429,6 +438,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
+"<a href=\"mailto:%(support_email)s\">neem contact op met de beheerders van "
+"deze server</a> voor ondersteuning."
 
 #: templates/500.html
 #, python-format
@@ -436,12 +447,13 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
+"Als jij deze server beheert, kan de <a href=\"%(troubleshooting_url)s\">"
+"Zulip-server foutoplossingshandleiding</a> handig zijn."
 
 #: templates/analytics/stats.html
-#, fuzzy, python-format
-#| msgid "Zulip analytics for %(target_name)s"
+#, python-format
 msgid "Analytics for %(target_name)s | Zulip"
-msgstr "Zulip statistieken voor %(target_name)s"
+msgstr "Statistieken voor %(target_name)s | Zulip"
 
 #: templates/analytics/stats.html
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -456,31 +468,31 @@ msgstr "Zulip statistieken voor %(target_name)s"
 
 #: templates/analytics/stats.html
 msgid "Organization summary"
-msgstr ""
+msgstr "Overzicht over de organisatie"
 
 #: templates/analytics/stats.html
 msgid "Number of users"
-msgstr ""
+msgstr "Aantal gebruikers"
 
 #: templates/analytics/stats.html
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Gebruikers die de afgelipen 15 dagen actief zijn geweest"
 
 #: templates/analytics/stats.html
 msgid "Number of guests"
-msgstr ""
+msgstr "Aantal gasten"
 
 #: templates/analytics/stats.html
 msgid "Total number of messages"
-msgstr ""
+msgstr "Totaal aantal berichten"
 
 #: templates/analytics/stats.html
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Aantal berichten in de afgelopen 30 dagen"
 
 #: templates/analytics/stats.html
 msgid "File storage in use"
-msgstr ""
+msgstr "Gebruikte bestandsopslag"
 
 #: templates/analytics/stats.html
 msgid "Active users"
@@ -577,11 +589,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed"
-msgstr ""
+msgstr "E-mailadres gewijzigd"
 
 #: templates/confirmation/confirm_email_change.html
 msgid "Email changed!"
-msgstr "E-mail gewijzigd"
+msgstr "E-mail gewijzigd!"
 
 #: templates/confirmation/confirm_email_change.html
 #, python-format
@@ -595,15 +607,15 @@ msgstr ""
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Je e-mailadres bevestigen"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "Bevestigingslink bestaat niet"
 
 #: templates/confirmation/link_does_not_exist.html
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "Oeps. We konden je bevestigingslink niet vinden in het systeem."
 
 #: templates/confirmation/link_does_not_exist.html
 #: templates/confirmation/link_malformed.html
@@ -612,32 +624,37 @@ msgid ""
 "Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this "
 "resolved shortly."
 msgstr ""
+"Hoe dan ook, suur ons een bericht via %(support_email_html_tag)s en we "
+"zullen dit zo snel mogelijk oplossen."
 
 #: templates/confirmation/link_expired.html
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "Bevestigingslink verlopen of gedeactiveerd"
 
 #: templates/confirmation/link_expired.html
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "Oeps. De bevestigingslink is verlopen of is gedeactiveerd."
 
 #: templates/confirmation/link_expired.html
 msgid "Please contact your organization administrator for a new link."
 msgstr ""
+"Neem contact op met de beheerder van je organisatie voor een nieuwe link."
 
 #: templates/confirmation/link_malformed.html
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "De bevestigingslink is ongeldig"
 
 #: templates/confirmation/link_malformed.html
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "Oeps. De bevestigingslink heeft een verkeerd format."
 
 #: templates/confirmation/link_malformed.html
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
+"Controleer of je de link juist in je browser hebt geplakt. Als je dan nog "
+"steeds op deze pagina komt ligt het waarschijnlijk aan ons. Sorry."
 
 #: templates/corporate/billing/billing.html
 msgid "Billing"
@@ -648,15 +665,15 @@ msgstr "Facturering"
 #: templates/zerver/create_user/change_email_address_visibility_modal.html
 #: templates/zerver/development/email_log.html
 msgid "Close modal"
-msgstr ""
+msgstr "Venster sluiten"
 
 #: templates/corporate/billing/billing.html
 msgid "Never mind"
-msgstr ""
+msgstr "Sluiten"
 
 #: templates/corporate/billing/billing.html
 msgid "Downgrade"
-msgstr ""
+msgstr "Downgraden"
 
 #: templates/corporate/billing/billing.html
 #: templates/corporate/billing/upgrade.html
@@ -672,20 +689,20 @@ msgstr "Bevestig"
 
 #: templates/corporate/billing/billing.html
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "Upgrade annuleren"
 
 #: templates/corporate/billing/event_status.html
 msgid "Billing status"
-msgstr ""
+msgstr "Factureringsstatus"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "Serverregistratie deactiveren?"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html
 msgid "Plan management not available"
-msgstr ""
+msgstr "Abonnementsbeheer niet beschikbaar"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 #, python-format
@@ -733,28 +750,30 @@ msgid ""
 "Your server has exceeded the limit for how often this action can be "
 "performed."
 msgstr ""
+"Uw server heeft de limiet voor hoe vaak deze actie uitgevoerd kan worden "
+"overschreden."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
 #, python-format
 msgid "You can try again in %(retry_after_string)s."
-msgstr ""
+msgstr "Je kunt het opnieuw proberen in %(retry_after_string)s."
 
 #: templates/corporate/billing/upgrade.html
 msgid "Upgrade"
-msgstr ""
+msgstr "Upgraden"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "Factuur sturen en gratis proefperiode starten"
 
 #: templates/corporate/billing/upgrade.html
 msgid "Send invoice"
-msgstr ""
+msgstr "Factuur sturen"
 
 #: templates/corporate/communities.html
 msgid "Open communities directory"
-msgstr ""
+msgstr "Lijst met open gemeenschappen"
 
 #: templates/corporate/communities.html
 msgid "Filter by category"
@@ -770,43 +789,43 @@ msgstr "Categorieën"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "10,000 messages"
-msgstr ""
+msgstr "10.000 berichten"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Unlimited"
-msgstr ""
+msgstr "Onbeperkt"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "Bestanden tot 10 MB"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "Bestanden tot 1 GB"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Supported"
-msgstr ""
+msgstr "Ondersteund"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Self-managed"
-msgstr ""
+msgstr "In eigen beheer"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "Voor organisaties tot 10 gebruikers"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "25 users minimum"
-msgstr ""
+msgstr "Minimaal 25 gebruikers"
 
 #: templates/corporate/comparison_table_integrated.html
 msgid "Not available"
-msgstr ""
+msgstr "Niet beschikbaar"
 
 #: templates/corporate/development-community.html
 msgid "The Zulip development community"
-msgstr ""
+msgstr "De Zulip-ontwikkelaarscommunity"
 
 #: templates/corporate/development-community.html
 msgid "Join as a user"
@@ -1081,7 +1100,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid "No conversations match your filters."
-msgstr ""
+msgstr "Er voldoen geen gesprekken aan je filters."
 
 #: templates/zerver/app/index.html
 msgid "This view is still loading messages."
@@ -1089,7 +1108,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html
 msgid "Load more"
-msgstr ""
+msgstr "Meer laden"
 
 #: templates/zerver/close_window.html
 msgid "Video call ended"
@@ -1139,10 +1158,8 @@ msgid "Continue to registration"
 msgstr "Verder met registratie"
 
 #: templates/zerver/create_realm/create_demo_realm.html
-#, fuzzy
-#| msgid "Create a new Zulip organization"
 msgid "Try Zulip in a demo organization"
-msgstr "Maak een nieuwe Zulip-organisatie"
+msgstr "Probeer Zulip in een demo-organisatie"
 
 #: templates/zerver/create_realm/create_demo_realm.html
 #, python-format
@@ -1152,10 +1169,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/create_realm/create_demo_realm.html
-#, fuzzy
-#| msgid "Why Zulip"
 msgid "Try Zulip"
-msgstr "Waarom Zulip"
+msgstr "Probeer Zulip"
 
 #: templates/zerver/create_realm/create_realm.html
 msgid "Create a new organization"
@@ -1224,7 +1239,7 @@ msgstr ""
 #: templates/zerver/create_realm/realm_creation_base_form_fields.html
 #: templates/zerver/create_user/register.html
 msgid "Organization type"
-msgstr ""
+msgstr "Organisatietype"
 
 #: templates/zerver/create_realm/realm_creation_base_form_fields.html
 #: templates/zerver/create_user/register.html
@@ -1338,13 +1353,14 @@ msgstr ""
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Nobody in this Zulip organization will be able to see this email address."
-msgstr ""
+msgstr "Niemand in deze Zulip-organisatie kan dit e-mailadres zien."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
 "Other users in this Zulip organization will be able to see this email "
 "address."
 msgstr ""
+"Andere gebruikers in deze Zulip-organisatie kunnen dit e-mailadres zien."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid "Change"
@@ -1392,7 +1408,7 @@ msgstr "Naam"
 
 #: templates/zerver/create_user/register.html
 msgid "This is how your account is displayed in Zulip."
-msgstr ""
+msgstr "Dit is hoe je account wordt weergegeven in Zulip."
 
 #: templates/zerver/create_user/register.html templates/zerver/login.html
 #: templates/zerver/reset_confirm.html
@@ -1449,12 +1465,12 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/deactivated.html
-#, fuzzy
-#| msgid "This organization has been deactivated"
 msgid ""
 "This organization has been deactivated, and all organization data has been "
 "deleted."
-msgstr "Deze organisatie is gedeactiveerd"
+msgstr ""
+"Deze organisatie is gedeactiveerd en alle organisatiegegevens zijn "
+"verwijderd."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1471,10 +1487,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/deactivated.html
-#, fuzzy
-#| msgid "This organization has been deactivated"
 msgid "This organization has been deactivated."
-msgstr "Deze organisatie is gedeactiveerd"
+msgstr "Deze organisatie is gedeactiveerd."
 
 #: templates/zerver/deactivated.html
 #, python-format
@@ -1522,7 +1536,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html
 msgid "Incorrect token."
-msgstr "Incorrect token."
+msgstr "Verkeerd token."
 
 #: templates/zerver/desktop_login.html
 msgid "Token accepted.  Logging you in…"
@@ -1555,7 +1569,7 @@ msgstr ""
 
 #: templates/zerver/development/dev_login.html zerver/models/groups.py
 msgid "Owners"
-msgstr ""
+msgstr "Eigenaars"
 
 #: templates/zerver/development/dev_login.html zerver/models/groups.py
 msgid "Administrators"
@@ -1879,7 +1893,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html templates/zerver/emails/digest.txt
 msgid "New channels"
-msgstr ""
+msgstr "Nieuwe kanalen"
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -1888,6 +1902,9 @@ msgid ""
 "%(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Je hebt %(new_messages_count)s nieuwe berichte en er zijn %"
+"(new_streams_count)s nieuwe kanalen in <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html
 #, python-format
@@ -1902,6 +1919,8 @@ msgid ""
 "There are %(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
+"Er zijn %(new_streams_count)s nieuwe kanalen in <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html
 #: templates/zerver/emails/missed_message.html
@@ -1922,10 +1941,9 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/digest.html
-#, fuzzy, python-format
-#| msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
+#, python-format
 msgid "<a href=\"%(realm_url)s\">Log in</a> to Zulip to catch up."
-msgstr "Graag <a href=\"%(login_url)s\">inloggen</a> met je nieuwe wachtwoord."
+msgstr "<a href=\"%(realm_url)s\">Log in</a> bij Zulip om bij te lezen."
 
 #: templates/zerver/emails/digest.html
 msgid "Unsubscribe from digest emails"
@@ -1942,6 +1960,8 @@ msgid ""
 "You have %(new_messages_count)s new messages, and there are "
 "%(new_streams_count)s new channels in %(realm_name)s."
 msgstr ""
+"Je hebt %(new_messages_count)s nieuwe berichten en er zijn %"
+"(new_streams_count)s nieuwe kanalen in %(realm_name)s."
 
 #: templates/zerver/emails/digest.txt
 #, python-format
@@ -1951,7 +1971,7 @@ msgstr ""
 #: templates/zerver/emails/digest.txt
 #, python-format
 msgid "There are %(new_streams_count)s new channels in %(realm_name)s."
-msgstr ""
+msgstr "Er zijn %(new_streams_count)s nieuwe kanalen in %(realm_name)s."
 
 #: templates/zerver/emails/digest.txt
 #: templates/zerver/emails/missed_message.txt
@@ -1971,10 +1991,9 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/digest.txt
-#, fuzzy, python-format
-#| msgid "Organization: %(organization_url)s"
+#, python-format
 msgid "Log in to Zulip to catch up: %(organization_url)s."
-msgstr "Organisatie: %(organization_url)s"
+msgstr "Log in bij Zulip om bij te lezen: %(organization_url)s."
 
 #: templates/zerver/emails/digest.txt
 #: templates/zerver/emails/missed_message.txt
@@ -2228,7 +2247,7 @@ msgstr ""
 #: templates/zerver/emails/missed_message.subject.txt
 #, python-format
 msgid "Group DMs with %(direct_message_group_display_name)s"
-msgstr ""
+msgstr "Groepsberichten met %(direct_message_group_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt
 #, python-format
@@ -2816,10 +2835,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/emails/realm_reactivation.subject.txt
-#, fuzzy
-#| msgid "Deactivated organization"
 msgid "Reactivate your Zulip demo organization"
-msgstr "Organisatie gedeactiveerd"
+msgstr "Heractiveer je Zulip demo-organisatie"
 
 #: templates/zerver/emails/realm_reactivation.subject.txt
 msgid "Reactivate your Zulip organization"
@@ -2987,7 +3004,7 @@ msgstr "Waarom Zulip"
 
 #: templates/zerver/footer.html
 msgid "Switch from Slack"
-msgstr ""
+msgstr "Overstappen van Slack"
 
 #: templates/zerver/footer.html
 msgid "Features"
@@ -2998,10 +3015,8 @@ msgid "Plans & pricing"
 msgstr ""
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Zulip"
 msgid "Zulip Cloud"
-msgstr "Zulip"
+msgstr "Zulip Cloud"
 
 #: templates/zerver/footer.html
 msgid "Self-hosting"
@@ -3013,7 +3028,7 @@ msgstr ""
 
 #: templates/zerver/footer.html
 msgid "Integrations"
-msgstr "Integratie"
+msgstr "Integraties"
 
 #: templates/zerver/footer.html
 msgid "Desktop & mobile apps"
@@ -3029,7 +3044,7 @@ msgstr ""
 
 #: templates/zerver/footer.html
 msgid "Business"
-msgstr ""
+msgstr "Onderneming"
 
 #: templates/zerver/footer.html
 msgid "Education"
@@ -3037,7 +3052,7 @@ msgstr "Onderwijs"
 
 #: templates/zerver/footer.html
 msgid "Research"
-msgstr ""
+msgstr "Onderzoek"
 
 #: templates/zerver/footer.html
 msgid "Events & conferences"
@@ -3077,7 +3092,7 @@ msgstr "Helpcentrum"
 
 #: templates/zerver/footer.html
 msgid "Community chat"
-msgstr "Community chat"
+msgstr "Community-chat"
 
 #: templates/zerver/footer.html
 msgid "Partners"
@@ -3261,7 +3276,7 @@ msgstr ""
 
 #: templates/zerver/login.html
 msgid "Log in to Zulip"
-msgstr ""
+msgstr "Log in bij Zulip"
 
 #: templates/zerver/login.html
 msgid "You've already registered with this email address. Please log in below."
@@ -3293,6 +3308,8 @@ msgstr ""
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
 msgstr ""
+"Heb je nog geen account? Je moet uitgenodigd worden om lid te worden van "
+"deze organisatie."
 
 #: templates/zerver/no_spare_licenses.html
 msgid "No licenses available"
@@ -3337,10 +3354,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/portico_error_pages/demo_creation_disabled.html
-#, fuzzy
-#| msgid "New organization"
 msgid "Demo organizations disabled"
-msgstr "Nieuwe organisatie"
+msgstr "Demo-organisatie uitgeschakeld"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html
 msgid "Update required"
@@ -3406,10 +3421,9 @@ msgid "Unsupported browser"
 msgstr ""
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html
-#, fuzzy, python-format
-#| msgid "Presence is not supported for bot users."
+#, python-format
 msgid "%(browser_name)s is not supported by Zulip."
-msgstr "Aanwezigheid wordt niet ondersteund voor botgebruikers."
+msgstr "%(browser_name)s wordt niet ondersteund door Zulip."
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html
 #, python-format
@@ -3430,16 +3444,12 @@ msgid "Account is deactivated"
 msgstr "Account is gedeactiveerd"
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Invalid organization"
 msgid "Finalize organization import"
-msgstr "Ongeldige organisatie"
+msgstr "Organisatie-import voltooien"
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Organization name"
 msgid "Organization import completed!"
-msgstr "Organisatienaam"
+msgstr "Organisatie-import voltooid!"
 
 #: templates/zerver/realm_import_post_process.html
 #, python-format
@@ -3450,16 +3460,12 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Your account"
 msgid "Select your account"
-msgstr "Je account"
+msgstr "Selecteer je account"
 
 #: templates/zerver/realm_import_post_process.html
-#, fuzzy
-#| msgid "Create a new organization"
 msgid "Create new account"
-msgstr "Maak een nieuwe organisatie"
+msgstr "Nieuw account aanmaken"
 
 #: templates/zerver/realm_reactivation.html
 msgid "Organization successfully reactivated"
@@ -3881,7 +3887,7 @@ msgstr ""
 
 #: zerver/actions/message_edit.py
 msgid "General chat cannot be marked as resolved"
-msgstr ""
+msgstr "Algemene chat kan niet als opgelost gemarkeerd worden"
 
 #: zerver/actions/message_edit.py
 msgid "Cannot change message content while changing channel"
@@ -3953,10 +3959,9 @@ msgid "The time limit for moving this topic has passed."
 msgstr ""
 
 #: zerver/actions/message_edit.py
-#, fuzzy
-#| msgid "You don't have permission to edit this message"
 msgid "You don't have permission to resolve topics in this channel."
-msgstr "Je bent niet bevoegd dit bericht te bewerken"
+msgstr ""
+"Je bent niet bevoegd om onderwerpen in dit kanaal als opgelost te markeren."
 
 #: zerver/actions/message_edit.py
 msgid "The time limit for editing this message's topic has passed."
@@ -4110,10 +4115,8 @@ msgid "Scheduled message was already sent"
 msgstr ""
 
 #: zerver/actions/scheduled_messages.py
-#, fuzzy
-#| msgid "Token does not exist"
 msgid "Reminder could not be sent."
-msgstr "Token bestaat niet"
+msgstr "Herinnering kon niet verzonden worden."
 
 #: zerver/actions/scheduled_messages.py
 msgid "Message could not be sent at the scheduled time."
@@ -4228,7 +4231,7 @@ msgstr ""
 
 #: zerver/actions/streams.py
 msgid "Automatic"
-msgstr ""
+msgstr "Automatisch"
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4251,6 +4254,8 @@ msgid ""
 "{user_name} changed the \"Allow posting to the *general chat* topic?\" "
 "setting from {old_topics_policy} to {new_topics_policy}."
 msgstr ""
+"{user_name} veranderde de instelling \"Posten in *algemene chat*-onderwerp "
+"toestaan?\" van {old_topics_policy} naar {new_topics_policy}."
 
 #: zerver/actions/submessage.py
 msgid "You cannot attach a submessage to this message."
@@ -4471,10 +4476,8 @@ msgid "Challenges are not enabled."
 msgstr ""
 
 #: zerver/lib/channel_folders.py
-#, fuzzy
-#| msgid "Content can't be empty"
 msgid "Channel folder name can't be empty."
-msgstr "Inhoud kan niet leeg zijn"
+msgstr "Kanaalmapnaam kan niet leeg zijn."
 
 #: zerver/lib/channel_folders.py
 #, python-brace-format
@@ -4503,10 +4506,8 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/demo_organizations.py
-#, fuzzy
-#| msgid "Enter your email address"
 msgid "Configure owner account email address."
-msgstr "Geef e-mailadres op"
+msgstr "E-mailadres van eigenaar-account configureren."
 
 #: zerver/lib/demo_organizations.py
 #, python-brace-format
@@ -4518,10 +4519,9 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/devices.py
-#, fuzzy, python-brace-format
-#| msgid "{var_name} is not a URL"
+#, python-brace-format
 msgid "{var_name} is not Base64 encoded"
-msgstr "{var_name} is geen URL"
+msgstr "{var_name} is niet Base64 gecodeerd"
 
 #: zerver/lib/devices.py
 msgid "Invalid `device_id`"
@@ -4834,7 +4834,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "Privéberichten zijn uitgeschakeld in deze organisatie."
 
 #: zerver/lib/exceptions.py
 msgid "This conversation does not include any users who can authorize it."
@@ -4926,16 +4926,12 @@ msgid "Server is not configured to use push notification service."
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Already has an account."
 msgid "Atlassian account ID"
-msgstr "Heeft al een account."
+msgstr "Atlassian account-ID"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Behance username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Behance-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "Bitbucket username"
@@ -4946,42 +4942,32 @@ msgid "Bluesky handle"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Codeberg username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Codeberg-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "Discord tag"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Email or username"
 msgid "Dribbble username"
-msgstr "E-mailadres of gebruikersnaam"
+msgstr "Dribbble-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Facebook username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Facebook-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "GitHub username"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Email or username"
 msgid "GitLab username"
-msgstr "E-mailadres of gebruikersnaam"
+msgstr "GitLab-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Instagram username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Instagram-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "LinkedIn profile name"
@@ -4992,50 +4978,36 @@ msgid "Mastodon profile"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Medium username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Medium-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Pinterest username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Pinterest-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Email or username"
 msgid "Reddit username"
-msgstr "E-mailadres of gebruikersnaam"
+msgstr "Reddit-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "Snapchat username"
 msgstr ""
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Bad name or username"
 msgid "Threads username"
-msgstr "Verkeerde naam of gebruikersnaam"
+msgstr "Threads-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Email or username"
 msgid "TikTok username"
-msgstr "E-mailadres of gebruikersnaam"
+msgstr "TikTok-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Email or username"
 msgid "Twitch username"
-msgstr "E-mailadres of gebruikersnaam"
+msgstr "Twitch-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
-#, fuzzy
-#| msgid "Username"
 msgid "X username"
-msgstr "Gebruikersnaam"
+msgstr "X-gebruikersnaam"
 
 #: zerver/lib/external_accounts.py
 msgid "YouTube handle"
@@ -5095,10 +5067,9 @@ msgid "[Original message]({direct_message_link})"
 msgstr ""
 
 #: zerver/lib/message_report.py
-#, fuzzy, python-brace-format
-#| msgid "{full_name} mentioned you:"
+#, python-brace-format
 msgid "{fullname} moderation"
-msgstr "{full_name} vermeldde jou:"
+msgstr "{fullname} moderatie"
 
 #: zerver/lib/message_report.py
 #, python-brace-format
@@ -5128,10 +5099,8 @@ msgid "Missing 'anchor' argument."
 msgstr ""
 
 #: zerver/lib/narrow.py
-#, fuzzy
-#| msgid "Missing '{var_name}' argument"
 msgid "Missing 'anchor_date' argument."
-msgstr "Ontbrekend '{var_name}' argument"
+msgstr "Argument 'anchor_date' ontbreekt."
 
 #: zerver/lib/narrow.py
 msgid "Invalid anchor"
@@ -5148,10 +5117,8 @@ msgid "Operand {operand} not supported."
 msgstr ""
 
 #: zerver/lib/navigation_views.py
-#, fuzzy
-#| msgid "Token does not exist"
 msgid "Navigation view does not exist."
-msgstr "Token bestaat niet"
+msgstr "Navigatieweergave bestaat niet."
 
 #: zerver/lib/onboarding.py
 #, python-brace-format
@@ -5535,10 +5502,8 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/push_registration.py
-#, fuzzy
-#| msgid "Invalid API key"
 msgid "Invalid `push_key`"
-msgstr "Ongeldige API key"
+msgstr "Ongeldige `push_key`"
 
 #: zerver/lib/rate_limiter.py
 #, python-brace-format
@@ -5621,10 +5586,8 @@ msgid "You [sent]({conversation_url}) a note to yourself:"
 msgstr ""
 
 #: zerver/lib/reminders.py
-#, fuzzy
-#| msgid "Token does not exist"
 msgid "Reminder does not exist"
-msgstr "Token bestaat niet"
+msgstr "Herinnering bestaat niet"
 
 #: zerver/lib/remote_server.py
 #, python-brace-format
@@ -5673,10 +5636,8 @@ msgid "Not authorized to send to channel '{channel_name}'"
 msgstr ""
 
 #: zerver/lib/streams.py
-#, fuzzy
-#| msgid "You don't have permission to edit this message"
 msgid "You do not have permission to create new topics in this channel."
-msgstr "Je bent niet bevoegd dit bericht te bewerken"
+msgstr "Je bent niet bevoegd om nieuwe onderwerpen aan te maken in dit kanaal."
 
 #: zerver/lib/streams.py zerver/views/user_topics.py
 msgid "Invalid channel ID"
@@ -5869,10 +5830,9 @@ msgid "{var_name} is not a valid hex color code"
 msgstr ""
 
 #: zerver/lib/typed_endpoint_validators.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid attachment"
+#, python-brace-format
 msgid "Invalid {setting_name}"
-msgstr "Ongeldige bijlage"
+msgstr "Ongeldige {setting_name}"
 
 #: zerver/lib/typed_endpoint_validators.py
 msgid "Not a valid unsigned 32-bit integer"
@@ -5969,10 +5929,8 @@ msgid "Name too long!"
 msgstr "Naam te lang!"
 
 #: zerver/lib/users.py
-#, fuzzy
-#| msgid "Message must not be empty"
 msgid "Name must not be empty!"
-msgstr "Bericht kan niet leeg zijn"
+msgstr "Naam mag niet leeg zijn!"
 
 #: zerver/lib/users.py
 msgid "Invalid characters in name!"
@@ -6217,7 +6175,7 @@ msgstr ""
 
 #: zerver/models/custom_profile_fields.py
 msgid "Pronouns"
-msgstr ""
+msgstr "Voornaamwoorden"
 
 #: zerver/models/groups.py zerver/models/users.py
 msgid "Nobody"
@@ -6225,7 +6183,7 @@ msgstr "Niemand"
 
 #: zerver/models/groups.py
 msgid "Full members"
-msgstr ""
+msgstr "Volwaardige leden"
 
 #: zerver/models/groups.py
 msgid "Members"
@@ -6233,7 +6191,7 @@ msgstr "Leden"
 
 #: zerver/models/groups.py
 msgid "Everyone on the internet"
-msgstr ""
+msgstr "Iedereen op het internet"
 
 #: zerver/models/linkifiers.py
 msgid "Invalid auto-conversion field: missing '}' character."
@@ -6310,7 +6268,7 @@ msgstr "Unicode emoji"
 
 #: zerver/models/messages.py
 msgid "Custom emoji"
-msgstr "Aangepaste emoji"
+msgstr "Aangepaste emoji's"
 
 #: zerver/models/messages.py
 msgid "Zulip extra emoji"
@@ -6338,7 +6296,7 @@ msgstr ""
 
 #: zerver/models/realms.py
 msgid "general"
-msgstr ""
+msgstr "algemeen"
 
 #: zerver/models/realms.py
 msgid "channel events"
@@ -6378,7 +6336,7 @@ msgstr ""
 
 #: zerver/models/realms.py
 msgid "Disabled"
-msgstr ""
+msgstr "Uitgeschakeld"
 
 #: zerver/models/realms.py
 msgid "Allow GIFs rated G (General audience)"
@@ -6609,10 +6567,8 @@ msgid "No such invitation"
 msgstr ""
 
 #: zerver/views/invite.py
-#, fuzzy
-#| msgid "This organization has been deactivated"
 msgid "Invitation already used or deactivated."
-msgstr "Deze organisatie is gedeactiveerd"
+msgstr "Uitnodiging al gebruikt of gedeactiveerd."
 
 #: zerver/views/invite.py
 msgid "Invitation has already been revoked"
@@ -6675,11 +6631,8 @@ msgid "An explanation is required."
 msgstr ""
 
 #: zerver/views/message_report.py
-#, fuzzy
-#| msgid "Message edit history is disabled in this organization"
 msgid "Message reporting is not enabled in this organization."
-msgstr ""
-"Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
+msgstr "Melden van berichten is niet ingeschakeld in deze organisatie."
 
 #: zerver/views/message_report.py
 #, fuzzy
@@ -6751,10 +6704,8 @@ msgid "Invalid status: {status}"
 msgstr ""
 
 #: zerver/views/push_notifications.py
-#, fuzzy
-#| msgid "You don't have permission to edit this message"
 msgid "You do not have permission to manage plans and billing."
-msgstr "Je bent niet bevoegd dit bericht te bewerken"
+msgstr "Je bent niet bevoegd om tarieven en rekeningen te beheren."
 
 #: zerver/views/push_notifications.py
 msgid "Server doesn't use the push notification service"
@@ -6877,12 +6828,11 @@ msgid "Uploaded file is larger than the allowed limit of {max_size} MiB"
 msgstr ""
 
 #: zerver/views/realm_export.py
-#, fuzzy
-#| msgid "Message edit history is disabled in this organization"
 msgid ""
 "Exports of all public and private data are not enabled for this organization."
 msgstr ""
-"Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
+"Exporteren van alle publieke en privédata is uitgeschakeld voor deze "
+"organisatie."
 
 #: zerver/views/realm_export.py
 msgid "Exceeded rate limit."
@@ -6924,10 +6874,9 @@ msgid "You must upload exactly one logo."
 msgstr "Je moet precies één logo uploaden."
 
 #: zerver/views/realm_playgrounds.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid characters in name!"
+#, python-brace-format
 msgid "Invalid character in language: {character}"
-msgstr "Ongeldige tekens in de naam!"
+msgstr "Ongeldig teken in de taal: {character}"
 
 #: zerver/views/realm_playgrounds.py
 #, python-brace-format
@@ -7072,16 +7021,16 @@ msgstr ""
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_name} created the following channels: {new_channels}."
-msgstr ""
+msgstr "{user_name} heeft de volgende kanalen aangemaakt: {new_channels}."
 
 #: zerver/views/streams.py
 #, python-brace-format
 msgid "{user_name} created a new channel {new_channels}."
-msgstr ""
+msgstr "{user_name} heeft een nieuw kanaal {new_channels} aangemaakt."
 
 #: zerver/views/streams.py
 msgid "new channels"
-msgstr ""
+msgstr "nieuwe kanalen"
 
 #: zerver/views/streams.py
 #, python-brace-format
@@ -7246,7 +7195,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py
 msgid "Avatar changes are disabled in this organization."
-msgstr ""
+msgstr "Wijzigen van avatar is uitgeschakeld in deze organisatie."
 
 #: zerver/views/user_settings.py
 msgid "Email address changes are disabled in this organization."
@@ -7289,7 +7238,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py
 msgid "New password is too weak!"
-msgstr ""
+msgstr "Nieuw wachtwoord is te zwak!"
 
 #: zerver/views/user_settings.py
 msgid "You must upload exactly one avatar."
@@ -7326,19 +7275,17 @@ msgid "New email value error: {message}"
 msgstr ""
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid ""
-#| "No analytics data available. Please contact your server administrator."
 msgid ""
 "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "Geen statistieken beschikbaar. Pas dit aan bij de admin instellingen."
+msgstr ""
+"Bot-e-mail kan niet gewijzigd worden tot FAKE_EMAIL_DOMAIN correct is "
+"ingesteld.\n"
+"Neem contact op met je serverbeheerder."
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid "Email address"
 msgid "Email address already in use"
-msgstr "E-mailadres"
+msgstr "E-mailadres al in gebruik"
 
 #: zerver/views/users.py
 msgid "Failed to change owner, no such user"
@@ -7433,10 +7380,9 @@ msgid "Invalid signature."
 msgstr ""
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "{full_name} mentioned you:"
+#, python-brace-format
 msgid "{full_name}'s Zulip room"
-msgstr "{full_name} vermeldde jou:"
+msgstr "Zulip-ruimte van {full_name}"
 
 #: zerver/webhooks/circleci/view.py
 msgid "Projects using this version control system provider aren't supported"
@@ -7617,10 +7563,8 @@ msgid "Missing id_token parameter"
 msgstr ""
 
 #: zproject/backends.py
-#, fuzzy
-#| msgid "Missing sender"
 msgid "Missing idp param"
-msgstr "Ontbrekende afzender"
+msgstr "idp-parameter ontbreekt"
 
 #: zproject/backends.py
 msgid "Invalid OTP"
