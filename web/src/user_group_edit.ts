@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
+import render_creator_details from "../templates/creator_details.hbs";
 import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
@@ -567,6 +568,26 @@ export function update_group_details(group: UserGroup): void {
     $edit_container
         .find(".user-group-description")
         .html(rendered_user_group_description({rendered_description: group.description}));
+}
+
+export function refresh_after_users_fetched(): void {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const group_id = get_active_data().id;
+    if (group_id === undefined) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(group_id);
+    get_edit_container(group.id)
+        .find(".creator_details")
+        .html(
+            render_creator_details({
+                group,
+                group_id: group.id,
+                ...get_creator_details_context(group),
+            }),
+        );
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
