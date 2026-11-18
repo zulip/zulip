@@ -2018,6 +2018,27 @@ export function initialize({
         private_message_typeahead_input,
         pm_recipient_typeahead_opts,
     );
+    compose_pm_pill.widget.setSetupTypeahead(
+        ($edit) =>
+            new Typeahead(
+                {$element: $edit, type: "contenteditable"},
+                {
+                    ...pm_recipient_typeahead_opts,
+                    source(query: string): UserPillData[] {
+                        // Editing replaces one pill with one user pill, so only
+                        // show user suggestions when editing.
+                        return get_pm_people(query, false);
+                    },
+                    updater(item: UserGroupPillData | UserPillData): undefined {
+                        if (item.type === "user") {
+                            compose_pm_pill.widget.updatePillAfterEdit(
+                                user_pill.create_pill_data(item.user),
+                            );
+                        }
+                    },
+                },
+            ),
+    );
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
 }
