@@ -334,8 +334,9 @@ class TusdPreCreateTest(ZulipTestCase):
         self.assertEqual(result_json.get("HttpResponse", None), None)
         self.assertEqual(result_json.get("RejectUpload", False), False)
         self.assertEqual(list(result_json["ChangeFileInfo"].keys()), ["ID"])
-        filename = f"import/{prereg_realm.id}/slack.zip"
-        self.assertTrue(result_json["ChangeFileInfo"]["ID"].endswith(filename))
+        filename = result_json["ChangeFileInfo"]["ID"]
+        self.assertTrue(filename.startswith(f"import/{prereg_realm.id}/"))
+        self.assertTrue(filename.endswith("/slack.zip"))
 
         info = TusUpload(
             id=filename,
@@ -379,6 +380,22 @@ class TusdPreCreateTest(ZulipTestCase):
         self.assertTrue(
             prereg_realm.data_import_metadata["uploaded_import_file_name"].endswith(filename)
         )
+        self.assertEqual(
+            prereg_realm.data_import_metadata["uploaded_import_file_path_id"], filename
+        )
+
+        # A second upload replaces the first one.
+        info.id = f"import/{prereg_realm.id}/second/slack.zip"
+        with mock.patch("zerver.views.tusd.delete_message_attachment") as mock_delete:
+            result = self.client_post(
+                "/api/internal/tusd",
+                request.model_dump(),
+                content_type="application/json",
+            )
+        self.assertEqual(result.status_code, 200)
+        mock_delete.assert_called_once_with(filename)
+        prereg_realm.refresh_from_db()
+        self.assertEqual(prereg_realm.data_import_metadata["uploaded_import_file_path_id"], info.id)
 
     def test_realm_import_data_upload_size_is_deferred(self) -> None:
         # Choose import from slack

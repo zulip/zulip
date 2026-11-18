@@ -433,7 +433,7 @@ def registration_helper(
 
             if (
                 prereg_realm.data_import_metadata.get("slack_access_token") is None
-                or prereg_realm.data_import_metadata.get("uploaded_import_file_name") is None
+                or prereg_realm.data_import_metadata.get("uploaded_import_file_path_id") is None
             ):
                 # The Slack token and export file must be provided before the
                 # import can start. The UI gates this, but re-render the page
@@ -449,7 +449,7 @@ def registration_helper(
                 {
                     "type": "import_slack_data",
                     "preregistration_realm_id": prereg_realm.id,
-                    "filename": f"import/{prereg_realm.id}/slack.zip",
+                    "filename": prereg_realm.data_import_metadata["uploaded_import_file_path_id"],
                     "slack_access_token": prereg_realm.data_import_metadata["slack_access_token"],
                 },
             )
