@@ -2756,6 +2756,9 @@ To Do
 
         # Assume user uploaded a file, after an earlier import attempt failed.
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
+        prereg_realm.data_import_metadata["uploaded_import_file_path_id"] = (
+            f"import/{prereg_realm.id}/test/slack.zip"
+        )
         prereg_realm.data_import_metadata["invalid_file_error_message"] = (
             "Uploaded zip file is not a valid Slack export."
         )
@@ -2787,7 +2790,7 @@ To Do
             {
                 "type": "import_slack_data",
                 "preregistration_realm_id": prereg_realm.id,
-                "filename": f"import/{prereg_realm.id}/slack.zip",
+                "filename": f"import/{prereg_realm.id}/test/slack.zip",
                 "slack_access_token": access_token,
             },
         )
@@ -3291,6 +3294,7 @@ To Do
                 "import_from": "slack",
                 "slack_access_token": "xoxb-valid-token",
                 "uploaded_import_file_name": "slack.zip",
+                "uploaded_import_file_path_id": "import/test/slack.zip",
                 "is_import_work_queued": True,
             },
         )

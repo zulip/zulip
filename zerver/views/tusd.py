@@ -1,3 +1,4 @@
+import secrets
 from typing import Annotated, Any
 
 import orjson
@@ -288,22 +289,30 @@ def handle_preregistration_pre_create_hook(
                 413,
             )
 
-    filename = f"import/{preregistration_realm.id}/slack.zip"
-
-    # Delete any existing upload, so tusd doesn't declare that there's nothing
-    # to do. This also has the nice benefit of deleting the previous upload.
-    delete_message_attachment(filename)
-
-    return tusd_json_response({"ChangeFileInfo": {"ID": filename}})
+    # This upload's metadata contains the confirmation key, and is
+    # readable by anyone who can access the upload's tus URL, so that
+    # URL must be unguessable.
+    path_id = f"import/{preregistration_realm.id}/{secrets.token_urlsafe(18)}/slack.zip"
+    return tusd_json_response({"ChangeFileInfo": {"ID": path_id}})
 
 
 def handle_preregistration_pre_finish_hook(
     request: HttpRequest, preregistration_realm: PreregistrationRealm, data: TusUpload
 ) -> HttpResponse:
+    # This upload replaces any previously uploaded export.
+    previous_path_id = preregistration_realm.data_import_metadata.get(
+        "uploaded_import_file_path_id"
+    )
+    if previous_path_id is not None:
+        delete_message_attachment(previous_path_id)
+
     # Save the filename to display the uploaded file to user. We need to store it in
     # the database so that is available even after a refresh.
     filename = data.meta_data["filename"]
     preregistration_realm.data_import_metadata["uploaded_import_file_name"] = filename
+    # With an S3 backend, data.id has the multipart ID appended with a `+`.
+    path_id = data.id.partition("+")[0]
+    preregistration_realm.data_import_metadata["uploaded_import_file_path_id"] = path_id
     # The next import attempt will report its own errors.
     preregistration_realm.data_import_metadata.pop("invalid_file_error_message", None)
     preregistration_realm.data_import_metadata.pop("invalid_user_emails", None)
