@@ -42,7 +42,7 @@ from zerver.lib.exceptions import (
     RemoteBillingAuthenticationError,
     RemoteRealmServerMismatchError,
 )
-from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_expiry_string_for_html
+from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_retry_after_for_html
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -846,9 +846,7 @@ def check_rate_limits(
     except RateLimitedError as e:
         # Our generic error response is good enough here, since this is
         # about the user's IP address, not their entire server.
-        retry_after = e.get_retry_after_num()
-        assert retry_after is not None
-        retry_after_string = readable_expiry_string_for_html(retry_after)
+        retry_after_string = readable_retry_after_for_html(e)
         return render(
             request,
             "zerver/portico_error_pages/rate_limit_exceeded.html",
@@ -862,9 +860,7 @@ def check_rate_limits(
         # In this case it's the limit for the entire server the user belongs to
         # that was exceeded, so we need to show an error page explaining
         # that specific situation.
-        retry_after = e.get_retry_after_num()
-        assert retry_after is not None
-        retry_after_string = readable_expiry_string_for_html(retry_after)
+        retry_after_string = readable_retry_after_for_html(e)
         return render(
             request,
             "corporate/billing/remote_server_rate_limit_exceeded.html",
