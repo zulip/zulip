@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 04:43+0000\n"
+"POT-Creation-Date: 2026-11-18 11:46+0000\n"
 "PO-Revision-Date: 2026-03-31 19:42+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Mongolian <https://hosted.weblate.org/projects/zulip/django/"
@@ -3888,6 +3888,25 @@ msgid ""
 "href=\"%(realm_url)s/#settings/notifications\">notification settings</a>."
 msgstr ""
 
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "{user} made you the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid "You are now the owner of {bot}."
+msgstr ""
+
+#: zerver/actions/bots.py
+#, python-brace-format
+msgid ""
+"The bot's previous owner, {previous_owner}, may still have a copy of its API "
+"key. You can [generate a new API key]({help_link}) to revoke their access, "
+"but any integrations using the current key will stop working until they're "
+"updated."
+msgstr ""
+
 #: zerver/actions/channel_folders.py zerver/actions/custom_profile_fields.py
 msgid "Invalid order mapping."
 msgstr "Буруу захиалга."
@@ -4361,8 +4380,19 @@ msgid "New description"
 msgstr "Шинэ тайлбар"
 
 #: zerver/actions/streams.py
+#, fuzzy
+#| msgid "Create organization"
+msgid "Forever (organization default)"
+msgstr "Байгууллага үүсгэх"
+
+#: zerver/actions/streams.py
 msgid "Forever"
 msgstr "Forever"
+
+#: zerver/actions/streams.py
+#, python-brace-format
+msgid "{number_of_days} days (organization default)"
+msgstr ""
 
 #: zerver/actions/streams.py
 #, python-brace-format
@@ -4370,14 +4400,14 @@ msgid "{number_of_days} days"
 msgstr ""
 
 #: zerver/actions/streams.py
+msgid "Messages in this channel will now be retained forever."
+msgstr ""
+
+#: zerver/actions/streams.py
 #, python-brace-format
 msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
-msgstr ""
-
-#: zerver/actions/streams.py
-msgid "Messages in this channel will now be retained forever."
 msgstr ""
 
 #: zerver/actions/streams.py
@@ -4500,7 +4530,7 @@ msgstr "Дэд домэйн нь '-' аар эхлэж эсвэл төгсөж �
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
 msgstr "Дэд домэйн нь зөвхөн жижиг үсэг, тоо болон '-' агуулсан байна."
 
-#: zerver/forms.py
+#: zerver/forms.py zerver/views/registration.py
 msgid "Subdomain is already in use. Please choose a different one."
 msgstr ""
 
@@ -6245,6 +6275,20 @@ msgid "Invalid interface type"
 msgstr "Интерфэйсийн төрөл буруу байна"
 
 #: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_payload_url."
+msgstr ""
+
+#: zerver/lib/users.py
+msgid "Only outgoing-webhook bots have service_interface."
+msgstr ""
+
+#: zerver/lib/users.py
+#, fuzzy
+#| msgid "Invalid embedded bot name."
+msgid "Only embedded bots have config_data."
+msgstr "Суулгасан ботын нэр буруу."
+
+#: zerver/lib/users.py
 #, python-brace-format
 msgid "Invalid user ID: {user_id}"
 msgstr ""
@@ -7356,6 +7400,12 @@ msgid "{property} is not a boolean"
 msgstr ""
 
 #: zerver/views/streams.py
+#, fuzzy, python-brace-format
+#| msgid "Invalid {var_name}"
+msgid "Invalid {property}"
+msgstr "Буруу {var_name}"
+
+#: zerver/views/streams.py
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
@@ -7603,12 +7653,6 @@ msgstr "Эзэмшигчийг сольж чадсангүй, хэрэглэгч
 #: zerver/views/users.py
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "Эзэмшигчийг сольж чадсангүй, ботууд бусад ботуудыг эзэмших боломжгүй"
-
-#: zerver/views/users.py
-#, fuzzy
-#| msgid "Invalid embedded bot name."
-msgid "Only embedded bots have config_data."
-msgstr "Суулгасан ботын нэр буруу."
 
 #: zerver/views/users.py
 msgid ""

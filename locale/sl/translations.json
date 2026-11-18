@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "Skrbniki so podali naslednji komentar:",
   "The application has been updated; Reloading…": "Aplikacija je bila posodobljena; Ponovno nalaganje…",
   "The basics": "Osnove",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "Kanal <z-highlight>#{channel_name}</z-highlight> ne obstaja. Svoje naročnine upravljajte <z-link>na strani Kanalov</z-link>.",
   "The channel description cannot contain newline characters.": "Opis kanala ne sme vsebovati znakov za novo vrstico.",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "Naslednje <z-link>naložene datoteke</z-link> niso več priložene nobenemu sporočilu. Do njih je še vedno mogoče dostopati iz zgodovine urejanja tega sporočila. Ali jih želite v celoti izbrisati?",

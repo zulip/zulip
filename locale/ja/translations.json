@@ -1706,6 +1706,7 @@
   "The administrators provided the following comment:": "管理者が次のコメントを提供しました:",
   "The application has been updated; Reloading…": "アプリケーションが更新されました。再読み込み中…",
   "The basics": "基本",
+  "The bot's API key will be regenerated, so any integrations using it will need to be updated with the new key.": "",
   "The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions <z-link>on your Channels page</z-link>.": "",
   "The channel description cannot contain newline characters.": "チャンネルの説明に改行を含めることはできません。",
   "The following <z-link>uploaded files</z-link> are no longer attached to any messages. They can still be accessed from this message's edit history. Would you like to delete them entirely?": "",
