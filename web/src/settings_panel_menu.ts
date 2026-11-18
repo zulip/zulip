@@ -68,6 +68,20 @@ function set_settings_header($elem: JQuery, key: string): void {
     }
 }
 
+function redraw_users_list_for_tab(key: string): void {
+    switch (key) {
+        case "active":
+            redraw_active_users_list();
+            break;
+        case "deactivated":
+            redraw_deactivated_users_list();
+            break;
+        case "imported":
+            redraw_imported_users_list();
+            break;
+    }
+}
+
 export class SettingsPanelMenu {
     $main_elem: JQuery;
     hash_prefix: string;
@@ -108,18 +122,7 @@ export class SettingsPanelMenu {
                 this.set_user_settings_tab(key);
                 $(".user-settings-section").hide();
                 update_imported_users_tab();
-
-                switch (key) {
-                    case "active":
-                        redraw_active_users_list();
-                        break;
-                    case "deactivated":
-                        redraw_deactivated_users_list();
-                        break;
-                    case "imported":
-                        redraw_imported_users_list();
-                        break;
-                }
+                redraw_users_list_for_tab(key);
                 $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
             },
         });
