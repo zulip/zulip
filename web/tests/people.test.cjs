@@ -755,6 +755,80 @@ run_test("get_by_user_id", () => {
     assert.equal(person.user_id, 42);
 });
 
+run_test("is_placeholder_user", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_placeholder_user(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_placeholder_user(42));
+
+    // Missing users are not placeholders.
+    assert.ok(!people.is_placeholder_user(43));
+});
+
+run_test("is_display_full_name_loading", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_display_full_name_loading(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_display_full_name_loading(42));
+
+    muted_users.add_muted_user(42);
+    assert.ok(!people.is_display_full_name_loading(42));
+});
+
+run_test("get_loading_shimmer_width_class", () => {
+    assert.equal(people.get_loading_shimmer_width_class(40), "loading-shimmer-width-0");
+    assert.equal(people.get_loading_shimmer_width_class(42), "loading-shimmer-width-2");
+    assert.equal(people.get_loading_shimmer_width_class(44), "loading-shimmer-width-4");
+    assert.equal(people.get_loading_shimmer_width_class(45), "loading-shimmer-width-0");
+});
+
+run_test("merge_loading_user_ids", () => {
+    initialize();
+    people.add_active_user(isaac);
+    const loading_user_ids = [42, 43, 44];
+    for (const user_id of loading_user_ids) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+
+    assert.deepEqual(people.merge_loading_user_ids([42, 43]), [42]);
+    assert.deepEqual(people.merge_loading_user_ids([43, isaac.user_id, 42]), [43, isaac.user_id]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, 42, 43, 44]), [
+        isaac.user_id,
+        42,
+    ]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, 42]), [isaac.user_id, 42]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, me.user_id]), [
+        isaac.user_id,
+        me.user_id,
+    ]);
+
+    // A muted user is shown as "Muted user", so they keep their own entry.
+    muted_users.add_muted_user(43);
+    assert.deepEqual(people.merge_loading_user_ids([42, 43, 44]), [42, 43]);
+    muted_users.remove_muted_user(43);
+});
+
 run_test("set_custom_profile_field_data", () => {
     initialize();
     const person = people.get_by_email(me.email);

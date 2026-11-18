@@ -266,6 +266,40 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
+export function is_placeholder_user(user_id: number): boolean {
+    return people_by_user_id_dict.get(user_id)?.is_placeholder_user ?? false;
+}
+
+// Muted users are shown as "Muted user", which doesn't need their data.
+export function is_display_full_name_loading(user_id: number): boolean {
+    return is_placeholder_user(user_id) && !muted_users.is_user_muted(user_id);
+}
+
+// In a list of users, the shimmer of a placeholder user gets a width
+// that depends on their ID, so that the list reads as names of
+// different lengths and no shimmer changes width when the list is
+// redrawn or reordered.
+const loading_shimmer_width_classes = [
+    "loading-shimmer-width-0",
+    "loading-shimmer-width-1",
+    "loading-shimmer-width-2",
+    "loading-shimmer-width-3",
+    "loading-shimmer-width-4",
+];
+
+export function get_loading_shimmer_width_class(user_id: number): string {
+    return loading_shimmer_width_classes[user_id % loading_shimmer_width_classes.length]!;
+}
+
+// In text that lists several users by name, one placeholder name
+// stands for all the users in it whose names are loading.
+export function merge_loading_user_ids(user_ids: number[]): number[] {
+    const first_loading_user_id = user_ids.find((user_id) => is_display_full_name_loading(user_id));
+    return user_ids.filter(
+        (user_id) => user_id === first_loading_user_id || !is_display_full_name_loading(user_id),
+    );
+}
+
 export function direct_message_group_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
