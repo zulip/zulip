@@ -11,16 +11,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-09 15:42+0000\n"
-"PO-Revision-Date: 2026-03-31 19:03+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Sinhala <https://hosted.weblate.org/projects/zulip/django/si/"
-">\n"
+"PO-Revision-Date: 2026-11-11 14:07+0000\n"
+"Last-Translator: Mateusz Mandera "
+"<mateusz.mandera@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Sinhala <https://hosted.weblate.org/projects/zulip/django-13-"
+"x/si/>\n"
 "Language: si\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -203,7 +204,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "වත්මන් ලදුපත් කාල සීමාව තුළ ඔබගේ සැලසුම දැනටමත් බලපත්‍ර {licenses} යටතේ ඇත."
+msgstr ""
+"වත්මන් ලදුපත් කාල සීමාව තුළ ඔබගේ සැලසුම දැනටමත් බලපත්‍ර {licenses} යටතේ ඇත."
 
 #: corporate/lib/stripe.py
 msgid "You cannot decrease the licenses in the current billing period."
@@ -220,7 +222,8 @@ msgstr ""
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
-msgstr "ඔබගේ සැලසුම දැනටමත් {licenses_at_next_renewal} බලපත්‍ර සමඟ අලුත් කිරීමට නියමිතය."
+msgstr ""
+"ඔබගේ සැලසුම දැනටමත් {licenses_at_next_renewal} බලපත්‍ර සමඟ අලුත් කිරීමට නියමිතය."
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -2092,8 +2095,8 @@ msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
 msgstr ""
-"මෙම ඇරයුම දවස් දෙකකින් කල් ඉකුත් වේ. කල් ඉකුත් වුවහොත් ඔබට වෙනත් එකක් සඳහා "
-"%(referrer_name)s න් විමසිය යුතුය."
+"මෙම ඇරයුම දවස් දෙකකින් කල් ඉකුත් වේ. කල් ඉකුත් වුවහොත් ඔබට වෙනත් එකක් සඳහා %(referrer_name)"
+"s න් විමසිය යුතුය."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt
 #, python-format
@@ -2247,8 +2250,7 @@ msgid ""
 "Do not reply to this email. This Zulip server is not configured to accept "
 "incoming emails. Help:"
 msgstr ""
-"වි-තැපෑලට පිළිතුරු නොදෙන්න. සුලිප් සේවාදායකය ලැබෙන වි-තැපැල් පිළිගැනීමට වින්‍යාසගත කර නැත. "
-"උදව්:"
+"වි-තැපෑලට පිළිතුරු නොදෙන්න. සුලිප් සේවාදායකය ලැබෙන වි-තැපැල් පිළිගැනීමට වින්‍යාසගත කර නැත. උදව්:"
 
 #: templates/zerver/emails/notify_change_in_email.html
 #, python-format
@@ -2635,7 +2637,8 @@ msgstr "පහත දැක්වෙන සංවිධාන(ය) තුළ ඔ
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "ඉහත සංවිධාන(ය) ට ඇතුල් වීමට හෝ ඔබගේ මුරපදය නැවත සැකසීමට උත්සාහ කළ හැකිය."
+msgstr ""
+"ඉහත සංවිධාන(ය) ට ඇතුල් වීමට හෝ ඔබගේ මුරපදය නැවත සැකසීමට උත්සාහ කළ හැකිය."
 
 #: templates/zerver/emails/password_reset.html
 #: templates/zerver/emails/password_reset.txt
@@ -2793,8 +2796,7 @@ msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
 msgstr ""
-"ඉල්ලීම වැරදීමක් නම්, ඔබට කිසිදු ක්‍රියාමාර්ගයක් ගත නොහැකි අතර මෙම සබැඳිය පැය 24 කින් කල් ඉකුත් "
-"වේ."
+"ඉල්ලීම වැරදීමක් නම්, ඔබට කිසිදු ක්‍රියාමාර්ගයක් ගත නොහැකි අතර මෙම සබැඳිය පැය 24 කින් කල් ඉකුත් වේ."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt
 #, fuzzy
@@ -3248,7 +3250,8 @@ msgstr "සුලිප් වෙත ඇතුල් වන්න"
 
 #: templates/zerver/login.html
 msgid "You've already registered with this email address. Please log in below."
-msgstr "ඔබ දැනටමත් මෙම වි-තැපැල් ලිපිනය සමඟ ලියාපදිංචි වී ඇත. පහතින් ඇතුල් වන්න."
+msgstr ""
+"ඔබ දැනටමත් මෙම වි-තැපැල් ලිපිනය සමඟ ලියාපදිංචි වී ඇත. පහතින් ඇතුල් වන්න."
 
 #: templates/zerver/login.html
 msgid "Email or username"
@@ -3562,7 +3565,8 @@ msgstr "මුරපදය යළි සැකසීම යවන ලදි!"
 
 #: templates/zerver/reset_emailed.html
 msgid "Check your email in a few minutes to finish the process."
-msgstr "ක්‍රියාවලිය අවසන් කිරීම සඳහා විනාඩි කිහිපයකින් ඔබගේ වි-තැපෑල පරීක්‍ෂා කරන්න."
+msgstr ""
+"ක්‍රියාවලිය අවසන් කිරීම සඳහා විනාඩි කිහිපයකින් ඔබගේ වි-තැපෑල පරීක්‍ෂා කරන්න."
 
 #: templates/zerver/slack_import.html
 msgid "Import from Slack"
@@ -3854,8 +3858,8 @@ msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr ""
-"මෙම සංවිධානය සඳහා ආරාධනා යැවීමට ඔබගේ ගිණුම ඉතා අළුත් ය. සංවිධාන පරිපාලකයෙකුගෙන් හෝ "
-"වඩාත් පළපුරුදු පරිශීලකයෙකුගෙන් අසන්න."
+"මෙම සංවිධානය සඳහා ආරාධනා යැවීමට ඔබගේ ගිණුම ඉතා අළුත් ය. සංවිධාන පරිපාලකයෙකුගෙන් හෝ වඩාත් පළපුරුදු "
+"පරිශීලකයෙකුගෙන් අසන්න."
 
 #: zerver/actions/invites.py
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -4011,7 +4015,8 @@ msgstr "ලබන්නන් සඳහා වලංගු නොවන දත�
 
 #: zerver/actions/message_send.py
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "ලබන්නන්ගේ ලැයිස්තු වල වි-තැපැල් හෝ පරිශීලක හැඳු. අඩංගු විය හැකිය නමුත් දෙකම නොවේ."
+msgstr ""
+"ලබන්නන්ගේ ලැයිස්තු වල වි-තැපැල් හෝ පරිශීලක හැඳු. අඩංගු විය හැකිය නමුත් දෙකම නොවේ."
 
 #: zerver/actions/message_send.py
 #, python-brace-format
@@ -4368,8 +4373,8 @@ msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
 msgstr ""
-"ඔබගේ වි-තැපැල් ලිපිනය, {email}, මෙම සංවිධානයේ ගිණුම් සඳහා ලියාපදිංචි වීමට ඉඩ දී ඇති  වසම් "
-"තුළ නැත."
+"ඔබගේ වි-තැපැල් ලිපිනය, {email}, මෙම සංවිධානයේ ගිණුම් සඳහා ලියාපදිංචි වීමට ඉඩ දී ඇති  වසම් තුළ "
+"නැත."
 
 #: zerver/forms.py
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4381,8 +4386,8 @@ msgid ""
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr ""
-"සියළුම සුලිප් බලපත්‍ර භාවිතා වන බැවින් නව සාමාජිකයින්ට මෙම සංවිධානයට එක් විය නොහැකිය. කරුණාකර "
-"ඔබට ආරාධනා කළ පුද්ගලයාට බලපත්‍ර ගණන වැඩි කරන ලෙස පවසා නැවත උත්සාහ කරන්න."
+"සියළුම සුලිප් බලපත්‍ර භාවිතා වන බැවින් නව සාමාජිකයින්ට මෙම සංවිධානයට එක් විය නොහැකිය. කරුණාකර ඔබට "
+"ආරාධනා කළ පුද්ගලයාට බලපත්‍ර ගණන වැඩි කරන ලෙස පවසා නැවත උත්සාහ කරන්න."
 
 #: zerver/forms.py
 msgid "New password"

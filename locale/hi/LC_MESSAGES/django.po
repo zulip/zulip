@@ -16,16 +16,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-09 15:42+0000\n"
-"PO-Revision-Date: 2026-11-05 03:59+0000\n"
-"Last-Translator: Mateusz Mandera <mateusz.mandera@users.noreply.hosted."
-"weblate.org>\n"
-"Language-Team: Hindi <https://hosted.weblate.org/projects/zulip/django/hi/>\n"
+"PO-Revision-Date: 2026-11-11 14:06+0000\n"
+"Last-Translator: Mateusz Mandera "
+"<mateusz.mandera@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Hindi <https://hosted.weblate.org/projects/zulip/django-13-x/"
+"hi/>\n"
 "Language: hi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.11.1.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -68,7 +69,8 @@ msgstr "प्रारंभ समय समाप्ति समय से �
 
 #: analytics/views/stats.py
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "कोई एनालिटिक्स डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"कोई एनालिटिक्स डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -80,8 +82,8 @@ msgid ""
 msgstr ""
 "आपके संगठन के पास कोई ज़ूलिप लाइसेंस शेष नहीं है और वह अब नए उपयोगकर्ताओं को स्वीकार नहीं "
 "कर सकता है। नए उपयोगकर्ताओं को शामिल होने की अनुमति देने के लिए कृपया [लाइसेंस की संख्या "
-"बढ़ाएँ] ({billing_page_link}) या [निष्क्रिय उपयोगकर्ताओं को निष्क्रिय करें] "
-"({deactivate_user_help_page_link})।"
+"बढ़ाएँ] ({billing_page_link}) या [निष्क्रिय उपयोगकर्ताओं को निष्क्रिय करें] ("
+"{deactivate_user_help_page_link})।"
 
 #: corporate/lib/registration.py
 #, python-brace-format
@@ -133,7 +135,8 @@ msgstr ""
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr "आपके संगठन के पास पर्याप्त ज़ूलिप लाइसेंस नहीं हैं। आमंत्रण नहीं भेजे गए थे।"
+msgstr ""
+"आपके संगठन के पास पर्याप्त ज़ूलिप लाइसेंस नहीं हैं। आमंत्रण नहीं भेजे गए थे।"
 
 #: corporate/lib/registration.py
 msgid ""
@@ -218,7 +221,8 @@ msgstr "योजना को अपडेट करने में असम�
 #: corporate/lib/stripe.py
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
-msgstr "निःशुल्क परीक्षण योजना के लिए मौजूदा बिलिंग अवधि में लाइसेंस अपडेट नहीं कर सकता।"
+msgstr ""
+"निःशुल्क परीक्षण योजना के लिए मौजूदा बिलिंग अवधि में लाइसेंस अपडेट नहीं कर सकता।"
 
 #: corporate/lib/stripe.py
 msgid ""
@@ -241,7 +245,8 @@ msgstr "आप मौजूदा बिलिंग अवधि में ल�
 msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
-msgstr "डाउनग्रेड की जा रही योजना के लिए अगले बिलिंग चक्र के लाइसेंस नहीं बदल सकते हैं।"
+msgstr ""
+"डाउनग्रेड की जा रही योजना के लिए अगले बिलिंग चक्र के लाइसेंस नहीं बदल सकते हैं।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -249,8 +254,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
-"आपकी योजना पहले से ही {licenses_at_next_renewal} लाइसेंस के साथ नवीनीकृत होने वाली "
-"है।"
+"आपकी योजना पहले से ही {licenses_at_next_renewal} लाइसेंस के साथ नवीनीकृत होने वाली है"
+"।"
 
 #: corporate/lib/stripe.py
 #, python-brace-format
@@ -369,7 +374,8 @@ msgstr ""
 
 #: templates/4xx.html
 msgid "Make sure that your browser allows cookies for this site."
-msgstr "सुनिश्चित करें कि आपका ब्राउज़र इस साइट के लिए कुकीज़ की अनुमति देता है।"
+msgstr ""
+"सुनिश्चित करें कि आपका ब्राउज़र इस साइट के लिए कुकीज़ की अनुमति देता है।"
 
 #: templates/4xx.html
 msgid ""
@@ -582,8 +588,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"यह पुष्टि करता है कि आपके Zulip खाते का ईमेल पता %(old_email_html_tag)s से "
-"%(new_email_html_tag)s में बदल गया है"
+"यह पुष्टि करता है कि आपके Zulip खाते का ईमेल पता %(old_email_html_tag)s से %"
+"(new_email_html_tag)s में बदल गया है"
 
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
@@ -613,7 +619,8 @@ msgstr "पुष्टिकरण लिंक की समय सीमा �
 
 #: templates/confirmation/link_expired.html
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr "ओह। पुष्टि लिंक की समय सीमा समाप्त हो गई है या उसे निष्क्रिय कर दिया गया है।"
+msgstr ""
+"ओह। पुष्टि लिंक की समय सीमा समाप्त हो गई है या उसे निष्क्रिय कर दिया गया है।"
 
 #: templates/confirmation/link_expired.html
 msgid "Please contact your organization administrator for a new link."
@@ -693,11 +700,11 @@ msgid ""
 "management\">log in instructions</a> to administer the plan for your Zulip "
 "server."
 msgstr ""
-"इस संगठन के लिए योजना प्रबंधन उपलब्ध नहीं है, क्योंकि आपका Zulip सर्वर पहले से ही "
-"%(server_plan_name)s योजना पर है, जो इस सर्वर पर सभी संगठनों को शामिल करता है। "
-"अपने Zulip सर्वर के लिए योजना को प्रशासित करने के लिए <a href=\"https://zulip.com/"
-"help/self-hosted-billing#log-in-to-billing-management\"> लॉग इन निर्देशों </a> "
-"के <b> सर्वर-स्तरीय बिलिंग </b> टैब को देखें।"
+"इस संगठन के लिए योजना प्रबंधन उपलब्ध नहीं है, क्योंकि आपका Zulip सर्वर पहले से ही %"
+"(server_plan_name)s योजना पर है, जो इस सर्वर पर सभी संगठनों को शामिल करता है। अपने "
+"Zulip सर्वर के लिए योजना को प्रशासित करने के लिए <a href=\"https://zulip.com/help/"
+"self-hosted-billing#log-in-to-billing-management\"> लॉग इन निर्देशों </a> के <b> "
+"सर्वर-स्तरीय बिलिंग </b> टैब को देखें।"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html
 msgid ""
@@ -737,7 +744,8 @@ msgstr "दर सीमा पार हो गई।"
 msgid ""
 "Your server has exceeded the limit for how often this action can be "
 "performed."
-msgstr "आपके सर्वर ने यह सीमा पार कर ली है कि यह क्रिया कितनी बार की जा सकती है।"
+msgstr ""
+"आपके सर्वर ने यह सीमा पार कर ली है कि यह क्रिया कितनी बार की जा सकती है।"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html
@@ -4323,7 +4331,8 @@ msgstr ""
 #: zerver/forms.py
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
+msgstr ""
+"जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
 
 #: zerver/forms.py
 #, python-brace-format

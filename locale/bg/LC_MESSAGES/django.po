@@ -12,16 +12,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-09 15:42+0000\n"
-"PO-Revision-Date: 2026-03-31 19:38+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Bulgarian <https://hosted.weblate.org/projects/zulip/django/"
-"bg/>\n"
+"PO-Revision-Date: 2026-11-11 14:05+0000\n"
+"Last-Translator: Mateusz Mandera "
+"<mateusz.mandera@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/zulip/django-"
+"13-x/bg/>\n"
 "Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -230,8 +231,7 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr ""
-"Вашият план вече е на {licenses} лиценза в текущия период на таксуване."
+msgstr "Вашият план вече е на {licenses} лиценза в текущия период на таксуване."
 
 #: corporate/lib/stripe.py
 msgid "You cannot decrease the licenses in the current billing period."
@@ -575,8 +575,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Това е потвърждение, че имейл адресът на вашия Zulip акаунт е променен от "
-"%(old_email_html_tag)s на %(new_email_html_tag)s"
+"Това е потвърждение, че имейл адресът на вашия Zulip акаунт е променен от %"
+"(old_email_html_tag)s на %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html
 #: templates/confirmation/redirect_to_post.html
@@ -1345,8 +1345,8 @@ msgid ""
 "noreferrer\">after you join</a>."
 msgstr ""
 "Можете също да промените тази настройка и <a href=\"%(root_domain_url)s/help/"
-"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">след като влезете</a>."
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">"
+"след като влезете</a>."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
@@ -1804,8 +1804,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
 msgstr ""
-"Ако не сте поискали тази промяна, моля, свържете се с нас незабавно на "
-"%(support_email)s."
+"Ако не сте поискали тази промяна, моля, свържете се с нас незабавно на %"
+"(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt
 #, fuzzy
@@ -1820,8 +1820,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
 msgstr ""
-"Ако не сте поискали тази промяна, моля, свържете се с нас незабавно на "
-"<%(support_email)s>."
+"Ако не сте поискали тази промяна, моля, свържете се с нас незабавно на <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/confirm_new_email.html
 #: templates/zerver/emails/confirm_new_email.txt
@@ -1899,8 +1899,8 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
-"Имате въпроси или мнения които искате да споделите? Свържете се с нас на "
-"%(support_email)s — ще се радваме да ви помогнем!"
+"Имате въпроси или мнения които искате да споделите? Свържете се с нас на %"
+"(support_email)s — ще се радваме да ви помогнем!"
 
 #: templates/zerver/emails/custom_email_base.pre.html
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt
@@ -2183,8 +2183,8 @@ msgstr "За да започнете, кликнете върху бутона �
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
 msgstr ""
-"%(referrer_full_name)s ви покани да се присъедините към "
-"%(referrer_realm_name)s"
+"%(referrer_full_name)s ви покани да се присъедините към %"
+"(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt
 #, python-format
@@ -2263,8 +2263,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"Имате въпроси или мнения които искате да споделите? <a href=\"mailto:"
-"%(email)s\">Свържете се с нас</a> — ще се радваме да ви помогнем!"
+"Имате въпроси или мнения които искате да споделите? <a href=\"mailto:%(email)"
+"s\">Свържете се с нас</a> — ще се радваме да ви помогнем!"
 
 #: templates/zerver/emails/missed_message.html
 #: templates/zerver/emails/missed_message.txt
@@ -2285,8 +2285,8 @@ msgid ""
 "You are receiving this because all topic participants were mentioned in "
 "#%(channel_name)s > %(topic_name)s."
 msgstr ""
-"Получавате това, защото всички участници в темата бяха споменати в "
-"#%(channel_name)s > %(topic_name)s."
+"Получавате това, защото всички участници в темата бяха споменати в #%"
+"(channel_name)s > %(topic_name)s."
 
 #: templates/zerver/emails/missed_message.html
 #: templates/zerver/emails/missed_message.txt
@@ -2327,8 +2327,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
-"Отговорете директно на този имейл, <a href=\"%(narrow_url)s\">вижте го на "
-"%(realm_name)s Zulip</a>, или кликнете <a href=\"%(notif_url)s\">управление "
+"Отговорете директно на този имейл, <a href=\"%(narrow_url)s\">вижте го на %"
+"(realm_name)s Zulip</a>, или кликнете <a href=\"%(notif_url)s\">управление "
 "на имейл предпочитанията</a>."
 
 #: templates/zerver/emails/missed_message.html
@@ -2348,8 +2348,8 @@ msgid ""
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
 "<a href=\"%(narrow_url)s\">Oтговорете в %(realm_name)s Zulip</a> или "
-"кликнете <a href=\"%(notif_url)s\">конфигуриране на имейл предпочитанията</"
-"a>."
+"кликнете <a href=\"%(notif_url)s\">конфигуриране на имейл предпочитанията</a>"
+"."
 
 #: templates/zerver/emails/missed_message.html
 #, python-format
@@ -2410,9 +2410,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"Имейлът, свързан с вашия Zulip акаунт, наскоро беше променен на "
-"%(new_email)s. Ако не сте заявили тази промяна, моля, свържете се с нас "
-"незабавно на %(support_email)s."
+"Имейлът, свързан с вашия Zulip акаунт, наскоро беше променен на %(new_email)"
+"s. Ако не сте заявили тази промяна, моля, свържете се с нас незабавно на %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html
 #: templates/zerver/emails/notify_change_in_email.txt
@@ -2436,9 +2436,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Имейлът, свързан с вашия Zulip акаунт, наскоро беше променен на "
-"%(new_email)s. Ако не сте заявили тази промяна, моля, свържете се с нас "
-"незабавно на <%(support_email)s>."
+"Имейлът, свързан с вашия Zulip акаунт, наскоро беше променен на %(new_email)"
+"s. Ако не сте заявили тази промяна, моля, свържете се с нас незабавно на <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html
 #, python-format
@@ -2560,8 +2560,7 @@ msgstr ""
 #: templates/zerver/emails/onboarding_team_to_zulip.html
 #: templates/zerver/emails/onboarding_team_to_zulip.txt
 msgid "Use the app itself to chat about your impressions."
-msgstr ""
-"Използвайте самото приложение, за да разговаряте за вашите впечатления."
+msgstr "Използвайте самото приложение, за да разговаряте за вашите впечатления."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html
 #, python-format
@@ -2570,8 +2569,8 @@ msgid ""
 "team, without using any other chat tools. This is the only way to truly "
 "experience how a new chat app will help your team communicate."
 msgstr ""
-"<a href=\"%(trying_out_zulip)s\"><b>Проведете едноседмичен пробен период</"
-"b></a> с вашия екип, без да използвате други инструменти за чат. Това е "
+"<a href=\"%(trying_out_zulip)s\"><b>Проведете едноседмичен пробен период</b>"
+"</a> с вашия екип, без да използвате други инструменти за чат. Това е "
 "единственият начин, по който наистина можете да разберете колко може едно "
 "ново приложение за чат да помогне на екипа ви да общува ефикасно."
 
@@ -2728,8 +2727,8 @@ msgid ""
 "In Zulip, <b>channels</b> determine who gets a message. <b>Topics</b> tell "
 "you what the message is about."
 msgstr ""
-"Във Zulip, <b>каналите</b> определят кой получава дадено съобщение. "
-"<b>Темите</b> показват на каква тема е съобщението."
+"Във Zulip, <b>каналите</b> определят кой получава дадено съобщение. <b>"
+"Темите</b> показват на каква тема е съобщението."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html
 #: templates/zerver/emails/onboarding_zulip_topics.txt
@@ -2830,8 +2829,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "Вие сте имали акаунт в %(organization_url)s, но той е бил деактивиран. "
-"Можете да се свържете с администраторите на организацията, за да <a "
-"href=\"%(help_link)s\">реактивирате акаунта си</a>."
+"Можете да се свържете с администраторите на организацията, за да <a href=\"%"
+"(help_link)s\">реактивирате акаунта си</a>."
 
 #: templates/zerver/emails/password_reset.html
 #: templates/zerver/emails/password_reset.txt
@@ -2849,8 +2848,8 @@ msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
 msgstr ""
-"Можете да опитате да влезете или да възстановите паролата си в "
-"организацията(ите) по-горе."
+"Можете да опитате да влезете или да възстановите паролата си в организацията"
+"(ите) по-горе."
 
 #: templates/zerver/emails/password_reset.html
 #: templates/zerver/emails/password_reset.txt
@@ -3087,8 +3086,8 @@ msgid ""
 "Questions? Learn more at %(billing_help_link)s or contact "
 "%(billing_contact_email)s."
 msgstr ""
-"Имате въпроси? Научете повече на %(billing_help_link)s или се свържете с "
-"%(billing_contact_email)s."
+"Имате въпроси? Научете повече на %(billing_help_link)s или се свържете с %"
+"(billing_contact_email)s."
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html
 #, python-format
@@ -3132,8 +3131,8 @@ msgid ""
 "If you could <a href=\"%(link_to_zulip)s\">list Zulip as a sponsor on your "
 "website</a>, we would really appreciate it!"
 msgstr ""
-"Ще ви бъдем много благодарни ако можете да <a "
-"href=\"%(link_to_zulip)s\">добавите Zulip като спонсор във вашия уебсайт</a>!"
+"Ще ви бъдем много благодарни ако можете да <a href=\"%(link_to_zulip)s\">"
+"добавите Zulip като спонсор във вашия уебсайт</a>!"
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.subject.txt
 #, python-format
@@ -6256,29 +6255,29 @@ msgstr ""
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
-"Настройката '{setting_name}' не може да бъде зададена в групата 'role:"
-"internet'."
+"Настройката '{setting_name}' не може да бъде зададена в групата "
+"'role:internet'."
 
 #: zerver/lib/user_groups.py
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
 msgstr ""
-"Настройката '{setting_name}' не може да бъде зададена в групата 'role:"
-"nobody'."
+"Настройката '{setting_name}' не може да бъде зададена в групата "
+"'role:nobody'."
 
 #: zerver/lib/user_groups.py
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:everyone' group."
 msgstr ""
-"Настройката '{setting_name}' не може да бъде зададена в групата 'role:"
-"everyone'."
+"Настройката '{setting_name}' не може да бъде зададена в групата "
+"'role:everyone'."
 
 #: zerver/lib/user_groups.py
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to '{group_name}' group."
 msgstr ""
-"Настройката '{setting_name}' не може да бъде зададена в групата "
-"'{group_name}'."
+"Настройката '{setting_name}' не може да бъде зададена в групата '{group_name}"
+"'."
 
 #: zerver/lib/user_groups.py
 msgid "User group name can't be empty!"
