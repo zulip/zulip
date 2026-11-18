@@ -17,16 +17,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-05 04:43+0000\n"
-"PO-Revision-Date: 2026-08-27 15:51+0000\n"
-"Last-Translator: rahim aghareb <rahim.aghareb@gmail.com>\n"
-"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/"
-">\n"
+"PO-Revision-Date: 2026-11-07 05:51+0000\n"
+"Last-Translator: rahim aghareb "
+"<rahim.aghareb@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django/fa/>"
+"\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -930,17 +931,16 @@ msgstr "شروع کنید"
 
 #: templates/corporate/slack-alternative.html
 msgid "See the comparison"
-msgstr ""
+msgstr "مقایسه را ببینید"
 
 #: templates/corporate/slack-alternative.html
-#, fuzzy
-#| msgid "Keep your conversations organized with topics"
 msgid "A Zulip channel with conversations organized by topic"
-msgstr "مکالمات خود را به کمک موضوعات سازماندهی کنید"
+msgstr "یک کانال زولیپ با گفتگوهایی که بر اساس موضوع سازمان‌دهی شده‌اند"
 
 #: templates/corporate/slack-alternative.html
 msgid "The Zulip inbox, listing each conversation with unread messages"
 msgstr ""
+"صندوق ورودی زولیپ، که هر گفتگو شامل پیام‌های خوانده‌نشده را فهرست می‌کند"
 
 #: templates/corporate/slack-alternative.html
 #: templates/zerver/development/integrations_dev_panel.html
@@ -1092,27 +1092,20 @@ msgstr ""
 "rel=\"noopener noreferrer\">دانلود آخرین نسخه.</a>"
 
 #: templates/zerver/app/index.html
-#, fuzzy
-#| msgid ""
-#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
-#| "a> the page."
 msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\" "
 "href=\"\">reloading</a> the page."
 msgstr ""
-"اگر این پیام در صفحه باقی ماند، صفحه را دوباره <a class=\"reload-"
-"lnk\">بارگیری</a> کنید."
+"اگر این پیام در صفحه باقی ماند، صفحه را دوباره <a class=\"reload-lnk\" "
+"href=\"\">بارگیری</a> کنید."
 
 #: templates/zerver/app/index.html
-#, fuzzy
-#| msgid ""
-#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
 "Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
 "page."
 msgstr ""
-"خطا در بارگیری زولیپ. سعی کنید صفحه را <a class=\"reload-lnk\">دوباره "
-"بارگیری</a> کنید."
+"خطا در بارگیری زولیپ. سعی کنید صفحه را <a class=\"reload-lnk\" href=\"\">"
+"دوباره بارگیری</a> کنید."
 
 #: templates/zerver/app/index.html
 msgid "No conversations match your filters."
@@ -3279,10 +3272,8 @@ msgid "Why Zulip"
 msgstr "چرا زولیپ"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Import from Slack"
 msgid "Switch from Slack"
-msgstr "وارد کردن از اسلک"
+msgstr "مهاجرت از اسلک"
 
 #: templates/zerver/footer.html
 msgid "Features"
@@ -3853,19 +3844,19 @@ msgstr ""
 
 #: templates/zerver/reauth_success.html
 msgid "You have logged in successfully!"
-msgstr ""
+msgstr "شما با موفقیت وارد شدید!"
 
 #: templates/zerver/reauth_success.html
 msgid ""
 "A confirmation email has been sent to your new address. Check your inbox to "
 "complete the change."
 msgstr ""
+"ایمیل تأییدی به آدرس جدید شما ارسال شده است. برای تکمیل این تغییر، صندوق "
+"ورودی خود را بررسی کنید."
 
 #: templates/zerver/reauth_success.html
-#, fuzzy
-#| msgid "You may now close this window."
 msgid "You can now close this tab."
-msgstr "شما اکنون می‌توانید این پنجره را ببندید."
+msgstr "اکنون می‌توانید این زبانه را ببندید."
 
 #: templates/zerver/reset.html
 msgid "Reset your password"
@@ -3945,10 +3936,8 @@ msgstr ""
 "تا فرآیند وارد کردن کامل شود."
 
 #: templates/zerver/slack_import.html
-#, fuzzy
-#| msgid "Start import"
 msgid "Start over"
-msgstr "شروع وارد کردن"
+msgstr "از نو شروع کنید"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -4265,10 +4254,8 @@ msgid "Direct messages cannot have topics."
 msgstr "پیام مستقیم نمی‌تواند موضوع داشته باشد."
 
 #: zerver/actions/message_edit.py
-#, fuzzy
-#| msgid "Invalid propagate_mode without topic edit"
 msgid "Invalid propagate_mode without topic or channel edit"
-msgstr "propagate_mode بدون ویرایش موضوع نامعتبر است"
+msgstr "propagate_mode بدون ویرایش موضوع یا کانال نامعتبر است"
 
 #: zerver/actions/message_edit.py
 msgid "General chat cannot be marked as resolved"
@@ -4344,10 +4331,8 @@ msgstr ""
 "منتقل شد."
 
 #: zerver/actions/message_edit.py
-#, fuzzy
-#| msgid "The time limit for editing this message's topic has passed."
 msgid "The time limit for moving this topic has passed."
-msgstr "محدوده زمانی برای ویرایش موضوع این پیام گذشته است."
+msgstr "مهلت جابه‌جایی این موضوع به پایان رسیده است."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4714,10 +4699,8 @@ msgid "This endpoint does not accept bot requests."
 msgstr "این پایانه درخواست های ربات ها را قبول نمی کند."
 
 #: zerver/decorator.py
-#, fuzzy
-#| msgid "Must be an server administrator"
 msgid "Must be a server administrator"
-msgstr "باید یک ادمین سرور باشید"
+msgstr "باید مدیر سرور باشد"
 
 #: zerver/decorator.py
 msgid "This endpoint requires HTTP basic authentication."
@@ -5036,6 +5019,7 @@ msgstr ""
 #: zerver/lib/email_mirror.py
 msgid "Sending user is not active. Ignoring this channel message email."
 msgstr ""
+"کاربر فرستنده فعال نیست. از این پیامِ کانال ارسالی به ایمیل صرف‌نظر می‌شود."
 
 #: zerver/lib/email_mirror.py
 msgid "Email with no subject"
@@ -5043,7 +5027,7 @@ msgstr "ایمیل بدون موضوع"
 
 #: zerver/lib/email_mirror.py
 msgid "Sending user is not active. Ignoring this message notification email."
-msgstr ""
+msgstr "کاربر ارسال کننده فعال نیست، این ایمیل اعلان پیام، نادیده گرفته می‌شود."
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5541,7 +5525,7 @@ msgstr "مدیریت {fullname}"
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "You reported [a message]({message_url}) for {reason}."
-msgstr ""
+msgstr "شما [یک پیام]({message_url}) را به دلیل {reason} گزارش کرده‌اید."
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -7079,10 +7063,8 @@ msgid "Bad event queue ID: {queue_id}"
 msgstr "شناسه ردیف رویداد بد: {queue_id}"
 
 #: zerver/tornado/views.py
-#, fuzzy
-#| msgid "Session not found"
 msgid "Not found"
-msgstr "جلسه پیدا نشد"
+msgstr "پیدا نشد"
 
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
@@ -7265,10 +7247,8 @@ msgid "Message reporting is not enabled in this organization."
 msgstr "گزارش دادن پیام در این سازمان فعال نشده‌است."
 
 #: zerver/views/message_report.py
-#, fuzzy
-#| msgid "Unable to render message"
 msgid "Failed to send the message report."
-msgstr "امکان پردازش پیام وجود ندارد"
+msgstr "ارسال گزارش پیام ناموفق بود."
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7535,13 +7515,21 @@ msgid_plural ""
 "then start the import again. If you can't correct them, contact "
 "{support_email} for help. Invalid addresses: {emails}"
 msgstr[0] ""
+"{count} کاربر اسلک دارای آدرس ایمیل نامعتبر است. آن را در اسلک اصلاح کنید و "
+"سپس عملیات واردسازی را مجدداً آغاز نمایید. اگر امکان اصلاح آن را ندارید، برای "
+"دریافت کمک با {support_email} تماس بگیرید. آدرس نامعتبر: {emails}"
 msgstr[1] ""
+"{count} از کاربران اسلک دارای آدرس ایمیل نامعتبر هستند. آن‌ها را در اسلک اصلاح "
+"کنید و سپس عملیات واردسازی را مجدداً آغاز نمایید. اگر امکان اصلاح آن را ندارید"
+"، برای دریافت کمک با {support_email} تماس بگیرید. آدرس نامعتبر: {emails}"
 
 #: zerver/views/registration.py
 msgid ""
 "This organization URL is no longer available. Please start over and choose a "
 "different URL."
 msgstr ""
+"این نشانی (URL) سازمان دیگر در دسترس نیست. لطفاً دوباره شروع کنید و نشانی "
+"دیگری انتخاب نمایید."
 
 #: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
@@ -7576,11 +7564,10 @@ msgid "Finalizing import…"
 msgstr "نهایی کردن ورود داده‌ها…"
 
 #: zerver/views/registration.py
-#, fuzzy
-#| msgid "Subdomain is already in use. Please choose a different one."
 msgid ""
 "This organization URL is no longer available. Please choose a different URL."
-msgstr "زیردامنه الان در حال استفاده است. لطفا یکی دیگر را انتخاب کنید."
+msgstr ""
+"این نشانی (URL) سازمان دیگر در دسترس نیست. لطفاً نشانی دیگری انتخاب کنید."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7649,16 +7636,14 @@ msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "کاربر {user_full_name} شما را عضو کانال‌های زیر کرد:"
 
 #: zerver/views/streams.py
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} subscribed you to {channel_name}."
+#, python-brace-format
 msgid "{user_full_name} unsubscribed you from {channel_name}."
-msgstr "کاربر {user_full_name} شما را عضو {channel_name} کرد."
+msgstr "{user_full_name} شما را از {channel_name} لغو اشتراک کرد."
 
 #: zerver/views/streams.py
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} subscribed you to the following channels:"
+#, python-brace-format
 msgid "{user_full_name} unsubscribed you from the following channels:"
-msgstr "کاربر {user_full_name} شما را عضو کانال‌های زیر کرد:"
+msgstr "{user_full_name} شما را از کانال‌های زیر لغو اشتراک کرد:"
 
 #: zerver/views/streams.py
 #, python-brace-format
@@ -7960,10 +7945,8 @@ msgid "Failed to change owner, bots can't own other bots"
 msgstr "تغییر مالک انجام نشد، ربات ها نمی توانند مالک ربات هاب دیگر باشند"
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid "Invalid embedded bot name."
 msgid "Only embedded bots have config_data."
-msgstr "نام ربات تعبیه شده اشتباه است."
+msgstr "تنها ربات‌های تعبیه‌شده دارای config_data هستند."
 
 #: zerver/views/users.py
 msgid ""
