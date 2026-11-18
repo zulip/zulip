@@ -35,17 +35,18 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-05 04:43+0000\n"
-"PO-Revision-Date: 2026-07-05 18:24+0000\n"
-"Last-Translator: Nimya <conreo@gmail.com>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/"
-">\n"
+"PO-Revision-Date: 2026-11-09 13:51+0000\n"
+"Last-Translator: Raphaël Hertzog <rhertzog@users.noreply.hosted.weblate.org>"
+"\n"
+"Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/>"
+"\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -986,17 +987,17 @@ msgstr "Commencer"
 
 #: templates/corporate/slack-alternative.html
 msgid "See the comparison"
-msgstr ""
+msgstr "Voir la comparaison"
 
 #: templates/corporate/slack-alternative.html
-#, fuzzy
-#| msgid "Keep your conversations organized with topics"
 msgid "A Zulip channel with conversations organized by topic"
-msgstr "Organisez vos conversations à l'aide de sujets"
+msgstr "Un canal Zulip avec des conversations organisées par sujet"
 
 #: templates/corporate/slack-alternative.html
 msgid "The Zulip inbox, listing each conversation with unread messages"
 msgstr ""
+"La boîte de réception Zulip, qui liste les conversations avec des messages "
+"non lus"
 
 #: templates/corporate/slack-alternative.html
 #: templates/zerver/development/integrations_dev_panel.html
@@ -1155,27 +1156,20 @@ msgstr ""
 "version.</a>"
 
 #: templates/zerver/app/index.html
-#, fuzzy
-#| msgid ""
-#| "If this message does not go away, try <a class=\"reload-lnk\">reloading</"
-#| "a> the page."
 msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\" "
 "href=\"\">reloading</a> the page."
 msgstr ""
-"Si ce message ne disparaît pas, essayez de <a class=\"reload-"
-"lnk\">recharger</a> la page."
+"Si ce message ne disparaît pas, essayez de <a class=\"reload-lnk\" href=\"\">"
+"recharger</a> la page."
 
 #: templates/zerver/app/index.html
-#, fuzzy
-#| msgid ""
-#| "Error loading Zulip. Try <a class=\"reload-lnk\">reloading</a> the page."
 msgid ""
 "Error loading Zulip. Try <a class=\"reload-lnk\" href=\"\">reloading</a> the "
 "page."
 msgstr ""
-"Erreur de chargement de Zulip. Essayez de <a class=\"reload-lnk\">recharger</"
-"a> la page."
+"Erreur de chargement de Zulip. Essayez de <a class=\"reload-lnk\" href=\"\">"
+"recharger</a> la page."
 
 #: templates/zerver/app/index.html
 msgid "No conversations match your filters."
@@ -3409,10 +3403,8 @@ msgid "Why Zulip"
 msgstr "Pourquoi Zulip"
 
 #: templates/zerver/footer.html
-#, fuzzy
-#| msgid "Import from Slack"
 msgid "Switch from Slack"
-msgstr "Importer depuis Slack"
+msgstr "Basculer depuis Slack"
 
 #: templates/zerver/footer.html
 msgid "Features"
@@ -3998,19 +3990,19 @@ msgstr ""
 
 #: templates/zerver/reauth_success.html
 msgid "You have logged in successfully!"
-msgstr ""
+msgstr "Vous vous êtes connecté avec succès !"
 
 #: templates/zerver/reauth_success.html
 msgid ""
 "A confirmation email has been sent to your new address. Check your inbox to "
 "complete the change."
 msgstr ""
+"Un courriel de confirmation a été envoyé à votre nouvelle adresse. Vérifiez "
+"votre boîte de réception pour terminer le changement."
 
 #: templates/zerver/reauth_success.html
-#, fuzzy
-#| msgid "You may now close this window."
 msgid "You can now close this tab."
-msgstr "Vous pouvez maintenant fermer cette fenêtre."
+msgstr "Vous pouvez maintenant fermer cet onglet."
 
 #: templates/zerver/reset.html
 msgid "Reset your password"
@@ -4095,10 +4087,8 @@ msgstr ""
 "(via le support) </a> pour finaliser votre importation."
 
 #: templates/zerver/slack_import.html
-#, fuzzy
-#| msgid "Start import"
 msgid "Start over"
-msgstr "Démarrer l’importation"
+msgstr "Redémarrer de zéro"
 
 #: templates/zerver/slack_import.html
 #, python-format
@@ -4429,10 +4419,8 @@ msgid "Direct messages cannot have topics."
 msgstr "Les messages directes ne peuvent pas avoir de sujet."
 
 #: zerver/actions/message_edit.py
-#, fuzzy
-#| msgid "Invalid propagate_mode without topic edit"
 msgid "Invalid propagate_mode without topic or channel edit"
-msgstr "propagate_mode non valide sans modification de sujet"
+msgstr "propagate_mode non valide sans modification de sujet ou canal"
 
 #: zerver/actions/message_edit.py
 msgid "General chat cannot be marked as resolved"
@@ -4511,10 +4499,8 @@ msgstr ""
 "{user}."
 
 #: zerver/actions/message_edit.py
-#, fuzzy
-#| msgid "The time limit for editing this message's topic has passed."
 msgid "The time limit for moving this topic has passed."
-msgstr "Le temps limite pour modifier ce sujet de message est dépassé."
+msgstr "Le temps limite pour déplacer cette conversation est dépassé."
 
 #: zerver/actions/message_edit.py
 msgid "You don't have permission to resolve topics in this channel."
@@ -4888,8 +4874,6 @@ msgid "This endpoint does not accept bot requests."
 msgstr "Ce paramètre n'accepte pas les requêtes de robots."
 
 #: zerver/decorator.py
-#, fuzzy
-#| msgid "Must be an server administrator"
 msgid "Must be a server administrator"
 msgstr "Doit être un administrateur du serveur"
 
@@ -5228,6 +5212,8 @@ msgstr ""
 #: zerver/lib/email_mirror.py
 msgid "Sending user is not active. Ignoring this channel message email."
 msgstr ""
+"L'expéditeur n'est pas actif. Ce message électronique adressé au canal a été "
+"ignoré."
 
 #: zerver/lib/email_mirror.py
 msgid "Email with no subject"
@@ -5235,7 +5221,7 @@ msgstr "Courriel sans objet"
 
 #: zerver/lib/email_mirror.py
 msgid "Sending user is not active. Ignoring this message notification email."
-msgstr ""
+msgstr "L'expéditeur n'est pas actif. Le courriel de notification a été ignoré."
 
 #: zerver/lib/email_notifications.py
 msgid "Open Zulip to see the spoiler content"
@@ -5752,7 +5738,7 @@ msgstr "Modération de {fullname}"
 #: zerver/lib/message_report.py
 #, python-brace-format
 msgid "You reported [a message]({message_url}) for {reason}."
-msgstr ""
+msgstr "Vous avez signalé [un message]({message_url}) pour « {reason} »."
 
 #: zerver/lib/narrow.py
 #, python-brace-format
@@ -7339,10 +7325,8 @@ msgid "Bad event queue ID: {queue_id}"
 msgstr "Mauvais identifiant de file d'attente d'événements : {queue_id}"
 
 #: zerver/tornado/views.py
-#, fuzzy
-#| msgid "Session not found"
 msgid "Not found"
-msgstr "Session introuvable"
+msgstr "Pas trouvé"
 
 #: zerver/views/antispam.py
 msgid "Failed to generate challenge"
@@ -7535,10 +7519,8 @@ msgstr ""
 "organisation."
 
 #: zerver/views/message_report.py
-#, fuzzy
-#| msgid "Unable to render message"
 msgid "Failed to send the message report."
-msgstr "Impossible d'afficher le message"
+msgstr "Échec de l'envoi du signalement du message."
 
 #: zerver/views/message_summary.py
 msgid "AI features are not enabled on this server."
@@ -7822,14 +7804,28 @@ msgid_plural ""
 "then start the import again. If you can't correct them, contact "
 "{support_email} for help. Invalid addresses: {emails}"
 msgstr[0] ""
+"{count} utilisateur Slack a une adresse électronique invalide. Corrigez la "
+"dans Slack, puis démarrez l'import à nouveau. Si vous ne pouvez pas la "
+"corriger, contactez {support_email} pour avoir de l'aide. Adresse invalide : "
+"{emails}"
 msgstr[1] ""
+"{count} utilisateurs Slack ont une adresse électronique invalide. Corrigez "
+"les dans Slack, puis démarrez l'import à nouveau. Si vous ne pouvez pas les "
+"corriger, contactez {support_email} pour avoir de l'aide. Adresses invalides "
+": {emails}"
 msgstr[2] ""
+"{count} utilisateurs Slack ont une adresse électronique invalide. Corrigez "
+"les dans Slack, puis démarrez l'import à nouveau. Si vous ne pouvez pas les "
+"corriger, contactez {support_email} pour avoir de l'aide. Adresses invalides "
+": {emails}"
 
 #: zerver/views/registration.py
 msgid ""
 "This organization URL is no longer available. Please start over and choose a "
 "different URL."
 msgstr ""
+"Cette URL d'organisation n'est plus disponible. Merci de recommencer et de "
+"choisir une URL différente."
 
 #: zerver/views/registration.py
 msgid "Unable to cancel import once it has started."
@@ -7865,11 +7861,11 @@ msgid "Finalizing import…"
 msgstr "Finalisation de l’importation…"
 
 #: zerver/views/registration.py
-#, fuzzy
-#| msgid "Subdomain is already in use. Please choose a different one."
 msgid ""
 "This organization URL is no longer available. Please choose a different URL."
-msgstr "Ce sous-domaine est déjà utilisé. Veuillez en choisir un autre."
+msgstr ""
+"Cette URL d'organisation n'est plus disponible. Merci de choisir une URL "
+"différente."
 
 #: zerver/views/registration.py
 msgid "Done!"
@@ -7937,16 +7933,14 @@ msgid "{user_full_name} subscribed you to the following channels:"
 msgstr "{user_full_name} vous a abonné aux canaux suivants :"
 
 #: zerver/views/streams.py
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} subscribed you to {channel_name}."
+#, python-brace-format
 msgid "{user_full_name} unsubscribed you from {channel_name}."
-msgstr "{user_full_name} vous a ajouté au groupe {channel_name}."
+msgstr "{user_full_name} vous a désabonné du canal {channel_name}."
 
 #: zerver/views/streams.py
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} subscribed you to the following channels:"
+#, python-brace-format
 msgid "{user_full_name} unsubscribed you from the following channels:"
-msgstr "{user_full_name} vous a abonné aux canaux suivants :"
+msgstr "{user_full_name} vous a désabonné des canaux suivants :"
 
 #: zerver/views/streams.py
 #, python-brace-format
@@ -8265,10 +8259,8 @@ msgstr ""
 "d'autres bots"
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid "Invalid embedded bot name."
 msgid "Only embedded bots have config_data."
-msgstr "Nom de robot intégré non valide."
+msgstr "Seuls les robots intégrés ont config_data."
 
 #: zerver/views/users.py
 msgid ""

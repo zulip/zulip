@@ -18,16 +18,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-05 04:43+0000\n"
-"PO-Revision-Date: 2026-05-27 15:13+0000\n"
-"Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
-">\n"
+"PO-Revision-Date: 2026-11-10 14:55+0000\n"
+"Last-Translator: qywter11 qywter11 "
+"<qywter11@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 #: analytics/views/stats.py zerver/decorator.py
 msgid "Not allowed for guest users"
@@ -1388,7 +1389,8 @@ msgstr ""
 msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
-msgstr "Adminstaattorit näkevät tämän sähköpostiosoitteen."
+msgstr ""
+"Tämän Zulip-organisaation ylläpitäjät näkevät tämän sähköpostiosoitteen."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html
 msgid ""
@@ -7521,16 +7523,14 @@ msgid "You must upload exactly one logo."
 msgstr "Voit ladata yhden logon."
 
 #: zerver/views/realm_playgrounds.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid characters in pygments language"
+#, python-brace-format
 msgid "Invalid character in language: {character}"
-msgstr "Pygments-kielessä on virheellisiä merkkejä"
+msgstr "Kielessä on virheellinen merkki: {character}"
 
 #: zerver/views/realm_playgrounds.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid language '{language}'"
+#, python-brace-format
 msgid "Language '{language}' is not allowed."
-msgstr "Virheellinen kieli {language}"
+msgstr "Kieli {language} ei ole sallittu."
 
 #: zerver/views/realm_playgrounds.py
 msgid "Invalid playground"
@@ -7568,6 +7568,8 @@ msgid ""
 "Converting Slack data… This may take a while. If you close this tab, you can "
 "return here from the “Complete registration” link in your email."
 msgstr ""
+"Muunnetaan Slack-dataa... Tässä voi kestää hetki. Jos suljet välilehden, "
+"voit palata tänne \"Vie rekisteröinti päätökseen\" -linkistä sähköpostissasi."
 
 #: zerver/views/registration.py
 msgid "Importing messages…"
@@ -7601,10 +7603,8 @@ msgid "No users matching provided email."
 msgstr "Yksikään käyttäjä ei vastaa sähköpostiosoitetta."
 
 #: zerver/views/registration.py
-#, fuzzy
-#| msgid "Your full name"
 msgid "Your name"
-msgstr "Koko nimi"
+msgstr "Nimesi"
 
 #: zerver/views/scheduled_messages.py
 msgid "Recipient required when updating type of scheduled message."
@@ -7896,10 +7896,9 @@ msgid "Wrong password!"
 msgstr "Väärä salasana!"
 
 #: zerver/views/user_settings.py
-#, fuzzy, python-brace-format
-#| msgid "You're making too many attempts! Try again in {seconds} seconds."
+#, python-brace-format
 msgid "You're making too many attempts! Try again in {retry_after_string}."
-msgstr "Liian monta yritystä, yritä uudelleen {seconds} sekunnin kuluttua."
+msgstr "Liian monta yritystä, yritä uudelleen {retry_after_string} ."
 
 #: zerver/views/user_settings.py
 msgid "New password is too weak!"
@@ -7918,12 +7917,8 @@ msgid "Cannot deactivate the only organization owner"
 msgstr "Organisaation ainoaa omistajaa ei voi poistaa käytöstä"
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid ""
-#| "Nobody in this Zulip organization will be able to see this email address."
 msgid "User is not allowed to delete other user's messages."
-msgstr ""
-"Kukaan täss Zulip-organisaatiossa ei pusty näkemään tätä sähköpostiosoitetta."
+msgstr "Käyttäjä ei saa poistaa muiden käyttäjien viestejä."
 
 #: zerver/views/users.py
 msgid "User not authorized to change user emails"
@@ -7945,22 +7940,17 @@ msgid "New email value error: {message}"
 msgstr "Viallinen uusi sähköpostiosoite: {message}"
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid ""
-#| "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-#| "Please contact your server administrator."
 msgid ""
 "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr ""
-"Ei voi luoda botteja ennen kuin FAKE_EMAIL_DOMAIN on määritetty oikein.\n"
+"Bottisähköpostia ei voi vaihtaa ennen kuin FAKE_EMAIL_DOMAIN on määritetty "
+"oikein.\n"
 "Ota yhteyttä palvelimesi järjestelmänvalvojaan."
 
 #: zerver/views/users.py
-#, fuzzy
-#| msgid "Email is already in use."
 msgid "Email address already in use"
-msgstr "Sähköpostiosoite on jo käytössä."
+msgstr "Sähköpostiosoite on jo käytössä"
 
 #: zerver/views/users.py
 msgid "Failed to change owner, no such user"
@@ -8008,34 +7998,29 @@ msgstr ""
 "organisaatiossa"
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid Zoom access token"
+#, python-brace-format
 msgid "Invalid {provider_name} access token"
-msgstr "Virheellinen Zoom-käyttöoikeustunnus"
+msgstr "Virheellinen {provider_name}-käyttöoikeustunnus"
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "Failed to create Zoom call"
+#, python-brace-format
 msgid "Failed to create {provider_name} call"
-msgstr "Zoom-puhelun aloittaminen epäonnistui"
+msgstr "{provider_name}-puhelun aloittaminen epäonnistui"
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "Zoom credentials have not been configured"
+#, python-brace-format
 msgid "{provider_name} credentials have not been configured"
-msgstr "Zoom-tunnuksia ei ole määritetty"
+msgstr "{provider_name}-tunnuksia ei ole määritetty"
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "Invalid Zoom credentials"
+#, python-brace-format
 msgid "Invalid {provider_name} credentials"
-msgstr "Virheelliset Zoom-tunnukset"
+msgstr "Virheelliset {provider_name}-tunnukset"
 
 #: zerver/views/video_calls.py
-#, fuzzy, python-brace-format
-#| msgid "Error connecting to the BigBlueButton server."
+#, python-brace-format
 msgid "Error connecting to the {provider_name} server: {reason}"
-msgstr "Virhe yhteyden muodostamisessa Big Blue Button -palvelimeen."
+msgstr "Virhe yhteyden muodostamisessa {provider_name}-palvelimeen: {reason}"
 
 #: zerver/views/video_calls.py
 #, fuzzy, python-brace-format
