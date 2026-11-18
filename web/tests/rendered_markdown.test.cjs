@@ -291,6 +291,26 @@ run_test("user-mention of inaccessible users", () => {
     assert.equal($cordelia.text(), "@Cordelia");
 });
 
+run_test("user-mention of placeholder users", () => {
+    const placeholder_user = make_user({
+        email: "placeholder@zulip.com",
+        user_id: 34,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user);
+
+    const $content = get_content_element();
+    const $mention = $.create("user-mention(placeholder)");
+    $mention.set_find_results(".highlight", []);
+    $mention.attr("data-user-id", placeholder_user.user_id);
+    $mention.text("@King Hamlet");
+    $content.set_find_results(".user-mention", $mention);
+
+    rm.update_elements($content);
+    assert.equal($mention.text(), "@King Hamlet");
+});
+
 run_test("user-mention (stream wildcard)", () => {
     // Setup
     const $content = get_content_element();
