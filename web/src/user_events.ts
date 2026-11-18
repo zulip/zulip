@@ -354,6 +354,7 @@ export function initialize(): void {
         stream_edit_subscribers.refresh_after_users_fetched();
         user_group_edit_members.refresh_after_users_fetched();
         settings_invites.refresh_after_users_fetched();
+        settings_bots.refresh_after_users_fetched();
         if (narrow_state.is_message_feed_visible()) {
             compose_closed_ui.update_reply_button();
             narrow_title.update_narrow_title(narrow_state.filter());

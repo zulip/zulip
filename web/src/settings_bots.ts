@@ -28,6 +28,7 @@ import * as integration_url_modal from "./integration_url_modal.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -552,6 +553,14 @@ export function redraw_your_bots_list(): void {
     if (personal_your_bots_section.list_widget) {
         personal_your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
     }
+}
+
+export function refresh_after_users_fetched(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    redraw_all_bots_list();
+    redraw_your_bots_list();
 }
 
 function add_value_to_filters(

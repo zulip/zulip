@@ -28,6 +28,7 @@ const settings_preferences = mock_esm("../src/settings_preferences", {
 });
 const settings_bots = mock_esm("../src/settings_bots", {
     redraw_your_bots_list() {},
+    refresh_after_users_fetched() {},
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
