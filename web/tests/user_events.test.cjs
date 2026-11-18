@@ -44,6 +44,7 @@ mock_esm("../src/settings_users", {
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
+    refresh_after_users_fetched() {},
 });
 
 const buddy_list = mock_esm("../src/buddy_list", {
