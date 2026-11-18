@@ -623,6 +623,12 @@ Files: web/icons/unarchive.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/archive-restore)
 License: ISC License
 
+Files: web/icons/undo.svg
+Source: https://lucide.dev/icons/undo-2
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/undo-2)
+License: ISC License
+Comment: Icon has been modified by Daniel K
+
 Files: web/icons/unmute.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/bell-ring)
 License: ISC License
