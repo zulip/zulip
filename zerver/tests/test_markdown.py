@@ -2879,6 +2879,9 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("@**topic**", set(), True)
         assert_mentions("@**all**", set(), False, True)
         assert_mentions("smush@**steve**smush", set())
+        assert_mentions(">@**King Hamlet**", {"King Hamlet"})
+        assert_mentions(">@**all**", set(), False, True)
+        self.assertTrue(possible_mentions("1>@** see @**all**").message_has_stream_wildcards)
 
         assert_mentions(
             f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234**, @_**othello** @**all**",
@@ -2966,6 +2969,14 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, expected)
         self.assertEqual(rendering_result.mentions_user_ids, set())
+        content = ">@**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(rendering_result.rendered_content, expected)
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+        content = ">@_**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(rendering_result.rendered_content, expected)
+        self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_stream_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
@@ -2987,8 +2998,21 @@ class MarkdownMentionTest(ZulipTestCase):
         for wildcard in stream_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f">@**{wildcard}**", wildcard)
+            assert_silent_mention(f">@_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
             assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
+
+        expected = (
+            "<blockquote>\n<blockquote>\n<p>"
+            '<span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span>'
+            "</p>\n</blockquote>\n</blockquote>"
+        )
+        for content in ["> > @**all**", ">>@**all**", "> >@**all**"]:
+            rendering_result = render_message_markdown(message, content)
+            self.assertEqual(rendering_result.rendered_content, expected)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
     def test_topic_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
@@ -3010,6 +3034,8 @@ class MarkdownMentionTest(ZulipTestCase):
         for wildcard in topic_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f">@**{wildcard}**", wildcard)
+            assert_silent_mention(f">@_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
             assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
 
@@ -3207,6 +3233,10 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("boring", dict())
         assert_mentions("@**all**", dict())
         assert_mentions("smush@*steve*smush", dict())
+        assert_mentions(">@*backend*", {"backend": "non-silent"})
+        self.assertEqual(
+            possible_user_group_mentions("x>@* see @*backend*")["backend"], "non-silent"
+        )
 
         # capture only the group mention among other mentions.
         assert_mentions(
@@ -3396,6 +3426,8 @@ class MarkdownMentionTest(ZulipTestCase):
 
         assert_silent_mention("> @*backend*")
         assert_silent_mention("> @_*backend*")
+        assert_silent_mention(">@*backend*")
+        assert_silent_mention(">@_*backend*")
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
 

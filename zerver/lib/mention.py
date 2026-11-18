@@ -2,6 +2,7 @@ import functools
 import re
 from collections import defaultdict
 from dataclasses import dataclass
+from itertools import chain
 from re import Match
 from typing import Literal
 
@@ -29,6 +30,14 @@ BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 # that is formatted with another link. e.g., "[#**channel**]({link})"
 BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\/<])"
 
+# Mentions are prefetched from the raw message content, which still
+# has the blockquote markers that BlockQuoteProcessor removes before
+# mentions are rendered; so a mention can also start right after ">".
+# Prefetching scans with these in addition to the live regexes, since
+# a match that starts after a ">" that isn't a blockquote marker can
+# extend over a later mention that the live regexes would find.
+BEFORE_POSSIBLE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<>])"
+
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 MENTION_SYNTAX_REGEX = r"@(?P<silent>_?)(\*\*(?P<match>[^\*]+)\*\*)"
@@ -37,6 +46,10 @@ USER_GROUP_MENTION_SYNTAX_REGEX = r"@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
 MENTIONS_RE = re.compile(rf"{BEFORE_MENTION_ALLOWED_REGEX}{MENTION_SYNTAX_REGEX}")
 USER_GROUP_MENTIONS_RE = re.compile(
     rf"{BEFORE_MENTION_ALLOWED_REGEX}{USER_GROUP_MENTION_SYNTAX_REGEX}"
+)
+POSSIBLE_MENTIONS_RE = re.compile(rf"{BEFORE_POSSIBLE_MENTION_ALLOWED_REGEX}{MENTION_SYNTAX_REGEX}")
+POSSIBLE_USER_GROUP_MENTIONS_RE = re.compile(
+    rf"{BEFORE_POSSIBLE_MENTION_ALLOWED_REGEX}{USER_GROUP_MENTION_SYNTAX_REGEX}"
 )
 
 topic_wildcards = frozenset(["topic"])
@@ -319,7 +332,7 @@ def possible_mentions(content: str) -> PossibleMentions:
     texts = set()
     message_has_topic_wildcards = False
     message_has_stream_wildcards = False
-    for m in MENTIONS_RE.finditer(content):
+    for m in chain(MENTIONS_RE.finditer(content), POSSIBLE_MENTIONS_RE.finditer(content)):
         mention_text = extract_mention_text(m)
         text = mention_text.text
         if text:
@@ -339,7 +352,9 @@ def possible_user_group_mentions(content: str) -> dict[str, Literal["silent", "n
     # maps each group name to its mention type, silent or non-silent.
     mentions: dict[str, Literal["silent", "non-silent"]] = {}
 
-    for mention in USER_GROUP_MENTIONS_RE.finditer(content):
+    for mention in chain(
+        USER_GROUP_MENTIONS_RE.finditer(content), POSSIBLE_USER_GROUP_MENTIONS_RE.finditer(content)
+    ):
         group_mention = mention.group("match")
 
         # non-silent mention can override silent.
