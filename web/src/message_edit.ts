@@ -1362,7 +1362,10 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         prev_content_sha256: await util.sha256_hash(old_content),
     };
 
-    if (!markdown.contains_backend_only_syntax(new_content ?? "")) {
+    if (
+        !markdown.contains_backend_only_syntax(new_content ?? "") &&
+        !echo.contains_disallowed_user_group_mention(new_content ?? "")
+    ) {
         // If the new message content could have been locally echoed,
         // than we can locally echo the edit.
         currently_echoing_messages.set(message_id, {
