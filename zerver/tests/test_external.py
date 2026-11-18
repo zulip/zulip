@@ -146,6 +146,20 @@ class RateLimitTests(ZulipTestCase):
 
         self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
 
+    @ratelimit_rule(1, 0, domain="api_by_user")
+    def test_hit_ratelimits_as_user_allowing_no_requests(self) -> None:
+        user = self.example_user("cordelia")
+
+        # A rule allowing no requests never resets, so there is no
+        # reset time to report.
+        result = self.send_api_message(user, "some stuff")
+        self.assertEqual(result.status_code, 429)
+        self.assertIsNone(result.json()["retry-after"])
+        self.assertNotIn("Retry-After", result.headers)
+        self.assertNotIn("X-RateLimit-Reset", result.headers)
+        self.assertIn("X-RateLimit-Limit", result.headers)
+        self.assertEqual(result["X-RateLimit-Remaining"], "0")
+
     @ratelimit_rule(1, 5, domain="email_change_by_user")
     def test_hit_change_email_ratelimit_as_user(self) -> None:
         user = self.example_user("cordelia")
