@@ -156,16 +156,15 @@ function set_next_start_time_for_message_edit(
     editing_state.set(message_id, state);
 }
 
-// Exported for tests
-export let actually_ping_server = (
+function actually_ping_server(
     worker: TypingStatusWorker,
     recipient: Recipient,
     current_time: number,
     typing_started_wait_period: number,
-): void => {
+): void {
     worker.notify_server_start(recipient);
     set_next_start_time(current_time, typing_started_wait_period);
-};
+}
 
 function actually_ping_server_for_message_edit(
     worker: EditingStatusWorker,
@@ -180,10 +179,6 @@ function actually_ping_server_for_message_edit(
         typing_started_wait_period,
         recipient.message_id,
     );
-}
-
-export function rewire_actually_ping_server(value: typeof actually_ping_server): void {
-    actually_ping_server = value;
 }
 
 /** Exported only for tests. */

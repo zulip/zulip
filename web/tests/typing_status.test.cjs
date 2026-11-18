@@ -294,9 +294,14 @@ run_test("basics", ({override, override_rewire}) => {
     override(compose_state, "get_message_type", () => "private");
     typing_status.state.current_recipient = typing.get_recipient();
 
+    let notify_server_start_call_count = 0;
+    worker.notify_server_start = (recipient) => {
+        notify_server_start_call_count += 1;
+        events.started_recipient = recipient;
+    };
+
     const call_count = {
         maybe_ping_server: 0,
-        actually_ping_server: 0,
         start_or_extend_idle_timer: 0,
         stop_last_notification: 0,
     };
@@ -329,6 +334,7 @@ run_test("basics", ({override, override_rewire}) => {
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 2);
     assert.deepEqual(call_count.stop_last_notification, 0);
+    assert.equal(notify_server_start_call_count, 0);
 
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
@@ -342,6 +348,12 @@ run_test("basics", ({override, override_rewire}) => {
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
+    assert.equal(notify_server_start_call_count, 1);
+    assert.deepStrictEqual(events.started_recipient, {
+        message_type: "direct",
+        notification_event_type: "typing",
+        ids: [2, 3, 4],
+    });
 
     // Stream messages
     override(compose_state, "get_message_type", () => "stream");
@@ -357,6 +369,13 @@ run_test("basics", ({override, override_rewire}) => {
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 4);
     assert.deepEqual(call_count.stop_last_notification, 2);
+    assert.equal(notify_server_start_call_count, 2);
+    assert.deepStrictEqual(events.started_recipient, {
+        message_type: "stream",
+        notification_event_type: "typing",
+        stream_id: "2",
+        topic: "test topic",
+    });
 });
 
 run_test("stream_messages", ({override, override_rewire}) => {
