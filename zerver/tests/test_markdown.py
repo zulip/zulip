@@ -2621,6 +2621,16 @@ class MarkdownMentionTest(ZulipTestCase):
                 f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
             )
 
+        # ">" only counts as a mention boundary when it is a blockquote marker.
+        rendering_result = render_message_markdown(msg, "x>@**King Hamlet**")
+        self.assertEqual(
+            rendering_result.rendered_content, "<p>x&gt;@<strong>King Hamlet</strong></p>"
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+        rendering_result = render_message_markdown(msg, "text>@**all**")
+        self.assertEqual(rendering_result.rendered_content, "<p>text&gt;@<strong>all</strong></p>")
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
+
     def test_mention_get_user_ids(self) -> None:
         # possible_mentions() does NOT differentiate between silent and
         # non-silent mentions, unlike possible_user_group_mentions().
@@ -2777,6 +2787,16 @@ class MarkdownMentionTest(ZulipTestCase):
         self.assertEqual(
             rendering_result.rendered_content,
             '<p>@<strong>Invalid user</strong> and <span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
+
+        content = "x>@** see @**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>x&gt;@** see <span class="user-mention" '
             f'data-user-id="{user_id}">'
             "@King Hamlet</span></p>",
         )
@@ -3134,6 +3154,16 @@ class MarkdownMentionTest(ZulipTestCase):
             "@support</span></p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
+        self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
+
+        content = "x>@* see @*support*"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>x&gt;@* see <span class="user-group-mention" '
+            f'data-user-group-id="{user_group.id}">'
+            "@support</span></p>",
+        )
         self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
 
     def test_user_group_mention_atomic_string(self) -> None:
