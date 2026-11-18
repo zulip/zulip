@@ -83,19 +83,22 @@ function focus_first_action_popover_item(): void {
     popover_menus.focus_first_popover_item($items);
 }
 
+export function can_open_message_actions_menu(message: Message): boolean {
+    // Don't open the popup for locally echoed messages for now.
+    // It creates bugs with things like keyboard handlers when
+    // we get the server response.
+    // We also suppress the popup for messages in an editing state,
+    // including previews.
+    return !message.locally_echoed && !message_edit.currently_editing_messages.has(message.id);
+}
+
 export function toggle_message_actions_menu(message: Message): boolean {
     if (popover_menus.is_message_actions_popover_displayed()) {
         popovers.hide_all();
         return true;
     }
 
-    if (message.locally_echoed || message_edit.currently_editing_messages.has(message.id)) {
-        // Don't open the popup for locally echoed messages for now.
-        // It creates bugs with things like keyboard handlers when
-        // we get the server response.
-        // We also suppress the popup for messages in an editing state,
-        // including previews, when a user tries to reach them from the
-        // keyboard.
+    if (!can_open_message_actions_menu(message)) {
         return true;
     }
 
