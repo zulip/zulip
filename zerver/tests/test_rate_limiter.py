@@ -324,10 +324,6 @@ class RateLimitedErrorTest(ZulipTestCase):
         # The header carries the same rounded value as the JSON response.
         self.assertEqual(RateLimitedError(0.5).extra_headers["Retry-After"], 1)
 
-    def test_retry_after_without_secs_to_freedom(self) -> None:
-        self.assertIsNone(RateLimitedError().data["retry-after"])
-        self.assertNotIn("Retry-After", RateLimitedError().extra_headers)
-
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
 del RateLimiterBackendBase

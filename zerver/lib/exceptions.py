@@ -277,7 +277,7 @@ class RateLimitedError(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
-    def __init__(self, secs_to_freedom: float | None = None) -> None:
+    def __init__(self, secs_to_freedom: float) -> None:
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
@@ -290,7 +290,7 @@ class RateLimitedError(JsonableError):
     def get_retry_after_num(self) -> int | None:
         # A rule allowing no requests makes the wait infinite, which
         # has no integer number of seconds to report.
-        if self.secs_to_freedom is None or math.isinf(self.secs_to_freedom):
+        if math.isinf(self.secs_to_freedom):
             return None
 
         # Round up, since rounding down would advertise a shorter
