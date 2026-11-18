@@ -52,9 +52,12 @@ guess like "deleted users are rare".
 
 **Details.** The root cause: what the feature normally does, what went wrong, and why.
 Naming functions and files is fine (`get_consented_user_ids` (`zerver/lib/export.py`)),
-as is referencing an earlier CVE whose check was incomplete. Name an API endpoint
-or parameter only when it's needed to explain the root cause. Don't include
-reproduction steps or exploit scripts.
+as is referencing an earlier CVE whose check was incomplete. Servers upgrade
+gradually after an advisory is published, so leave out anything that would shorten
+an attacker's path without helping an admin judge their exposure: exact URLs or
+path formats, the requests or headers that trigger the bug, how identifiers are
+constructed, and the order of steps. Describe the flaw rather than the exact value
+or format that exposes it. Don't include reproduction steps or exploit scripts.
 
 **Impact.** What the attacker gains, and from whom. List the conditions an
 organization must meet to be affected, as bullets if there are several. If it helps,
@@ -97,9 +100,11 @@ Reviewers read every sentence closely. These are the most common problems in dra
 1. Verify the facts above and read `references/examples.md`.
 2. Write the draft to a `.md` file in the repository root (e.g.,
    `advisory-<short-slug>.md`), so it can be copied into GitHub.
-3. After the draft, briefly list anything the user should confirm: the fixed version,
+3. Before presenting the draft, reread Details and Impact as an attacker would, and
+   cut any detail that tells them what to send or where.
+4. After the draft, briefly list anything the user should confirm: the fixed version,
    claims you couldn't fully verify, and places where the wording is a deliberate
    simplification (e.g., describing the common case when a rare case differs slightly).
-4. When the user pastes their own tweaks, review them for accuracy and clarity and
+5. When the user pastes their own tweaks, review them for accuracy and clarity and
    suggest specific replacement wording, but don't edit the file until they agree.
    When asked to fix something, change only that.
