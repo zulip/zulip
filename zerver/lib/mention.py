@@ -31,11 +31,12 @@ BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\/<])"
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-MENTIONS_RE = re.compile(
-    rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*\*(?P<match>[^\*]+)\*\*)"
-)
+MENTION_SYNTAX_REGEX = r"@(?P<silent>_?)(\*\*(?P<match>[^\*]+)\*\*)"
+USER_GROUP_MENTION_SYNTAX_REGEX = r"@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
+
+MENTIONS_RE = re.compile(rf"{BEFORE_MENTION_ALLOWED_REGEX}{MENTION_SYNTAX_REGEX}")
 USER_GROUP_MENTIONS_RE = re.compile(
-    rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
+    rf"{BEFORE_MENTION_ALLOWED_REGEX}{USER_GROUP_MENTION_SYNTAX_REGEX}"
 )
 
 topic_wildcards = frozenset(["topic"])
