@@ -755,6 +755,40 @@ run_test("get_by_user_id", () => {
     assert.equal(person.user_id, 42);
 });
 
+run_test("is_placeholder_user", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_placeholder_user(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_placeholder_user(42));
+
+    // Missing users are not placeholders.
+    assert.ok(!people.is_placeholder_user(43));
+});
+
+run_test("is_display_full_name_loading", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_display_full_name_loading(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_display_full_name_loading(42));
+
+    muted_users.add_muted_user(42);
+    assert.ok(!people.is_display_full_name_loading(42));
+});
+
 run_test("set_custom_profile_field_data", () => {
     initialize();
     const person = people.get_by_email(me.email);

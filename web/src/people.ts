@@ -265,6 +265,15 @@ export function is_known_user_id(user_id: number): boolean {
     return true;
 }
 
+export function is_placeholder_user(user_id: number): boolean {
+    return people_by_user_id_dict.get(user_id)?.is_placeholder_user ?? false;
+}
+
+// Muted users are shown as "Muted user", which doesn't need their data.
+export function is_display_full_name_loading(user_id: number): boolean {
+    return is_placeholder_user(user_id) && !muted_users.is_user_muted(user_id);
+}
+
 export function direct_message_group_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
