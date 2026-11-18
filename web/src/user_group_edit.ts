@@ -40,6 +40,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
@@ -582,6 +583,28 @@ function update_toggler_for_group_setting(group: UserGroup): void {
     }
 }
 
+function get_creator_details_context(group: UserGroup): {
+    date_created_string: string | null;
+    creator: (User & {is_active: boolean}) | undefined;
+    is_creator: boolean;
+} {
+    let date_created_string = null;
+    if (group.date_created) {
+        date_created_string = timerender.get_localized_date_or_time_for_format(
+            // We get timestamp in seconds from the API but timerender
+            // needs milliseconds.
+            new Date(group.date_created * 1000),
+            "dayofyear_year",
+        );
+    }
+
+    return {
+        date_created_string,
+        creator: stream_data.maybe_get_creator_details(group.creator_id),
+        is_creator: group.creator_id === current_user.user_id,
+    };
+}
+
 function get_membership_status_context(group: UserGroup): {
     is_direct_member: boolean;
     is_member: boolean;
@@ -1078,22 +1101,10 @@ export function show_settings_for(group: UserGroup): void {
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
 
-    let date_created_string = null;
-    if (group.date_created) {
-        date_created_string = timerender.get_localized_date_or_time_for_format(
-            // We get timestamp in seconds from the API but timerender
-            // needs milliseconds.
-            new Date(group.date_created * 1000),
-            "dayofyear_year",
-        );
-    }
-
     const html = render_user_group_settings({
         group,
         group_name: user_groups.get_display_group_name(group.name),
-        date_created_string,
-        creator: stream_data.maybe_get_creator_details(group.creator_id),
-        is_creator: group.creator_id === current_user.user_id,
+        ...get_creator_details_context(group),
         ...get_membership_status_context(group),
         all_group_setting_labels: settings_config.all_group_setting_labels,
         group_assigned_realm_permissions,
