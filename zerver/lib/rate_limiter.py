@@ -455,7 +455,8 @@ def readable_expiry_string_for_plaintext(seconds_till_expiry: int) -> str:
     return readable_expiry_string_for_html(seconds_till_expiry).replace("\xa0", " ")
 
 
-def readable_retry_after_for_html(exception: RateLimitedError) -> str:
+def readable_retry_after_for_html(exception: RateLimitedError) -> str | None:
     retry_after = exception.get_retry_after_num()
-    assert retry_after is not None
+    if retry_after is None:
+        return None
     return readable_expiry_string_for_html(retry_after)

@@ -521,7 +521,13 @@ class OurAuthenticationForm(AuthenticationForm):
                 )
             except RateLimitedError as e:
                 retry_after = e.get_retry_after_num()
-                assert retry_after is not None
+                if retry_after is None:
+                    raise ValidationError(
+                        _(
+                            "You're making too many attempts to sign in."
+                            " Contact your organization administrator for help."
+                        )
+                    )
                 retry_after_string = readable_expiry_string_for_plaintext(retry_after)
                 error_message = _(
                     "You're making too many attempts to sign in."

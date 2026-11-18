@@ -1002,6 +1002,17 @@ class LoginTest(ZulipTestCase):
             self.login_with_return(email)
             self.assert_logged_in_user_id(user_profile.id)
 
+    @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    @ratelimit_rule(10, 0, domain="authenticate_by_username")
+    def test_login_rate_limiter_allowing_no_requests(self) -> None:
+        # A rule allowing no requests leaves no wait to suggest.
+        result = self.login_with_return(self.example_user("hamlet").delivery_email)
+        self.assert_in_success_response(
+            ["Contact your organization administrator for help."], result
+        )
+        self.assert_not_in_success_response(["Try again"], result)
+        self.assert_logged_in_user_id(None)
+
     def test_login_with_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
         password = "a_password_of_22_chars"

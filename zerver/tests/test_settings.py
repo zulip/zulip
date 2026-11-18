@@ -300,6 +300,20 @@ class ChangeSettingsTest(ZulipTestCase):
             )
             self.assert_json_success(json_result)
 
+    @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    def test_wrong_old_password_rate_limiter_allowing_no_requests(self) -> None:
+        self.login("hamlet")
+        # A rule allowing no requests leaves no wait to suggest.
+        with ratelimit_rule(10, 0, domain="authenticate_by_username"):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ),
+            )
+        self.assert_json_error(result, "You're making too many attempts!")
+
     @override_settings(
         AUTHENTICATION_BACKENDS=(
             "zproject.backends.ZulipLDAPAuthBackend",

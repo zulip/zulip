@@ -490,7 +490,8 @@ def json_change_settings(
                 raise JsonableError(_("Wrong password!"))
         except RateLimitedError as e:
             retry_after = e.get_retry_after_num()
-            assert retry_after is not None
+            if retry_after is None:
+                raise JsonableError(_("You're making too many attempts!"))
             retry_after_string = readable_expiry_string_for_plaintext(retry_after)
             raise JsonableError(
                 _("You're making too many attempts! Try again in {retry_after_string}.").format(

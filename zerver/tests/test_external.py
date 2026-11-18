@@ -206,6 +206,14 @@ class RateLimitTests(ZulipTestCase):
             is_json=False,
         )
 
+    @ratelimit_rule(1, 0, domain="sends_email_by_ip")
+    def test_find_account_rate_limiting_allowing_no_requests(self) -> None:
+        # A rule allowing no requests leaves no wait to suggest.
+        result = self.client_post("/accounts/find/", {"emails": "new@zulip.com"})
+        self.assertEqual(result.status_code, 429)
+        self.assert_in_response("You have exceeded the limit", result)
+        self.assertNotIn("You can try again", result.content.decode())
+
     @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_password_reset_rate_limiting(self) -> None:
         with self.assertLogs(level="INFO") as m:
