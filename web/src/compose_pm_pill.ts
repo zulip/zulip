@@ -81,6 +81,10 @@ export function get_user_ids(): number[] {
     return user_pill.get_user_ids(widget);
 }
 
+export function finalize_pending_edit(): boolean {
+    return widget.finalize_pending_edit();
+}
+
 export function has_unconverted_data(): boolean {
     return user_pill.has_unconverted_data(widget);
 }

@@ -45,6 +45,20 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_remove_members_group", null],
 ]);
 
+// Creating the group must not act on a pill's pre-edit value.
+function finalize_pending_pill_edits(): boolean {
+    if (!user_group_create_members.pill_widget.finalize_pending_edit()) {
+        return false;
+    }
+    for (const pill_widget of group_setting_widget_map.values()) {
+        assert(pill_widget !== null);
+        if (!pill_widget.finalize_pending_edit()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function maybe_update_error_message(): void {
     const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
     user_group_name_error.pre_validate(group_name);
@@ -302,6 +316,9 @@ export function set_up_handlers(): void {
 
         assert(user_group_create_members.pill_widget !== undefined);
         assert(user_group_create_members.pill_widget !== null);
+        if (!finalize_pending_pill_edits()) {
+            return;
+        }
         if (user_group_create_members.pill_widget.is_pending()) {
             // We are not appending any value here, but instead this is
             // a proxy to invoke the error state for a group widget
