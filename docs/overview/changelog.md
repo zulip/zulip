@@ -10,6 +10,39 @@ lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 12.x series
 
+### Zulip Server 12.5
+
+_Released 2026-11-19_
+
+- GHSA-f7qf-999g-f6h9: On servers that store uploaded files on local
+  disk (the default), any user, including guests, could make the server
+  read, append data to, or delete arbitrary files accessible to the
+  `zulip` user. This could be used to obtain the server's secrets and
+  to run arbitrary code on the server. Servers that store uploaded files
+  in S3 were not affected. This vulnerability was reported by Thibault
+  Herard (@ThibHrrd) of OWN.
+- GHSA-6c7c-7xjc-qm48: Any user, including guests, could obtain a copy
+  of a file uploaded by another user, including one in another
+  organization on the same server, if they knew the file's URL. They
+  did not need access to the message the file was shared in. This
+  affected files uploaded through the resumable upload API, which the
+  web and desktop apps use for all uploads.
+- GHSA-2fx7-3vcm-hg62: On servers that allow importing from Slack while
+  creating an organization, anyone could obtain the confirmation link of
+  a person creating an organization that way, and take over that
+  organization, including its imported data. Users with an account on
+  the server could also delete another person's uploaded Slack export,
+  or obtain a copy of it (on local disk, even while it was still
+  uploading). Importing from Slack while creating an organization is
+  disabled by default on self-hosted servers.
+- OpenID Connect logins now always use PKCE. If your identity provider
+  rejects PKCE for Zulip's client, enable PKCE for that client, or set
+  `SOCIAL_AUTH_OIDC_USE_PKCE = False` in `/etc/zulip/settings.py` to
+  turn it off for all OpenID Connect providers. Turning it off is not
+  recommended, because PKCE protects against an authorization code
+  injection attack caused by a `python-social-auth` bug
+  ([GHSA-h2r5-x5m7-3935](https://github.com/advisories/GHSA-h2r5-x5m7-3935)).
+
 ### Zulip Server 12.4
 
 _Released 2026-11-06_
