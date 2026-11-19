@@ -782,6 +782,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # fetches asynchronously through the embed_links worker
             # rather than blocking rendering on a network request.
             if is_album or not (is_image or is_video):
+                # These are website previews, so they follow website preview rules.
+                if not self.url_embed_preview_allowed():
+                    return None
                 return DropboxDeferredPreviewInfo(type="folder" if is_album else "file")
 
             # Adding raw=1 as query param will give us the URL of the
