@@ -113,7 +113,7 @@ input::-ms-reveal {
 
     .password_visibility_toggle {
         position: absolute;
-        right: 10px;
+        inset-inline-end: 10px;
         top: 42px;
         opacity: 0.6;
 

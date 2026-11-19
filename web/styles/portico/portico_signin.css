@@ -549,7 +549,8 @@ html {
         select {
             /* 10.5px vertical padding + 2px border + content
                height gives 48px, matching the button height. */
-            padding: 10.5px 32px 10.5px 12px;
+            padding-block: 10.5px;
+            padding-inline: 12px 32px;
             margin: 25px 0 5px;
 
             font-family: "Source Sans 3 VF", sans-serif;
@@ -595,7 +596,7 @@ html {
         & label:not(.altcha-label) {
             position: absolute;
             top: 0;
-            left: 0;
+            inset-inline-start: 0;
 
             margin-top: 1px;
 
@@ -631,7 +632,7 @@ html {
         input[type="email"]:valid + label,
         input[type="password"]:valid + label,
         select:valid + label {
-            left: 0;
+            inset-inline-start: 0;
             transform: translateY(0) translateX(0);
             pointer-events: auto;
 
@@ -696,6 +697,14 @@ html {
         font-size: 1.3rem;
         margin-top: 0.8rem;
         text-align: center;
+    }
+}
+
+[dir="rtl"] .new-style .input-box.moving-label {
+    input[type="text"]:invalid + label,
+    input[type="email"]:invalid + label,
+    input[type="password"]:invalid + label {
+        transform: translateY(39px) translateX(-14px);
     }
 }
 
@@ -875,6 +884,18 @@ html {
     vertical-align: top;
 }
 
+[dir="rtl"] .split-view {
+    /* Keep the organization info on the left and the login card on the
+       right, matching the layout in left-to-right languages, while
+       still rendering the form content right-to-left below. */
+    direction: ltr;
+}
+
+[dir="rtl"] .split-view .right-side {
+    direction: rtl;
+    text-align: start;
+}
+
 .split-view .org-header .avatar,
 .register-page-container .org-header .avatar {
     display: inline-block;
@@ -955,10 +976,21 @@ button#register_auth_button_gitlab {
     background-position-x: 3px;
 }
 
+[dir="rtl"] button.login-social-button {
+    padding-left: 22px;
+    padding-right: 16%;
+    background-position: calc(100% - 13px) 50%;
+}
+
+[dir="rtl"] button#login_auth_button_gitlab,
+[dir="rtl"] button#register_auth_button_gitlab {
+    background-position-x: calc(100% - 3px);
+}
+
 .login-page-container .right-side .actions,
 .back-to-login-wrapper {
     margin: 20px 0 0;
-    text-align: left;
+    text-align: start;
 
     &.forgot-password-container {
         margin: 0;
