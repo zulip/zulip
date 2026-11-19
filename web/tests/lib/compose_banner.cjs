@@ -40,4 +40,5 @@ exports.mock_banners = () => {
     $cb.set_find_results(".topic_resolved", $stub);
     $cb.set_find_results(".search_view", $stub);
     $cb.set_find_results(".unscheduled_message", $stub);
+    $cb.set_find_results(".split_partial_failure", $stub);
 };

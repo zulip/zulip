@@ -191,6 +191,7 @@ export const scheduled_message_schema = z.intersection(
         rendered_content: z.string(),
         scheduled_delivery_timestamp: z.number(),
         failed: z.boolean(),
+        split_message_on_send: z.boolean(),
     }),
     z.discriminatedUnion("type", [
         z.object({

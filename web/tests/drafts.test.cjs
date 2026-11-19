@@ -126,6 +126,7 @@ mock_esm("tippy.js", {
 });
 
 const {localstorage} = zrequire("localstorage");
+const compose_split_messages = zrequire("compose_split_messages");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
 zrequire("timerender");
@@ -140,6 +141,7 @@ const draft_1 = {
     content: "Test stream message",
     updatedAt: mock_current_timestamp,
     is_sending_saving: false,
+    split_messages_enabled: false,
     drafts_version: 1,
 };
 const draft_2 = {
@@ -148,6 +150,7 @@ const draft_2 = {
     content: "Test direct message",
     updatedAt: mock_current_timestamp,
     is_sending_saving: false,
+    split_messages_enabled: false,
     drafts_version: 1,
 };
 const short_msg = {
@@ -157,6 +160,7 @@ const short_msg = {
     content: "a",
     updatedAt: mock_current_timestamp,
     is_sending_saving: false,
+    split_messages_enabled: false,
     drafts_version: 1,
 };
 
@@ -201,6 +205,7 @@ test("fix buggy drafts", () => {
         content: "Test direct message 2",
         updatedAt: Date.now(),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_with_only_invalid_recipients = {
@@ -209,6 +214,7 @@ test("fix buggy drafts", () => {
         content: "Test direct message 3",
         updatedAt: Date.now(),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const ls = localstorage();
@@ -309,6 +315,10 @@ test("snapshot_message", ({override}) => {
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), draft_2);
 
+    compose_split_messages.set_split_messages_enabled(true);
+    assert.deepEqual(drafts.snapshot_message(), {...draft_2, split_messages_enabled: true});
+    compose_split_messages.set_split_messages_enabled(false);
+
     curr_draft = short_msg;
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), undefined);
@@ -388,6 +398,35 @@ test("update_draft", ({override}) => {
     assert.equal(draft_id, "5-2");
     assert.ok(!tippy_show_called);
     assert.ok(!tippy_destroy_called);
+});
+
+test("update_draft_during_split_send", ({override}) => {
+    const draft_model = drafts.draft_model;
+    override(Date, "now", () => 20);
+    override(Math, "random", () => 3);
+
+    drafts.set_compose_draft_id(undefined);
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(stream_1.stream_id);
+    compose_state.topic("split topic");
+    compose_state.message_content("part1\n\n\npart2\n\n\npart3");
+
+    const draft_id = drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part1\n\n\npart2\n\n\npart3");
+
+    drafts.set_split_send_draft({draft_id, content: "part2\n\n\npart3"});
+    drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part2\n\n\npart3");
+
+    drafts.set_split_send_draft({draft_id: "some-other-draft", content: "stale"});
+    drafts.update_draft({no_notify: true});
+    assert.equal(draft_model.getDraft(draft_id).content, "part1\n\n\npart2\n\n\npart3");
+
+    drafts.set_split_send_draft(undefined);
+    compose_state.message_content("");
+    drafts.update_draft({no_notify: true});
+    compose_state.set_message_type(undefined);
+    drafts.set_compose_draft_id(undefined);
 });
 
 test("rename_stream_recipient", () => {
@@ -488,6 +527,7 @@ test("format_drafts", ({override, mock_template}) => {
         stream_id: 30,
         updatedAt: feb12().getTime(),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_2 = {
@@ -496,6 +536,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test direct message",
         updatedAt: date(-1),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_3 = {
@@ -505,6 +546,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test stream message 2",
         updatedAt: date(-10),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_4 = {
@@ -513,6 +555,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test direct message 2",
         updatedAt: date(-5),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_5 = {
@@ -521,6 +564,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test direct message 3",
         updatedAt: date(-2),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_6 = {
@@ -530,6 +574,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test stream message 3",
         updatedAt: date(-11),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_7 = {
@@ -538,6 +583,7 @@ test("format_drafts", ({override, mock_template}) => {
         content: "Test direct message 4",
         updatedAt: date(-12),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
 
@@ -686,6 +732,7 @@ test("filter_drafts", ({override, mock_template}) => {
         stream_id: 30,
         updatedAt: feb12().getTime(),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const pm_draft_1 = {
@@ -694,6 +741,7 @@ test("filter_drafts", ({override, mock_template}) => {
         content: "Test direct message",
         updatedAt: date(-1),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const stream_draft_2 = {
@@ -703,6 +751,7 @@ test("filter_drafts", ({override, mock_template}) => {
         content: "Test stream message 2",
         updatedAt: date(-10),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const pm_draft_2 = {
@@ -711,6 +760,7 @@ test("filter_drafts", ({override, mock_template}) => {
         content: "Test direct message 2",
         updatedAt: date(-5),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const pm_draft_3 = {
@@ -719,6 +769,7 @@ test("filter_drafts", ({override, mock_template}) => {
         content: "Test direct message 3",
         updatedAt: date(-2),
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
 
@@ -832,6 +883,7 @@ test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => 
         stream_id: 30,
         updatedAt: now,
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
     const draft_without_image = {
@@ -841,6 +893,7 @@ test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => 
         stream_id: 30,
         updatedAt: now - 1000,
         is_sending_saving: false,
+        split_messages_enabled: false,
         drafts_version: 1,
     };
 

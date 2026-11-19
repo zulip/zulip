@@ -845,6 +845,7 @@ exports.fixtures = {
                 rendered_content: "<p>Hello there!</p>",
                 scheduled_delivery_timestamp: 1681662420,
                 failed: false,
+                split_message_on_send: false,
             },
         ],
     },
@@ -866,6 +867,7 @@ exports.fixtures = {
             rendered_content: "<p>Hello there!</p>",
             scheduled_delivery_timestamp: 1681662420,
             failed: false,
+            split_message_on_send: false,
         },
     },
 
