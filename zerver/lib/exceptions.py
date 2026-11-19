@@ -68,6 +68,7 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    EDIT_HISTORY_LIMIT_EXCEEDED = auto()
 
 
 class JsonableError(Exception):
@@ -786,6 +787,18 @@ class PreviousMessageContentMismatchedError(ExpectationMismatchError):
     def __init__(self) -> None:
         super().__init__()
         self.field_name = "prev_content_sha256"
+
+
+class EditHistoryLimitError(JsonableError):
+    code: ErrorCode = ErrorCode.EDIT_HISTORY_LIMIT_EXCEEDED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("This message has been edited too many times. Send a new message instead.")
 
 
 class SystemGroupRequiredError(JsonableError):

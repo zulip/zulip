@@ -8,7 +8,19 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import (
+    Case,
+    Exists,
+    F,
+    Func,
+    IntegerField,
+    JSONField,
+    OuterRef,
+    Q,
+    Value,
+    When,
+)
+from django.db.models.functions import Cast
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -29,6 +41,7 @@ from zerver.lib import utils
 from zerver.lib.cache import cache_delete, cache_delete_many, to_dict_cache_key_id
 from zerver.lib.event_types import TopicLink
 from zerver.lib.exceptions import (
+    EditHistoryLimitError,
     JsonableError,
     MessageMoveError,
     MessagesNotAllowedInEmptyTopicError,
@@ -201,6 +214,53 @@ def validate_user_can_edit_message(
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
         if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
+
+
+def check_edit_history_limits(user_profile: UserProfile, message: Message) -> None:
+    # A message that has never been edited or moved has no edit history.
+    if message.last_edit_time is None:
+        return
+
+    # The edit history isn't fetched when editing, so the database
+    # measures it. octet_length reads the size without decompressing
+    # the history. Counting the content edits parses the history, so
+    # that's skipped when the history is over the size limit.
+    content_edit_count_expression = Func(
+        Func(
+            Cast(F("edit_history"), JSONField()),
+            Value("$[*] ? (exists(@.prev_content))"),
+            function="jsonb_path_query_array",
+            output_field=JSONField(),
+        ),
+        function="jsonb_array_length",
+        output_field=IntegerField(),
+    )
+    edit_history_bytes, content_edit_count = (
+        Message.objects.filter(id=message.id)
+        .annotate(
+            edit_history_bytes=Func(
+                F("edit_history"), function="octet_length", output_field=IntegerField()
+            ),
+            content_edit_count=Case(
+                When(
+                    edit_history_bytes__lt=settings.MAX_EDIT_HISTORY_BYTES,
+                    then=content_edit_count_expression,
+                ),
+                output_field=IntegerField(),
+            ),
+        )
+        .values_list("edit_history_bytes", "content_edit_count")
+        .get()
+    )
+    if edit_history_bytes >= settings.MAX_EDIT_HISTORY_BYTES:
+        raise EditHistoryLimitError
+
+    if user_profile.is_bot:
+        max_content_edits = settings.MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS
+    else:
+        max_content_edits = settings.MAX_CONTENT_EDITS_PER_MESSAGE
+    if content_edit_count >= max_content_edits:
+        raise EditHistoryLimitError
 
 
 def get_unread_user_ids_for_resolved_topic_notifications(
@@ -1873,6 +1933,9 @@ def check_update_message(
         topic_name=topic_name,
         content=content,
     )
+
+    if message_edit_request.is_content_edited:
+        check_edit_history_limits(user_profile, message)
 
     if (
         isinstance(message_edit_request, StreamMessageEditRequest)

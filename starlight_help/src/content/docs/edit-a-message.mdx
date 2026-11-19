@@ -72,6 +72,21 @@ If you [delete the content of a message](/help/delete-a-message#delete-message-c
 any pending email notifications for that message will be canceled, including
 [mentions and alerts](/help/dm-mention-alert-notifications).
 
+## Limit on the number of edits
+
+By default, a message's content can be edited up to 300 times (50 times for
+messages sent by bots). Since the size of a message's [edit
+history](/help/view-a-messages-edit-history) is also limited, some messages,
+such as very long ones, may reach the limit after fewer edits. Once a message
+reaches the limit, you can send a new message instead.
+
+In organizations on a self-hosted server, server administrators can configure
+these limits via the `MAX_CONTENT_EDITS_PER_MESSAGE`,
+`MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS`, and `MAX_EDIT_HISTORY_BYTES` [server
+settings][system-settings].
+
+[system-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
 ## Related articles
 
 * [View, copy, and share message content as Markdown](/help/view-the-markdown-source-of-a-message)

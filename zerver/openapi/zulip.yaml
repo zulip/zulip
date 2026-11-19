@@ -10646,7 +10646,17 @@ paths:
         of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
         event in [`GET /events`](/api/get-events).
 
-        **Changes**: Prior to Zulip 10.0 (feature level 367), the permission for
+        By default, a message's content can be edited at most 300 times (50
+        times for messages sent by bots), and only while its
+        [edit history](/help/view-a-messages-edit-history) is smaller than
+        10 MiB. Past these limits, requests that edit the content fail with
+        the `EDIT_HISTORY_LIMIT_EXCEEDED` error code. Requests that only move
+        the message still work.
+
+        **Changes**: Before Zulip 14.0 (feature level ZF-f6facd), a message's
+        content could be edited any number of times.
+
+        Prior to Zulip 10.0 (feature level 367), the permission for
         resolving a topic was managed by `can_move_messages_between_topics_group`.
         As of this feature level, users belonging to the `can_resolve_topics_group`
         will have the permission to [resolve topics](/help/resolve-a-topic) in the organization.
@@ -10973,6 +10983,24 @@ paths:
                           New in Zulip 7.0 (feature level 172).
 
                           [private-channels]: /help/channel-permissions#private-channels
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "EDIT_HISTORY_LIMIT_EXCEEDED",
+                            "msg": "This message has been edited too many times. Send a new message instead.",
+                            "result": "error",
+                          }
+                        description: |
+                          A special failed JSON response (`"code": "EDIT_HISTORY_LIMIT_EXCEEDED"`)
+                          for when the message's content can't be edited again, because it has
+                          already been edited the maximum number of times, or its edit history is
+                          too large.
+
+                          Clients can present the error to the user, or offer to send the edited
+                          content as a new message instead.
+
+                          **Changes**: New in Zulip 14.0 (feature level ZF-f6facd).
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
