@@ -959,32 +959,30 @@ export class BuddyList extends BuddyListConf {
     }
 
     maybe_remove_user_id(opts: {user_id: number}): void {
-        let was_removed = false;
-        for (const user_id_list of [
-            this.participants_section.user_ids,
-            this.users_matching_view_section.user_ids,
-            this.other_users_section.user_ids,
-        ]) {
-            const pos = user_id_list.indexOf(opts.user_id);
-            if (pos !== -1) {
-                user_id_list.splice(pos, 1);
-                was_removed = true;
-                break;
-            }
-        }
-        if (!was_removed) {
+        const pos = this.all_user_ids.indexOf(opts.user_id);
+        if (pos === -1) {
             return;
         }
-        const pos = this.all_user_ids.indexOf(opts.user_id);
         this.all_user_ids.splice(pos, 1);
 
         if (pos < this.render_count) {
+            for (const user_id_list of [
+                this.participants_section.user_ids,
+                this.users_matching_view_section.user_ids,
+                this.other_users_section.user_ids,
+            ]) {
+                const section_pos = user_id_list.indexOf(opts.user_id);
+                if (section_pos !== -1) {
+                    user_id_list.splice(section_pos, 1);
+                    break;
+                }
+            }
             this.render_count -= 1;
             const $li = this.find_li({key: opts.user_id});
             assert($li !== undefined);
             $li.remove();
-            this.update_padding();
         }
+        this.update_padding();
     }
 
     find_position(opts: {user_id: number; user_id_list: number[]}): number {
@@ -1114,6 +1112,14 @@ export class BuddyList extends BuddyListConf {
                 user_id_list: this.all_user_ids,
             });
 
+            if (new_pos_in_all_users > this.render_count) {
+                // render_more will render this user when the list is
+                // scrolled down to them.
+                this.all_user_ids.splice(new_pos_in_all_users, 0, user_id);
+                this.update_padding();
+                continue;
+            }
+
             const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
             const pm_ids_set = narrow_state.pm_ids_set();
             const is_subscribed_user = buddy_data.user_matches_narrow_using_loaded_data(
@@ -1152,11 +1158,12 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
-        this.clear_avatar_preload_backgrounds();
+        // Users who moved below the rendered part of the list may have
+        // left room on the screen for more users.
+        this.fill_screen_with_content();
         background_task.run_async_function_without_await(
             this.update_empty_list_placeholders.bind(this),
         );
-        background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
     rerender_participants(user_filter_text: string): void {
