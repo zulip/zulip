@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 14.0
 
+**Feature level 526**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_right_click_opens_message_actions_menu` display setting,
+  controlling whether right-clicking on a message opens the [message
+  actions menu](/help/message-actions) instead of the browser's context menu.
+
 **Feature level 525**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),

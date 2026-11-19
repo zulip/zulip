@@ -16311,7 +16311,7 @@ paths:
                     Web/desktop app setting for whether right-clicking on a message
                     opens the message actions menu instead of the browser's context menu.
 
-                    **Changes**: New in Zulip 14.0 (feature level ZF-4f9f44).
+                    **Changes**: New in Zulip 14.0 (feature level 526).
                   type: boolean
                   example: false
             encoding:
@@ -20491,7 +20491,7 @@ paths:
                               Web/desktop app setting for whether right-clicking on a message
                               opens the message actions menu instead of the browser's context menu.
 
-                              **Changes**: New in Zulip 14.0 (feature level ZF-4f9f44).
+                              **Changes**: New in Zulip 14.0 (feature level 526).
                       user_topics:
                         type: array
                         description: |
@@ -22938,7 +22938,7 @@ paths:
                               Web/desktop app setting for whether right-clicking on a message
                               opens the message actions menu instead of the browser's context menu.
 
-                              **Changes**: New in Zulip 14.0 (feature level ZF-4f9f44).
+                              **Changes**: New in Zulip 14.0 (feature level 526).
                       realm_users:
                         type: array
                         description: |
@@ -24452,7 +24452,7 @@ paths:
                     Web/desktop app setting for whether right-clicking on a message
                     opens the message actions menu instead of the browser's context menu.
 
-                    **Changes**: New in Zulip 14.0 (feature level ZF-4f9f44).
+                    **Changes**: New in Zulip 14.0 (feature level 526).
                   type: boolean
                   example: false
             encoding:
