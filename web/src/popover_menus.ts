@@ -490,17 +490,26 @@ export function toggle_popover_menu(
         };
     }
 
-    if (popover_props.popperOptions?.modifiers) {
-        popover_props.popperOptions.modifiers = [
-            ...default_popover_props.popperOptions!.modifiers!,
-            ...popover_props.popperOptions.modifiers,
-        ];
-    }
+    // Don't modify popover_props, since callers may reuse it, or share
+    // its popperOptions with other popovers.
+    const popover_props_with_default_modifiers =
+        popover_props.popperOptions?.modifiers === undefined
+            ? popover_props
+            : {
+                  ...popover_props,
+                  popperOptions: {
+                      ...popover_props.popperOptions,
+                      modifiers: [
+                          ...default_popover_props.popperOptions!.modifiers!,
+                          ...popover_props.popperOptions.modifiers,
+                      ],
+                  },
+              };
 
     const props = {
         ...default_popover_props,
         showOnCreate: true,
-        ...popover_props,
+        ...popover_props_with_default_modifiers,
         ...mobile_popover_props,
     };
 
