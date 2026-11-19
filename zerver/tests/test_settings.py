@@ -375,6 +375,7 @@ class ChangeSettingsTest(ZulipTestCase):
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
             resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always.name,
+            web_left_sidebar_dm_collapse_policy=2,
         )
 
         self.login("hamlet")
@@ -391,6 +392,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "web_channel_default_view",
             "web_left_sidebar_topics_order",
             "web_stream_unreads_count_display_policy",
+            "web_left_sidebar_dm_collapse_policy",
         ]:
             data = {setting_name: test_value}
         else:
@@ -504,6 +506,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "setting_name": "resolved_topic_notice_auto_read_policy",
                 "value": "invalid",
                 "error_msg": "Invalid resolved_topic_notice_auto_read_policy",
+            },
+            {
+                "setting_name": "web_left_sidebar_dm_collapse_policy",
+                "value": 10,
+                "error_msg": "Invalid web_left_sidebar_dm_collapse_policy: Value error, Not in the list of possible values",
             },
         ]
         self.login("hamlet")

@@ -57,6 +57,8 @@ function toggle_sidebar_preserving_selected_row_offset(classname: string): void 
     }
 }
 
+let previous_pin_state = false;
+
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
     ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
@@ -701,6 +703,14 @@ function actually_update_left_sidebar_for_search(): void {
         left_sidebar_navigation_area.expand_views($views_label_container, $views_label_icon);
     } else if (!is_left_sidebar_search_active) {
         left_sidebar_navigation_area.restore_views_state();
+    }
+
+    if (is_left_sidebar_search_active && !previous_pin_state) {
+        previous_pin_state = pm_list.get_direct_messages_pinned();
+        pm_list.set_direct_messages_pinned(false);
+    } else if (!is_left_sidebar_search_active && previous_pin_state) {
+        pm_list.set_direct_messages_pinned(true);
+        previous_pin_state = false;
     }
 
     // Update left sidebar DM list.
