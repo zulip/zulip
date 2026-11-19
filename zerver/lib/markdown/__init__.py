@@ -749,6 +749,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return "https://linx.li/s" + parsed_url.path
         return None
 
+    def url_embed_preview_allowed(self) -> bool:
+        db_data: DbData | None = self.zmd.zulip_db_data
+        if db_data and db_data.sent_by_bot:
+            return False
+        return self.zmd.url_embed_preview_enabled
+
     def dropbox_media(self, url: str) -> DropboxInlineMediaInfo | DropboxDeferredPreviewInfo | None:
         if not self.zmd.image_preview_enabled:
             return None
@@ -1140,11 +1146,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # is enabled, but URL previews are a beta feature and YouTube
                 # previews are pretty stable.
 
-            db_data: DbData | None = self.zmd.zulip_db_data
-            if db_data and db_data.sent_by_bot:
-                continue
-
-            if not self.zmd.url_embed_preview_enabled:
+            if not self.url_embed_preview_allowed():
                 continue
 
             if self.zmd.url_embed_data is None or url not in self.zmd.url_embed_data:
