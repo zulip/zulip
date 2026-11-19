@@ -33,7 +33,9 @@ from zerver.lib.url_preview.oembed import (
     compile_oembed_providers,
     get_oembed_data,
     get_oembed_endpoint,
-    scheme_to_regex,
+    get_oembed_endpoint_map,
+    host_to_regex,
+    path_to_regex,
     strip_cdata,
 )
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
@@ -49,6 +51,7 @@ def get_oembed_api_url(endpoint: str, url: str, maxwidth: int = 640, maxheight: 
     query_params["url"] = url
     query_params["maxwidth"] = str(maxwidth)
     query_params["maxheight"] = str(maxheight)
+    query_params["format"] = "json"
 
     return endpoint + "?" + urlencode(query_params, True)
 
@@ -160,6 +163,30 @@ class OembedTestCase(ZulipTestCase):
                     "status": 200,
                 },
             ),
+            (
+                "non_object_json_list",
+                {
+                    "body": "[]",
+                    "content_type": "application/json",
+                    "status": 200,
+                },
+            ),
+            (
+                "non_object_json_string",
+                {
+                    "body": '"hello"',
+                    "content_type": "application/json",
+                    "status": 200,
+                },
+            ),
+            (
+                "non_object_json_null",
+                {
+                    "body": "null",
+                    "content_type": "application/json",
+                    "status": 200,
+                },
+            ),
         ]
 
         for case_name, response_kwargs in error_cases:
@@ -181,46 +208,52 @@ class OembedTestCase(ZulipTestCase):
         stripped_html = strip_cdata(html)
         self.assertEqual(iframe_content, stripped_html)
 
-    def test_scheme_to_regex(self) -> None:
-        test_cases: list[dict[str, Any]] = [
-            {
-                "name": "wildcard_subdomain",
-                "scheme": "https://*.youtube.com/watch*",
-                "match_urls": [
-                    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                    "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
-                    "https://youtube.com/watch?v=dQw4w9WgXcQ",
-                    "http://youtube.com/watch?v=dQw4w9WgXcQ",
-                ],
-                "non_match_urls": ["https://youtube.com/v/dQw4w9WgXcQ"],
-            },
-            {
-                "name": "literal_plus_in_query",
-                "scheme": "https://example.com/watch?v=*&list=+",
-                "match_urls": ["https://example.com/watch?v=abc&list=+"],
-                "non_match_urls": ["https://example.com/watch?v=abc&list=something"],
-            },
-            {
-                "name": "anchors_non_wildcard_path",
-                "scheme": "https://example.com/watch",
-                "match_urls": ["https://example.com/watch", "http://example.com/watch"],
-                "non_match_urls": ["https://example.com/watch/extra"],
-            },
-            {
-                "name": "case_sensitive_path",
-                "scheme": "https://example.com/watch?v=*",
-                "match_urls": ["https://example.com/watch?v=abc"],
-                "non_match_urls": ["https://example.com/watch?V=abc"],
-            },
-        ]
+    def test_host_and_path_to_regex(self) -> None:
+        host_regex = re.compile(host_to_regex("*.youtube.com"), re.IGNORECASE)
+        for host in ["www.youtube.com", "m.youtube.com", "youtube.com", "YOUTUBE.COM"]:
+            with self.subTest(host=host):
+                self.assertIsNotNone(host_regex.fullmatch(host))
+        for bad_host in [
+            "evil.com",
+            "evil.com.youtube.com",
+            "youtube.com.evil.com",
+            "notyoutube.com",
+            "-bad.youtube.com",
+            "bad-.youtube.com",
+        ]:
+            with self.subTest(bad_host=bad_host):
+                self.assertIsNone(host_regex.fullmatch(bad_host))
 
-        for case in test_cases:
-            with self.subTest(case_name=case["name"]):
-                regex = scheme_to_regex(cast(str, case["scheme"]))
-                for url in cast(list[str], case["match_urls"]):
-                    self.assertIsNotNone(re.match(regex, url))
-                for url in cast(list[str], case["non_match_urls"]):
-                    self.assertIsNone(re.match(regex, url))
+        path_cases: list[tuple[str, list[str], list[str]]] = [
+            (
+                "/watch?v=*&list=+",
+                ["/watch?v=abc&list=+"],
+                ["/watch?v=abc&list=something"],
+            ),
+            (
+                "/watch",
+                ["/watch"],
+                ["/watch/extra"],
+            ),
+            (
+                "/watch?v=*",
+                ["/watch?v=abc"],
+                ["/watch?V=abc"],
+            ),
+            (
+                "/shorts*",
+                ["/shorts/TpzAVgISA9w", "/shorts"],
+                ["/Shorts/TpzAVgISA9w"],
+            ),
+        ]
+        for path_scheme, match_paths, non_match_paths in path_cases:
+            path_regex = re.compile(path_to_regex(path_scheme))
+            for path in match_paths:
+                with self.subTest(path_scheme=path_scheme, path=path):
+                    self.assertIsNotNone(path_regex.fullmatch(path))
+            for path in non_match_paths:
+                with self.subTest(path_scheme=path_scheme, path=path):
+                    self.assertIsNone(path_regex.fullmatch(path))
 
     def test_oembed_endpoint_with_existing_query_param(self) -> None:
         # hearthis.at's endpoint already contains ?format=json.
@@ -245,13 +278,14 @@ class OembedTestCase(ZulipTestCase):
             self.assertEqual(called_url.count("?"), 1)
             self.assertIn("url=", called_url)
             self.assertIn("maxwidth=", called_url)
+            self.assertEqual(called_url.count("format="), 1)
 
     def test_unknown_provider_returns_none(self) -> None:
         url = "https://unknown-site.example.com/page"
         data = get_oembed_data(url)
         self.assertIsNone(data)
 
-    def test_compile_oembed_providers_missing_endpoint(self) -> None:
+    def test_compile_oembed_providers_missing_and_non_http_schemes(self) -> None:
         mock_providers: list[dict[str, Any]] = [
             {
                 "provider_name": "TestProvider",
@@ -259,7 +293,10 @@ class OembedTestCase(ZulipTestCase):
                     {
                         "schemes": [
                             "https://*.example.com/watch*",
+                            "http://*.example.com/watch*",
                             "https://example.com/watch?v=*&list=+",
+                            "spotify:*",
+                            "https:///no-host",
                         ],
                         "url": "https://example.com/oembed",
                     }
@@ -277,18 +314,29 @@ class OembedTestCase(ZulipTestCase):
         ]
 
         endpoint_map = compile_oembed_providers(mock_providers)
-        self.assert_length(endpoint_map, 1)
-        [(compiled_regex, endpoint_url)] = endpoint_map.items()
-        self.assertEqual(endpoint_url, "https://example.com/oembed")
+        # Two distinct host patterns: `*.example.com` and `example.com`.
+        # The http/https duplicate for `*.example.com/watch*` is deduplicated,
+        # and `spotify:*` is skipped.
+        self.assert_length(endpoint_map, 2)
+        for path_matchers in endpoint_map.values():
+            for path_regex, endpoint_url in path_matchers:
+                self.assertEqual(endpoint_url, "https://example.com/oembed")
+                self.assertFalse(path_regex.pattern.startswith("(?:"))
 
-        regex_match_cases = [
-            ("https://www.example.com/watch?v=123", True),
-            ("https://example.com/watch?v=123&list=+", True),
-            ("https://example.com/v/123", False),
-        ]
-        for url, should_match in regex_match_cases:
-            with self.subTest(url=url):
-                self.assertEqual(compiled_regex.match(url) is not None, should_match)
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=endpoint_map,
+        ):
+            self.assertEqual(
+                get_oembed_endpoint("https://www.example.com/watch?v=123"),
+                "https://example.com/oembed",
+            )
+            self.assertEqual(
+                get_oembed_endpoint("https://example.com/watch?v=123&list=+"),
+                "https://example.com/oembed",
+            )
+            self.assertIsNone(get_oembed_endpoint("https://example.com/v/123"))
+            self.assertIsNone(get_oembed_endpoint("spotify:track:123"))
 
     def test_compile_oembed_providers_format_and_http_normalization(self) -> None:
         mock_providers: list[dict[str, Any]] = [
@@ -305,7 +353,10 @@ class OembedTestCase(ZulipTestCase):
 
         mock_map = compile_oembed_providers(mock_providers)
 
-        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=mock_map,
+        ):
             test_cases = [
                 ("https://example.com/watch/123", "https://example.com/oembed.json"),
                 ("http://example.com/watch/123", "https://example.com/oembed.json"),
@@ -329,7 +380,10 @@ class OembedTestCase(ZulipTestCase):
 
         mock_map = compile_oembed_providers(mock_providers)
 
-        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=mock_map,
+        ):
             self.assertEqual(
                 get_oembed_endpoint("https://media.example.com/watch/123"),
                 "https://example.com/oembed",
@@ -348,17 +402,39 @@ class OembedTestCase(ZulipTestCase):
             ("https://youtu.be/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
             ("https://www.youtube.com/v/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
             ("https://www.youtube.com/embed/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
-            ("https://www.youtube.com/shorts/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://www.youtube.com/shorts/TpzAVgISA9w", "https://www.youtube.com/oembed"),
+            ("https://youtube.com/shorts/TpzAVgISA9w", "https://www.youtube.com/oembed"),
             ("https://vimeo.com/123456789", "https://vimeo.com/api/oembed.json"),
             ("http://vimeo.com/123456789", "https://vimeo.com/api/oembed.json"),
             ("https://open.spotify.com/track/abc123", "https://open.spotify.com/oembed"),
             ("http://open.spotify.com/track/abc123", "https://open.spotify.com/oembed"),
             ("https://soundcloud.com/artist/track", "https://soundcloud.com/oembed"),
             ("http://soundcloud.com/artist/track", "https://soundcloud.com/oembed"),
+            (
+                "https://knowledgepad.co/#/knowledge/abc",
+                "https://api.spoonacular.com/knowledge/oembed",
+            ),
         ]
         for url, expected_endpoint in test_cases:
             with self.subTest(url=url):
                 self.assertEqual(get_oembed_endpoint(url), expected_endpoint)
+
+    def test_get_oembed_endpoint_rejects_spoofed_and_invalid_urls(self) -> None:
+        rejected_urls = [
+            "https://evil.com/.youtube.com/watch?v=fake",
+            "https://evil.com.youtube.com/watch?v=fake",
+            "https://youtube.com.evil.com/watch?v=fake",
+            "https://notyoutube.com/watch?v=fake",
+            "https://youtube.com@evil.com/watch?v=fake",
+            "https://-bad.youtube.com/watch?v=fake",
+            "ftp://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "javascript:alert(1)",
+            "spotify:track:abc123",
+            "http://[bad url/test",
+        ]
+        for url in rejected_urls:
+            with self.subTest(url=url):
+                self.assertIsNone(get_oembed_endpoint(url))
 
     def test_get_oembed_endpoint_case_sensitivity(self) -> None:
         mock_providers: list[dict[str, Any]] = [
@@ -374,12 +450,16 @@ class OembedTestCase(ZulipTestCase):
         ]
         mock_map = compile_oembed_providers(mock_providers)
 
-        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=mock_map,
+        ):
             self.assertEqual(
                 get_oembed_endpoint("HTTPS://WWW.EXAMPLE.COM/watch?v=dQw4w9WgXcQ"),
                 "https://example.com/oembed",
             )
             self.assertIsNone(get_oembed_endpoint("https://example.com/watch?V=dQw4w9WgXcQ"))
+            self.assertIsNone(get_oembed_endpoint("https://example.com/WATCH?v=dQw4w9WgXcQ"))
 
     def test_get_oembed_endpoint_matches_first_provider(self) -> None:
         # When two providers match the same URL, the first one registered is preferred.
@@ -406,7 +486,10 @@ class OembedTestCase(ZulipTestCase):
 
         mock_map = compile_oembed_providers(mock_providers)
 
-        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=mock_map,
+        ):
             self.assertEqual(
                 get_oembed_endpoint("https://example.com/video/123"),
                 "https://generic.example.com/oembed",
@@ -436,11 +519,39 @@ class OembedTestCase(ZulipTestCase):
 
         mock_map = compile_oembed_providers(mock_providers)
 
-        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+        with mock.patch(
+            "zerver.lib.url_preview.oembed.get_oembed_endpoint_map",
+            return_value=mock_map,
+        ):
             self.assertEqual(
                 get_oembed_endpoint("https://example.com/video/123"),
                 "https://specific.example.com/oembed",
             )
+
+    def test_get_oembed_endpoint_map_is_memoized(self) -> None:
+        mock_providers: list[dict[str, Any]] = [
+            {
+                "provider_name": "TestProvider",
+                "endpoints": [
+                    {
+                        "schemes": ["https://example.com/video/*"],
+                        "url": "https://example.com/oembed",
+                    }
+                ],
+            }
+        ]
+        get_oembed_endpoint_map.cache_clear()
+        try:
+            with mock.patch(
+                "zerver.lib.url_preview.oembed.load_oembed_providers",
+                return_value=mock_providers,
+            ) as mock_load:
+                first = get_oembed_endpoint_map()
+                second = get_oembed_endpoint_map()
+                self.assertIs(first, second)
+                mock_load.assert_called_once()
+        finally:
+            get_oembed_endpoint_map.cache_clear()
 
 
 class OpenGraphParserTestCase(ZulipTestCase):

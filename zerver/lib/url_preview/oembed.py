@@ -1,7 +1,8 @@
 import json
 import re
-from typing import Any, cast
-from urllib.parse import urlsplit, urlunsplit
+from functools import cache
+from typing import Any, TypeAlias, cast
+from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import requests
@@ -9,6 +10,16 @@ import requests
 from zerver.lib.storage import static_path
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
+# Matches a single valid domain label (1–63 alphanumeric/hyphen characters,
+# starting and ending with an alphanumeric character).
+DOMAIN_LABEL_PATTERN = r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?"
+
+# Keep path wildcards permissive (`.*` rather than `[^/]*`) because some
+# provider schemes use a trailing `*` to match across path segments (e.g.
+# `https://*.youtube.com/shorts*` matching `/shorts/<video_id>`).
+PATH_WILDCARD_PATTERN = r".*"
+
+OembedEndpointMap: TypeAlias = dict[re.Pattern[str], list[tuple[re.Pattern[str], str]]]
 
 
 def load_oembed_providers() -> list[dict[str, Any]]:
@@ -18,35 +29,25 @@ def load_oembed_providers() -> list[dict[str, Any]]:
         return cast(list[dict[str, Any]], orjson.loads(f.read()))
 
 
-def scheme_to_regex(scheme: str) -> str:
-    # The provider list uses `*` as a wildcard, and a leading `://*.` to mean
-    # "with or without a leading subdomain".  Schemes are written with a
-    # single protocol, but oEmbed traffic may use either http or https, so
-    # accept both.
-    host_variants = [scheme]
-    if "://*." in scheme:
-        host_variants.append(scheme.replace("://*.", "://", 1))
-
-    variants: list[str] = []
-    for variant in host_variants:
-        variants.append(variant)
-        if variant.startswith("https://"):
-            variants.append("http://" + variant[len("https://") :])
-        elif variant.startswith("http://"):
-            variants.append("https://" + variant[len("http://") :])
-
-    patterns = []
-    for variant in variants:
-        pattern = re.escape(variant).replace(r"\*", ".*")
-        if not variant.endswith("*"):
-            pattern += "$"
-        patterns.append(pattern)
-
-    return "(?:" + "|".join(patterns) + ")"
+def host_to_regex(host: str) -> str:
+    # A leading `*.` in an oEmbed scheme matches an optional subdomain label
+    # (e.g. `*.youtube.com` matches both `www.youtube.com` and `youtube.com`).
+    if host.startswith("*."):
+        return rf"(?:{DOMAIN_LABEL_PATTERN}\.)?" + re.escape(host[2:]).replace(
+            r"\*", DOMAIN_LABEL_PATTERN
+        )
+    return re.escape(host).replace(r"\*", DOMAIN_LABEL_PATTERN)
 
 
-def compile_oembed_providers(providers: list[dict[str, Any]]) -> dict[re.Pattern[str], str]:
-    endpoint_map: dict[re.Pattern[str], str] = {}
+def path_to_regex(path: str) -> str:
+    return re.escape(path).replace(r"\*", PATH_WILDCARD_PATTERN)
+
+
+def compile_oembed_providers(providers: list[dict[str, Any]]) -> OembedEndpointMap:
+    # Group patterns in two stages: host pattern -> {endpoint_url -> path patterns}.
+    # Scheme protocols (http/https) are validated at match time instead of
+    # duplicating regex variants here.
+    grouped: dict[str, dict[str, list[str]]] = {}
 
     for provider in providers:
         for endpoint in provider.get("endpoints", []):
@@ -57,30 +58,59 @@ def compile_oembed_providers(providers: list[dict[str, Any]]) -> dict[re.Pattern
                 continue
 
             formatted_endpoint = endpoint_url.replace("{format}", "json")
-            joined_patterns = "|".join(scheme_to_regex(s) for s in schemes)
-            regex_str = f"(?:{joined_patterns})"
 
-            compiled_regex = re.compile(regex_str)
-            endpoint_map[compiled_regex] = formatted_endpoint
+            for scheme in schemes:
+                if not scheme.lower().startswith(("http://", "https://")):
+                    continue
 
-    return endpoint_map
+                without_scheme = scheme.split("://", 1)[1]
+                host, sep, rest = without_scheme.partition("/")
+                if not host:
+                    continue
+
+                host_pattern = host_to_regex(host.lower())
+                path_pattern = path_to_regex(sep + rest)
+
+                endpoint_paths = grouped.setdefault(host_pattern, {}).setdefault(
+                    formatted_endpoint, []
+                )
+                if path_pattern not in endpoint_paths:
+                    endpoint_paths.append(path_pattern)
+
+    return {
+        re.compile(host_pattern, re.IGNORECASE): [
+            (re.compile("|".join(path_patterns)), endpoint_url)
+            for endpoint_url, path_patterns in endpoints.items()
+        ]
+        for host_pattern, endpoints in grouped.items()
+    }
 
 
-OEMBED_PROVIDERS = load_oembed_providers()
-OEMBED_ENDPOINT_MAP = compile_oembed_providers(OEMBED_PROVIDERS)
+@cache
+def get_oembed_endpoint_map() -> OembedEndpointMap:
+    return compile_oembed_providers(load_oembed_providers())
 
 
 def get_oembed_endpoint(url: str) -> str | None:
-    # Lowercase the scheme and host so that e.g. HTTPS://YOUTUBE.COM/... still
-    # matches, but leave the path and query alone so that case-sensitive
-    # tokens like literal `?v=` query keys in provider schemes are respected.
-    parsed = urlsplit(url)
-    normalized_url = urlunsplit(
-        parsed._replace(scheme=parsed.scheme.lower(), netloc=parsed.netloc.lower())
-    )
-    for compiled_regex, endpoint_url in OEMBED_ENDPOINT_MAP.items():
-        if compiled_regex.match(normalized_url):
-            return endpoint_url
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return None
+
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        return None
+
+    path_and_query = parsed.path
+    if parsed.query:
+        path_and_query += f"?{parsed.query}"
+    if parsed.fragment:
+        path_and_query += f"#{parsed.fragment}"
+
+    for host_regex, path_matchers in get_oembed_endpoint_map().items():
+        if host_regex.fullmatch(parsed.netloc):
+            for path_regex, endpoint_url in path_matchers:
+                if path_regex.fullmatch(path_and_query):
+                    return endpoint_url
     return None
 
 
@@ -104,7 +134,8 @@ def get_oembed_data(
         "maxwidth": maxwidth,
         "maxheight": maxheight,
     }
-
+    if "format" not in parse_qs(urlsplit(endpoint).query):
+        params["format"] = "json"
 
     try:
         response = session.get(endpoint, params=params)
@@ -114,6 +145,8 @@ def get_oembed_data(
     except (requests.RequestException, json.JSONDecodeError):
         return None
 
+    if not isinstance(data, dict):
+        return None
     oembed_resource_type = data.get("type", "")
     image = data.get("url", data.get("image"))
     thumbnail = data.get("thumbnail_url")
