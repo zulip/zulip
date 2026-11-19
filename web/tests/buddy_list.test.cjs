@@ -459,3 +459,13 @@ run_test("insert_or_move users who are not rendered", ({override}) => {
     buddy_list.insert_or_move([bob.user_id], "");
     assert_sorted_and_rendered(buddy_list, sort_order, 5);
 });
+
+run_test("insert_or_move several users at once", ({override}) => {
+    const sort_order = [];
+    set_sort_order(sort_order, [alice, bob, chris, dave, eve]);
+    const buddy_list = make_buddy_list(override, sort_order, 10);
+
+    set_sort_order(sort_order, [chris, dave, bob, eve, alice]);
+    buddy_list.insert_or_move([bob.user_id, alice.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 5);
+});

@@ -1098,10 +1098,14 @@ export class BuddyList extends BuddyListConf {
 
         const all_participant_ids = this.render_data.get_all_participant_ids();
         const users = buddy_data.get_items_for_users(user_ids);
+        // The old positions of these users may be out of order now, which
+        // would confuse find_position, so remove them all before
+        // inserting any of them.
+        for (const user_id of user_ids) {
+            this.maybe_remove_user_id({user_id});
+        }
         for (const user of users) {
             const user_id = user.user_id;
-
-            this.maybe_remove_user_id({user_id});
 
             if (!buddy_data.matches_filter(user_filter_text, user_id)) {
                 continue;
