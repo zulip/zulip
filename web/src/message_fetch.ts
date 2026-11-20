@@ -102,6 +102,8 @@ const consts = {
     // history, but after that will stop fetching at either
     // maximum_initial_backfill_size messages or
     // target_days_of_history days, whichever comes first.
+    // Spectators only get the initial_backfill_fetch_size batch
+    // automatically.
     minimum_initial_backfill_size: 9000,
     maximum_initial_backfill_size: 25000,
     target_days_of_history: 180,
@@ -770,6 +772,15 @@ export function initialize(finished_initial_fetch: () => void): void {
         }
 
         if (data.found_oldest) {
+            post_initial_backfill_for_all_messages_done();
+            return;
+        }
+
+        // Spectators are usually one-off visitors following a link,
+        // so backfilling older history is a lot of server work for
+        // little benefit. They can still use the "Load more" button
+        // in Recent conversations.
+        if (page_params.is_spectator) {
             post_initial_backfill_for_all_messages_done();
             return;
         }
