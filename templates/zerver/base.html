@@ -42,6 +42,15 @@
     </head>
 
     <body>
+        <a id="skip-navigation" href="#main-content" tabindex="0">{{ _('Skip to main content') }}</a>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const skipLink = document.getElementById('skip-navigation');
+                if (skipLink) {
+                    skipLink.focus();
+                }
+            });
+        </script>
         {% block content %}
         {% endblock %}
 
