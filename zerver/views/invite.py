@@ -18,6 +18,7 @@ from zerver.actions.invites import (
     do_send_user_invite_email,
 )
 from zerver.decorator import require_human_non_guest_user
+from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
@@ -155,6 +156,9 @@ def invite_users_backend(
         ),
     ] = None,
 ) -> HttpResponse:
+    if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+        check_demo_organization_has_set_email(user_profile.realm)
+
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -256,6 +260,9 @@ def revoke_multiuse_invite(
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
+    if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+        check_demo_organization_has_set_email(user_profile.realm)
+
     prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
     return json_success(request)
@@ -282,6 +289,9 @@ def generate_multiuse_invite_backend(
         ),
     ] = None,
 ) -> HttpResponse:
+    if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+        check_demo_organization_has_set_email(user_profile.realm)
+
     if stream_ids is None:
         stream_ids = []
     if not user_profile.can_create_multiuse_invite_to_realm():
