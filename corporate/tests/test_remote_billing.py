@@ -1152,16 +1152,18 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Server still has no plan.
         self.assertIsNone(get_current_plan_by_customer(server_customer))
 
-        # CASE: Server has complimentary access plan but all realms are deactivated.
+        # CASE: Server has complimentary access plan, but the push bouncer has
+        # no realm of it that could receive the plan. This happens while a realm
+        # that was deactivated when the server last reported analytics is active
+        # again, since a user can only log in from a realm that is active here.
         start_date = timezone_now()
         end_date = add_months(timezone_now(), 10)
         server_billing_session = RemoteServerBillingSession(self.server)
         server_billing_session.create_complimentary_access_plan(start_date, end_date)
-        # All realms are deactivated.
-        Realm.objects.all().update(deactivated=True)
 
         # Send server data to push bouncer.
         send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        RemoteRealm.objects.filter(server=self.server).update(realm_deactivated=True)
 
         # Login to plan management.
         result = self.execute_remote_billing_authentication_flow(
@@ -1177,7 +1179,7 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         self.assertEqual(server_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
         self.assertEqual(server_plan.status, CustomerPlan.ACTIVE)
 
-        # CASE: Server has business plan but all realms are deactivated.
+        # CASE: Same, for a server on a business plan.
         server_plan.tier = CustomerPlan.TIER_SELF_HOSTED_BUSINESS
         server_plan.save(update_fields=["tier"])
         self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
