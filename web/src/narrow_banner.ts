@@ -81,6 +81,8 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
     ),
 };
 
+const LOADING_USER_NAME_HTML = '<span class="loading-shimmer"></span>';
+
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
 const NO_SEARCH_RESULTS_TITLE_HTML = $t_html(
     {
@@ -113,6 +115,20 @@ function get_no_search_results_title(
     }
 
     return {title: NO_SEARCH_RESULTS_TITLE};
+}
+
+// A title that names a user is plain text. For a placeholder user it
+// shows a loading shimmer in place of the name, so it is HTML.
+function get_title_naming_user(
+    is_placeholder_user: boolean,
+    title: string,
+    title_html_for_placeholder_user: string,
+): {title: string} | {title_html: string} {
+    if (is_placeholder_user) {
+        return {title_html: title_html_for_placeholder_user};
+    }
+
+    return {title};
 }
 
 function empty_search_query_banner(
@@ -490,11 +506,21 @@ export function pick_empty_narrow_banner(
                     };
                 }
                 return {
-                    title: $t(
-                        {
-                            defaultMessage: "You have no direct messages with {person} yet.",
-                        },
-                        {person: people.get_full_name(user_id)},
+                    ...get_title_naming_user(
+                        people.is_placeholder_user(user_id),
+                        $t(
+                            {
+                                defaultMessage: "You have no direct messages with {person} yet.",
+                            },
+                            {person: people.get_full_name(user_id)},
+                        ),
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "You have no direct messages with <z-user></z-user> yet.",
+                            },
+                            {"z-user": () => LOADING_USER_NAME_HTML},
+                        ),
                     ),
                     html: $t_html(
                         {
@@ -533,12 +559,22 @@ export function pick_empty_narrow_banner(
             const sender = people.maybe_get_user_by_id(first_term.operand, true);
             if (sender) {
                 return {
-                    title: $t(
-                        {
-                            defaultMessage:
-                                "You haven't received any messages sent by {person} yet.",
-                        },
-                        {person: sender.full_name},
+                    ...get_title_naming_user(
+                        sender.is_placeholder_user ?? false,
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You haven't received any messages sent by {person} yet.",
+                            },
+                            {person: sender.full_name},
+                        ),
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "You haven't received any messages sent by <z-user></z-user> yet.",
+                            },
+                            {"z-user": () => LOADING_USER_NAME_HTML},
+                        ),
                     ),
                     show_action: show_search_shared_history,
                 };
@@ -588,12 +624,36 @@ export function pick_empty_narrow_banner(
                     }),
                 };
             }
+            if (valid_people_in_dms.length === 1 && valid_people_in_dms[0]!.is_placeholder_user) {
+                return {
+                    title_html: $t_html(
+                        {
+                            defaultMessage:
+                                "You have no direct messages including <z-user></z-user> yet.",
+                        },
+                        {"z-user": () => LOADING_USER_NAME_HTML},
+                    ),
+                };
+            }
+            const first_placeholder_user = valid_people_in_dms.find(
+                (user) => user.is_placeholder_user,
+            );
             return {
                 title: $t(
                     {
                         defaultMessage: "You have no direct messages including {people} yet.",
                     },
-                    {people: valid_people_in_dms.map((user) => user.full_name).join(", ")},
+                    {
+                        // This view shows the real name of a muted user
+                        // too, so every placeholder user counts as loading.
+                        people: valid_people_in_dms
+                            .filter(
+                                (user) =>
+                                    !user.is_placeholder_user || user === first_placeholder_user,
+                            )
+                            .map((user) => user.full_name)
+                            .join(", "),
+                    },
                 ),
             };
         }
@@ -607,20 +667,32 @@ export function pick_empty_narrow_banner(
                 };
             }
 
+            const history_link_html = (content_html: string[]): string =>
+                `<a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`;
             // mentions:me is redirected to is:mentioned in Filter.parse(),
             // so mentioned_user will never be the current user here.
             return {
-                title_html: $t_html(
-                    {
-                        defaultMessage:
-                            "No messages in <z-link>your message history</z-link> mention {person} yet.",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
-                        person: mentioned_user.full_name,
-                    },
-                ),
+                title_html: mentioned_user.is_placeholder_user
+                    ? $t_html(
+                          {
+                              defaultMessage:
+                                  "No messages in <z-link>your message history</z-link> mention <z-user></z-user> yet.",
+                          },
+                          {
+                              "z-link": history_link_html,
+                              "z-user": () => LOADING_USER_NAME_HTML,
+                          },
+                      )
+                    : $t_html(
+                          {
+                              defaultMessage:
+                                  "No messages in <z-link>your message history</z-link> mention {person} yet.",
+                          },
+                          {
+                              "z-link": history_link_html,
+                              person: mentioned_user.full_name,
+                          },
+                      ),
                 show_action: show_search_shared_history,
             };
         }
@@ -659,4 +731,32 @@ export function show_empty_narrow_message(current_filter: Filter, invalid_narrow
 
 export function hide_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
+}
+
+// The users that the banner for an empty view of this filter names.
+function get_user_ids_named_in_banner(current_filter: Filter): number[] {
+    return [
+        ...current_filter.terms_with_operator("dm").flatMap((term) => term.operand),
+        ...current_filter.terms_with_operator("dm-including").flatMap((term) => term.operand),
+        ...current_filter.terms_with_operator("sender").map((term) => term.operand),
+        ...current_filter.terms_with_operator("mentions").map((term) => term.operand),
+    ];
+}
+
+// The banner for an empty view can name users, so it has to be
+// redrawn once their data arrives.
+export function handle_users_fetched(user_ids: number[]): void {
+    const current_filter = message_lists.current?.data.filter;
+    if (current_filter === undefined) {
+        return;
+    }
+    if ($(".empty_feed_notice_main").is(":empty")) {
+        return;
+    }
+    const names_fetched_user = get_user_ids_named_in_banner(current_filter).some((user_id) =>
+        user_ids.includes(user_id),
+    );
+    if (names_fetched_user) {
+        show_empty_narrow_message(current_filter);
+    }
 }

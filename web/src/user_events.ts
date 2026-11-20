@@ -14,6 +14,7 @@ import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
+import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
@@ -324,6 +325,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     submessage.rerender_widgets_in_current_list();
     if (narrow_state.is_message_feed_visible()) {
         narrow_title.update_narrow_title(narrow_state.filter());
+        narrow_banner.handle_users_fetched(user_ids);
     }
 }
 

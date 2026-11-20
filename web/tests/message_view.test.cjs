@@ -542,6 +542,25 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         ),
     );
 
+    // direct messages with a user whose data hasn't loaded yet
+    const placeholder_user = make_user({
+        email: "placeholder@example.com",
+        user_id: 26,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user, "server_events");
+    current_filter = set_filter([["dm", [placeholder_user.user_id]]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            undefined,
+            'translated: You have no direct messages with <span class="loading-shimmer"></span> yet.',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
     // sending direct messages to deactivated user
     override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
@@ -832,6 +851,179 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
 run_test("hide_empty_narrow_message", () => {
     narrow_banner.hide_empty_narrow_message();
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
+});
+
+run_test("handle_users_fetched", ({mock_template, override}) => {
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    const user_id = 27;
+    people.add_active_user(
+        make_user({
+            email: "polly@example.com",
+            user_id,
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
+    const shimmer_banner = empty_narrow_html(
+        undefined,
+        'translated: You have no direct messages with <span class="loading-shimmer"></span> yet.',
+        'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+    );
+
+    const $banner = $(".empty_feed_notice_main");
+    // Nothing to redraw without a current message list.
+    narrow_banner.hide_empty_narrow_message();
+    $banner.set_matches(":empty", true);
+    message_lists.current = undefined;
+    narrow_banner.handle_users_fetched([user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), "");
+
+    const dm_filter = set_filter([["dm", [user_id]]]);
+    message_lists.current = new MessageList({
+        data: new MessageListData({excludes_muted_topics: false, filter: dm_filter}),
+    });
+    // Nothing to redraw while no banner is showing.
+    narrow_banner.handle_users_fetched([user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), "");
+
+    narrow_banner.show_empty_narrow_message(dm_filter);
+    $banner.set_matches(":empty", false);
+    assert.equal($(".empty_feed_notice_main").html(), shimmer_banner);
+
+    // The banner doesn't name other users.
+    people.add_active_user(make_user({email: "polly@example.com", user_id, full_name: "Polly"}));
+    narrow_banner.handle_users_fetched([alice.user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), shimmer_banner);
+
+    narrow_banner.handle_users_fetched([user_id]);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with Polly yet.",
+            undefined,
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    // Views that name no user are not redrawn.
+    message_lists.current = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: set_filter([["is", "starred"]]),
+        }),
+    });
+    narrow_banner.handle_users_fetched([user_id]);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with Polly yet.",
+            undefined,
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+});
+
+run_test("empty views that name placeholder users", ({mock_template, override}) => {
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    const user_id = 28;
+    const add_user = (opts) => {
+        people.add_active_user(make_user({email: "quinn@example.com", user_id, ...opts}));
+    };
+    const shimmer_html = '<span class="loading-shimmer"></span>';
+    const history_link_html =
+        '<a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>';
+    const $banner = $(".empty_feed_notice_main");
+    $banner.set_matches(":empty", false);
+
+    // Each view shows a shimmer in place of the name, and is redrawn
+    // with the name once the user's data arrives.
+    const cases = [
+        {
+            terms: [["sender", user_id]],
+            loading: empty_narrow_html(
+                undefined,
+                `translated: You haven't received any messages sent by ${shimmer_html} yet.`,
+                undefined,
+                undefined,
+                true,
+            ),
+            loaded: empty_narrow_html(
+                "translated: You haven't received any messages sent by Quinn yet.",
+                undefined,
+                undefined,
+                undefined,
+                true,
+            ),
+        },
+        {
+            terms: [["dm-including", [user_id]]],
+            loading: empty_narrow_html(
+                undefined,
+                `translated: You have no direct messages including ${shimmer_html} yet.`,
+            ),
+            loaded: empty_narrow_html(
+                "translated: You have no direct messages including Quinn yet.",
+            ),
+        },
+        {
+            terms: [["mentions", user_id]],
+            loading: empty_narrow_html(
+                undefined,
+                `translated: No messages in ${history_link_html} mention ${shimmer_html} yet.`,
+                undefined,
+                undefined,
+                true,
+            ),
+            loaded: empty_narrow_html(
+                undefined,
+                `translated: No messages in ${history_link_html} mention Quinn yet.`,
+                undefined,
+                undefined,
+                true,
+            ),
+        },
+    ];
+    for (const {terms, loading, loaded} of cases) {
+        add_user({full_name: "Loading…", is_placeholder_user: true});
+        const filter = set_filter(terms);
+        message_lists.current = new MessageList({
+            data: new MessageListData({excludes_muted_topics: false, filter}),
+        });
+        narrow_banner.show_empty_narrow_message(filter);
+        assert.equal($banner.html(), loading);
+
+        add_user({full_name: "Quinn"});
+        narrow_banner.handle_users_fetched([alice.user_id]);
+        assert.equal($banner.html(), loading);
+        narrow_banner.handle_users_fetched([user_id]);
+        assert.equal($banner.html(), loaded);
+    }
+
+    // A view that lists several users shows one "Loading…" for all
+    // of them whose names are loading.
+    add_user({full_name: "Loading…", is_placeholder_user: true});
+    people.add_active_user(
+        make_user({
+            email: "rory@example.com",
+            user_id: 29,
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
+    narrow_banner.show_empty_narrow_message(
+        set_filter([["dm-including", [alice.user_id, user_id, 29]]]),
+    );
+    assert.equal(
+        $banner.html(),
+        empty_narrow_html(
+            "translated: You have no direct messages including Alice Smith, Loading… yet.",
+        ),
+    );
 });
 
 run_test("show_search_stopwords", ({mock_template, override}) => {
