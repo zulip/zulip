@@ -127,6 +127,9 @@ mock_esm("../src/settings_invites", {
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_reply_button() {},
 });
+const narrow_banner = mock_esm("../src/narrow_banner", {
+    refresh_after_users_fetched() {},
+});
 const narrow_title = mock_esm("../src/narrow_title", {
     update_narrow_title() {},
 });
@@ -564,6 +567,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     override(narrow_title, "update_narrow_title", (filter) => {
         narrow_title_filter = filter;
     });
+    let narrow_banner_user_ids;
+    override(narrow_banner, "refresh_after_users_fetched", (user_ids) => {
+        narrow_banner_user_ids = user_ids;
+    });
 
     const isaac = make_user({
         email: "isaac@example.com",
@@ -589,6 +596,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     assert.ok(compose_placeholder_text_updated);
     assert.ok(reply_button_updated);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
+    assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
     assert.equal($navbar_title.text(), "Isaac Newton");
     assert.deepEqual(full_name_updates, [{user_id: 32, full_name: "Isaac Newton"}]);
     assert.deepEqual(avatar_updates, [{user_id: 32, avatar_url: "isaac-avatar-url"}]);

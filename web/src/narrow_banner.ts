@@ -673,3 +673,19 @@ export function show_empty_narrow_message(current_filter: Filter, invalid_narrow
 export function hide_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
 }
+
+// The banner for an empty DM view names the other user, so it has to
+// be redrawn once their data arrives.
+export function refresh_after_users_fetched(user_ids: number[]): void {
+    const current_filter = message_lists.current?.data.filter;
+    const dm_user_ids = current_filter?.terms_with_operator("dm")[0]?.operand;
+    if (
+        current_filter === undefined ||
+        dm_user_ids === undefined ||
+        $(".empty_feed_notice_main").is(":empty") ||
+        !dm_user_ids.some((user_id) => user_ids.includes(user_id))
+    ) {
+        return;
+    }
+    show_empty_narrow_message(current_filter);
+}
