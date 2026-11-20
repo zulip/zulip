@@ -14,7 +14,7 @@ either `SELECT ... FOR NO KEY UPDATE` or `SELECT ... FOR UPDATE` queries,
 depending on the `no_key` boolean argument passed to `select_for_update()`. The
 key decision at each call site is choosing the appropriate lock strength.
 
-[django-select-for-update-doc]: https://docs.djangoproject.com/en/5.0/ref/models/querysets/#select-for-update
+[django-select-for-update-doc]: https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update
 
 ### What select_for_update() does
 
