@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 import time_machine
 from django.conf import settings
+from django.core import mail
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -1981,6 +1982,73 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 ["Realm reactivation email sent to admins of lear"], result
             )
+
+    def test_deactivate_demo_organization_owner_email_not_configured(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        demo_realm = demo_owner_account.realm
+        assert isinstance(demo_realm, Realm)
+        self.assertEqual(demo_realm.deactivated, False)
+
+        self.login("iago")
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{demo_realm.id}",
+                "status": "deactivated",
+                "deactivation_reason": "tos_violation",
+            },
+        )
+        self.assert_in_success_response([f"{demo_realm.subdomain} deactivated"], result)
+        demo_realm.refresh_from_db()
+        self.assertEqual(demo_realm.deactivated, True)
+
+        # No email is sent because owner has no email configured.
+        self.assert_length(mail.outbox, 0)
+
+        # Support staff can scrub the deactivated demo organization,
+        # but the option to send reactivation email is not shown.
+        result = self.client_get("/activity/support", {"q": f"{demo_realm.subdomain}"})
+        self.assert_in_success_response(["Scrub realm"], result)
+        self.assert_not_in_success_response(["Reactivate"], result)
+
+    def test_deactivate_demo_organization_owner_email_configured(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        demo_realm = demo_owner_account.realm
+        assert isinstance(demo_realm, Realm)
+        self.assertEqual(demo_realm.deactivated, False)
+
+        # Set an email for the demo organization owner's account.
+        demo_owner_account.delivery_email = "demo-owner@example.com"
+        demo_owner_account.save()
+
+        self.login("iago")
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{demo_realm.id}",
+                "status": "deactivated",
+                "deactivation_reason": "tos_violation",
+            },
+        )
+        self.assert_in_success_response([f"{demo_realm.subdomain} deactivated"], result)
+        demo_realm.refresh_from_db()
+        self.assertEqual(demo_realm.deactivated, True)
+
+        # Deactivation email is sent to demo organization owner.
+        self.assert_length(mail.outbox, 1)
+        self.assertIn(
+            f"Your Zulip organization {demo_realm.name} has been deactivated",
+            mail.outbox[0].subject,
+        )
+        self.assertIn(
+            f"Your Zulip demo organization, {demo_realm.name}, was deactivated on",
+            mail.outbox[0].body,
+        )
+
+        # Support staff can scrub the demo organization or send
+        # reactivation email to owner.
+        result = self.client_get("/activity/support", {"q": f"{demo_realm.subdomain}"})
+        self.assert_in_success_response(["Reactivate", "Scrub realm"], result)
 
     def test_change_subdomain(self) -> None:
         cordelia = self.example_user("cordelia")
