@@ -2341,6 +2341,45 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             realm_welcome_message_custom_text, received_welcome_bot_custom_message.content
         )
 
+    def test_invite_demo_organization_restrictions(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
+        invitee = "demo-invitee@zulip.com"
+
+        # Invitations are restricted before demo organization owner email set.
+        result = self.invite(invitee, [], realm=realm)
+        self.assert_json_error(result, "Configure owner account email address.")
+        result = self.client_post("/json/invites/multiuse", subdomain=realm.subdomain)
+        self.assert_json_error(result, "Configure owner account email address.")
+        self.assertFalse(PreregistrationUser.objects.filter(realm=realm).exists())
+        self.assertFalse(MultiuseInvite.objects.filter(realm=realm).exists())
+        self.check_sent_emails([])
+
+        # Set owner email account.
+        demo_owner_account.delivery_email = "demo-owner-test@zulip.com"
+        demo_owner_account.save()
+
+        with self.assertLogs(level="INFO") as m:
+            self.assert_json_success(self.invite(invitee, [], realm=realm))
+        # The flags in these log lines depend on the randomly generated
+        # demo organization name, so we don't check the full lines.
+        self.assert_length(m.output, 2)
+        for output in m.output:
+            self.assertIn("inviting 1 more, have 0 recent", output)
+        self.check_sent_emails([invitee], clear=True)
+        result = self.client_post("/json/invites/multiuse", subdomain=realm.subdomain)
+        self.assert_json_success(result)
+
+        # Resending an existing invitation is also restricted.
+        demo_owner_account.delivery_email = ""
+        demo_owner_account.save()
+        prereg_user = PreregistrationUser.objects.get(email=invitee, realm=realm)
+        result = self.client_post(
+            f"/json/invites/{prereg_user.id}/resend", subdomain=realm.subdomain
+        )
+        self.assert_json_error(result, "Configure owner account email address.")
+        self.check_sent_emails([])
+
 
 class InvitationsTestCase(InviteUserBase):
     def test_do_get_invites_controlled_by_user(self) -> None:
