@@ -28,6 +28,8 @@ Get GoCD notifications in Zulip!
 
 ![](/static/images/integrations/gocd/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related Branches
 
 - [GoCD plugin user guide][3]

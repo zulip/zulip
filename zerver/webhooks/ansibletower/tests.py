@@ -168,3 +168,13 @@ Job: [#2722 System - Updates - Ubuntu](http://awx.example.co.uk/#/jobs/playbook/
         )
 
         self.check_webhook("system_job_failed", expected_topic_name, expected_message)
+
+    def test_event_filtering(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["failed"]'
+        self.test_ansibletower_project_update_failed_message()
+
+        self.url = f'{self.build_webhook_url()}&only_events=["successful"]'
+        self.check_webhook("project_update_failed", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["failed"]'
+        self.check_webhook("project_update_failed", expect_noop=True)

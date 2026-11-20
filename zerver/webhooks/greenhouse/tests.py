@@ -74,3 +74,13 @@ New Prospect Application Trisha Troy (ID: 968190), applying for:
         result = self.client_post(self.url, payload, content_type=self.CONTENT_TYPE)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
+
+    def test_event_filtering(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["hire_candidate"]'
+        self.test_message_candidate_hired()
+
+        self.url = f'{self.build_webhook_url()}&only_events=["reject_candidate"]'
+        self.check_webhook("candidate_hired", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["hire_candidate"]'
+        self.check_webhook("candidate_hired", expect_noop=True)

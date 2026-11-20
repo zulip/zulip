@@ -19,9 +19,12 @@ CODESHIP_STATUS_MAPPER = {
     "error": "failed",
     "success": "succeeded",
 }
+# Build statuses Codeship documents; a build with any other status is still
+# posted, but cannot be selected by only_events / exclude_events.
+ALL_EVENT_TYPES = list(CODESHIP_STATUS_MAPPER)
 
 
-@webhook_view("Codeship")
+@webhook_view("Codeship", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_codeship_webhook(
     request: HttpRequest,
@@ -32,9 +35,17 @@ def api_codeship_webhook(
     payload = payload["build"]
     topic_name = get_topic_for_http_request(payload)
     body = get_body_for_http_request(payload)
+    event = get_event_type(payload)
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
+
+
+def get_event_type(payload: WildValue) -> str | None:
+    build_status = payload["status"].tame(check_string)
+    if build_status in ALL_EVENT_TYPES:
+        return build_status
+    return None
 
 
 def get_topic_for_http_request(payload: WildValue) -> str:

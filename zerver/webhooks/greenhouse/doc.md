@@ -27,6 +27,8 @@ Receive Greenhouse notifications in Zulip!
 
 ![](/static/images/integrations/greenhouse/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}
