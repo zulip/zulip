@@ -14,8 +14,15 @@ import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {TaskData} from "./todo_data.ts";
+import * as util from "./util.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
+
+// The HTML each task label element was rendered from, so that updates
+// can skip labels whose content hasn't changed. It's keyed by element
+// rather than by task, since a message's widget can be rendered in
+// more than one message list.
+const task_label_html_by_element = new WeakMap<HTMLElement, string>();
 
 function get_task_key($task_list_item: JQuery): string {
     const key = $task_list_item.attr("data-key");
@@ -268,13 +275,22 @@ export function render({
         }
         for (const task of task_data.get_widget_data().all_tasks) {
             const $task_list_item = task_list_items_by_key.get(task.key);
+            const task_label_html = render_widgets_todo_widget_task_label(task);
             if ($task_list_item === undefined) {
-                $task_list.append($(render_widgets_todo_widget_task(task)));
+                const $new_task_list_item = $(render_widgets_todo_widget_task(task));
+                task_label_html_by_element.set(
+                    util.the($new_task_list_item.find(".todo-task")),
+                    task_label_html,
+                );
+                $task_list.append($new_task_list_item);
             } else {
                 $task_list_item.find("input.task").prop("checked", task.completed);
-                $task_list_item
-                    .find(".todo-task")
-                    .replaceWith($(render_widgets_todo_widget_task_label(task)));
+                const $task_label = $task_list_item.find(".todo-task");
+                if (task_label_html_by_element.get(util.the($task_label)) !== task_label_html) {
+                    const $new_task_label = $(task_label_html);
+                    task_label_html_by_element.set(util.the($new_task_label), task_label_html);
+                    $task_label.replaceWith($new_task_label);
+                }
             }
         }
         $elem.find(".add-task-bar .widget-error").text("");
