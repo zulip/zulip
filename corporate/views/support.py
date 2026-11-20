@@ -43,6 +43,7 @@ from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
 from zerver.lib.captcha import CaptchaFormMixin
+from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.send_email import FromAddress, send_email
@@ -573,11 +574,16 @@ def support(
                 )
             elif status == "deactivated":
                 assert deactivation_reason is not None
+                email_owners = True
+                # Allows support staff to deactivate demo organizations without
+                # triggering an error if no email has been set for the owner.
+                if realm.demo_organization_scheduled_deletion_date is not None:
+                    email_owners = demo_organization_owner_email_exists(realm)
                 do_deactivate_realm(
                     realm,
                     acting_user=acting_user,
                     deactivation_reason=deactivation_reason,
-                    email_owners=True,
+                    email_owners=email_owners,
                 )
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif scrub_realm:
