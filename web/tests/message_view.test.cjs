@@ -542,6 +542,25 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         ),
     );
 
+    // direct messages with a user whose data hasn't loaded yet
+    const placeholder_user = make_user({
+        email: "placeholder@example.com",
+        user_id: 26,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user, "server_events");
+    current_filter = set_filter([["dm", [placeholder_user.user_id]]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            undefined,
+            'translated: You have no direct messages with <span class="loading-shimmer"></span> yet.',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
     // sending direct messages to deactivated user
     override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);

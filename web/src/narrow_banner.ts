@@ -489,13 +489,26 @@ export function pick_empty_narrow_banner(
                         ),
                     };
                 }
+                const title_data = people.is_placeholder_user(user_id)
+                    ? {
+                          title_html: $t_html(
+                              {
+                                  defaultMessage:
+                                      "You have no direct messages with <z-user></z-user> yet.",
+                              },
+                              {"z-user": () => '<span class="loading-shimmer"></span>'},
+                          ),
+                      }
+                    : {
+                          title: $t(
+                              {
+                                  defaultMessage: "You have no direct messages with {person} yet.",
+                              },
+                              {person: people.get_full_name(user_id)},
+                          ),
+                      };
                 return {
-                    title: $t(
-                        {
-                            defaultMessage: "You have no direct messages with {person} yet.",
-                        },
-                        {person: people.get_full_name(user_id)},
-                    ),
+                    ...title_data,
                     html: $t_html(
                         {
                             defaultMessage: "Why not <z-link>start the conversation</z-link>?",
