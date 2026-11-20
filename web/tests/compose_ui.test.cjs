@@ -302,6 +302,20 @@ run_test("compute_placeholder_text", ({override, override_rewire}) => {
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),
     );
+
+    // A recipient whose data hasn't loaded yet has no name to show.
+    const placeholder_user = make_user({
+        email: "placeholder@zulip.com",
+        user_id: 103,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user);
+    opts.direct_message_user_ids = [alice.user_id, placeholder_user.user_id];
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Compose your message here"}),
+    );
 });
 
 run_test("reverse_linkify_text", () => {

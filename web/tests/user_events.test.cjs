@@ -53,7 +53,8 @@ const buddy_list = mock_esm("../src/buddy_list", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     update_user_pill_active_status() {},
 });
-mock_esm("../src/compose_recipient", {
+const compose_recipient = mock_esm("../src/compose_recipient", {
+    update_compose_area_placeholder_text() {},
     update_user_name_in_compose() {},
 });
 const pm_list = mock_esm("../src/pm_list", {
@@ -525,6 +526,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     override(submessage, "rerender_widgets_in_current_list", () => {
         widgets_rerendered = true;
     });
+    let compose_placeholder_text_updated = false;
+    override(compose_recipient, "update_compose_area_placeholder_text", () => {
+        compose_placeholder_text_updated = true;
+    });
     let reply_button_updated = false;
     override(compose_closed_ui, "update_reply_button", () => {
         reply_button_updated = true;
@@ -565,6 +570,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
 
     assert.ok(pm_list_updated);
     assert.ok(widgets_rerendered);
+    assert.ok(compose_placeholder_text_updated);
     assert.ok(reply_button_updated);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
