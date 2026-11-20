@@ -400,8 +400,8 @@ p.n-margin {
     outline: none;
     padding: 5px 12px;
     z-index: 200;
-    transition: top 0.1s ease-in-out;
 }
+
 
 #skip-navigation:focus,
 #skip-navigation:focus-visible {
