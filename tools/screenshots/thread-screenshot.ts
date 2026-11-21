@@ -10,7 +10,7 @@ import * as puppeteer from "puppeteer";
 import * as z from "zod/mini";
 
 const usage =
-    "Usage: thread-screenshot.ts <narrow_uri> <narrow> <message_id> <image_path> <realm_url>";
+    "Usage: thread-screenshot.ts <narrow_url> <narrow> <message_id> <image_path> <realm_url>";
 const {
     values: {help},
     positionals,
@@ -34,7 +34,7 @@ if (!parsed.success) {
     console.error(usage);
     process.exit(1);
 }
-const [narrowUri, narrow, messageId, imagePath, realmUrl] = parsed.data;
+const [narrowUrl, narrow, messageId, imagePath, realmUrl] = parsed.data;
 
 console.log(`Capturing screenshot for ${narrow} to ${imagePath}`);
 
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
         await page.click(top_banner_close_button_selector);
 
         // Navigate to message and capture screenshot
-        await page.goto(narrowUri, {
+        await page.goto(narrowUrl, {
             waitUntil: "networkidle2",
         });
         const message_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
