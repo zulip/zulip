@@ -2529,6 +2529,23 @@ class StreamMessagesTest(ZulipTestCase):
             ).flags.topic_wildcard_mentioned.is_set
         )
 
+    def test_stream_wildcard_mention_after_unclosed_mention_syntax(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Test stream"
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(hamlet, stream_name)
+        do_change_user_setting(cordelia, "wildcard_mentions_notify", True, acting_user=None)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                stream_name,
+                content="1>@** see @**all**",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertIn(cordelia.id, events[0]["event"]["stream_wildcard_mention_user_ids"])
+
     def test_user_group_mentions_via_subgroup(self) -> None:
         user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")

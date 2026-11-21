@@ -2693,6 +2693,16 @@ class MarkdownMentionTest(ZulipTestCase):
                 f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
             )
 
+        # ">" only counts as a mention boundary when it is a blockquote marker.
+        rendering_result = render_message_markdown(msg, "x>@**King Hamlet**")
+        self.assertEqual(
+            rendering_result.rendered_content, "<p>x&gt;@<strong>King Hamlet</strong></p>"
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+        rendering_result = render_message_markdown(msg, "text>@**all**")
+        self.assertEqual(rendering_result.rendered_content, "<p>text&gt;@<strong>all</strong></p>")
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
+
     def test_mention_get_user_ids(self) -> None:
         # possible_mentions() does NOT differentiate between silent and
         # non-silent mentions, unlike possible_user_group_mentions().
@@ -2854,6 +2864,16 @@ class MarkdownMentionTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
 
+        content = "x>@** see @**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>x&gt;@** see <span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
+
     def test_invalid_mention_not_uses_valid_mention_data(self) -> None:
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
@@ -2931,6 +2951,9 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("@**topic**", set(), True)
         assert_mentions("@**all**", set(), False, True)
         assert_mentions("smush@**steve**smush", set())
+        assert_mentions(">@**King Hamlet**", {"King Hamlet"})
+        assert_mentions(">@**all**", set(), False, True)
+        self.assertTrue(possible_mentions("1>@** see @**all**").message_has_stream_wildcards)
 
         assert_mentions(
             f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234**, @_**othello** @**all**",
@@ -3018,6 +3041,14 @@ class MarkdownMentionTest(ZulipTestCase):
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, expected)
         self.assertEqual(rendering_result.mentions_user_ids, set())
+        content = ">@**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(rendering_result.rendered_content, expected)
+        self.assertEqual(rendering_result.mentions_user_ids, set())
+        content = ">@_**King Hamlet**"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(rendering_result.rendered_content, expected)
+        self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_stream_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
@@ -3039,8 +3070,21 @@ class MarkdownMentionTest(ZulipTestCase):
         for wildcard in stream_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f">@**{wildcard}**", wildcard)
+            assert_silent_mention(f">@_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
             assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
+
+        expected = (
+            "<blockquote>\n<blockquote>\n<p>"
+            '<span class="user-mention channel-wildcard-mention silent" data-user-id="*">all</span>'
+            "</p>\n</blockquote>\n</blockquote>"
+        )
+        for content in ["> > @**all**", ">>@**all**", "> >@**all**"]:
+            rendering_result = render_message_markdown(message, content)
+            self.assertEqual(rendering_result.rendered_content, expected)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
     def test_topic_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
@@ -3062,6 +3106,8 @@ class MarkdownMentionTest(ZulipTestCase):
         for wildcard in topic_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f">@**{wildcard}**", wildcard)
+            assert_silent_mention(f">@_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
             assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
 
@@ -3208,6 +3254,16 @@ class MarkdownMentionTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
         self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
 
+        content = "x>@* see @*support*"
+        rendering_result = render_message_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            '<p>x&gt;@* see <span class="user-group-mention" '
+            f'data-user-group-id="{user_group.id}">'
+            "@support</span></p>",
+        )
+        self.assertEqual(rendering_result.mentions_user_group_ids, {user_group.id})
+
     def test_user_group_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
@@ -3249,6 +3305,10 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("boring", dict())
         assert_mentions("@**all**", dict())
         assert_mentions("smush@*steve*smush", dict())
+        assert_mentions(">@*backend*", {"backend": "non-silent"})
+        self.assertEqual(
+            possible_user_group_mentions("x>@* see @*backend*")["backend"], "non-silent"
+        )
 
         # capture only the group mention among other mentions.
         assert_mentions(
@@ -3438,6 +3498,8 @@ class MarkdownMentionTest(ZulipTestCase):
 
         assert_silent_mention("> @*backend*")
         assert_silent_mention("> @_*backend*")
+        assert_silent_mention(">@*backend*")
+        assert_silent_mention(">@_*backend*")
         assert_silent_mention("```quote\n@*backend*\n```")
         assert_silent_mention("```quote\n@_*backend*\n```")
 
