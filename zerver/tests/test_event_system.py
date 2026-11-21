@@ -21,6 +21,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
+from zerver.lib.narrow import NarrowParameter
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -60,14 +61,28 @@ class EventsEndpointTest(ZulipTestCase):
         user = self.example_user("hamlet")
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
             munge = lambda obj: orjson.dumps(obj).decode()
+            # Legacy list format
             narrow = [["stream", "devel"], ["is", "mentioned"]]
             payload = dict(narrow=munge(narrow))
             result = self.api_post(user, "/api/v1/register", payload)
 
-        # We want the test to abort before actually fetching data.
-        self.assert_json_error(result, "Could not allocate event queue")
+            self.assert_json_error(result, "Could not allocate event queue")
+            self.assertEqual(
+                m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]]
+            )
 
-        self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
+            # Modern dictionary format
+            dict_narrow = [
+                {"operator": "stream", "operand": "devel"},
+                {"operator": "is", "operand": "mentioned"},
+            ]
+            payload = dict(narrow=munge(dict_narrow))
+            result = self.api_post(user, "/api/v1/register", payload)
+
+            self.assert_json_error(result, "Could not allocate event queue")
+            self.assertEqual(
+                m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]]
+            )
 
     def test_invalid_narrow(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -75,12 +90,16 @@ class EventsEndpointTest(ZulipTestCase):
         narrow = [["stream", "devel", True]]
         payload = dict(narrow=orjson.dumps(narrow).decode())
         result = self.api_post(hamlet, "/api/v1/register", payload)
-        self.assert_json_error(result, "narrow[0] is too long (limit: 2 items)")
+        self.assert_json_error(
+            result, "Invalid narrow[0]: Value error, element is not a string pair"
+        )
 
         narrow = [["stream"]]
         payload = dict(narrow=orjson.dumps(narrow).decode())
         result = self.api_post(hamlet, "/api/v1/register", payload)
-        self.assert_json_error(result, "narrow[0] is too short (minimum 2 items)")
+        self.assert_json_error(
+            result, "Invalid narrow[0]: Value error, element is not a string pair"
+        )
 
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
@@ -1685,20 +1704,22 @@ class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def test_use_passed_narrow_no_default(self) -> None:
         self.user_profile.default_events_register_stream_id = None
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [["stream", "my_stream"]])
-        self.assertEqual(result, [["stream", "my_stream"]])
+        passed_narrow = [NarrowParameter(operator="stream", operand="my_stream")]
+        result = _default_narrow(self.user_profile, passed_narrow)
+        self.assertEqual(result, passed_narrow)
 
     def test_use_passed_narrow_with_default(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
-        result = _default_narrow(self.user_profile, [["stream", "my_stream"]])
-        self.assertEqual(result, [["stream", "my_stream"]])
+        passed_narrow = [NarrowParameter(operator="stream", operand="my_stream")]
+        result = _default_narrow(self.user_profile, passed_narrow)
+        self.assertEqual(result, passed_narrow)
 
     def test_use_default_if_narrow_is_empty(self) -> None:
         self.user_profile.default_events_register_stream_id = self.stream.id
         self.user_profile.save()
         result = _default_narrow(self.user_profile, [])
-        self.assertEqual(result, [["stream", "Verona"]])
+        self.assertEqual(result, [NarrowParameter(operator="stream", operand="Verona")])
 
     def test_use_narrow_if_default_is_none(self) -> None:
         self.user_profile.default_events_register_stream_id = None
