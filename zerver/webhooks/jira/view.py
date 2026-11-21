@@ -128,7 +128,11 @@ def get_issue_string(
         r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]).tame(check_string)
     )
     if base_url and len(base_url.groups()):
-        return f"[{text}]({base_url.group(1)}/browse/{issue_id})"
+        # Zulip Markdown has no escaping for link text; brackets in the
+        # issue summary would otherwise terminate the link early (see #20642).
+        # Same approach as get_markdown_link_for_url.
+        link_text = re.sub(r"\[|\]", "", text).strip()
+        return f"[{link_text}]({base_url.group(1)}/browse/{issue_id})"
     else:
         return text
 
