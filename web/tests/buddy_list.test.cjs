@@ -60,6 +60,18 @@ const chris = make_user({
     full_name: "Chris Smith",
 });
 people.add_active_user(chris);
+const dave = make_user({
+    email: "dave@zulip.com",
+    user_id: 25,
+    full_name: "Dave Smith",
+});
+people.add_active_user(dave);
+const eve = make_user({
+    email: "eve@zulip.com",
+    user_id: 30,
+    full_name: "Eve Smith",
+});
+people.add_active_user(eve);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
 
@@ -373,4 +385,87 @@ run_test("scrolling", ({override}) => {
     $(buddy_list.scroll_container_selector).trigger("scroll");
 
     assert.ok(tried_to_fill);
+});
+
+function set_sort_order(sort_order, users) {
+    sort_order.splice(0, sort_order.length, ...users.map((user) => user.user_id));
+}
+
+// Makes a buddy list that sorts users by their position in `sort_order`,
+// on a screen with room for `rows_on_screen` users.
+let padded_rows;
+
+function make_buddy_list(override, sort_order, rows_on_screen) {
+    const buddy_list = new BuddyList();
+    init_simulated_scrolling();
+    stub_buddy_list_elements();
+    override(padded_widget, "update_padding", ({shown_rows, total_rows}) => {
+        padded_rows = {shown_rows, total_rows};
+    });
+    override(background_task, "run_async_function_without_await", noop);
+    override(buddy_list, "items_to_html", () => "<html-stub>");
+    override(buddy_list, "item_to_html", () => "<html-stub>");
+    override(buddy_list, "find_li", () => ({before: noop, remove: noop}));
+    override(buddy_list, "fill_screen_with_content", () => {
+        const rows_to_fill = rows_on_screen - buddy_list.render_count;
+        if (rows_to_fill > 0) {
+            buddy_list.render_more({chunk_size: rows_to_fill});
+        }
+    });
+    override(
+        buddy_list,
+        "compare_function",
+        (a, b) => sort_order.indexOf(a) - sort_order.indexOf(b),
+    );
+    buddy_list.populate({all_user_ids: [...sort_order]});
+    return buddy_list;
+}
+
+function assert_sorted_and_rendered(buddy_list, sort_order, render_count) {
+    assert.deepEqual(buddy_list.all_user_ids, sort_order);
+    assert.equal(buddy_list.render_count, render_count);
+    assert.deepEqual(padded_rows, {shown_rows: render_count, total_rows: sort_order.length});
+    assert.deepEqual(buddy_list.other_users_section.user_ids, sort_order.slice(0, render_count));
+}
+
+run_test("insert_or_move users who are not rendered", ({override}) => {
+    const sort_order = [];
+    set_sort_order(sort_order, [alice, bob, chris, dave, eve]);
+    const buddy_list = make_buddy_list(override, sort_order, 3);
+    assert_sorted_and_rendered(buddy_list, sort_order, 3);
+
+    // Eve isn't rendered yet, and moves to the top.
+    set_sort_order(sort_order, [eve, alice, bob, chris, dave]);
+    buddy_list.insert_or_move([eve.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 4);
+
+    // Alice moves below the rendered users, so she isn't rendered until
+    // the list is scrolled down to her.
+    set_sort_order(sort_order, [eve, bob, chris, dave, alice]);
+    buddy_list.insert_or_move([alice.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 3);
+
+    // When Eve moves below the rendered users, Dave is rendered to fill
+    // the screen.
+    set_sort_order(sort_order, [bob, chris, dave, alice, eve]);
+    buddy_list.insert_or_move([eve.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 3);
+
+    buddy_list.render_more({chunk_size: 10});
+    assert_sorted_and_rendered(buddy_list, sort_order, 5);
+
+    // Once everyone is rendered, users moved to the bottom are rendered.
+    set_sort_order(sort_order, [chris, dave, alice, eve, bob]);
+    buddy_list.insert_or_move([bob.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 5);
+});
+
+run_test("insert_or_move several users at once", ({override}) => {
+    const sort_order = [];
+    set_sort_order(sort_order, [alice, bob, chris, dave, eve]);
+    const buddy_list = make_buddy_list(override, sort_order, 10);
+
+    set_sort_order(sort_order, [chris, dave, bob, eve, alice]);
+    buddy_list.insert_or_move([bob.user_id, alice.user_id], "");
+    assert_sorted_and_rendered(buddy_list, sort_order, 5);
 });
