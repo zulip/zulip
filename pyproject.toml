@@ -94,7 +94,6 @@ prod = [
   # Needed for link preview
   "beautifulsoup4",
   "soupsieve<3.0.0",  # 3.0.0 requires Python ≥ 3.11
-  "pyoembed",
   "python-magic",
 
   # The Zulip API bindings, from its own repository.
@@ -448,7 +447,6 @@ module = [
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
     "onelogin.*",
     "pyinotify.*",
-    "pyoembed.*",
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",

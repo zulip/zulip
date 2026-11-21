@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+import os
+import shutil
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+SRC_PATH = os.path.join(ZULIP_PATH, "node_modules", "oembed-providers", "providers.json")
+OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "oembed-providers.json")
+
+os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+shutil.copyfile(SRC_PATH, OUT_PATH)
