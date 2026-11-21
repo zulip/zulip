@@ -480,18 +480,11 @@ ul.popover-group-menu-member-list {
 }
 
 .emoji-popover-root {
-    /* The emoji popover has a different background color for the
-       header and footer, so we customize the arrow to match this color. */
+    /* The downward arrow touches the footer, which has a different
+       background from the popover. Side arrows get their color from
+       emoji_picker.ts based on the section they touch. */
     .tippy-box[data-placement="top"] .tippy-arrow::before {
         border-top-color: var(--color-border-emoji-picker-tippy-arrow);
-    }
-
-    .tippy-box[data-placement="bottom"] .tippy-arrow::before {
-        border-bottom-color: var(--color-border-emoji-picker-tippy-arrow);
-    }
-
-    .tippy-box[data-placement="left"] .tippy-arrow::before {
-        border-left-color: var(--color-border-emoji-picker-tippy-arrow);
     }
 }
 
