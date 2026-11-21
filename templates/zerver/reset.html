@@ -21,7 +21,7 @@
                 <div class="new-style">
                     <div class="input-box horizontal">
                         <div class="inline-block relative">
-                            <label for="id_email" class="">{{ _('Email') }}</label>
+                            <label for="id_email" class="">{{ _('Email address') }}</label>
                             <input id="id_email" class="required" type="text" name="email"
                               value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
                               maxlength="100" placeholder="{{ _("Enter your email address") }}" autofocus required />
