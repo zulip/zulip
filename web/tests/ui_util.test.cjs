@@ -2,10 +2,30 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
+
+class InputEvent {
+    constructor({inputType, data}) {
+        this.inputType = inputType;
+        this.data = data;
+    }
+}
+set_global("InputEvent", InputEvent);
+class ClipboardEvent {
+    constructor({clipboardData}) {
+        this.clipboardData = clipboardData;
+    }
+}
+set_global("ClipboardEvent", ClipboardEvent);
+class DragEvent {
+    constructor({dataTransfer}) {
+        this.dataTransfer = dataTransfer;
+    }
+}
+set_global("DragEvent", DragEvent);
 
 const ui_util = zrequire("ui_util");
 
@@ -125,4 +145,102 @@ run_test("replace_emoji_name_with_emoji_unicode", () => {
     $emoji.text(":man_cook:");
     blueslip.expect("error", "Invalid unicode codepoint for emoji");
     assert.equal(ui_util.convert_emoji_element_to_unicode($emoji), ":man_cook:");
+});
+
+run_test("set_up_shake_on_length_limit", () => {
+    const $input = $.create("length-limited-input");
+    ui_util.set_up_shake_on_length_limit($input, 5);
+    const shake_class = "input-validation-shake";
+
+    function set_value(value, selection_start = value.length, selection_end = value.length) {
+        $input.val(value);
+        $input[0].setSelectionRange(selection_start, selection_end);
+        $input.removeClass(shake_class);
+    }
+
+    function trigger(event_name, originalEvent) {
+        let default_prevented = false;
+        $input.get_on_handler(event_name)({
+            originalEvent,
+            preventDefault() {
+                default_prevented = true;
+            },
+        });
+        return {shaken: $input.hasClass(shake_class), default_prevented};
+    }
+
+    function insert_text(inputType, data) {
+        return trigger("beforeinput", new InputEvent({inputType, data}));
+    }
+
+    function paste_text(text) {
+        return trigger("paste", new ClipboardEvent({clipboardData: {getData: () => text}}));
+    }
+
+    function drop_text(text) {
+        return trigger("drop", new DragEvent({dataTransfer: {getData: () => text}}));
+    }
+
+    const fits = {shaken: false, default_prevented: false};
+    const truncated = {shaken: true, default_prevented: false};
+    const no_room = {shaken: true, default_prevented: true};
+
+    // Typing that fits, or that replaces a selection, doesn't shake.
+    set_value("abc");
+    assert.deepEqual(insert_text("insertText", "d"), fits);
+    set_value("abcde", 0, 5);
+    assert.deepEqual(insert_text("insertText", "f"), fits);
+    set_value("abcde");
+    assert.deepEqual(insert_text("insertText", "f"), no_room);
+
+    // Other input types, and ones without data, are ignored.
+    set_value("abcde");
+    assert.deepEqual(insert_text("deleteContentBackward", null), fits);
+    assert.deepEqual(insert_text("insertReplacementText", "f"), fits);
+    assert.deepEqual(trigger("beforeinput", {}), fits);
+
+    // A composition is measured against the text kept when it began.
+    set_value("abc");
+    $input.get_on_handler("compositionstart")();
+    set_value("abcxy");
+    assert.deepEqual(insert_text("insertCompositionText", "xy"), fits);
+    assert.deepEqual(insert_text("insertCompositionText", "xyz"), truncated);
+    set_value("abcde");
+    $input.get_on_handler("compositionstart")();
+    assert.deepEqual(insert_text("insertCompositionText", "x"), no_room);
+
+    // A truncated paste shakes; one with no room left is cancelled.
+    set_value("abc");
+    assert.deepEqual(paste_text("de"), fits);
+    set_value("abc");
+    assert.deepEqual(paste_text("defg"), truncated);
+    set_value("abcde");
+    assert.deepEqual(paste_text("f"), no_room);
+    set_value("abcde");
+    assert.deepEqual(paste_text(""), fits);
+    set_value("abcde");
+    assert.deepEqual(trigger("paste", {}), fits);
+
+    // A drop doesn't replace the selection.
+    set_value("ab");
+    assert.deepEqual(drop_text("c"), fits);
+    set_value("abc");
+    assert.deepEqual(drop_text("defg"), truncated);
+    set_value("abcde", 0, 5);
+    assert.deepEqual(drop_text("f"), no_room);
+    set_value("abcde");
+    assert.deepEqual(trigger("drop", {}), fits);
+
+    // Dragging text within the input moves it, so it can't overflow.
+    const drag_handler = $input.get_on_handler("dragstart dragend");
+    drag_handler({type: "dragstart"});
+    set_value("abcde");
+    assert.deepEqual(drop_text("e"), fits);
+    drag_handler({type: "dragend"});
+    set_value("abcde");
+    assert.deepEqual(drop_text("e"), no_room);
+
+    $input.addClass(shake_class);
+    $input.get_on_handler("animationend")();
+    assert.ok(!$input.hasClass(shake_class));
 });
