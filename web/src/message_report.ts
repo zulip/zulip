@@ -117,7 +117,13 @@ function post_process_message_preview($row: JQuery): void {
     // message preview UI.
     const $widget_content = $content.find(".widget-content");
     $widget_content.find("button, input, select").prop("disabled", true);
-    $widget_content.find(".poll-edit-question, .poll-option-bar").hide();
+    $widget_content
+        .find(".poll-edit-question, .poll-option-bar, .todo-edit-task-icon, .todo-task-edit-bar")
+        .hide();
+    // If the author is editing a task in the message feed, show the
+    // task's saved text rather than the edit bar, or any error from it.
+    $widget_content.find(".todo-widget .checkbox").show();
+    $widget_content.find(".todo-widget .widget-error").hide();
 }
 
 export function show_message_report_modal(message: Message): void {

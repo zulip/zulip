@@ -3,9 +3,13 @@
         <h4 class="todo-task-list-title-header">{{t "Task list" }}</h4>
         <button type="button" class="todo-edit-task-list-title" aria-label="{{t 'Edit task list title'}}"><i class="zulip-icon zulip-icon-pencil" aria-hidden="true"></i></button>
         <div class="todo-task-list-title-bar">
-            <input type="text" class="todo-task-list-title" placeholder="{{t 'Add todo task list title'}}" />
-            <button type="button" class="todo-task-list-title-remove" aria-label="{{t 'Cancel edit'}}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
-            <button type="button" class="todo-task-list-title-check" aria-label="{{t 'Save'}}"><i class="zulip-icon zulip-icon-check" aria-hidden="true"></i></button>
+            <div class="todo-task-list-title-inputs-wrapper">
+                <input type="text" class="todo-task-list-title" placeholder="{{t 'Add todo task list title'}}" />
+            </div>
+            <div class="todo-task-list-title-buttons-wrapper">
+                <button type="button" class="todo-task-list-title-remove" aria-label="{{t 'Cancel edit'}}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                <button type="button" class="todo-task-list-title-check" aria-label="{{t 'Save'}}"><i class="zulip-icon zulip-icon-check" aria-hidden="true"></i></button>
+            </div>
         </div>
     </div>
     <ul class="todo-widget">
