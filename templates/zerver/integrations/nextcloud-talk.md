@@ -65,3 +65,4 @@ Talk as your call provider instead.
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Google Meet integration](/integrations/google-meet)
 - [Webex integration](/integrations/webex)
+- [LiveKit integration](/integrations/livekit)
