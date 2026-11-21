@@ -760,7 +760,11 @@ export function parse({
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
     // to prevent misparsing things like "char **x = (char **)y"
-    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
+    // A single character like *a* is also emphasis, as in the backend
+    // (EMPHASIS_RE, which doesn't allow "*" or "^" inside), so we try it
+    // before longer text: "*a* or *b*" is two emphasized letters, not one
+    // emphasis from "a" to "b".
+    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?=[^\s*^])|(?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
