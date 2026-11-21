@@ -29,6 +29,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.markdown.from_html import convert_html_to_markdown
+from zerver.lib.mention import BEFORE_MENTION_ALLOWED_REGEX, stream_wildcards, topic_wildcards
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -210,12 +211,27 @@ def construct_zulip_body(
 ## Sending the Zulip ##
 
 
+# A wildcard mention in an email is usually there by accident (e.g. in a
+# forwarded email), and messages sent via the email gateway may not be
+# allowed to use wildcard mentions, which would drop the whole email. So
+# we send them as silent mentions instead.
+EMAIL_WILDCARD_ALTERNATION = "|".join(sorted(stream_wildcards | topic_wildcards))
+EMAIL_WILDCARD_RE = re.compile(
+    rf"{BEFORE_MENTION_ALLOWED_REGEX}@\*\*(?P<wildcard>{EMAIL_WILDCARD_ALTERNATION})\*\*"
+)
+
+
+def silence_email_gateway_wildcards(content: str) -> str:
+    return EMAIL_WILDCARD_RE.sub(r"@_**\g<wildcard>**", content)
+
+
 def send_zulip(sender: UserProfile, stream: Stream, topic_name: str, content: str) -> None:
+    silenced_content = silence_email_gateway_wildcards(content)
     internal_send_stream_message(
         sender,
         stream,
         truncate_topic(topic_name),
-        normalize_body(content),
+        normalize_body(silenced_content),
         email_gateway=True,
     )
 
