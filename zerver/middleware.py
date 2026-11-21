@@ -1,5 +1,6 @@
 import cProfile
 import logging
+import math
 import os
 import tempfile
 import time
@@ -527,8 +528,11 @@ class RateLimitMiddleware(MiddlewareMixin):
         response["X-RateLimit-Remaining"] = str(remaining_api_calls)
 
         # The full reset time is the maximum of the reset times for the limits that get applied:
-        reset_time = time.time() + max(result.secs_to_freedom for result in rate_limit_results)
-        response["X-RateLimit-Reset"] = str(int(reset_time))
+        secs_to_reset = max(result.secs_to_freedom for result in rate_limit_results)
+        # A rule allowing no requests never resets, so there is no
+        # reset time to report.
+        if not math.isinf(secs_to_reset):
+            response["X-RateLimit-Reset"] = str(int(time.time() + secs_to_reset))
 
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase

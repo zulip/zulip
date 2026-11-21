@@ -1,3 +1,4 @@
+import math
 from enum import Enum, auto
 from typing import Any
 
@@ -276,7 +277,7 @@ class RateLimitedError(JsonableError):
     code = ErrorCode.RATE_LIMIT_HIT
     http_status_code = 429
 
-    def __init__(self, secs_to_freedom: float | None = None) -> None:
+    def __init__(self, secs_to_freedom: float) -> None:
         self.secs_to_freedom = secs_to_freedom
 
     @staticmethod
@@ -286,12 +287,23 @@ class RateLimitedError(JsonableError):
             "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-limiting-response-headers"
         )
 
+    def get_retry_after_num(self) -> int | None:
+        # A rule allowing no requests makes the wait infinite, which
+        # has no integer number of seconds to report.
+        if math.isinf(self.secs_to_freedom):
+            return None
+
+        # Round up, since rounding down would advertise a shorter
+        # wait than the client actually needs to observe.
+        return math.ceil(self.secs_to_freedom)
+
     @property
     @override
     def extra_headers(self) -> dict[str, Any]:
         extra_headers_dict = super().extra_headers
-        if self.secs_to_freedom is not None:
-            extra_headers_dict["Retry-After"] = self.secs_to_freedom
+        retry_after = self.get_retry_after_num()
+        if retry_after is not None:
+            extra_headers_dict["Retry-After"] = retry_after
 
         return extra_headers_dict
 
@@ -299,7 +311,7 @@ class RateLimitedError(JsonableError):
     @override
     def data(self) -> dict[str, Any]:
         data_dict = super().data
-        data_dict["retry-after"] = self.secs_to_freedom
+        data_dict["retry-after"] = self.get_retry_after_num()
 
         return data_dict
 

@@ -275,6 +275,20 @@ class ChangeSettingsTest(ZulipTestCase):
                 result, "You're making too many attempts! Try again in 5 seconds."
             )
 
+        # Half a second later, the remaining wait is fractional; we round
+        # it up, since retrying after 4 seconds would just be blocked again.
+        with mock.patch("time.time", return_value=start_time + 0.5):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ),
+            )
+            self.assert_json_error(
+                result, "You're making too many attempts! Try again in 5 seconds."
+            )
+
         # After time passes, we should be able to succeed if we give the correct password.
         with mock.patch("time.time", return_value=start_time + 11):
             json_result = self.client_patch(
@@ -285,6 +299,20 @@ class ChangeSettingsTest(ZulipTestCase):
                 ),
             )
             self.assert_json_success(json_result)
+
+    @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    def test_wrong_old_password_rate_limiter_allowing_no_requests(self) -> None:
+        self.login("hamlet")
+        # A rule allowing no requests leaves no wait to suggest.
+        with ratelimit_rule(10, 0, domain="authenticate_by_username"):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ),
+            )
+        self.assert_json_error(result, "You're making too many attempts!")
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(

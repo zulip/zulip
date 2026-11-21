@@ -12,7 +12,9 @@
         <p>
             {% trans %}Your server has exceeded the limit for how
             often this action can be performed.{% endtrans %}
+            {% if retry_after_string %}
             {% trans %}You can try again in {{retry_after_string}}.{% endtrans %}
+            {% endif %}
         </p>
     </div>
 </div>
