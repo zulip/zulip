@@ -2,10 +2,12 @@
 
 const assert = require("node:assert/strict");
 
+const {format, parseISO, subDays, subMonths, subWeeks} = require("date-fns");
+
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -123,6 +125,84 @@ test("person_multi_word_completion", () => {
     assert.deepEqual(get_suggestions("dm-including:Ted Smith,Alice Ignore"), [
         `dm-including:${ted.user_id},${alice.user_id}`,
     ]);
+});
+
+test("date_phrase_suggestions", ({override}) => {
+    const today = parseISO("2026-03-31");
+    clock.setSystemTime(today.getTime());
+    const today_str = format(today, "yyyy-MM-dd");
+    const yesterday_str = format(subDays(today, 1), "yyyy-MM-dd");
+    const week_ago = format(subWeeks(today, 1), "yyyy-MM-dd");
+    const month_ago = format(subMonths(today, 1), "yyyy-MM-dd");
+
+    override(narrow_state, "stream_id", noop);
+
+    // Single-token phrases already resolve without squashing a search term.
+    assert.deepEqual(get_suggestions("date:a"), [`date:${week_ago}`, `date:${month_ago}`]);
+    assert.deepEqual(get_suggestions("date:today"), [`date:${today_str}`]);
+    assert.deepEqual(get_suggestions('date:"a week ago"'), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date:ago"), [`date:${week_ago}`, `date:${month_ago}`]);
+
+    // Unquoted multi-word labels become the date pill, not a keyword search.
+    // The split reading (date:a plus a search for the rest) is not offered.
+    assert.deepEqual(get_suggestions("date:a week ago"), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date:a week"), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date:a w"), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date: a week ago"), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date:A Week Ago"), [`date:${week_ago}`]);
+
+    // Words after a finished label belong to the search operator, and that row is first.
+    assert.deepEqual(get_suggestions("date:a week ago bugs"), [`date:${week_ago} bugs`]);
+    assert.deepEqual(get_suggestions("date:a week ago some search text"), [
+        `date:${week_ago} some search text`,
+    ]);
+    assert.deepEqual(get_suggestions("date:today extra"), [`date:${today_str} extra`]);
+    assert.deepEqual(get_suggestions("date:yesterday hello"), [`date:${yesterday_str} hello`]);
+    assert.deepEqual(get_suggestions("date:week ago Bugs"), [`date:${week_ago} Bugs`]);
+
+    // A canonical ISO operand is not a pill phrase. "hello" belongs to the search operator.
+    assert.deepEqual(get_suggestions("date:2024-01-01 hello"), ["date:2024-01-01 hello"]);
+
+    // Not a pill phrase: the invalid date operand is dropped, and the
+    // remaining words belong to the search operator. An unfinished prefix
+    // does not swallow a later operator.
+    assert.deepEqual(get_suggestions("date:some gibberish"), ["gibberish"]);
+    assert.deepEqual(get_suggestions("date:a hello"), ["hello"]);
+    assert.deepEqual(get_suggestions("date:a week bugs"), ["week bugs"]);
+    assert.deepEqual(get_suggestions("date:a has:link"), ["has:link"]);
+    assert.deepEqual(get_suggestions("date:a w has:link"), ["w has:link"]);
+    assert.deepEqual(get_suggestions("date:todayextra"), []);
+
+    // `-date:` cannot be pillified, so do not offer a row that drops it.
+    assert.deepEqual(get_suggestions("-date:a week ago"), []);
+    assert.deepEqual(get_suggestions("-date:a week ago bugs"), []);
+    assert.deepEqual(get_suggestions("-date:today has:link"), []);
+
+    // `near` and a second `date` both select a message. A recognized
+    // phrase must not turn into a keyword row that lost its first word.
+    assert.deepEqual(get_suggestions("near:5 date:a week ago"), []);
+    assert.deepEqual(get_suggestions("date:a week ago near:5"), []);
+    assert.deepEqual(get_suggestions("date:today date:yesterday"), [`date:${yesterday_str}`]);
+
+    // A finished phrase stays a date when another operator follows.
+    assert.deepEqual(get_suggestions("date:a week ago has:link"), [`date:${week_ago} has:link`]);
+    assert.deepEqual(get_suggestions("date:today has:link"), [`date:${today_str} has:link`]);
+    assert.deepEqual(get_suggestions("date:a week ago bugs has:image"), [
+        `date:${week_ago} bugs has:image`,
+    ]);
+    assert.deepEqual(get_suggestions('date:"a week ago bugs"'), [`date:${week_ago} bugs`]);
+    assert.deepEqual(get_suggestions("date:week ago"), [`date:${week_ago}`]);
+    assert.deepEqual(get_suggestions("date:month ago"), [`date:${month_ago}`]);
+    assert.deepEqual(get_suggestions("date:week ago has:link"), [`date:${week_ago} has:link`]);
+
+    assert.deepEqual(get_suggestions("is:starred date:a month ago"), [
+        `is:starred date:${month_ago}`,
+    ]);
+    assert.deepEqual(get_suggestions("date:a week ago sender:Ted Smith"), [
+        `date:${week_ago} sender:${ted.user_id}`,
+    ]);
+
+    clock.reset();
 });
 
 test("basic_get_suggestions", ({override}) => {
