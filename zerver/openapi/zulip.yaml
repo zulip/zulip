@@ -14986,6 +14986,66 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm/subdomain/{subdomain}:
+    get:
+      operationId: check-subdomain-availability
+      summary: Check subdomain availability
+      tags: ["server_and_organizations"]
+      description: |
+        Check whether a subdomain is available for a new organization on
+        this Zulip server.
+
+        On a server [hosting multiple organizations][prod-multiple-orgs],
+        such as Zulip Cloud, each organization has its own subdomain, like
+        `https://{subdomain}.zulipchat.com`. The [organization
+        creation](/help/create-an-organization) form uses this endpoint to
+        validate the subdomain as the user types it. The same checks are
+        used when [changing an organization's
+        URL](/help/change-organization-url) to a new subdomain.
+
+        **Note:** This endpoint does not require any authentication at all,
+        since someone creating a new organization does not yet have a Zulip
+        account.
+
+        This endpoint always returns a successful response; the result of
+        the check is reported via the `msg` field in the example response
+        below, not via the HTTP status code or `result`.
+
+        [prod-multiple-orgs]: https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html
+      security: []
+      parameters:
+        - name: subdomain
+          in: path
+          description: |
+            The subdomain to check.
+          schema:
+            type: string
+            example: "hufflepuff"
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg:
+                        description: |
+                          `available` if the subdomain can be used for a new
+                          organization. Otherwise, an explanation of why not,
+                          suitable for displaying directly to the user.
+                        enum:
+                          - available
+                          - Subdomain needs to have length 3 or greater.
+                          - Subdomain cannot start or end with a '-'.
+                          - Subdomain can only have lowercase letters, numbers, and '-'s.
+                          - Subdomain is already in use. Please choose a different one.
+                          - Subdomain reserved. Please choose a different one.
+                    example: {"msg": "available", "result": "success"}
   /realm/domains:
     get:
       operationId: get-realm-domains
