@@ -197,15 +197,24 @@ function bulk_update_read_flags_for_narrow(
     } = {},
     caller_modal_id?: string,
 ): void {
-    const terms_with_integer_channel_id = narrow.map((term) => {
+    const terms_for_server = [];
+    for (const term of narrow) {
         if (term.operator === "channel") {
-            return {
+            terms_for_server.push({
                 ...term,
                 operand: Number.parseInt(term.operand, 10),
-            };
+            });
+        } else if (term.operator === "dm-including") {
+            for (const operand of term.operand) {
+                terms_for_server.push({
+                    ...term,
+                    operand,
+                });
+            }
+        } else {
+            terms_for_server.push(term);
         }
-        return term;
-    });
+    }
     const request = {
         anchor,
         // anchor="oldest" is an anchor ID lower than any valid
@@ -217,7 +226,7 @@ function bulk_update_read_flags_for_narrow(
         num_after,
         op,
         flag: "read",
-        narrow: JSON.stringify(terms_with_integer_channel_id),
+        narrow: JSON.stringify(terms_for_server),
     };
     void channel.post({
         url: "/json/messages/flags/narrow",

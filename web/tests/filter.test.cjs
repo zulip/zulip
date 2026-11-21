@@ -3528,4 +3528,16 @@ run_test("get_stringified_narrow_for_server_query", () => {
         narrow2,
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
+
+    // Expands dm-including operand into separate terms per user id.
+    const filter3 = new Filter([{operator: "dm-including", operand: [joe.user_id]}]);
+    const narrow3 = filter3.get_stringified_narrow_for_server_query();
+    assert.equal(narrow3, `[{"operator":"dm-including","operand":${joe.user_id},"negated":false}]`);
+
+    const filter4 = new Filter([{operator: "dm-including", operand: [joe.user_id, steve.user_id]}]);
+    const narrow4 = filter4.get_stringified_narrow_for_server_query();
+    assert.equal(
+        narrow4,
+        `[{"operator":"dm-including","operand":${joe.user_id},"negated":false},{"operator":"dm-including","operand":${steve.user_id},"negated":false}]`,
+    );
 });
