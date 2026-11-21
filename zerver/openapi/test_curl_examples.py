@@ -41,6 +41,7 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-google-meet-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
+    "create-galene-video-call",
     # Successfully running this example would deactivate the "zulip"
     # realm used by the test server, breaking the curl examples that
     # run after it.
