@@ -1,0 +1,34 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Error pages | Zulip Dev</title>
+{% endblock %}
+
+{% block portico_content %}
+<div id="devtools-error-pages">
+    <h1>Error pages</h1>
+    <p>
+        Every error page, grouped by what the user can do next; each
+        group shares an illustration. The previews follow your system's
+        light or dark theme.
+    </p>
+    <p>
+        To check the other theme, open your browser's developer tools,
+        then the command menu (Cmd/Ctrl+Shift+P), and run "Emulate CSS
+        prefers-color-scheme: dark" (or light).
+    </p>
+    {% for title, slugs in error_page_groups %}
+    <h2>{{ title }}</h2>
+    <div class="error-page-previews">
+        {% for slug in slugs %}
+        <a class="error-page-preview" href="/errors/{{ slug }}/" target="_blank" rel="noopener noreferrer">
+            <div class="error-page-preview-frame">
+                <iframe src="/errors/{{ slug }}/" loading="lazy" tabindex="-1" title="{{ slug }}"></iframe>
+            </div>
+            <span class="error-page-preview-label">/errors/{{ slug }}/</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
