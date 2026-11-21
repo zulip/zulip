@@ -85,26 +85,6 @@
                     </select>
                 </div>
             </form>
-
-            <div class="input-group deactivate-buttons-group">
-                <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
-                    {{> ../components/action_button
-                      label=(t "Deactivate account")
-                      variant="subtle"
-                      intent="danger"
-                      id="user_deactivate_account_button"
-                      disabled=user_is_only_organization_owner
-                      }}
-                </div>
-                {{#if owner_is_only_user_in_organization}}
-                    {{> ../components/action_button
-                      label=(t "Deactivate organization")
-                      variant="subtle"
-                      intent="danger"
-                      custom_classes="deactivate_realm_button"
-                      }}
-                {{/if}}
-            </div>
         </div>
 
         {{> privacy_settings . for_realm_settings=false prefix="user_" read_receipts_help_icon_tooltip_text=send_read_receipts_tooltip hide_read_receipts_tooltip=realm.realm_enable_read_receipts}}
@@ -134,6 +114,30 @@
                       disabled=(not user_has_email_set)
                       }}
                 </div>
+            </div>
+        </div>
+        <div class="danger-zone">
+            <div class="subsection-header">
+                <h3 class="settings-subsection-title">{{t "Danger zone" }}</h3>
+            </div>
+            <div class="input-group deactivate-buttons-group">
+                <div id="deactivate_account_container" class="inline-block {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
+                    {{> ../components/action_button
+                      label=(t "Deactivate account")
+                      variant="subtle"
+                      intent="danger"
+                      id="user_deactivate_account_button"
+                      disabled=user_is_only_organization_owner
+                      }}
+                </div>
+                {{#if owner_is_only_user_in_organization}}
+                    {{> ../components/action_button
+                      label=(t "Deactivate organization")
+                      variant="subtle"
+                      intent="danger"
+                      custom_classes="deactivate_realm_button"
+                      }}
+                {{/if}}
             </div>
         </div>
         <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
