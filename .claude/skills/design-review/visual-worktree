@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Manages the one git worktree that /design-review's visual pass uses
+# to run a pull request's code without touching the main checkout or
+# its development server.
+#
+# The worktree shares the main checkout's provisioned dependencies
+# through symlinks, so it is small, and it is reused for every review.
+set -euo pipefail
+
+usage() {
+    cat >&2 <<'USAGE'
+Usage:
+  visual-worktree prepare <ref>   Check out <ref> in the worktree; prints its path.
+  visual-worktree remove          Delete the worktree.
+USAGE
+    exit 2
+}
+
+main_root="$(cd "$(git rev-parse --path-format=absolute --git-common-dir)/.." && pwd)"
+worktree="$main_root/.claude/worktrees/design-review-visual"
+
+# Files that provision generates, which are not tracked by Git.
+provisioned_paths=(
+    .venv
+    node_modules
+    starlight_help/node_modules
+    static/generated/bots
+    static/generated/emoji
+    static/generated/integrations
+    web/generated/emoji
+    web/generated/emoji-styles
+    web/generated/pygments_data.json
+    web/generated/supported_browser_regex.ts
+    web/generated/timezones.json
+    locale/language_name_map.json
+    locale/language_options.json
+    zerver/tests/fixtures/messages.json
+)
+
+prepare() {
+    local ref="$1"
+    if ! git -C "$main_root" diff --quiet HEAD "$ref" -- pnpm-lock.yaml uv.lock; then
+        echo >&2 "DESIGN-REVIEW ERROR: $ref changes pnpm-lock.yaml or uv.lock relative to the main checkout, so its dependencies cannot be shared. Run the visual pass from a checkout provisioned for $ref."
+        exit 1
+    fi
+
+    local path target
+    for path in "${provisioned_paths[@]}"; do
+        target="$main_root/$path"
+        if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+            echo >&2 "DESIGN-REVIEW ERROR: $path is missing from the main checkout, so there is no provisioned development environment to share; run ./tools/provision there first."
+            exit 1
+        fi
+    done
+
+    if [ -d "$worktree" ]; then
+        git -C "$worktree" clean -qf -- web/e2e-tests
+        git -C "$worktree" checkout -q --detach "$ref"
+    else
+        git -C "$main_root" worktree add -q --detach "$worktree" "$ref"
+    fi
+
+    for path in "${provisioned_paths[@]}"; do
+        target="$main_root/$path"
+        # Links from an earlier review are kept: replacing one can
+        # leave a container that mounts the checkout with a stale copy.
+        if [ -L "$worktree/$path" ]; then
+            continue
+        fi
+        mkdir -p "$(dirname "$worktree/$path")"
+        if [ -L "$target" ]; then
+            # Already a link (the emoji cache); copy it as it is.
+            cp -P "$target" "$worktree/$path"
+        else
+            # Relative, so the link also resolves inside a container
+            # that mounts the checkout at another path.
+            ln -s "$(python3 -c 'import os, sys; print(os.path.relpath(sys.argv[1], os.path.dirname(sys.argv[2])))' "$target" "$worktree/$path")" "$worktree/$path"
+        fi
+    done
+
+    # The same secrets as the main checkout, so the shared services
+    # (RabbitMQ, memcached, PostgreSQL) accept this checkout too.
+    cp "$main_root/zproject/dev-secrets.conf" "$worktree/zproject/dev-secrets.conf"
+
+    mkdir -p "$worktree"/var/{log,coverage,node-coverage,uploads}
+    rm -rf "$worktree/var/puppeteer"
+    mkdir -p "$worktree/var/puppeteer"
+    echo "$worktree"
+}
+
+case "${1:-}" in
+    prepare)
+        [ $# -eq 2 ] || usage
+        prepare "$2"
+        ;;
+    remove)
+        [ $# -eq 1 ] || usage
+        if [ -d "$worktree" ]; then
+            git -C "$main_root" worktree remove --force "$worktree"
+        fi
+        ;;
+    *)
+        usage
+        ;;
+esac
