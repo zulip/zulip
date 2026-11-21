@@ -244,3 +244,36 @@ def check_jitsi_server_url(
                 id="zulip.E007",
             )
         ]
+
+
+def check_renamed_settings(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    # computed_settings.py only falls back to the old name of a
+    # renamed setting when the new name is not set, so if both are
+    # set to different values, the old one is silently ignored.
+    renamed_settings = [
+        ("DEFAULT_AVATAR_URI", "DEFAULT_AVATAR_URL"),
+        ("DEFAULT_LOGO_URI", "DEFAULT_LOGO_URL"),
+    ]
+    errors = []
+    for old_setting_name, new_setting_name in renamed_settings:
+        old_value = getattr(settings, old_setting_name)
+        if old_value is None or old_value == getattr(settings, new_setting_name):
+            continue
+
+        settings_location, old_display_name = get_settings_error_message_strings(old_setting_name)
+        _, new_display_name = get_settings_error_message_strings(new_setting_name)
+        errors.append(
+            checks.Error(
+                f"{old_display_name} in {settings_location} is ignored, "
+                f"because {new_display_name} is also set",
+                obj=f"settings.{old_setting_name}",
+                hint=f"{old_display_name} is the old name of {new_display_name}; "
+                f"remove {old_display_name}",
+                id="zulip.E008",
+            )
+        )
+    return errors
