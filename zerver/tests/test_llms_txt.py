@@ -1,3 +1,5 @@
+from django.test import Client
+
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models.realms import get_realm
@@ -86,3 +88,19 @@ class LlmsTxtTest(ZulipTestCase):
         self.assertIn("Rome", content)
         # "Scotland" is a private stream — should NOT be listed.
         self.assertNotIn("Scotland", content)
+
+    def test_llms_txt_rejects_unsafe_methods(self) -> None:
+        """
+        /llms.txt only serves GET and HEAD; other methods get 405.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        # ZulipTestClient skips CSRF checks, which would otherwise
+        # reject unsafe methods with a 403 before reaching the view.
+        client = Client(enforce_csrf_checks=True)
+
+        result = client.head("/llms.txt", HTTP_HOST=realm.host)
+        self.assertEqual(result.status_code, 200)
+
+        result = client.post("/llms.txt", HTTP_HOST=realm.host)
+        self.assertEqual(result.status_code, 405)
