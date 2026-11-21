@@ -731,6 +731,56 @@ class TestCurlExampleGeneration(ZulipTestCase):
         },
     }
 
+    spec_mock_with_dual_media_type_body = {
+        "security": [{"basicAuth": []}],
+        "paths": {
+            "/items": {
+                "post": {
+                    "description": "Create an item.",
+                    "x-curl-examples-parameters": {
+                        "oneOf": [
+                            {
+                                "type": "exclude",
+                                "parameters": {"enum": ["file"]},
+                            },
+                        ],
+                    },
+                    "requestBody": {
+                        "content": {
+                            "application/x-www-form-urlencoded": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "title": {
+                                            "type": "string",
+                                            "description": "The title.",
+                                            "example": "report",
+                                        },
+                                    },
+                                    "required": ["title"],
+                                },
+                            },
+                            "multipart/form-data": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "file": {
+                                            "type": "string",
+                                            "format": "binary",
+                                            "description": "The file.",
+                                            "example": "/path/to/report.pdf",
+                                        },
+                                    },
+                                    "required": ["file"],
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    }
+
     def curl_example(self, endpoint: str, method: str, *args: Any, **kwargs: Any) -> list[str]:
         return generate_curl_example(endpoint, method, "http://localhost:9991/api", *args, **kwargs)
 
@@ -885,6 +935,51 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "    --data-urlencode num_before=4 \\",
             "    --data-urlencode num_after=8 \\",
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "channel"}]\'',
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_with_dual_media_type_body(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_with_dual_media_type_body
+        generated_curl_example = self.curl_example("/items", "POST")
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/items \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    -F title=report \\",
+            "    -F file=@/path/to/report.pdf",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_multipart_excluding_file(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = self.spec_mock_with_dual_media_type_body
+        generated_curl_example = render_curl_example(
+            "/items:POST", api_url="http://localhost:9991/api"
+        )
+        expected_curl_example = [
+            "{!curl-auth-credentials.md!}\n\n",
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/items \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    --data-urlencode title=report",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_generate_and_render_curl_multipart_excluding_text_field(
+        self, spec_mock: MagicMock
+    ) -> None:
+        spec_mock.return_value = self.spec_mock_with_dual_media_type_body
+        generated_curl_example = self.curl_example("/items", "POST", exclude=["title"])
+        expected_curl_example = [
+            "```curl",
+            "curl -sSX POST http://localhost:9991/api/v1/items \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    -F file=@/path/to/report.pdf",
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
