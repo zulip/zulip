@@ -171,6 +171,35 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
         self.assert_message_content_is(message_id, expected)
 
+    def test_inline_image_not_thumbnailable(self) -> None:
+        """An image the server can't decode has no ImageAttachment
+        row, so `![...](...)` renders as a link to it, with the alt
+        text as plain text."""
+        path_id = self.upload_image("corrupt.png")
+        self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+
+        message_id = self.send_message_content(f"![corrupt.png](/user_uploads/{path_id})")
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">corrupt.png</a></p>'
+        )
+        message = Message.objects.get(id=message_id)
+        self.assertTrue(message.has_link)
+        self.assertFalse(message.has_image)
+        self.assertTrue(message.has_attachment)
+
+        message_id = self.send_message_content(f'![ ](/user_uploads/{path_id} "Title")')
+        self.assert_message_content_is(
+            message_id,
+            f'<p><a href="/user_uploads/{path_id}" title="Title">/user_uploads/{path_id}</a></p>',
+        )
+
+        message_id = self.send_message_content(
+            f"![**a** [b](https://example.com) `c`](/user_uploads/{path_id})"
+        )
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">**a** b c</a></p>'
+        )
+
     def test_thumbnail_escaping(self) -> None:
         self.login("othello")
         with self.captureOnCommitCallbacks(execute=True):
@@ -354,9 +383,16 @@ class MarkdownThumbnailTest(ZulipTestCase):
         """Test what happens if the file looks fine, but resizing later fails"""
         path_id = self.upload_image("img.png")
         message_id = self.send_message_content(f"Testing ![image](/user_uploads/{path_id})")
+        blank_alt_text_message_id = self.send_message_content(
+            f'![ ](/user_uploads/{path_id} "Title")'
+        )
+        formatted_alt_text_message_id = self.send_message_content(
+            f"![`a` & **b**](/user_uploads/{path_id})"
+        )
         self.assert_length(ImageAttachment.objects.get(path_id=path_id).thumbnail_metadata, 0)
 
-        # If the image is found to be bad, we remove all trace of the preview
+        # If the image is found to be bad, we replace it with the same
+        # link that re-rendering the message would produce.
         with (
             patch.object(
                 pyvips.Image, "thumbnail_buffer", side_effect=pyvips.Error("some bad error")
@@ -368,7 +404,16 @@ class MarkdownThumbnailTest(ZulipTestCase):
         self.assert_length(thumbnail_logs.output, 1)
         self.assertIn("some bad error", thumbnail_logs.output[0])
         self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
-        self.assert_message_content_is(message_id, "<p>Testing </p>")
+        self.assert_message_content_is(
+            message_id, f'<p>Testing <a href="/user_uploads/{path_id}">image</a></p>'
+        )
+        for message in Message.objects.filter(
+            id__in=[message_id, blank_alt_text_message_id, formatted_alt_text_message_id]
+        ):
+            self.assertEqual(
+                message.rendered_content,
+                render_message_markdown(message, message.content).rendered_content,
+            )
 
     def test_thumbnail_multiple_messages(self) -> None:
         sender_user_profile = self.example_user("othello")

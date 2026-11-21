@@ -218,7 +218,13 @@ Zulip will generate an image element with the following format:
 ```
 
 Note that the Markdown image syntax is only supported/permitted for
-uploaded images, not third-party image URLs.
+uploaded images, not third-party image URLs. If the server can't
+preview an uploaded file as an image (e.g., because the image is too
+large to thumbnail), it instead renders a link to the file, as
+`[example image](/user_uploads/path/to/example.png)` would, with the
+alt text as plain text. (An uploaded file with a supported audio
+`Content-Type` renders as an [audio player](#audio-players), not a
+link.)
 
 As with link-derived image previews, clients can recognize if an image
 was thumbnailed by its `src` attribute starting with
@@ -285,8 +291,9 @@ via an `update_message` event, with the `rendering_only: true` flag
 adjusted `rendered_content`. A client should process those events by
 just using the updated rendering. If thumbnailing failed, the same
 type of event will edit the message's rendered form to remove the
-image preview element, so no special client-side logic should be
-required to process such errors.
+image preview element (or, for Markdown image syntax, to replace the
+image with a link to the uploaded file), so no special client-side
+logic should be required to process such errors.
 
 Note that in the uncommon situation that the thumbnailing system is
 backlogged, an individual message containing multiple image previews
@@ -384,6 +391,12 @@ previews:
 
 ### Changes to image formatting
 
+**Before Zulip 13.0 (feature level ZF-7e1ae3)**, Markdown image
+syntax for an uploaded file that the server couldn't preview as an
+image or audio player rendered as literal Markdown text. If
+thumbnailing an image in Markdown image syntax failed after the
+message was sent, the image was removed.
+
 **In Zulip 12.0** (feature level 467), limited the Markdown
 image syntax to only support uploaded images, not linking to
 third-party image URLs.
@@ -437,6 +450,11 @@ surrounding `a` tag remains available.
   </a>
 </div>
 ```
+
+Markdown image syntax for an uploaded video (e.g.,
+`![example video](/user_uploads/path/to/video.mp4)`) [renders as a
+link](#images) to the video, so Zulip may generate this preview for
+it as well.
 
 ## Audio Players
 
