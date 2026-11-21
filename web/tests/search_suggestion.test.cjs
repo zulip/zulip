@@ -1034,6 +1034,27 @@ test("channel_completion", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+for (const separator of ["-", "_", "/"]) {
+    test(`channel_word_boundary_completion (${separator})`, ({override}) => {
+        override(narrow_state, "stream_id", noop);
+        const design_id = new_stream_id();
+        stream_data.add_sub_for_tests(
+            make_stream({
+                stream_id: design_id,
+                name: `project${separator}design${separator}planning`,
+                subscribed: true,
+            }),
+        );
+
+        for (const query of ["design", "DES", `design${separator}plan`]) {
+            assert.deepEqual(get_suggestions(query), [query, `channel:${design_id}`]);
+            assert.deepEqual(get_suggestions(`channel:${query}`), [`channel:${design_id}`]);
+            assert.deepEqual(get_suggestions(`-channel:${query}`), [`-channel:${design_id}`]);
+        }
+        assert.deepEqual(get_suggestions("esign"), ["esign"]);
+    });
+}
+
 test("channel_exact_name_surfaces_siblings", ({override}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
@@ -1084,6 +1105,9 @@ test("channel_exact_name_surfaces_siblings", ({override}) => {
     const venice_beach_id = new_stream_id();
     stream_data.add_sub_for_tests(
         make_stream({stream_id: venice_beach_id, name: "Venice beach", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: new_stream_id(), name: "release-7", subscribed: true}),
     );
     query = "channel:Venice";
     suggestions = get_suggestions(query);
@@ -1281,6 +1305,9 @@ test("channel_multi_word_name_starting_with_id", ({override}) => {
     const fifteen_test_id = new_stream_id();
     stream_data.add_sub_for_tests(
         make_stream({stream_id: fifteen_test_id, name: "15 test", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: new_stream_id(), name: "release-15 test", subscribed: true}),
     );
 
     const suggestions = get_suggestions("channel:15 test");
