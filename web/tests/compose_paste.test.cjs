@@ -507,6 +507,18 @@ run_test("paste_handler_converter", () => {
         "[Contributing guide](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)",
     );
 
+    // Links inside a paragraph must retain their markdown link syntax instead
+    // of taking the single-child plain-text fast path and dropping the link.
+    input =
+        '<p><a href="https://example.com/docs/my%20file.pdf">https://example.com/docs/my file.pdf</a></p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "[https://example.com/docs/my file.pdf](https://example.com/docs/my%20file.pdf)",
+    );
+
+    input = '<p><a href="https://zulip.com">Zulip Home</a></p>';
+    assert.equal(compose_paste.paste_handler_converter(input), "[Zulip Home](https://zulip.com/)");
+
     // Only numbered list (list style retained)
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><ol><li>text</li></ol>';
