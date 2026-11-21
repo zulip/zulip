@@ -22,6 +22,7 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -225,10 +226,6 @@ export function rewire_max_num_of_search_results(value: typeof max_num_of_search
     max_num_of_search_results = value;
 }
 
-function channel_matches_query(channel_name: string, q: string): boolean {
-    return common.phrase_match(q, channel_name);
-}
-
 function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): boolean {
     const filter = new Filter(terms);
     return criteria.some((cr) => {
@@ -307,10 +304,18 @@ function compare_by_direct_message_group(
 }
 
 function sorted_channel_name_matches(query: string): string[] {
-    const unsorted = stream_data
-        .subscribed_stream_names()
-        .filter((channel_name) => channel_matches_query(channel_name, query));
-    return typeahead_helper.sorter(query, unsorted, (x) => x);
+    return typeahead.triage(query, stream_data.subscribed_stream_names(), (x) => x).matches;
+}
+
+// The digits of a `stream_id` operand may come from `Filter.parse`
+// resolving an exact channel name, rather than from the user typing
+// them. So a query starting with them only matches at the start of a
+// space-separated word, keeping "channel:Venice" (id 7) from also
+// suggesting "release-7".
+function sorted_channel_name_matches_for_stream_id(query: string): string[] {
+    return sorted_channel_name_matches(query).filter((channel_name) =>
+        common.phrase_match(query, channel_name),
+    );
 }
 
 function channel_name_suggestion(channel_name: string, negated: boolean | undefined): Suggestion {
@@ -334,39 +339,37 @@ function get_channel_suggestions(
 
     // `Filter.parse` may have resolved an exact channel name to its
     // `stream_id`, so match both the resolved name (surfacing siblings,
-    // e.g. "channel:core" → "core team") and the operand as literally
-    // typed (keeping a digit-named "7th floor" reachable via
+    // e.g. "channel:core" → "core team") and the operand as literal
+    // text (keeping a digit-named "7th floor" reachable via
     // "channel:7"). Name first, so a real sibling outranks a channel
     // that merely starts with the operand's id digits.
-    const queries = [last.operand];
-    if (last.operator === "channel") {
-        const sub = stream_data.get_sub_by_id_string(last.operand);
-        if (sub !== undefined) {
-            queries.unshift(sub.name);
-        }
-    }
-    const matching_channel_names = new Set<string>();
-    for (const channel_query of queries) {
-        for (const channel_name of sorted_channel_name_matches(channel_query)) {
-            matching_channel_names.add(channel_name);
-        }
-    }
-    return [...matching_channel_names].map((channel_name) =>
+    const sub =
+        last.operator === "channel" ? stream_data.get_sub_by_id_string(last.operand) : undefined;
+    const matching_channel_names =
+        sub === undefined
+            ? sorted_channel_name_matches(last.operand)
+            : [
+                  ...sorted_channel_name_matches(sub.name),
+                  ...sorted_channel_name_matches_for_stream_id(last.operand),
+              ];
+    return [...new Set(matching_channel_names)].map((channel_name) =>
         channel_name_suggestion(channel_name, last.negated),
     );
 }
 
-// Find subscribed channels whose name matches the multi-word `query`,
-// and split them into "strong" (name starts with the full query,
-// case-insensitive) and "weak" (matches but is not a prefix).
+// Find subscribed channels that match the multi-word `query` according
+// to `get_sorted_matches`, and split them into "strong" (name starts
+// with the full query, case-insensitive) and "weak" (matches but is not
+// a prefix).
 function get_channel_multi_word_matches(
     query: string,
     negated: boolean,
+    get_sorted_matches: (query: string) => string[],
 ): {strong: Suggestion[]; weak: Suggestion[]} {
     const strong: Suggestion[] = [];
     const weak: Suggestion[] = [];
     const query_lower = query.toLowerCase();
-    for (const channel_name of sorted_channel_name_matches(query)) {
+    for (const channel_name of get_sorted_matches(query)) {
         const suggestion = channel_name_suggestion(channel_name, negated);
         if (channel_name.toLowerCase().startsWith(query_lower)) {
             strong.push(suggestion);
@@ -1383,8 +1386,8 @@ function resolve_channel_term(
 //    text after as a free-text search (e.g. `channel:automated testing`
 //    becomes channel `automated` + text search for `testing`).
 // 4. Remaining strong multi-word matches.
-// 5. "Weak" multi-word matches (phrase-match the full query but
-//    don't start with it).
+// 5. "Weak" multi-word matches (match the full query, but don't start
+//    with it).
 
 // MAX_STRONG_MULTI_WORD_MATCHES_ABOVE_FREE_TEXT is the N in step 1.
 const MAX_STRONG_MULTI_WORD_MATCHES_ABOVE_FREE_TEXT = 2;
@@ -1444,16 +1447,24 @@ function get_suggestions_for_multi_word_channel_or_topic(
     if (!match_criteria(base_terms_before_prev, incompatible_patterns[merged_term.operator])) {
         if (merged_term.operator === "channel") {
             const negated = merged_term.negated ?? false;
-            ({strong, weak} = get_channel_multi_word_matches(merged_term.operand, negated));
+            ({strong, weak} = get_channel_multi_word_matches(
+                merged_term.operand,
+                negated,
+                sorted_channel_name_matches,
+            ));
             // `merged_term.operand` used the channel's name when the
             // operand before the space resolved to a `stream_id`. But a
             // numeric operand can also be the literal start of a channel
             // name (e.g. `channel:15 test` matching a channel named "15
-            // test"), so also match the query as literally typed. The
+            // test"), so also match the query as literal text. The
             // two interpretations rarely both match; the Attacher dedups.
             const literal_query = `${prev.operand} ${last.operand}`;
             if (literal_query !== merged_term.operand) {
-                const literal_matches = get_channel_multi_word_matches(literal_query, negated);
+                const literal_matches = get_channel_multi_word_matches(
+                    literal_query,
+                    negated,
+                    sorted_channel_name_matches_for_stream_id,
+                );
                 strong = [...strong, ...literal_matches.strong];
                 weak = [...weak, ...literal_matches.weak];
             }
