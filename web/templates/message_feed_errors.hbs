@@ -15,26 +15,27 @@
             {{#if is_guest}}
                 {{#tr}}
                     End of results from
-                    <z-link>your message history</z-link>. Include messages in your public channels
-                    sent when you weren't subscribed?
+                    <z-link>your message history</z-link>.
                     {{#*inline "z-link"}}<a href="/help/search-for-messages#search-shared-history"
                     target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                 {{/tr}}
             {{else}}
                 {{#tr}}
                     End of results from
-                    <z-link>your message history</z-link>. Include messages in public channels
+                    <z-link>your message history</z-link>. Include messages in all channels
                     sent when you weren't subscribed?
                     {{#*inline "z-link"}}<a href="/help/search-for-messages#search-shared-history"
                     target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                 {{/tr}}
             {{/if}}
         </p>
-        <button
-          class="search-shared-history action-button action-button-subtle-neutral"
-          type="button">
-            {{t 'Expand search'}}
-        </button>
+        {{#unless is_guest}}
+            <button
+              class="search-shared-history action-button action-button-subtle-neutral"
+              type="button">
+                {{t 'Expand search'}}
+            </button>
+        {{/unless}}
     </div>
 </div>
 <div class="combined-feed-notice hidden-for-spectators">
