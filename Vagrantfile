@@ -1,6 +1,33 @@
 # -*- mode: ruby -*-
 
 require "open3"
+require "socket"
+
+# Work around a bug in Vagrant 2.4.x on macOS where Socket.tcp with connect_timeout
+# does not raise Errno::ECONNREFUSED on closed ports. On Darwin, the error is instead
+# set on the socket via SO_ERROR (61), causing Vagrant::Util::IsPortOpen.is_port_open?
+# to falsely report all ports as active and fail with a port collision error.
+if RUBY_PLATFORM =~ /darwin/
+  module Vagrant
+    module Util
+      module IsPortOpen
+        def is_port_open?(host, port)
+          s = nil
+          begin
+            s = Socket.tcp(host, port, connect_timeout: 0.1)
+            s.getsockopt(Socket::SOL_SOCKET, Socket::SO_ERROR).int == 0
+          rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
+                 Errno::ENETUNREACH, Errno::EACCES, Errno::ENOTCONN, Errno::EALREADY,
+                 Errno::EINVAL, SocketError
+            false
+          ensure
+            s&.close
+          end
+        end
+      end
+    end
+  end
+end
 
 Vagrant.require_version ">= 2.2.6"
 
