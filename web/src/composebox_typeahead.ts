@@ -155,6 +155,20 @@ export let private_message_recipient_typeahead: Typeahead<
 
 export let stream_message_topic_typeahead: Typeahead<string | UserPillData>;
 
+export function refresh_after_users_fetched(): void {
+    // Rerun any open compose typeahead, so that users whose data
+    // just loaded appear in its suggestions.
+    if (private_message_recipient_typeahead?.shown) {
+        private_message_recipient_typeahead.lookup(false, true);
+    }
+    if (stream_message_topic_typeahead?.shown) {
+        stream_message_topic_typeahead.lookup(false, true);
+    }
+    if (compose_ui.compose_textarea_typeahead?.shown) {
+        compose_ui.compose_textarea_typeahead.lookup(false);
+    }
+}
+
 export function get_or_set_token_for_testing(val?: string): string {
     if (val !== undefined) {
         token = val;
@@ -701,6 +715,8 @@ function filter_persons<T>(
 
     // Exclude muted users from typeaheads.
     persons = muted_users.filter_muted_users(persons);
+    // Exclude placeholder users, whose names haven't loaded yet.
+    persons = persons.filter((person) => !person.is_placeholder_user);
     const person_items: UserPillData[] = persons.map((person) => ({
         type: "user",
         user: person,

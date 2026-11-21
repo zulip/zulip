@@ -207,7 +207,7 @@ export const update_elements = ($content: JQuery): void => {
             // text to show the user's current name, assuming that
             // you're not searching for text inside the highlight.
             const person = people.maybe_get_user_by_id(user_id, true);
-            if (person === undefined || person.is_inaccessible_user) {
+            if (person === undefined || person.is_inaccessible_user || person.is_placeholder_user) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import
                 // or when guest users cannot access all users in

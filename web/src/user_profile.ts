@@ -148,6 +148,22 @@ export function update_user_profile_groups_list_for_users(user_ids: number[]): v
     }
 }
 
+export function refresh_after_users_fetched(user_ids: number[]): void {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    // If the profile's own user was fetched, the profile was rendered
+    // for a placeholder, so it has no user-type fields to update.
+    if (user_id === undefined || user_ids.includes(user_id)) {
+        return;
+    }
+    const user = people.get_by_user_id(user_id);
+    if (!user.is_bot) {
+        custom_profile_fields_ui.initialize_profile_user_type_pills(user_id);
+    } else if (user.bot_owner_id && user_ids.includes(user.bot_owner_id)) {
+        $("#user-profile-modal .bot_owner_user_field .pill").remove();
+        initialize_bot_owner("#user-profile-modal #content", user_id);
+    }
+}
+
 export function update_profile_modal_ui(
     user: User,
     new_data: {
@@ -682,6 +698,24 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 }
 
 export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
+    if (people.is_placeholder_user(user_id)) {
+        // An open profile can't be redrawn with the real data, so we
+        // fetch the user before opening it. If the fetch fails, we open
+        // the profile for the placeholder.
+        void (async () => {
+            try {
+                await people.fetch_placeholder_user_now(user_id);
+            } catch {
+                // Fall through to open the profile for the placeholder.
+            }
+            open_user_profile(user_id, default_tab_key);
+        })();
+        return;
+    }
+    open_user_profile(user_id, default_tab_key);
+}
+
+function open_user_profile(user_id: number, default_tab_key: string): void {
     const user = people.get_by_user_id(user_id);
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
@@ -704,10 +738,12 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
-        date_joined: timerender.get_localized_date_or_time_for_format(
-            parseISO(user.date_joined),
-            "dayofyear_year",
-        ),
+        date_joined: user.is_placeholder_user
+            ? undefined
+            : timerender.get_localized_date_or_time_for_format(
+                  parseISO(user.date_joined),
+                  "dayofyear_year",
+              ),
         email: user.delivery_email,
         full_name: user.full_name,
         is_active: people.is_person_active(user.user_id),
@@ -724,6 +760,7 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         user_type: people.get_user_type(user.user_id),
         is_imported_stub: user.is_imported_stub,
         is_deleted: user.is_deleted,
+        is_placeholder_user: user.is_placeholder_user ?? false,
     };
 
     if (user.is_bot) {

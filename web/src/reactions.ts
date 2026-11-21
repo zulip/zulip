@@ -770,6 +770,13 @@ function check_should_display_reactors(
         return false;
     }
 
+    const has_placeholder_user = reaction_counts_and_user_ids.some(({user_ids}) =>
+        user_ids.some((user_id) => people.is_display_full_name_loading(user_id)),
+    );
+    if (has_placeholder_user) {
+        return false;
+    }
+
     let total_reactions = 0;
     for (const {count, user_ids} of reaction_counts_and_user_ids) {
         total_reactions += count ?? user_ids.length;

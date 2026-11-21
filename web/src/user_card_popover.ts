@@ -417,6 +417,12 @@ function show_user_card_popover(
     show_as_overlay = false,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
+    // A placeholder user has no data worth showing yet, and updating an
+    // open card when their data arrives would be a lot of work. So we
+    // don't open the card for them.
+    if (user.is_placeholder_user) {
+        return;
+    }
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -693,6 +699,12 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
 
     if (previous_user_sidebar_id === user_id) {
         // If the popover is already shown, clicking again should toggle it.
+        return;
+    }
+
+    // show_user_card_popover doesn't open a card for placeholder users,
+    // so we mustn't record one as open.
+    if (user.is_placeholder_user) {
         return;
     }
 

@@ -488,7 +488,8 @@ function get_group_suggestions(
         let persons = people.filter_all_persons((person) => {
             if (
                 person.user_id === people.my_current_user_id() ||
-                existing_user_ids.includes(person.user_id)
+                existing_user_ids.includes(person.user_id) ||
+                person.is_placeholder_user
             ) {
                 return false;
             }

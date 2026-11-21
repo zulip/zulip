@@ -75,6 +75,7 @@ export function fetch_read_receipts(message_id: number): void {
                     user_id: user.user_id,
                     full_name: user.full_name,
                     avatar_url: people.small_avatar_url_for_person(user),
+                    is_placeholder_user: user.is_placeholder_user ?? false,
                 })),
             };
 
@@ -140,4 +141,15 @@ export function show_user_list(message_id: number): void {
 
 export function hide_user_list(): void {
     modals.close_if_open("read_receipts_modal");
+}
+
+// The modal polls for read receipts only once a minute, so we
+// refetch now to show the loaded names right away.
+export function refresh_after_users_fetched(): void {
+    if (modals.is_active("read_receipts_modal")) {
+        const message_id = Number($("#read_receipts_modal").attr("data-message-id"));
+        if (message_id) {
+            fetch_read_receipts(message_id);
+        }
+    }
 }

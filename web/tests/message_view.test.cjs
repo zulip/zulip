@@ -542,6 +542,25 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         ),
     );
 
+    // direct messages with a user whose data hasn't loaded yet
+    const placeholder_user = make_user({
+        email: "placeholder@example.com",
+        user_id: 26,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user, "server_events");
+    current_filter = set_filter([["dm", [placeholder_user.user_id]]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            undefined,
+            'translated: You have no direct messages with <span class="loading-shimmer"></span> yet.',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
     // sending direct messages to deactivated user
     override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
@@ -832,6 +851,80 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
 run_test("hide_empty_narrow_message", () => {
     narrow_banner.hide_empty_narrow_message();
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
+});
+
+run_test("refresh_after_users_fetched", ({mock_template, override}) => {
+    override(realm, "realm_direct_message_permission_group", everyone.id);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
+
+    const user_id = 27;
+    people.add_active_user(
+        make_user({
+            email: "polly@example.com",
+            user_id,
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
+    const shimmer_banner = empty_narrow_html(
+        undefined,
+        'translated: You have no direct messages with <span class="loading-shimmer"></span> yet.',
+        'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+    );
+
+    const $banner = $(".empty_feed_notice_main");
+    // Nothing to redraw without a current message list.
+    narrow_banner.hide_empty_narrow_message();
+    $banner.set_matches(":empty", true);
+    message_lists.current = undefined;
+    narrow_banner.refresh_after_users_fetched([user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), "");
+
+    const dm_filter = set_filter([["dm", [user_id]]]);
+    message_lists.current = new MessageList({
+        data: new MessageListData({excludes_muted_topics: false, filter: dm_filter}),
+    });
+    // Nothing to redraw while no banner is showing.
+    narrow_banner.refresh_after_users_fetched([user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), "");
+
+    narrow_banner.show_empty_narrow_message(dm_filter);
+    $banner.set_matches(":empty", false);
+    assert.equal($(".empty_feed_notice_main").html(), shimmer_banner);
+
+    // The banner doesn't name other users.
+    people.add_active_user(
+        make_user({email: "polly@example.com", user_id, full_name: "Polly"}),
+    );
+    narrow_banner.refresh_after_users_fetched([alice.user_id]);
+    assert.equal($(".empty_feed_notice_main").html(), shimmer_banner);
+
+    narrow_banner.refresh_after_users_fetched([user_id]);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with Polly yet.",
+            undefined,
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    // Only DM views are redrawn.
+    message_lists.current = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: set_filter([["is", "starred"]]),
+        }),
+    });
+    narrow_banner.refresh_after_users_fetched([user_id]);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages with Polly yet.",
+            undefined,
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
 });
 
 run_test("show_search_stopwords", ({mock_template, override}) => {

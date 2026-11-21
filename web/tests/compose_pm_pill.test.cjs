@@ -277,6 +277,53 @@ run_test("update_user_pill_active_status", ({override_rewire}) => {
     assert.ok(!pill_updated);
 });
 
+run_test("update_placeholder_user_pill", ({override_rewire}) => {
+    const real_user = make_user({
+        email: "ghost@example.com",
+        user_id: 42,
+        full_name: "Real Name",
+    });
+    people.add_active_user(real_user);
+
+    // Early return when widget is uninitialized.
+    override_rewire(compose_pm_pill, "widget", undefined);
+    compose_pm_pill.update_placeholder_user_pill(real_user.user_id);
+
+    let updated = false;
+    let updated_item;
+    const fake_pill = {
+        item: {user_id: real_user.user_id, full_name: "Loading…", is_placeholder_user: true},
+        $element: {0: {}},
+    };
+    const widget = {
+        getPillByPredicate(predicate) {
+            return predicate(fake_pill.item) ? fake_pill : undefined;
+        },
+        updatePill(_element, new_item) {
+            updated = true;
+            updated_item = new_item;
+        },
+    };
+    override_rewire(compose_pm_pill, "widget", widget);
+
+    // No placeholder pill matches, so nothing changes.
+    compose_pm_pill.update_placeholder_user_pill(999);
+    assert.ok(!updated);
+
+    // The pill matches, but we have no data for the user, so nothing changes.
+    fake_pill.item.user_id = 999;
+    compose_pm_pill.update_placeholder_user_pill(999);
+    assert.ok(!updated);
+    fake_pill.item.user_id = real_user.user_id;
+
+    // The pill matches and we have the user's data, so the pill is updated.
+    compose_pm_pill.update_placeholder_user_pill(real_user.user_id);
+    assert.ok(updated);
+    assert.equal(updated_item.user_id, real_user.user_id);
+    assert.equal(updated_item.full_name, "Real Name");
+    assert.equal(updated_item.is_placeholder_user, false);
+});
+
 run_test("update_user_pill_full_name", ({override_rewire}) => {
     // The pill-update logic lives in user_pill.update_pill_full_name and
     // is tested there; here we just verify the wrapper delegates when

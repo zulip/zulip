@@ -74,6 +74,7 @@ export type MessageContainer = {
     sender_is_guest: boolean;
     sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
+    sender_is_placeholder: boolean;
     small_avatar_url: string;
     status_message: string | false;
     stream_url?: string;
@@ -292,22 +293,26 @@ function get_topic_edit_properties(message: Message): {
 type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
+    is_placeholder_user: boolean;
 };
 function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     const user_ids = people.pm_with_user_ids(message);
     assert(user_ids !== undefined);
     const users = user_ids.map((user_id) => {
         let full_name;
+        let is_placeholder_user = false;
         const is_bot = people.is_valid_bot_user(user_id);
         if (muted_users.is_user_muted(user_id)) {
             full_name = $t({defaultMessage: "Muted user"});
         } else {
             full_name = people.get_full_name(user_id);
+            is_placeholder_user = people.is_placeholder_user(user_id);
         }
         return {
             full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             is_bot,
+            is_placeholder_user,
         };
     });
 
@@ -597,6 +602,7 @@ export class MessageListView {
         sender_is_guest: boolean;
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
+        sender_is_placeholder: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
@@ -681,6 +687,7 @@ export class MessageListView {
         const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
             message.sender_id,
         );
+        const sender_is_placeholder = people.is_placeholder_user(message.sender_id);
 
         const small_avatar_url = is_hidden
             ? people.get_muted_user_avatar_url()
@@ -699,6 +706,7 @@ export class MessageListView {
             sender_is_guest,
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
+            sender_is_placeholder,
             is_hidden,
             mention_classname,
             include_sender,

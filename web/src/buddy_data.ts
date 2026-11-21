@@ -218,6 +218,7 @@ export type BuddyUserInfo = {
         WITH_AVATAR: boolean;
     };
     should_add_guest_user_indicator: boolean;
+    is_placeholder_user: boolean;
     faded?: boolean;
 };
 
@@ -249,6 +250,7 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        is_placeholder_user: people.is_placeholder_user(user_id),
     };
 }
 

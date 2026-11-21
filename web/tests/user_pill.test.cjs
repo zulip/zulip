@@ -43,6 +43,7 @@ const isaac_item = {
     deactivated: false,
     img_src: `/avatar/${isaac.user_id}`,
     is_bot: false,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -61,6 +62,7 @@ const deactivated_user_item = {
     deactivated: true,
     img_src: `/avatar/${deactivated_user.user_id}`,
     is_bot: undefined,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -75,6 +77,7 @@ const inaccessible_user_item = {
     deactivated: false,
     img_src: `/avatar/${inaccessible_user_id}`,
     is_bot: false,
+    is_placeholder_user: false,
     status_emoji_info: undefined,
     should_add_guest_user_indicator: false,
 };
@@ -209,8 +212,13 @@ test("typeahead", () => {
     // Both alice and isaac are in our realm, but isaac will be
     // excluded by virtue of already being one of the widget items.
     // And then bogus_item is just a red herring to test robustness.
-    const result = user_pill.typeahead_source(pill_widget);
+    let result = user_pill.typeahead_source(pill_widget);
     assert.deepEqual(result, [{type: "user", user: alice}]);
+
+    // Placeholder users are excluded too.
+    people.add_active_user({...alice, is_placeholder_user: true});
+    result = user_pill.typeahead_source(pill_widget);
+    assert.deepEqual(result, []);
 });
 
 test("update_pill_full_name", () => {

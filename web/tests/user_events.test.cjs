@@ -28,11 +28,13 @@ const settings_preferences = mock_esm("../src/settings_preferences", {
 });
 const settings_bots = mock_esm("../src/settings_bots", {
     redraw_your_bots_list() {},
+    refresh_after_users_fetched() {},
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
     hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
+    refresh_users_panel_after_users_fetched() {},
 });
 mock_esm("../src/settings_users", {
     update_user_data() {},
@@ -42,6 +44,7 @@ mock_esm("../src/settings_users", {
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
+    refresh_after_users_fetched() {},
 });
 
 const buddy_list = mock_esm("../src/buddy_list", {
@@ -53,13 +56,15 @@ const buddy_list = mock_esm("../src/buddy_list", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     update_user_pill_active_status() {},
 });
-mock_esm("../src/compose_recipient", {
+const compose_recipient = mock_esm("../src/compose_recipient", {
+    update_compose_area_placeholder_text() {},
     update_user_name_in_compose() {},
 });
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
 const recent_view_ui = mock_esm("../src/recent_view_ui", {
+    complete_rerender() {},
     rerender_conversations_with_user() {},
 });
 
@@ -88,6 +93,50 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 });
 mock_esm("../src/settings_streams", {
     rerender_default_streams_for_role_change() {},
+});
+mock_esm("../src/inbox_ui", {
+    complete_rerender() {},
+});
+mock_esm("../src/scheduled_messages_overlay_ui", {
+    rerender() {},
+});
+mock_esm("../src/reactions", {
+    update_user_full_name() {},
+});
+mock_esm("../src/read_receipts", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/drafts_overlay_ui", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/search", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/composebox_typeahead", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/stream_edit_subscribers", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/user_group_edit_members", {
+    refresh_after_users_fetched() {},
+});
+mock_esm("../src/settings_invites", {
+    refresh_after_users_fetched() {},
+});
+const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
+    update_reply_button() {},
+});
+const narrow_banner = mock_esm("../src/narrow_banner", {
+    refresh_after_users_fetched() {},
+});
+const narrow_title = mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
+});
+mock_esm("../src/narrow_state", {
+    filter: () => message_lists.current?.data.filter,
+    is_message_feed_visible: () => message_lists.current !== undefined,
+    pm_ids_set: (filter) => new Set(filter?.terms_with_operator("dm")[0]?.operand),
 });
 
 const bot_data = zrequire("bot_data");
@@ -482,4 +531,89 @@ run_test("update_person rerenders the user's recent view rows", ({override}) => 
 
     user_events.update_person({user_id: marie.user_id, timezone: "UTC"});
     assert.equal(users_at_rerender.length, changes_recent_view_shows.length);
+});
+
+run_test("initialize registers users_fetched callback", ({override}) => {
+    initialize();
+
+    let pm_list_updated = false;
+    const full_name_updates = [];
+    const avatar_updates = [];
+    let buddy_list_user_ids;
+
+    override(pm_list, "update_private_messages", () => {
+        pm_list_updated = true;
+    });
+    override(message_live_update, "update_user_full_name", (user_id, full_name) => {
+        full_name_updates.push({user_id, full_name});
+    });
+    override(message_live_update, "update_avatar", (user_id, avatar_url) => {
+        avatar_updates.push({user_id, avatar_url});
+    });
+    buddy_data.insert_or_move = (user_ids) => {
+        buddy_list_user_ids = user_ids;
+    };
+    buddy_data.all_user_ids = [32];
+    override(compose_pm_pill, "update_placeholder_user_pill", noop);
+    let compose_placeholder_text_updated = false;
+    override(compose_recipient, "update_compose_area_placeholder_text", () => {
+        compose_placeholder_text_updated = true;
+    });
+    let reply_button_updated = false;
+    override(compose_closed_ui, "update_reply_button", () => {
+        reply_button_updated = true;
+    });
+    let narrow_title_filter;
+    override(narrow_title, "update_narrow_title", (filter) => {
+        narrow_title_filter = filter;
+    });
+    let narrow_banner_user_ids;
+    override(narrow_banner, "refresh_after_users_fetched", (user_ids) => {
+        narrow_banner_user_ids = user_ids;
+    });
+
+    const isaac = make_user({
+        email: "isaac@example.com",
+        user_id: 32,
+        full_name: "Isaac Newton",
+        avatar_url: "isaac-avatar-url",
+    });
+    people.add_active_user(isaac);
+    people.add_valid_user_id(isaac.user_id);
+
+    // Narrow to a DM with the fetched user so the callback refreshes the
+    // reply button and titles. Hide the header, as when the search bar
+    // is open, so that only its title text gets updated.
+    $("#message_view_header").addClass("hidden");
+    const $navbar_title = $("#message_view_header .message-header-navbar-title");
+    $navbar_title.text("");
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+
+    user_events.initialize();
+    people.notify_users_fetched([isaac.user_id]);
+
+    assert.ok(pm_list_updated);
+    assert.ok(compose_placeholder_text_updated);
+    assert.ok(reply_button_updated);
+    assert.equal(narrow_title_filter, message_lists.current.data.filter);
+    assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
+    assert.equal($navbar_title.text(), "Isaac Newton");
+    assert.deepEqual(full_name_updates, [{user_id: 32, full_name: "Isaac Newton"}]);
+    assert.deepEqual(avatar_updates, [{user_id: 32, avatar_url: "isaac-avatar-url"}]);
+    assert.deepEqual(buddy_list_user_ids, [isaac.user_id]);
+
+    // Fetched users who are not in the buddy list are not added to it.
+    people.notify_users_fetched([me.user_id]);
+    assert.deepEqual(buddy_list_user_ids, []);
+
+    // A DM title keeps its loading shimmer while any recipient is
+    // still a placeholder.
+    const placeholder = people.add_placeholder_user(33);
+    people.add_valid_user_id(placeholder.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [isaac.user_id, placeholder.user_id]}]),
+    );
+    $navbar_title.text("");
+    people.notify_users_fetched([isaac.user_id]);
+    assert.equal($navbar_title.text(), "");
 });

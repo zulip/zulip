@@ -8,6 +8,7 @@ import type {Toggle} from "./components.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -15,6 +16,7 @@ import {redraw_all_bots_list, redraw_your_bots_list} from "./settings_bots.ts";
 import {resize_textareas_in_section} from "./settings_components.ts";
 import * as settings_sections from "./settings_sections.ts";
 import {
+    mark_users_lists_for_redraw,
     redraw_active_users_list,
     redraw_deactivated_users_list,
     redraw_imported_users_list,
@@ -68,6 +70,20 @@ function set_settings_header($elem: JQuery, key: string): void {
     }
 }
 
+function redraw_users_list_for_tab(key: string): void {
+    switch (key) {
+        case "active":
+            redraw_active_users_list();
+            break;
+        case "deactivated":
+            redraw_deactivated_users_list();
+            break;
+        case "imported":
+            redraw_imported_users_list();
+            break;
+    }
+}
+
 export class SettingsPanelMenu {
     $main_elem: JQuery;
     hash_prefix: string;
@@ -108,18 +124,7 @@ export class SettingsPanelMenu {
                 this.set_user_settings_tab(key);
                 $(".user-settings-section").hide();
                 update_imported_users_tab();
-
-                switch (key) {
-                    case "active":
-                        redraw_active_users_list();
-                        break;
-                    case "deactivated":
-                        redraw_deactivated_users_list();
-                        break;
-                    case "imported":
-                        redraw_imported_users_list();
-                        break;
-                }
+                redraw_users_list_for_tab(key);
                 $(`[data-user-settings-section="${CSS.escape(key)}"]`).show();
             },
         });
@@ -436,5 +441,19 @@ export function update_imported_users_tab(
     $(".org-user-settings-switcher [data-tab-key='imported']").hide();
     if (hide_tab_if_active) {
         org_settings.org_user_settings_toggler.goto("active");
+    }
+}
+
+export function refresh_users_panel_after_users_fetched(): void {
+    if (overlays.settings_open()) {
+        update_imported_users_tab();
+        // The role filter button keeps its old user count until this
+        // panel loads again. Its menu counts are computed each time it
+        // opens, so they are always current.
+        mark_users_lists_for_redraw();
+        const users_settings_tab = org_settings.get_settings_tab("users");
+        if (users_settings_tab !== undefined) {
+            redraw_users_list_for_tab(users_settings_tab);
+        }
     }
 }

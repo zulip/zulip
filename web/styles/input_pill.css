@@ -34,6 +34,28 @@
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        /* For pills representing users whose data is still loading,
+           shimmer the entire pill background to the right of the
+           avatar, leaving the profile picture itself untouched. */
+        &.pill-loading-shimmer {
+            --shimmer-color-base: var(--color-loading-shimmer-pill-base);
+            --shimmer-color-highlight: var(
+                --color-loading-shimmer-pill-highlight
+            );
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0 0 0 var(--height-input-pill);
+                border-radius: 0 4px 4px 0;
+                pointer-events: none;
+            }
+
+            .pill-label {
+                color: transparent;
+            }
+        }
+
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
         &:focus {
