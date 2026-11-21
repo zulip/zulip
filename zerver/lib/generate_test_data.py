@@ -1,6 +1,8 @@
 import itertools
 import os
 import random
+from collections.abc import Iterator
+from dataclasses import dataclass
 from typing import Any
 
 import orjson
@@ -55,25 +57,34 @@ def generate_topics(num_topics: int, percent_topic_links: float = 0) -> list[str
     return results
 
 
-def load_generators(config: dict[str, Any]) -> dict[str, Any]:
-    results = {}
+@dataclass
+class FlairGenerators:
+    emojis: Iterator[str]
+    links: Iterator[str]
+    maths: Iterator[str]
+    inline_code: Iterator[str]
+    code_blocks: Iterator[str]
+    quote_blocks: Iterator[str]
+    images: Iterator[str]
+    lists: Iterator[str]
+
+
+def load_generators(config: dict[str, Any]) -> FlairGenerators:
     cfg = config["gen_fodder"]
 
-    results["emojis"] = itertools.cycle(cfg["emoji"])
-    results["links"] = itertools.cycle(cfg["links"])
-
-    results["maths"] = itertools.cycle(cfg["maths"])
-    results["inline-code"] = itertools.cycle(cfg["inline-code"])
-    results["code-blocks"] = itertools.cycle(cfg["code-blocks"])
-    results["quote-blocks"] = itertools.cycle(cfg["quote-blocks"])
-    results["images"] = itertools.cycle(cfg["images"])
-
-    results["lists"] = itertools.cycle(cfg["lists"])
-
-    return results
+    return FlairGenerators(
+        emojis=itertools.cycle(cfg["emoji"]),
+        links=itertools.cycle(cfg["links"]),
+        maths=itertools.cycle(cfg["maths"]),
+        inline_code=itertools.cycle(cfg["inline-code"]),
+        code_blocks=itertools.cycle(cfg["code-blocks"]),
+        quote_blocks=itertools.cycle(cfg["quote-blocks"]),
+        images=itertools.cycle(cfg["images"]),
+        lists=itertools.cycle(cfg["lists"]),
+    )
 
 
-def parse_file(config: dict[str, Any], gens: dict[str, Any], corpus_file: str) -> list[str]:
+def parse_file(config: dict[str, Any], gens: FlairGenerators, corpus_file: str) -> list[str]:
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
@@ -101,7 +112,7 @@ def get_flair_gen(length: int) -> list[str]:
     return result
 
 
-def add_flair(paragraphs: list[str], gens: dict[str, Any]) -> list[str]:
+def add_flair(paragraphs: list[str], gens: FlairGenerators) -> list[str]:
     # roll the dice and see what kind of flair we should add, if any
     results = []
 
@@ -120,19 +131,19 @@ def add_flair(paragraphs: list[str], gens: dict[str, Any]) -> list[str]:
         elif key == "quoted":
             txt = ">" + paragraphs[i]
         elif key == "quote-block":
-            txt = paragraphs[i] + "\n" + next(gens["quote-blocks"])
+            txt = paragraphs[i] + "\n" + next(gens.quote_blocks)
         elif key == "inline-code":
-            txt = paragraphs[i] + "\n" + next(gens["inline-code"])
+            txt = paragraphs[i] + "\n" + next(gens.inline_code)
         elif key == "code-block":
-            txt = paragraphs[i] + "\n" + next(gens["code-blocks"])
+            txt = paragraphs[i] + "\n" + next(gens.code_blocks)
         elif key == "math":
-            txt = paragraphs[i] + "\n" + next(gens["maths"])
+            txt = paragraphs[i] + "\n" + next(gens.maths)
         elif key == "list":
-            txt = paragraphs[i] + "\n" + next(gens["lists"])
+            txt = paragraphs[i] + "\n" + next(gens.lists)
         elif key == "emoji":
-            txt = add_emoji(paragraphs[i], next(gens["emojis"]))
+            txt = add_emoji(paragraphs[i], next(gens.emojis))
         elif key == "link":
-            txt = add_link(paragraphs[i], next(gens["links"]))
+            txt = add_link(paragraphs[i], next(gens.links))
         elif key == "images":
             # Ideally, this would actually be a 2-step process that
             # first hits the `upload` endpoint and then adds that URL;
@@ -140,7 +151,7 @@ def add_flair(paragraphs: list[str], gens: dict[str, Any]) -> list[str]:
             # previews of files already in the project (which are the
             # only files we can link to as being definitely available
             # even when developing offline).
-            txt = paragraphs[i] + "\n" + next(gens["images"])
+            txt = paragraphs[i] + "\n" + next(gens.images)
 
         results.append(txt)
 
@@ -211,7 +222,7 @@ def write_file(paragraphs: list[str], filename: str) -> None:
 
 
 def create_test_data() -> None:
-    gens = load_generators(config)  # returns a dictionary of generators
+    gens = load_generators(config)
 
     paragraphs = parse_file(config, gens, config["corpus"]["filename"])
 
