@@ -384,7 +384,28 @@ p.n-margin {
 .app {
     min-width: 100%;
     min-height: var(--full-height-dynamic-viewport);
+    position: relative;
     z-index: 99;
+}
+
+#skip-navigation {
+    position: absolute;
+    left: 0;
+    top: -10000px;
+    background-color: hsl(170deg 47% 33%);
+    color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 600;
+    outline: none;
+    padding: 5px 12px;
+    z-index: 200;
+}
+
+
+#skip-navigation:focus,
+#skip-navigation:focus-visible {
+    top: 0;
 }
 
 .app-main,
