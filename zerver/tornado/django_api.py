@@ -216,45 +216,33 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 # with the schema verified in `zerver/lib/event_schema.py`.
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-#
-# The event argument accepts either a Pydantic BaseEvent or a legacy
-# dict, while we are migrating call sites. Once the migration is done,
-# this should narrow to BaseEvent so mypy enforces that every event
-# sent to clients has a complete, declared schema.
-def _event_to_dict(event: Mapping[str, Any] | BaseEvent) -> Mapping[str, Any]:
-    if isinstance(event, BaseEvent):
-        # Plain-dict events only had the keys the caller put in them. A
-        # Pydantic model has every declared field, so a naive model_dump()
-        # would add "field: null" for each optional field the caller
-        # skipped, which the dict version never sent and the OpenAPI
-        # schema rejects. exclude_unset drops those (recursively, so
-        # nested models behave the same way), but it also drops type/op,
-        # which are spelled as class defaults on the event classes; put
-        # those back.
-        data = event.model_dump(exclude_unset=True)
-        for name, field_info in type(event).model_fields.items():
-            if name not in data:
-                default = field_info.get_default(call_default_factory=True)
-                if default is not None:
-                    # Only the constant type/op discriminators (and the
-                    # legacy "operation" duplicate) are spelled as class
-                    # defaults; a default on any other field would silently
-                    # change which fields are sent by call sites that omit
-                    # it.
-                    assert name in ("type", "op", "operation")
-                    data[name] = default
-        return data
-    return event
+def _event_to_dict(event: BaseEvent) -> dict[str, Any]:
+    # A model has every declared field, so a naive model_dump() would
+    # add "field: null" for each optional field the caller skipped,
+    # which the OpenAPI schema rejects. exclude_unset drops those
+    # (recursively, so nested models behave the same way), but it also
+    # drops type/op, which are spelled as class defaults on the event
+    # classes; put those back.
+    data = event.model_dump(exclude_unset=True)
+    for name, field_info in type(event).model_fields.items():
+        if name not in data:
+            default = field_info.get_default(call_default_factory=True)
+            if default is not None:
+                # Only the constant type/op discriminators (and the
+                # legacy "operation" duplicate) are spelled as class
+                # defaults; a default on any other field would silently
+                # change which fields are sent by call sites that omit
+                # it.
+                assert name in ("type", "op", "operation")
+                data[name] = default
+    return data
 
 
-def send_event_rollback_unsafe(
+def _send_event_dict_rollback_unsafe(
     realm: Realm,
-    event: Mapping[str, Any] | BaseEvent,
+    event: Mapping[str, Any],
     users: Iterable[int] | Iterable[Mapping[str, Any]],
 ) -> None:
-    """`users` is a list of user IDs, or in some special cases like message
-    send/update or embeds, dictionaries containing extra data."""
-    event = _event_to_dict(event)
     realm_ports = get_realm_tornado_ports(realm)
     if len(realm_ports) == 1:
         port_user_map = {realm_ports[0]: list(users)}
@@ -272,12 +260,22 @@ def send_event_rollback_unsafe(
         )
 
 
-def send_event_on_commit(
+def send_event_rollback_unsafe(
     realm: Realm,
-    event: Mapping[str, Any] | BaseEvent,
+    event: BaseEvent,
     users: Iterable[int] | Iterable[Mapping[str, Any]],
 ) -> None:
-    event = _event_to_dict(event)
+    """`users` is a list of user IDs, or in some special cases like message
+    send/update or embeds, dictionaries containing extra data."""
+    _send_event_dict_rollback_unsafe(realm, _event_to_dict(event), users)
+
+
+def send_event_on_commit(
+    realm: Realm,
+    event: BaseEvent,
+    users: Iterable[int] | Iterable[Mapping[str, Any]],
+) -> None:
+    event_dict = _event_to_dict(event)
     if not settings.USING_RABBITMQ:
         # In tests, round-trip the event through JSON, as happens with
         # RabbitMQ.  zerver.lib.queue also enforces this, but the
@@ -285,8 +283,8 @@ def send_event_on_commit(
         # trace which event was at fault -- so we also check it
         # immediately, here.
         try:
-            event = orjson.loads(orjson.dumps(event))
+            event_dict = orjson.loads(orjson.dumps(event_dict))
         except TypeError:
-            print(event)
+            print(event_dict)
             raise
-    transaction.on_commit(lambda: send_event_rollback_unsafe(realm, event, users))
+    transaction.on_commit(lambda: _send_event_dict_rollback_unsafe(realm, event_dict, users))

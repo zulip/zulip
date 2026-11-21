@@ -1226,7 +1226,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
 
     def test_events_sent_after_transaction_commits(self) -> None:
         """
-        Tests that `send_event_rollback_unsafe` is hooked to `transaction.on_commit`.
+        Tests that `send_event_on_commit` publishes the event only after the transaction commits.
         This is important, because we don't want to end up holding locks on message rows
         for too long if the event queue runs into a problem.
         """
