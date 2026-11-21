@@ -23,6 +23,7 @@ from zerver.actions.message_send import (
     internal_send_stream_message,
     render_incoming_message,
 )
+from zerver.actions.scheduled_messages import notify_senders_of_scheduled_messages_to_moved_topic
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
@@ -1432,6 +1433,7 @@ def do_update_message(
                 remove_orig_topic_visibility_policy=True,
             )
         )
+        notify_senders_of_scheduled_messages_to_moved_topic(stream_being_edited, orig_topic_name)
 
     elif message_edit_request.is_stream_edited or message_edit_request.is_topic_edited:
         sender = target_message.sender
