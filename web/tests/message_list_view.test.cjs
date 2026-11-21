@@ -334,7 +334,7 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
         if (group_id === undefined) {
             return {length: 0};
         }
-        return {length: 1, parent: () => ({expectOne: () => ({attr: () => group_id})})};
+        return {length: 1, closest: () => ({expectOne: () => ({attr: () => group_id})})};
     };
 
     view._message_groups = [{message_group_id: "group-A"}, {message_group_id: "group-B"}];
