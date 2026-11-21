@@ -59,11 +59,6 @@ def load_generators(config: dict[str, Any]) -> dict[str, Any]:
     results = {}
     cfg = config["gen_fodder"]
 
-    results["nouns"] = itertools.cycle(cfg["nouns"])
-    results["adjectives"] = itertools.cycle(cfg["adjectives"])
-    results["connectors"] = itertools.cycle(cfg["connectors"])
-    results["verbs"] = itertools.cycle(cfg["verbs"])
-    results["adverbs"] = itertools.cycle(cfg["adverbs"])
     results["emojis"] = itertools.cycle(cfg["emoji"])
     results["links"] = itertools.cycle(cfg["links"])
 
