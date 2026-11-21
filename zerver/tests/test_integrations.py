@@ -67,6 +67,10 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertEqual(
             integration.get_bot_avatar_path(), "images/integrations/bot_avatars/prometheus.png"
         )
+        self.assertEqual(
+            integration.get_bot_avatar_path(medium=True),
+            "images/integrations/bot_avatars/prometheus-medium.png",
+        )
 
         # bot avatar path for an integration using the fallback Zulip logo
         integration = Integration("alertmanager", ["misc"])

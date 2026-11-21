@@ -468,6 +468,7 @@ def get_stream_name(stream: Stream | None) -> str | None:
 
 @require_human_non_guest_user
 @typed_endpoint
+@transaction.atomic(durable=True)
 def patch_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -573,6 +574,8 @@ def patch_bot_backend(
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
 
+    # Uploading the avatar image can't be rolled back with the rest of
+    # this transaction, so it must stay after every update that can fail.
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
@@ -653,8 +656,7 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
+    service_name = service_name or short_name
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
@@ -702,9 +704,9 @@ def add_bot_backend(
             user_profile, default_events_register_stream_name
         )
 
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        check_valid_incoming_webhook_bot_config(service_name, config_data)
-    elif bot_type == UserProfile.EMBEDDED_BOT and service_name:
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        check_valid_incoming_webhook_bot_config(config_data)
+    elif bot_type == UserProfile.EMBEDDED_BOT:
         check_valid_embedded_bot_config(service_name, config_data)
 
     bot_profile = do_create_user(
@@ -728,7 +730,6 @@ def add_bot_backend(
         upload_avatar_image(user_file, bot_profile, content_type=content_type, future=False)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        assert isinstance(service_name, str)
         add_service(
             name=service_name,
             user_profile=bot_profile,
@@ -736,9 +737,6 @@ def add_bot_backend(
             interface=interface_type,
             token=generate_api_key(),
         )
-
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        set_bot_config(bot_profile, "integration_id", service_name)
 
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         for key, value in config_data.items():
