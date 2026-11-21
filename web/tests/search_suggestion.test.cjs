@@ -1034,6 +1034,56 @@ test("channel_completion", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("channel_word_boundary_completion", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+
+    const project_design_planning_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: project_design_planning_id,
+            name: "project-design-planning",
+            subscribed: true,
+        }),
+    );
+    const web_design_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: web_design_id, name: "web_design", subscribed: true}),
+    );
+    const team_design_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: team_design_id, name: "team/design", subscribed: true}),
+    );
+    const design_channels = [
+        `channel:${project_design_planning_id}`,
+        `channel:${web_design_id}`,
+        `channel:${team_design_id}`,
+    ];
+
+    // Hyphens, underscores and slashes start a new word, like spaces,
+    // and matching ignores case.
+    assert.deepEqual(get_suggestions("design"), ["design", ...design_channels]);
+    assert.deepEqual(get_suggestions("channel:DES"), design_channels);
+    assert.deepEqual(get_suggestions("channel:design-plan"), [
+        `channel:${project_design_planning_id}`,
+    ]);
+
+    // A query with diacritics also matches names without them.
+    assert.deepEqual(get_suggestions("channel:dés"), design_channels);
+
+    // A match must start at the beginning of a word.
+    assert.deepEqual(get_suggestions("esign"), ["esign"]);
+
+    // Prefix matches rank above matches at a later word.
+    const design_reviews_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: design_reviews_id, name: "design reviews", subscribed: true}),
+    );
+    assert.deepEqual(get_suggestions("channel:des"), [
+        `channel:${design_reviews_id}`,
+        ...design_channels,
+    ]);
+});
+
 test("channel_exact_name_surfaces_siblings", ({override}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
@@ -1045,31 +1095,40 @@ test("channel_exact_name_surfaces_siblings", ({override}) => {
     stream_data.add_sub_for_tests(
         make_stream({stream_id: core_team_id, name: "core team", subscribed: true}),
     );
+    const dev_core_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: dev_core_id, name: "dev-core", subscribed: true}),
+    );
 
     // Typing the exact name "core" resolves to its stream_id via
-    // `Filter.parse`, but we still phrase-match the name so the
-    // sibling channel "core team" surfaces as an alternative
-    // interpretation, just as it would for the still-incomplete
+    // `Filter.parse`, but we still match the name, so the sibling
+    // channels "core team" and "dev-core" surface as alternative
+    // interpretations, just as they would for the still-incomplete
     // "channel:cor".
     let query = "channel:core";
     let suggestions = get_suggestions(query);
-    let expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    let expected = [`channel:${core_id}`, `channel:${core_team_id}`, `channel:${dev_core_id}`];
     assert.deepEqual(suggestions, expected);
 
     // The still-incomplete name behaves identically, confirming the
     // exact-match case isn't a special-cased regression.
     query = "channel:cor";
     suggestions = get_suggestions(query);
-    expected = [`channel:${core_id}`, `channel:${core_team_id}`];
+    expected = [`channel:${core_id}`, `channel:${core_team_id}`, `channel:${dev_core_id}`];
     assert.deepEqual(suggestions, expected);
 
     // A numeric operand resolves to that stream_id's channel, but we
-    // also match it as literally typed, so `channel:7` surfaces both
-    // #Venice (id 7) and a channel whose name starts with "7".
+    // also match it as literal text, so `channel:7` surfaces both
+    // #Venice (id 7) and a channel whose name starts with "7". The
+    // literal only matches at the start of a space-separated word, so
+    // "release-7" isn't suggested.
     stream_data.add_sub_for_tests(make_stream({stream_id: 7, name: "Venice", subscribed: true}));
     const seventh_floor_id = new_stream_id();
     stream_data.add_sub_for_tests(
         make_stream({stream_id: seventh_floor_id, name: "7th floor", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: new_stream_id(), name: "release-7", subscribed: true}),
     );
     query = "channel:7";
     suggestions = get_suggestions(query);
@@ -1228,6 +1287,24 @@ test("channel_multi_word_completion", ({override}) => {
         `channel:${deploy_id} h`,
     ];
     assert.deepEqual(suggestions, expected);
+
+    // A multi-word match can also start after a hyphen.
+    const ci_automated_testing_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: ci_automated_testing_id,
+            name: "ci-automated testing",
+            subscribed: true,
+        }),
+    );
+    suggestions = get_suggestions("channel:automated testing");
+    expected = [
+        `channel:${automated_testing_id}`,
+        `channel:${automated_id} testing`,
+        `channel:${q1_automated_testing_id}`,
+        `channel:${ci_automated_testing_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
 });
 
 test("channel_multi_word_renamed_completion", ({override, override_rewire}) => {
@@ -1276,11 +1353,16 @@ test("channel_multi_word_name_starting_with_id", ({override}) => {
     // A channel named "15 test" whose leading word ("15") is also
     // another channel's stream_id. Typing `channel:15 test` resolves
     // "15" to the id-15 channel for the merged query, but we also match
-    // the query as literally typed, so "15 test" still surfaces by name.
+    // the query as literal text, so "15 test" still surfaces by name.
+    // The literal only matches at the start of a space-separated word,
+    // so "release-15 test" isn't suggested.
     stream_data.add_sub_for_tests(make_stream({stream_id: 15, name: "lobby", subscribed: true}));
     const fifteen_test_id = new_stream_id();
     stream_data.add_sub_for_tests(
         make_stream({stream_id: fifteen_test_id, name: "15 test", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: new_stream_id(), name: "release-15 test", subscribed: true}),
     );
 
     const suggestions = get_suggestions("channel:15 test");
