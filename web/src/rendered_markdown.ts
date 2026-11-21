@@ -163,6 +163,43 @@ export function set_name_in_mention_element(
     wrap_mention_content_in_dom_element(element, user_is_bot);
 }
 
+function handle_inline_video_error($video: JQuery): void {
+    const $container = $video.closest(".message_inline_video");
+    const src = $video.attr("src");
+
+    // A <video> element can't display the placeholder image that the
+    // server returns for a deleted upload, and its error event looks
+    // the same as for a format the browser can't play. So for uploaded
+    // files, ask the server whether the file still exists.
+    if (src === undefined || !src.startsWith("/user_uploads/")) {
+        $container.addClass("video-format-unsupported");
+        return;
+    }
+
+    void (async () => {
+        let deleted = false;
+        try {
+            const response = await fetch(src, {method: "HEAD"});
+            deleted = response.status === 404;
+        } catch {
+            // Treat network errors like an unsupported format.
+        }
+
+        if (!deleted) {
+            $container.addClass("video-format-unsupported");
+            return;
+        }
+
+        // Reuse the video's sizing so the placeholder takes its place.
+        const $placeholder = $("<img>")
+            .addClass("media-video-element")
+            .attr("src", "/static/images/errors/video-not-exist.png")
+            .attr("alt", $t({defaultMessage: "This video does not exist or has been deleted."}));
+        $video.replaceWith($placeholder);
+        $container.addClass("video-deleted");
+    })();
+}
+
 export const update_elements = ($content: JQuery): void => {
     let message: Message | undefined;
     // Set the rtl class if the text has an rtl direction
@@ -179,11 +216,12 @@ export const update_elements = ($content: JQuery): void => {
         });
     }
 
-    // Hide video preview for browsers that cannot play the format.
+    // Hide video preview for browsers that cannot play the format,
+    // or show a placeholder if the uploaded video was deleted.
     // The download link remains available.
     $content.find<HTMLMediaElement>(".message_inline_video video").each((_index, video) => {
         $(video).on("error", () => {
-            $(video).closest(".message_inline_video").addClass("video-format-unsupported");
+            handle_inline_video_error($(video));
         });
     });
 

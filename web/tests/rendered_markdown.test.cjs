@@ -7,7 +7,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
@@ -216,6 +216,79 @@ run_test("message_inline_video_unsupported_format", () => {
     $video.trigger("error");
 
     assert.ok($video_container.hasClass("video-format-unsupported"));
+});
+
+async function trigger_uploaded_video_error(override, name, get_response) {
+    const $content = get_content_element();
+    const $video = $.create(`uploaded_video_element_${name}`);
+    const $video_container = $.create(`uploaded_video_container_${name}`);
+    $video.attr("src", "/user_uploads/2/ab/cdef/clip.mp4");
+
+    $video.set_closest_results(".message_inline_video", $video_container);
+    $content.set_find_results(".message_inline_video video", $video);
+
+    const fetch_calls = [];
+    override(globalThis, "fetch", async (url, options) => {
+        fetch_calls.push({url, method: options.method});
+        return get_response();
+    });
+    let replacement;
+    $video[0].replaceWith = (new_element) => {
+        replacement = new_element;
+    };
+
+    rm.update_elements($content);
+    $video.trigger("error");
+    // Let the HEAD request's promise resolve.
+    await clock.runAllAsync();
+
+    assert.deepEqual(fetch_calls, [{url: "/user_uploads/2/ab/cdef/clip.mp4", method: "HEAD"}]);
+    return {$video_container, replacement};
+}
+
+run_test("message_inline_video_deleted", async ({override}) => {
+    const {$video_container, replacement} = await trigger_uploaded_video_error(
+        override,
+        "deleted",
+        () => ({status: 404}),
+    );
+
+    // A deleted upload is replaced with the deleted-video placeholder.
+    assert.ok($video_container.hasClass("video-deleted"));
+    assert.ok(!$video_container.hasClass("video-format-unsupported"));
+    assert.equal(replacement.getAttribute("src"), "/static/images/errors/video-not-exist.png");
+    assert.equal(
+        replacement.getAttribute("alt"),
+        "translated: This video does not exist or has been deleted.",
+    );
+});
+
+run_test("message_inline_video_uploaded_unsupported_format", async ({override}) => {
+    const {$video_container, replacement} = await trigger_uploaded_video_error(
+        override,
+        "exists",
+        () => ({status: 200}),
+    );
+
+    // The upload exists, so the browser just can't play its format.
+    assert.ok($video_container.hasClass("video-format-unsupported"));
+    assert.ok(!$video_container.hasClass("video-deleted"));
+    assert.equal(replacement, undefined);
+});
+
+run_test("message_inline_video_uploaded_network_error", async ({override}) => {
+    const {$video_container, replacement} = await trigger_uploaded_video_error(
+        override,
+        "network_error",
+        () => {
+            throw new TypeError("Failed to fetch");
+        },
+    );
+
+    // If we can't reach the server, fall back to hiding the preview.
+    assert.ok($video_container.hasClass("video-format-unsupported"));
+    assert.ok(!$video_container.hasClass("video-deleted"));
+    assert.equal(replacement, undefined);
 });
 
 run_test("user-mention", ({override}) => {
