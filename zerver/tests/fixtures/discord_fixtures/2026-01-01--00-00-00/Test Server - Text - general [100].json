@@ -1,0 +1,242 @@
+{
+  "guild": {
+    "id": "guild001",
+    "name": "Test Server",
+    "iconUrl": "_media/server-icon.png"
+  },
+  "channel": {
+    "id": "100",
+    "type": "GuildTextChat",
+    "categoryId": "10",
+    "category": "Text",
+    "name": "general",
+    "topic": "General discussion"
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "messages": [
+    {
+      "id": "msg001",
+      "type": "Default",
+      "timestamp": "2026-01-01T10:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hello everyone!",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [
+        {
+          "emoji": {
+            "id": "",
+            "name": "thumbsup",
+            "code": "thumbsup",
+            "isAnimated": false,
+            "imageUrl": ""
+          },
+          "count": 1,
+          "users": [
+            {
+              "id": "user002",
+              "name": "bob",
+              "discriminator": "0",
+              "nickname": "Bob Jones",
+              "isBot": false
+            }
+          ]
+        }
+      ],
+      "mentions": []
+    },
+    {
+      "id": "msg002",
+      "type": "Default",
+      "timestamp": "2026-01-01T10:05:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Check out this file",
+      "author": {
+        "id": "user002",
+        "name": "bob",
+        "discriminator": "0",
+        "nickname": "Bob Jones",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user2.png"
+      },
+      "attachments": [
+        {
+          "id": "att001",
+          "url": "_media/test-upload.png",
+          "fileName": "test-upload.png",
+          "fileSizeBytes": 1024
+        }
+      ],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "msg003",
+      "type": "Reply",
+      "timestamp": "2026-01-01T10:10:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Welcome!",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "reference": {
+        "messageId": "msg001",
+        "channelId": "100",
+        "guildId": "guild001"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "msg004",
+      "type": "GuildMemberJoin",
+      "timestamp": "2026-01-01T09:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Welcome to the server!",
+      "author": {
+        "id": "user003",
+        "name": "charlie",
+        "discriminator": "0",
+        "nickname": "Charlie Brown",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": null
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "msg005",
+      "type": "Default",
+      "timestamp": "2026-01-01T10:15:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "I'm a bot message",
+      "author": {
+        "id": "bot001",
+        "name": "testbot",
+        "discriminator": "0",
+        "nickname": "Test Bot",
+        "color": null,
+        "isBot": true,
+        "roles": [],
+        "avatarUrl": null
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "msg006",
+      "type": "Default",
+      "timestamp": "2026-01-01T10:20:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hello <@user002>, check <#101> and @everyone",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [
+        {
+          "emoji": {
+            "id": "emoji001",
+            "name": "custom_emoji",
+            "code": "custom_emoji",
+            "isAnimated": false,
+            "imageUrl": "_media/custom_emoji.png"
+          },
+          "count": 1,
+          "users": [
+            {
+              "id": "user002",
+              "name": "bob",
+              "discriminator": "0",
+              "nickname": "Bob Jones",
+              "isBot": false
+            }
+          ]
+        }
+      ],
+      "mentions": []
+    },
+    {
+      "id": "msg007",
+      "type": "ChannelPinnedMessage",
+      "timestamp": "2026-01-01T10:25:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Pinned a message.",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    }
+  ],
+  "messageCount": 7
+}

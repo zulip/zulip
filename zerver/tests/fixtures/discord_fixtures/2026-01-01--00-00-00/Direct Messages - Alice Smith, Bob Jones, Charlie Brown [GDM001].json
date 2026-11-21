@@ -1,0 +1,66 @@
+{
+  "guild": null,
+  "channel": {
+    "id": "GDM001",
+    "type": "DirectGroupMessage",
+    "categoryId": null,
+    "category": null,
+    "name": "Alice Smith, Bob Jones, Charlie Brown",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "messages": [
+    {
+      "id": "gdm001",
+      "type": "Default",
+      "timestamp": "2026-01-01T14:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hey everyone, group chat!",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "gdm002",
+      "type": "Default",
+      "timestamp": "2026-01-01T14:05:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hello from the group!",
+      "author": {
+        "id": "user002",
+        "name": "bob",
+        "discriminator": "0",
+        "nickname": "Bob Jones",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user2.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    }
+  ],
+  "messageCount": 2
+}
