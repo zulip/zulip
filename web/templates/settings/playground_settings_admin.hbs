@@ -11,12 +11,12 @@
             {{/tr}}
         </p>
         <p>
-            {{t "For example, to configure a code playground for code blocks tagged as Rust,
+            {{t "For example, to configure a code playground for code blocks tagged as rust,
               you can set:" }}
         </p>
         <ul>
             <li>
-                {{t "Language" }}: <span class="rendered_markdown"><code>Rust</code></span>
+                {{t "Language" }}: <span class="rendered_markdown"><code>rust</code></span>
             </li>
             <li>
                 {{t "Name" }}: <span class="rendered_markdown"><code>Rust playground</code></span>
@@ -44,7 +44,10 @@
                     <div class="alert" id="admin-playground-status"></div>
                     <div class="input-group">
                         <label for="playground_pygments_language"> {{t "Language" }}</label>
-                        <input type="text" id="playground_pygments_language" class="settings_text_input" name="pygments_language" autocomplete="off" placeholder="Rust" />
+                        <div class="playground-language-input-container">
+                            <input type="text" id="playground_pygments_language" class="settings_text_input" name="pygments_language" autocomplete="off" placeholder="rust" />
+                            <div class="settings-field-hint">{{t "Must be lowercase letters and numbers." }}</div>
+                        </div>
                     </div>
                     <div class="input-group">
                         <label for="playground_name"> {{t "Name" }}</label>

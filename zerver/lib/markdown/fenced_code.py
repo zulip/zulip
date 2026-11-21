@@ -94,7 +94,7 @@ from typing_extensions import override
 from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITIES
 from zerver.lib.tex import render_tex
-from zerver.models.realm_playgrounds import PLAYGROUND_LANGUAGE_REGEX
+from zerver.models.realm_playgrounds import FENCED_CODE_LANGUAGE_REGEX
 
 # Global vars
 FENCE_RE = re.compile(
@@ -111,7 +111,7 @@ FENCE_RE = re.compile(
         \{?\.?
         (?P<lang>
             """
-    + PLAYGROUND_LANGUAGE_REGEX
+    + FENCED_CODE_LANGUAGE_REGEX
     + r"""
         ) # "py" or "javascript"
 
