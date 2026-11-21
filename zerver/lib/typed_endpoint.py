@@ -19,7 +19,7 @@ from typing import (
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
-from pydantic import Json, StringConstraints, TypeAdapter, ValidationError
+from pydantic import AfterValidator, Json, StringConstraints, TypeAdapter, ValidationError
 from typing_extensions import ParamSpec
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
@@ -109,6 +109,10 @@ PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
 OptionalTopic: TypeAlias = Annotated[
     str | None,
     StringConstraints(strip_whitespace=True),
+    # Tabs are a disallowed control character in topic names, but
+    # commonly get pasted in from spreadsheets and other external
+    # sources, so replace them with spaces rather than rejecting them.
+    AfterValidator(lambda val: val.replace("\t", " ") if val is not None else None),
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
 ApnsAppId: TypeAlias = Annotated[str, StringConstraints(pattern="^[.a-zA-Z0-9-]+$")]
