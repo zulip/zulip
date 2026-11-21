@@ -7,6 +7,15 @@ const _ = require("lodash");
 const {zrequire, set_global, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+let last_status_emoji_info;
+mock_esm("../src/user_status_ui", {
+    set_selected_emoji_info(emoji_info) {
+        last_status_emoji_info = {...emoji_info};
+    },
+    update_button() {},
+    toggle_clear_status_button() {},
+});
+
 const emoji = zrequire("emoji");
 const emoji_frequency = zrequire("emoji_frequency");
 
@@ -32,6 +41,12 @@ const typeahead = zrequire("typeahead");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 set_global("document", "document-stub");
+
+// The session methods read settings from this object, so initialize
+// it with a plain object we can override per test.
+const {initialize_user_settings} = zrequire("user_settings");
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("initialize", () => {
     emoji.initialize({
@@ -144,4 +159,29 @@ run_test("is_emoji_present_in_text", () => {
         emoji_picker.is_emoji_present_in_text("emojis with text no space😎🌡🎧", headphones_emoji),
         true,
     );
+});
+
+run_test(
+    "update_the_status_emoji_for_our_user suppresses emoji details with text emojiset",
+    ({override}) => {
+        override(user_settings, "emojiset", "text");
+        last_status_emoji_info = undefined;
+
+        new emoji_picker.UserStatusSession().update_the_status_emoji_for_our_user("tada");
+
+        // The emoji details must be suppressed (undefined) with a text emojiset.
+        assert.equal(last_status_emoji_info, undefined);
+    },
+);
+
+run_test("update_the_status_emoji_for_our_user with image emojiset", ({override}) => {
+    override(user_settings, "emojiset", "google-blob");
+
+    new emoji_picker.UserStatusSession().update_the_status_emoji_for_our_user("tada");
+
+    assert.deepEqual(last_status_emoji_info, {
+        emoji_name: "tada",
+        emoji_code: "1f389",
+        reaction_type: "unicode_emoji",
+    });
 });
