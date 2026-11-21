@@ -9,6 +9,7 @@ import render_user_display_only_pill from "../templates/user_display_only_pill.h
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
+import {get_first_day_of_week} from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
@@ -340,6 +341,7 @@ export function initialize_custom_date_type_fields(
         // values.
         formatDate: format_date,
         allowInvalidPreload: true,
+        locale: {firstDayOfWeek: get_first_day_of_week()},
         // Close the date picker on scroll, since flatpickr leaves the
         // open calendar in place and it would drift away from the input.
         onOpen(_selected_dates, _date_str, instance) {
