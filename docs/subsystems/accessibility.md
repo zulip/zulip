@@ -24,7 +24,12 @@ Guidelines), currently at version 2.2. Whenever practical, we should strive
 for compliance with the AA level of this specification. (The W3C itself
 [recommends not trying][wcag-understanding-conformance] to comply with the
 highest AAA level for an entire web site or application, as it is not possible
-for some content.)
+for some content.) Zulip project maintainers have audited the server and web
+app against every A level criteria of WCAG 2.2; results of that audit are
+available as Zulip's ACR (Accessibility Conformance Report) here. We invite
+contributors to explore that document and the [AA](https://www.w3.org/WAI/WCAG2AA-Conformance)
+and [AAA](https://www.w3.org/WAI/WCAG2AAA-Conformance) conformance criteria,
+for ways that you can contribute meaningful accessibility improvements in Zulip.
 
 ## Tools
 
