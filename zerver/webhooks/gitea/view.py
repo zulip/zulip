@@ -1,5 +1,3 @@
-# vim:fenc=utf-8
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
@@ -10,7 +8,7 @@ from zerver.lib.webhooks.git import get_pull_request_event_message
 from zerver.models import UserProfile
 
 # Gitea is a fork of Gogs, and so the webhook implementation is nearly the same.
-from zerver.webhooks.gogs.view import gogs_webhook_main
+from zerver.webhooks.gogs.view import ALL_EVENT_TYPES, gogs_webhook_main
 
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITEA_EVENT")
 
@@ -50,7 +48,7 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
     )
 
 
-@webhook_view("Gitea")
+@webhook_view("Gitea", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_gitea_webhook(
     request: HttpRequest,

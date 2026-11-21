@@ -2547,6 +2547,7 @@ class WebhookTestCase(ZulipTestCase):
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
     URL_TEMPLATE: str = ""
     WEBHOOK_DIR_NAME: str | None = None
+    SENDING_WEBHOOK_DIR_NAME: str | None = None
     DEFAULT_URL_TEMPLATE: str = (
         "/api/v1/external/{webhook_dir_name}?stream={stream}&api_key={api_key}"
     )
@@ -2607,8 +2608,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
                 )
             return check_send_webhook_message(*args, **kwargs)
 
+        sending_webhook_dir_name = self.SENDING_WEBHOOK_DIR_NAME or self.webhook_dir_name
         self.patch = mock.patch(
-            f"zerver.webhooks.{self.webhook_dir_name}.view.check_send_webhook_message",
+            f"zerver.webhooks.{sending_webhook_dir_name}.view.check_send_webhook_message",
             side_effect=side_effect,
         )
         self.patch.start()
