@@ -77,16 +77,23 @@ export function redraw_title(): void {
         " - " +
         "Zulip";
 
+    if (document.title === new_title) {
+        return;
+    }
+
     document.title = new_title;
 }
+
+let initialized = false;
 
 export function update_unread_counts(counts: FullUnreadCountsData): void {
     const new_unread_count = unread.calculate_notifiable_count(counts);
     const new_pm_count = counts.direct_message_count;
-    if (new_unread_count === unread_count && new_pm_count === pm_count) {
+    if (new_unread_count === unread_count && new_pm_count === pm_count && initialized) {
         return;
     }
 
+    initialized = true;
     unread_count = new_unread_count;
     pm_count = new_pm_count;
 
@@ -98,6 +105,16 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
 
     // TODO: Add a `electron_bridge.updateDirectMessageCount(new_pm_count);` call?
     redraw_title();
+}
+
+if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener("pageshow", (event) => {
+        // If the page is restored from the bfcache, we need to restore
+        // the favicon since it may have been cleared by the pagehide handler.
+        if (event.persisted && initialized) {
+            favicon.update_favicon(unread_count, pm_count);
+        }
+    });
 }
 
 export function update_narrow_title(filter?: Filter): void {
