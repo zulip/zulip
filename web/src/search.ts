@@ -442,6 +442,12 @@ export function rewire_exit_search(value: typeof exit_search): void {
 
 export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
+    // Remove the collapsed search landmark so screen readers move into the
+    // editable searchbox instead of keeping the outer container selected.
+    $("#searchbox-input-container")
+        .removeAttr("aria-label")
+        .removeAttr("role")
+        .removeAttr("tabindex");
     $("#search_query").attr("contenteditable", "true");
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
@@ -472,7 +478,14 @@ export function close_search_bar_and_open_narrow_description(): void {
         search_pill_widget.clear(true);
     }
 
-    $("#search_query").attr("contenteditable", "false");
+    const $search_query = $("#search_query");
+    const search_label = $search_query.attr("data-placeholder-text");
+    assert(search_label !== undefined);
+    $search_query.attr("contenteditable", "false");
+    $("#searchbox-input-container")
+        .attr("aria-label", search_label)
+        .attr("role", "search")
+        .attr("tabindex", "0");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
 
