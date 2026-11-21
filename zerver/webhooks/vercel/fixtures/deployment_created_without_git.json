@@ -1,0 +1,45 @@
+{
+  "id": "f55QZHLFgC7jwfoYjEL7K",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "alias": [],
+    "deployment": {
+      "id": "dpl_GbDhYEUefugozfMjuBh12ocU12Vo",
+      "customEnvironmentId": null,
+      "meta": {},
+      "name": "portfolio-site",
+      "url": "portfolio-site-g0g4wdrlc-ki3anis-projects.vercel.app",
+      "inspectorUrl": "https://vercel.com/ki3anis-projects/portfolio-site/GbDhYEUefugozfMjuBh12ocU12Vo"
+    },
+    "links": {
+      "deployment": "https://vercel.com/ki3anis-projects/portfolio-site/GbDhYEUefugozfMjuBh12ocU12Vo",
+      "project": "https://vercel.com/ki3anis-projects/portfolio-site"
+    },
+    "name": "portfolio-site",
+    "plan": "hobby",
+    "regions": [
+      "iad1"
+    ],
+    "target": null,
+    "type": "LAMBDAS",
+    "url": "portfolio-site-g0g4wdrlc-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793175934555,
+  "type": "deployment.created"
+}

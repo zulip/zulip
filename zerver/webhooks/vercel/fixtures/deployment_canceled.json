@@ -1,0 +1,65 @@
+{
+  "id": "W5kKTywtL6K62HGomd1fn",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "deployment": {
+      "id": "dpl_6Ld3uyijRj9u69vowbiYbDtkD19p",
+      "customEnvironmentId": null,
+      "meta": {
+        "githubCommitAuthorName": "ki3ani",
+        "githubCommitAuthorEmail": "ki3ani@users.noreply.github.com",
+        "githubCommitMessage": "Fix contact section markup",
+        "githubCommitOrg": "ki3ani",
+        "githubCommitRef": "main",
+        "githubCommitRepo": "portfolio-site",
+        "githubCommitSha": "9de6537e7cbaeff384c45c7dd76186dae5e1ac10",
+        "githubDeployment": "1",
+        "githubOrg": "ki3ani",
+        "githubRepo": "portfolio-site",
+        "githubRepoOwnerType": "User",
+        "githubCommitRepoId": "1435527271",
+        "githubRepoId": "1435527271",
+        "githubRepoVisibility": "private",
+        "githubHost": "github.com",
+        "githubCommitAuthorLogin": "ki3ani",
+        "githubCommitVerification": "unverified",
+        "repoPushedAt": "1793128201000",
+        "branchAlias": "portfolio-site-git-main-ki3anis-projects.vercel.app",
+        "lambdaRuntimeStats": "{\"nodejs\":3}"
+      },
+      "name": "portfolio-site",
+      "url": "portfolio-site-375fca9mv-ki3anis-projects.vercel.app",
+      "inspectorUrl": "https://vercel.com/ki3anis-projects/portfolio-site/6Ld3uyijRj9u69vowbiYbDtkD19p"
+    },
+    "links": {
+      "deployment": "https://vercel.com/ki3anis-projects/portfolio-site/6Ld3uyijRj9u69vowbiYbDtkD19p",
+      "project": "https://vercel.com/ki3anis-projects/portfolio-site"
+    },
+    "name": "portfolio-site",
+    "plan": "hobby",
+    "regions": [
+      "iad1"
+    ],
+    "target": "production",
+    "type": "LAMBDAS",
+    "url": "portfolio-site-375fca9mv-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793128224324,
+  "type": "deployment.canceled"
+}
