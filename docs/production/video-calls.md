@@ -31,9 +31,54 @@ to "None".
 
 You can configure Zulip to use a self-hosted
 instance of Jitsi Meet by providing the URL of your self-hosted Jitsi Meet
-server [in organization
-settings](https://zulip.com/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet).
-No server configuration changes are required.
+server [in organization settings][org-level-jitsi-meet]. No server
+configuration changes are required.
+
+### JSON Web Token (JWT) authentication
+
+Self-hosted installations of Zulip can be configured to use Jitsi with
+JSON Web Token (JWT) authentication.
+
+:::{note}
+JWT authentication only applies to organizations using the server-level
+Jitsi Meet server. An organization on the server that sets a [custom
+Jitsi Meet server URL][org-level-jitsi-meet] in its organization settings
+falls back to unauthenticated calls against that custom server, regardless
+of whether the credentials below are set.
+:::
+
+To enable JWT authentication, your Jitsi Meet server must first be
+[configured to require JWT tokens][jitsi-jwt-auth]. Then on your Zulip
+server:
+
+1. Set `JITSI_SERVER_URL` in `/etc/zulip/settings.py` to the URL of
+   your self-hosted Jitsi Meet server.
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `jitsi_server_app_id` to the
+   app ID configured on your Jitsi server.
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `jitsi_server_app_secret` to the
+   secret configured on your Jitsi server.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+When configured, Zulip generates a signed token for each user when they
+join a call by clicking the call link in a Zulip message (while logged in).
+
+The token sets the user's `affiliation` to `owner` for the call creator
+(granting moderator privileges) and `member` for all other participants.
+
+:::{note}
+The `affiliation` claim is silently ignored by a standard Jitsi Meet
+installation. To honor it and grant moderator privileges to the call
+creator, install and enable the Prosody [token_affiliation][jitsi-prosody-token]
+plugin.
+:::
+
+[org-level-jitsi-meet]: https://zulip.com/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet
+[jitsi-jwt-auth]: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker/#authentication-using-jwt-tokens
+[jitsi-prosody-token]: https://github.com/jitsi-contrib/prosody-plugins/tree/main/token_affiliation
 
 ## Zoom
 
