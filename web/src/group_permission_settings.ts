@@ -230,7 +230,7 @@ export function get_assigned_permission_object(
 
             if (
                 setting_name === "workplace_users_group" &&
-                page_params.is_cloud_realm_with_discounted_plan
+                page_params.is_realm_with_discounted_plan
             ) {
                 assigned_permission_object.can_edit = false;
                 assigned_permission_object.tooltip_message = $t(
@@ -279,10 +279,7 @@ export function get_assigned_permission_object(
             }
         }
 
-        if (
-            setting_name === "workplace_users_group" &&
-            page_params.is_cloud_realm_with_discounted_plan
-        ) {
+        if (setting_name === "workplace_users_group" && page_params.is_realm_with_discounted_plan) {
             assigned_permission_object.can_edit = false;
             assigned_permission_object.tooltip_message = $t(
                 {defaultMessage: "Contact {sales_email} to change this setting."},

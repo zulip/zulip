@@ -204,6 +204,18 @@ class Realm(models.Model):
     push_notifications_enabled_end_timestamp = models.DateTimeField(default=None, null=True)
     require_e2ee_push_notifications = models.BooleanField(default=False, db_default=False)
 
+    # Whether this realm's plan allows billing the users outside its
+    # workplace_users_group at a discounted rate. For self-hosted realms this
+    # is reported by the push notification service, since only it knows how
+    # the realm is billed.
+    non_workplace_pricing_eligible = models.BooleanField(default=False, db_default=False)
+
+    # Whether this realm's plan has a negotiated discounted price, which
+    # cannot be combined with discounted pricing for non-workplace users.
+    # Reported by the push notification service for self-hosted realms, and
+    # computed directly for realms billed by this server.
+    on_discounted_plan = models.BooleanField(default=False, db_default=False)
+
     date_created = models.DateTimeField(default=timezone_now)
     scheduled_deletion_date = models.DateTimeField(default=None, db_index=True, null=True)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)
