@@ -1,0 +1,52 @@
+{
+    "event": "conversation.ended",
+    "timestamp": "2026-08-26T14:32:07.000Z",
+    "reason": "inactivity",
+    "data": {
+        "tenant_id": "9f86d081-0000-4000-8000-000000000020",
+        "conversation_id": "c1b2c3d4-0000-4000-8000-000000000010",
+        "platform": "telegram",
+        "status": "closed",
+        "duration_sec": 187,
+        "message_count": 6,
+        "conversation": {
+            "id": "c1b2c3d4-0000-4000-8000-000000000010",
+            "platform": "telegram",
+            "external_thread_id": "123456789",
+            "external_user_id": "123456789",
+            "external_user_name": "Max Mustermann",
+            "started_at": "2026-08-26T14:28:40.000Z",
+            "ended_at": "2026-08-26T14:32:07.000Z",
+            "last_customer_message_at": "2026-08-26T14:29:55.000Z"
+        },
+        "connector": {
+            "id": "1b2c3d4e-0000-4000-8000-000000000030",
+            "name": "Support Telegram",
+            "platform": "telegram"
+        },
+        "assistant": {
+            "id": "2c3d4e5f-0000-4000-8000-000000000040",
+            "name": "Support Assistant"
+        },
+        "transcript": "Customer: Hi, I need help with my order.\nAssistant: Of course — what's your order number?",
+        "messages": [
+            {
+                "id": "msg-1",
+                "role": "user",
+                "direction": "inbound",
+                "text": "Hi, I need help with my order.",
+                "created_at": "2026-08-26T14:28:40.000Z"
+            }
+        ],
+        "analysis": {
+            "summary": "Customer asked about an order and got help finding it.",
+            "sentiment": "positive",
+            "success": true,
+            "success_reason": "The order was located and the delivery date confirmed.",
+            "data": {
+                "order_number": "12345"
+            },
+            "analyzed_at": "2026-08-26T14:32:07.000Z"
+        }
+    }
+}
