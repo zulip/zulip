@@ -1,5 +1,6 @@
 import re
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
@@ -7,7 +8,7 @@ from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Exists, F, Func, OuterRef, Q, QuerySet, TextField
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
@@ -703,14 +704,34 @@ class NarrowBuilder:
                 [operand],
             ),
         ).alias(
+            _fts_unindexed=RawSQL(  # noqa: S611
+                SQL("EXISTS (SELECT 1 FROM fts_update_log WHERE {log_message_id} = {message_id})")
+                .format(
+                    log_message_id=Identifier("fts_update_log", "message_id"),
+                    message_id=Identifier("zerver_message", "id"),
+                )
+                .as_string(connection.connection),
+                [],
+            ),
             _pgroonga_match=RawSQL(  # noqa: S611
                 SQL("{col} &@~ escape_html(%s)")
                 .format(col=Identifier("zerver_message", "search_pgroonga"))
                 .as_string(connection.connection),
                 [operand],
-            )
+            ),
+            _unindexed_pgroonga_match=RawSQL(  # noqa: S611
+                SQL("(escape_html({topic}) || ' ' || {content}) &@~ escape_html(%s)")
+                .format(
+                    topic=Identifier("zerver_message", DB_TOPIC_NAME),
+                    content=Identifier("zerver_message", "rendered_content"),
+                )
+                .as_string(connection.connection),
+                [operand],
+            ),
         )
-        condition = Q(_pgroonga_match=True)
+        condition = Q(_fts_unindexed=False, _pgroonga_match=True) | Q(
+            _fts_unindexed=True, _unindexed_pgroonga_match=True
+        )
         return query.filter(maybe_negate(condition))
 
     def _by_search_tsearch(
@@ -741,14 +762,34 @@ class NarrowBuilder:
                 query = query.filter(maybe_negate(cond))
 
         query = query.alias(
+            _fts_unindexed=RawSQL(  # noqa: S611
+                SQL("EXISTS (SELECT 1 FROM fts_update_log WHERE {log_message_id} = {message_id})")
+                .format(
+                    log_message_id=Identifier("fts_update_log", "message_id"),
+                    message_id=Identifier("zerver_message", "id"),
+                )
+                .as_string(connection.connection),
+                [],
+            ),
             _tsvector_match=RawSQL(  # noqa: S611
                 SQL("{tsvector} @@ plainto_tsquery(%s, %s)")
                 .format(tsvector=Identifier("zerver_message", "search_tsvector"))
                 .as_string(connection.connection),
                 ["zulip.english_us_search", operand],
-            )
+            ),
+            _unindexed_tsvector_match=RawSQL(  # noqa: S611
+                SQL("to_tsvector(%s, {topic} || {content}) @@ plainto_tsquery(%s, %s)")
+                .format(
+                    topic=Identifier("zerver_message", DB_TOPIC_NAME),
+                    content=Identifier("zerver_message", "rendered_content"),
+                )
+                .as_string(connection.connection),
+                ["zulip.english_us_search", "zulip.english_us_search", operand],
+            ),
         )
-        cond = Q(_tsvector_match=True)
+        cond = Q(_fts_unindexed=False, _tsvector_match=True) | Q(
+            _fts_unindexed=True, _unindexed_tsvector_match=True
+        )
         return query.filter(maybe_negate(cond))
 
 
@@ -1429,6 +1470,25 @@ class FetchedMessages(LimitedMessages[tuple[Any, ...]]):
 
 def capture_message_fetch_query_for_testing(query: QuerySet[Any]) -> None:
     pass
+
+
+@contextmanager
+def read_only_repeatable_read_transaction() -> Iterator[None]:
+    with transaction.atomic(durable=True):
+        # In a read-only repeatable-read transaction, it is not
+        # possible to encounter deadlocks or need retries due to
+        # serialization errors.
+        #
+        # You can only set the isolation level before any queries in
+        # the transaction, meaning it must be the top-most
+        # transaction, which durable=True establishes.  Except in
+        # tests, where durable=True is a lie, because there is an
+        # outer transaction for each test.  We thus skip this command
+        # in tests, since it would fail.
+        if not settings.TEST_SUITE:  # nocoverage
+            cursor = connection.cursor()
+            cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        yield
 
 
 def fetch_messages(
