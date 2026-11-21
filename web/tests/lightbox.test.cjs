@@ -16,6 +16,39 @@ const lightbox = zrequire("lightbox");
 // Counter to generate unique zjquery selector names.
 let test_counter = 0;
 
+run_test("YouTube player restores focus on play and pause", async () => {
+    const iframe = {isConnected: true};
+
+    let on_state_change;
+    window.YT = {
+        Player: class {
+            constructor(player_iframe, options) {
+                assert.equal(player_iframe, iframe);
+                on_state_change = options.events.onStateChange;
+            }
+
+            destroy() {}
+        },
+        PlayerState: {
+            PAUSED: 2,
+            PLAYING: 1,
+        },
+    };
+
+    let focus_count = 0;
+    window.focus = () => {
+        focus_count += 1;
+    };
+
+    await lightbox.set_up_youtube_player(iframe);
+    on_state_change({data: window.YT.PlayerState.PLAYING});
+    on_state_change({data: window.YT.PlayerState.PAUSED});
+    on_state_change({data: 0});
+
+    assert.equal(focus_count, 2);
+    lightbox.clear_for_testing();
+});
+
 function make_media_element($mock_jq, src) {
     // parse_media_data expects an HTMLImageElement, but for testing
     // we use a plain object with `src` (read by canonical_url_of_media)
@@ -184,7 +217,10 @@ run_test("parse_media_data YouTube video", () => {
     const result = lightbox.parse_media_data(media);
 
     assert.equal(result.type, "youtube-video");
-    assert.equal(result.source, "https://www.youtube.com/embed/dQw4w9WgXcQ");
+    assert.equal(
+        result.source,
+        "https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&origin=http%3A%2F%2Fzulip.zulipdev.com",
+    );
 });
 
 run_test("parse_media_data YouTube video with start time", () => {
@@ -197,7 +233,10 @@ run_test("parse_media_data YouTube video with start time", () => {
     const result = lightbox.parse_media_data(media);
 
     assert.equal(result.type, "youtube-video");
-    assert.equal(result.source, "https://www.youtube.com/embed/dQw4w9WgXcQ?start=120");
+    assert.equal(
+        result.source,
+        "https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&origin=http%3A%2F%2Fzulip.zulipdev.com&start=120",
+    );
 });
 
 run_test("parse_media_data Vimeo video", () => {

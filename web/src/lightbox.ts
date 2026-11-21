@@ -31,10 +31,39 @@ type Media = {
     original_height_px: number | undefined;
 };
 
+type YouTubePlayer = {
+    destroy: () => void;
+};
+
+type YouTubeIframeAPI = {
+    Player: new (
+        iframe: HTMLIFrameElement,
+        options: {
+            events: {
+                onStateChange: (event: {data: number}) => void;
+            };
+        },
+    ) => YouTubePlayer;
+    PlayerState: {
+        PAUSED: number;
+        PLAYING: number;
+    };
+};
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface Window {
+        YT: YouTubeIframeAPI | undefined;
+        onYouTubeIframeAPIReady: (() => void) | undefined;
+    }
+}
+
 let is_open = false;
 let open_image: ($media: JQuery<HTMLImageElement>) => void;
 let open_video: ($media: JQuery<HTMLMediaElement>) => void;
 let overlay_restore_callback: (() => void) | undefined;
+let youtube_iframe_api_promise: Promise<YouTubeIframeAPI> | undefined;
+let youtube_player: YouTubePlayer | undefined;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -211,6 +240,9 @@ export function clear_for_testing(): void {
     is_open = false;
     asset_map.clear();
     overlay_restore_callback = undefined;
+    youtube_iframe_api_promise = undefined;
+    youtube_player?.destroy();
+    youtube_player = undefined;
 }
 
 export function invalidate_asset_map_of_message(message_id: number): void {
@@ -306,6 +338,47 @@ function display_image(payload: Media): void {
     $img_container.append($img).show();
 }
 
+async function get_youtube_iframe_api(): Promise<YouTubeIframeAPI> {
+    if (window.YT !== undefined) {
+        return window.YT;
+    }
+
+    youtube_iframe_api_promise ??= new Promise((resolve) => {
+        // eslint-disable-next-line unicorn/no-global-object-property-assignment
+        window.onYouTubeIframeAPIReady = () => {
+            assert(window.YT !== undefined);
+            resolve(window.YT);
+        };
+
+        const script = document.createElement("script");
+        script.src = "https://www.youtube.com/iframe_api";
+        document.head.append(script);
+    });
+    return youtube_iframe_api_promise;
+}
+
+export async function set_up_youtube_player(iframe: HTMLIFrameElement): Promise<void> {
+    const youtube_iframe_api = await get_youtube_iframe_api();
+    if (!iframe.isConnected) {
+        return;
+    }
+
+    youtube_player = new youtube_iframe_api.Player(iframe, {
+        events: {
+            onStateChange(event) {
+                if (
+                    event.data === youtube_iframe_api.PlayerState.PLAYING ||
+                    event.data === youtube_iframe_api.PlayerState.PAUSED
+                ) {
+                    // Player controls move focus into the cross-origin iframe. Move it back so
+                    // that Zulip's keyboard shortcuts receive subsequent key events.
+                    window.focus();
+                }
+            },
+        },
+    });
+}
+
 function display_video(payload: Media): void {
     if (payload.type === "inline-video") {
         $(".video-player").show();
@@ -319,7 +392,7 @@ function display_video(payload: Media): void {
 
     $(".player-container").show();
 
-    const $iframe = $("<iframe>");
+    const $iframe = $<HTMLIFrameElement>("<iframe>");
     $iframe.attr(
         "sandbox",
         "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",
@@ -331,6 +404,9 @@ function display_video(payload: Media): void {
 
     $("#lightbox_overlay .player-container").empty();
     $("#lightbox_overlay .player-container").append($iframe);
+    if (payload.type === "youtube-video") {
+        void set_up_youtube_player(util.the($iframe));
+    }
 }
 
 function invoke_overlay_restore_callback(): void {
@@ -561,15 +637,18 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
         source = url;
     } else if (is_youtube_video) {
         type = "youtube-video";
-        source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
+        const source_url = new URL("https://www.youtube.com/embed/" + $parent.attr("data-id"));
+        source_url.searchParams.set("enablejsapi", "1");
+        source_url.searchParams.set("origin", window.location.origin);
         // YouTube URLs support a `start` parameter that can be either
         // an integer or a string-encoded time offset like
         // "1h20m12s". The embed API only supports the integer format,
         // so we may need to convert the format.
         const start_time = util.parse_youtube_start_time(url);
         if (start_time !== undefined) {
-            source += "?start=" + start_time;
+            source_url.searchParams.set("start", String(start_time));
         }
+        source = source_url.href;
     } else if (is_vimeo_video) {
         type = "vimeo-video";
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
@@ -644,6 +723,8 @@ function update_arrow_visibility(): void {
 function remove_video_players(): void {
     // Remove video players from the DOM. Used when closing lightbox
     // so that videos doesn't keep playing in the background.
+    youtube_player?.destroy();
+    youtube_player = undefined;
     $(".player-container iframe").remove();
     $("#lightbox_overlay .video-player").html("");
 }
