@@ -13,6 +13,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
+from jinja2 import TemplateNotFound
 from markupsafe import Markup
 
 import zerver.lib.markdown.api_arguments_table_generator
@@ -89,6 +90,28 @@ md_macro_extension: markdown.Extension | None = None
 docs_without_macros = [
     "incoming-webhooks-walkthrough.md",
 ]
+
+
+def get_markdown_source(markdown_file_path: str) -> str:
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            return fp.read()
+
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    assert jinja.env.loader is not None
+    return jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+
+# Unlike functools.cache, this is bypassed in development, so new
+# docs are found without restarting the server.
+@ignore_unhashable_lru_cache(512)
+def markdown_path_exists(markdown_file_path: str) -> bool:
+    try:
+        get_markdown_source(markdown_file_path)
+    except (FileNotFoundError, TemplateNotFound):
+        return False
+    return True
 
 
 # render_markdown_path is passed a context dictionary (unhashable), which
@@ -169,14 +192,7 @@ def render_markdown_path(
     md_engine = markdown.Markdown(extensions=extensions)
     md_engine.reset()
 
-    jinja = engines["Jinja2"]
-    assert isinstance(jinja, Jinja2)
-    if markdown_file_path.startswith("/"):
-        with open(markdown_file_path) as fp:
-            markdown_string = fp.read()
-    else:
-        assert jinja.env.loader is not None
-        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+    markdown_string = get_markdown_source(markdown_file_path)
 
     if (
         settings.DEVELOPMENT
@@ -193,6 +209,8 @@ def render_markdown_path(
     if context is None:
         return mark_safe(html)  # noqa: S308
 
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
     return mark_safe(jinja.from_string(html).render(context))  # noqa: S308
 
 

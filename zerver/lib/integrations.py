@@ -170,7 +170,6 @@ class Integration:
         self.client_name = client_name if client_name is not None else name
         self.secondary_line_text = secondary_line_text
         self.legacy = legacy
-        self.doc = doc
         self.url_options = url_options
 
         self.screenshot_configs: (
@@ -211,13 +210,16 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in (
-            # Integrations being incrementally added
-            "intercom",
-            "notion",
-            # Broken integrations awaiting fixes
-            "hubot",
-        )
+        if self.name in INTEGRATIONS_DISABLED_IN_CATALOG:
+            return False
+
+        # Custom integrations on self-hosted servers may not have docs.
+        return self.has_doc()
+
+    def has_doc(self) -> bool:
+        from zerver.lib.templates import markdown_path_exists
+
+        return markdown_path_exists(self.doc)
 
     def get_logo_path(self) -> str:
         paths_to_check = [
@@ -460,8 +462,9 @@ class EmbeddedBotIntegration(Integration):
 
     @override
     def is_enabled_in_catalog(self) -> bool:
-        # Only integrations with docs can be part of the catalog
-        # Embedded bots do not have docs
+        # Embedded bots have no catalog docs. has_doc() can't be relied
+        # on to exclude them, since their default doc path can match
+        # another integration's doc (e.g., giphy).
         return False
 
 
@@ -1194,6 +1197,15 @@ INTEGRATIONS: dict[str, Integration] = {
 }
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add integrations that are deliberately kept out of the catalog here.
+INTEGRATIONS_DISABLED_IN_CATALOG: set[str] = {
+    # Integrations being incrementally added
+    "intercom",
+    "notion",
+    # Broken integrations awaiting fixes
+    "hubot",
+}
 
 # Add integrations whose example screenshots are not yet automated here
 INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
