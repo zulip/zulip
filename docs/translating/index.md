@@ -16,5 +16,6 @@ japanese
 polish
 russian
 spanish
+traditional-chinese
 urdu
 ```
