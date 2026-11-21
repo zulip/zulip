@@ -10,8 +10,6 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
-const recent_view_messages_data = zrequire("../src/recent_view_messages_data");
-
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
@@ -45,7 +43,7 @@ function verify_fixture(fixture, override_rewire) {
         final_select_id: undefined,
     };
 
-    override_rewire(recent_view_messages_data, "recent_view_messages_data", {
+    const superset_data = {
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
@@ -62,14 +60,14 @@ function verify_fixture(fixture, override_rewire) {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages.at(-1);
         },
-    });
+    };
 
     override_rewire(narrow_state, "get_first_unread_info", () => fixture.unread_info);
 
     message_view.maybe_add_local_messages({
         id_info,
         msg_data,
-        superset_data: recent_view_messages_data.recent_view_messages_data,
+        superset_data,
     });
 
     assert.deepEqual(id_info, fixture.expected_id_info);
