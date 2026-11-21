@@ -144,15 +144,9 @@ run_test("user_can_change_name", ({override}) => {
     assert.equal(can_change_name(), true);
 
     override(current_user, "is_admin", false);
-    override(realm, "realm_name_changes_disabled", true);
     override(realm, "server_name_changes_disabled", false);
-    assert.equal(can_change_name(), false);
+    test_realm_group_settings("realm_can_change_own_name_group", can_change_name);
 
-    override(realm, "realm_name_changes_disabled", false);
-    override(realm, "server_name_changes_disabled", false);
-    assert.equal(can_change_name(), true);
-
-    override(realm, "realm_name_changes_disabled", false);
     override(realm, "server_name_changes_disabled", true);
     assert.equal(can_change_name(), false);
 });

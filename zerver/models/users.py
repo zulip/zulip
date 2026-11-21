@@ -946,6 +946,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_create_user_groups(self) -> bool:
         return self.has_permission("can_create_groups")
 
+    def can_change_own_name(self) -> bool:
+        if self.is_realm_admin:
+            return True
+        return not settings.NAME_CHANGES_DISABLED and self.has_permission(
+            "can_change_own_name_group"
+        )
+
     def can_manage_all_groups(self) -> bool:
         return self.has_permission("can_manage_all_groups")
 

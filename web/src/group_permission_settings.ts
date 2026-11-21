@@ -45,6 +45,7 @@ export function get_group_permission_settings(): GroupGroupSettingName[] {
 const realm_group_setting_names_supporting_anonymous_groups = [
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
+    "can_change_own_name_group",
     "can_create_groups",
     "can_create_bots_group",
     "can_create_public_channel_group",

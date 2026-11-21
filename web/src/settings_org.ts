@@ -165,6 +165,11 @@ export function enable_or_disable_group_permission_settings(): void {
             $permission_pill_container_elements,
             NOBODY_ENABLED_PLACEHOLDER,
         );
+        if (realm.server_name_changes_disabled) {
+            settings_components.disable_group_permission_setting(
+                $("#id_realm_can_change_own_name_group"),
+            );
+        }
         set_special_org_permission_placeholders(true);
         return;
     }
@@ -185,6 +190,11 @@ export function enable_or_disable_group_permission_settings(): void {
             settings_components.disable_group_permission_setting(
                 $permission_pill_container,
                 NOBODY_DISABLED_PLACEHOLDER,
+            );
+        }
+        if (realm.server_name_changes_disabled) {
+            settings_components.disable_group_permission_setting(
+                $("#id_realm_can_change_own_name_group"),
             );
         }
         set_special_org_permission_placeholders(true);
@@ -710,6 +720,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_can_add_custom_emoji_group":
         case "realm_can_add_subscribers_group":
+        case "realm_can_change_own_name_group":
         case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":

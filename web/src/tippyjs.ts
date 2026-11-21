@@ -464,7 +464,18 @@ export function initialize(): void {
         target: "#full_name_input_container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
-                "Name changes are disabled in this organization. Contact an administrator to change your name.",
+                "You don't have permission to change your name. Contact an administrator.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#realm_can_change_own_name_group_container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage: "Name changes are disabled by this server's configuration.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
