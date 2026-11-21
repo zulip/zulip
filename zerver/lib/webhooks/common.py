@@ -31,6 +31,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
@@ -118,6 +119,11 @@ def get_setup_webhook_message(integration: str, user_name: str | None = None) ->
         content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
     content = f"{content}."
     return content
+
+
+def format_spoiler(header: str, body: str) -> str:
+    fence = get_unused_fence(f"{header}\n{body}")
+    return f"{fence} spoiler {header}\n{body}\n{fence}"
 
 
 def notify_bot_owner_about_invalid_json(
