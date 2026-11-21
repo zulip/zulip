@@ -499,7 +499,9 @@ export function get_conversation_participants_callback(): () => Set<number> {
         ) {
             return new Set<number>();
         }
-        return message_lists.current.data.participants.visible();
+        // Users who are hidden from the buddy list don't count as
+        // participants either.
+        return new Set(filter_user_ids("", [...message_lists.current.data.participants.visible()]));
     };
 }
 
