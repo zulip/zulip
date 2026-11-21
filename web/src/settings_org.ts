@@ -156,6 +156,15 @@ function set_special_org_permission_placeholders(enabled: boolean): void {
         .attr("data-placeholder", enabled ? DEFAULT_PLACEHOLDER : "");
 }
 
+function disable_name_change_permission_if_needed(): void {
+    if (realm.server_name_changes_disabled) {
+        settings_components.disable_group_permission_setting(
+            $("#id_realm_can_change_name_group"),
+            NOBODY_DISABLED_PLACEHOLDER,
+        );
+    }
+}
+
 export function enable_or_disable_group_permission_settings(): void {
     if (current_user.is_owner) {
         const $permission_pill_container_elements = $(
@@ -166,6 +175,7 @@ export function enable_or_disable_group_permission_settings(): void {
             NOBODY_ENABLED_PLACEHOLDER,
         );
         set_special_org_permission_placeholders(true);
+        disable_name_change_permission_if_needed();
         return;
     }
 
@@ -188,6 +198,7 @@ export function enable_or_disable_group_permission_settings(): void {
             );
         }
         set_special_org_permission_placeholders(true);
+        disable_name_change_permission_if_needed();
         return;
     }
 

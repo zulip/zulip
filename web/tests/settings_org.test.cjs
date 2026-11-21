@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -33,6 +34,7 @@ set_global("document", "document-stub");
 set_global("requestAnimationFrame", (func) => func());
 
 const settings_account = zrequire("settings_account");
+const user_groups = zrequire("user_groups");
 const settings_components = zrequire("settings_components");
 const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
@@ -760,31 +762,88 @@ test("test combined_code_language_options", ({override}) => {
     assert.deepEqual(options_with_realm_playgrounds, expected_options_with_realm_playgrounds);
 });
 
+test("name change permission picker", ({override}) => {
+    override(current_user, "is_owner", true);
+    override(current_user, "is_admin", true);
+
+    const $name_picker = $("#id_realm_can_change_name_group");
+    const $name_input = $("<name-input>");
+    $name_picker.set_find_results(".input", $name_input);
+    const $name_group = $("<name-input-group>");
+    $name_picker.set_closest_results(".input-group", $name_group);
+    $name_group.set_find_results(".group-setting-label", []);
+    const $other_picker = $("#id_realm_can_add_custom_emoji_group");
+    const $other_input = $("<other-input>");
+    $other_picker.set_find_results(".input", $other_input);
+    const $other_group = $("<other-input-group>");
+    $other_picker.set_closest_results(".input-group", $other_group);
+    $other_group.set_find_results(".group-setting-label", []);
+
+    const $permission_containers = $("#organization-permissions, #organization-settings");
+    $permission_containers.set_find_results(".pill-container", [$name_picker[0], $other_picker[0]]);
+
+    const $special_permission_containers = $(
+        "#id_realm_can_add_subscribers_group, #id_realm_can_set_topics_policy_group, #id_realm_can_set_delete_message_policy_group",
+    );
+
+    $special_permission_containers.set_find_results(".input", []);
+    const $other_special_containers = $(
+        "#id_realm_can_delete_own_message_group, #id_realm_can_create_write_only_bots_group",
+    );
+
+    $other_special_containers.set_find_results(".input", []);
+
+    override(realm, "server_name_changes_disabled", false);
+    settings_org.enable_or_disable_group_permission_settings();
+
+    assert.equal($name_input.prop("contenteditable"), true);
+    assert.equal($other_input.prop("contenteditable"), true);
+
+    override(realm, "server_name_changes_disabled", true);
+    settings_org.enable_or_disable_group_permission_settings();
+
+    assert.equal($name_input.prop("contenteditable"), false);
+    assert.equal($other_input.prop("contenteditable"), true);
+});
+
 test("misc", ({override}) => {
     override(current_user, "is_admin", false);
 
-    override(realm, "realm_name_changes_disabled", false);
+    override(current_user, "user_id", 1);
+    const name_change_group = make_user_group({
+        id: 100,
+        name: "Name changers",
+        members: [1],
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [name_change_group],
+    });
+
+    override(realm, "realm_can_change_name_group", 100);
     override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
+    override(realm, "realm_can_change_name_group", 100);
+    override(current_user, "user_id", 2);
     override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok($("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
+    override(realm, "realm_can_change_name_group", 100);
     override(realm, "server_name_changes_disabled", true);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok($("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", false);
+    override(current_user, "user_id", 1);
+    override(realm, "realm_can_change_name_group", 100);
     override(realm, "server_name_changes_disabled", true);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
@@ -818,8 +877,17 @@ test("misc", ({override}) => {
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
-    // If organization admin, these UI elements are never disabled.
+    // Organization administrators can change their own names
+    // regardless of the server-wide name-change restriction.
     override(current_user, "is_admin", true);
+
+    override(realm, "server_name_changes_disabled", false);
+    settings_account.update_name_change_display();
+    assert.ok(!$("#full_name").prop("disabled"));
+    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
+    assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
+
+    override(realm, "server_name_changes_disabled", true);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));

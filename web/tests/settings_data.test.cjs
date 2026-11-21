@@ -140,21 +140,24 @@ run_test("user_can_change_email", ({override}) => {
 run_test("user_can_change_name", ({override}) => {
     const can_change_name = settings_data.user_can_change_name;
 
+    override(realm, "server_name_changes_disabled", false);
+    override(realm, "realm_can_change_name_group", 1);
+
+    // Administrators can change their names.
     override(current_user, "is_admin", true);
     assert.equal(can_change_name(), true);
 
-    override(current_user, "is_admin", false);
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", false);
-    assert.equal(can_change_name(), false);
-
-    override(realm, "realm_name_changes_disabled", false);
-    override(realm, "server_name_changes_disabled", false);
+    // Administrators can change names even when the server restriction is enabled.
+    override(realm, "server_name_changes_disabled", true);
     assert.equal(can_change_name(), true);
 
-    override(realm, "realm_name_changes_disabled", false);
-    override(realm, "server_name_changes_disabled", true);
+    // Non-administrators cannot change names when the server restriction is enabled.
+    override(current_user, "is_admin", false);
     assert.equal(can_change_name(), false);
+
+    // Test group-based permissions.
+    override(realm, "server_name_changes_disabled", false);
+    test_realm_group_settings("realm_can_change_name_group", can_change_name);
 });
 
 run_test("user_can_change_avatar", ({override}) => {

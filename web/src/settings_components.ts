@@ -882,6 +882,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             break;
         case "realm_can_add_custom_emoji_group":
         case "realm_can_add_subscribers_group":
+        case "realm_can_change_name_group":
         case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
@@ -1139,6 +1140,7 @@ export function populate_data_for_realm_settings_request(
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
                     "can_add_subscribers_group",
+                    "can_change_name_group",
                     "can_create_bots_group",
                     "can_create_groups",
                     "can_create_private_channel_group",
@@ -1669,6 +1671,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_send_message_group", null],
     ["realm_can_add_custom_emoji_group", null],
     ["realm_can_add_subscribers_group", null],
+    ["realm_can_change_name_group", null],
     ["realm_can_create_bots_group", null],
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
