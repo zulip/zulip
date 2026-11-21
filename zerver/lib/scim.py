@@ -561,7 +561,7 @@ class ZulipSCIMGroup(SCIMGroup):
             self.change_group_name(name)
 
         members = d.get("members")
-        if members:
+        if members is not None:
             self._intended_member_ids = {int(member_dict["value"]) for member_dict in members}
 
     def change_group_name(self, new_value: str) -> None:

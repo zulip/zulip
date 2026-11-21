@@ -1443,6 +1443,31 @@ class TestSCIMGroup(SCIMTestCase):
         test_group.refresh_from_db()
         self.assertEqual(test_group.name, "New test group name")
 
+    def test_put_empty_members_clears_group(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        desdemona = self.example_user("desdemona")
+
+        test_group = check_add_user_group(realm, "Test group", [hamlet], acting_user=desdemona)
+        self.assertEqual(set(get_user_group_direct_member_ids(test_group)), {hamlet.id})
+
+        # PUT replaces the group's attributes, so an empty members list
+        # should leave the group with no members.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:Group"],
+            "id": test_group.id,
+            "displayName": "Test group",
+            "members": [],
+        }
+        result = self.json_put(f"/scim/v2/Groups/{test_group.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        self.assertEqual(set(get_user_group_direct_member_ids(test_group)), set())
+
+        output_data = orjson.loads(result.content)
+        expected_response_schema = self.generate_group_schema(test_group)
+        self.assertEqual(output_data, expected_response_schema)
+
     def test_patch_add_remove_operations(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
