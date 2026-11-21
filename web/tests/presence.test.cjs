@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_bot, make_user} = require("./lib/example_user.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -15,6 +15,7 @@ mock_esm("../src/settings_data", {
 const buddy_data = zrequire("buddy_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
+const server_time = zrequire("server_time");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -177,6 +178,18 @@ test("sort_users", () => {
 
     buddy_data.sort_users(user_ids, new Set());
     assert.deepEqual(user_ids, [fred.user_id, jane.user_id, alice.user_id]);
+});
+
+test("initialize sets server_time offset", () => {
+    server_time._reset_for_testing();
+    // Simulate skewed client clock (1 hour ahead: client t = 5600s, server t = 2000s)
+    clock.setSystemTime(5600 * 1000);
+    const server_timestamp = 2000;
+
+    presence.initialize({presences: {}, server_timestamp});
+    assert.equal(server_time.now(), server_timestamp);
+
+    server_time._reset_for_testing();
 });
 
 test("set_presence_info", () => {

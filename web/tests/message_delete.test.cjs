@@ -6,11 +6,12 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, Role} = require("./lib/example_user.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const message_delete = zrequire("message_delete");
+const server_time = zrequire("server_time");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -220,4 +221,50 @@ run_test("get_deletability", ({override}) => {
 
     message.sender_id = moderator.user_id;
     assert.equal(message_delete.get_deletability(message), false);
+});
+
+run_test("get_deletability with client clock ahead of server (+1hr)", ({override}) => {
+    override(realm, "realm_can_delete_own_message_group", everyone_group.id);
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(realm, "realm_message_content_delete_limit_seconds", 600);
+    initialize_and_override_current_user(me.user_id, override);
+
+    // Client clock is 1 hour ahead (5600s), server is at 2000s, message sent at 1950s.
+    clock.setSystemTime(5600 * 1000);
+    const message = {
+        sent_by_me: true,
+        type: "private",
+        timestamp: 1950,
+    };
+
+    server_time._reset_for_testing();
+    assert.equal(message_delete.get_deletability(message), false);
+
+    server_time.update_offset(2000);
+    assert.equal(message_delete.get_deletability(message), true);
+
+    server_time._reset_for_testing();
+});
+
+run_test("get_deletability with client clock behind server (-1hr)", ({override}) => {
+    override(realm, "realm_can_delete_own_message_group", everyone_group.id);
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(realm, "realm_message_content_delete_limit_seconds", 600);
+    initialize_and_override_current_user(me.user_id, override);
+
+    // Client clock is 1 hour behind (1500s), server is at 2000s, message sent at 1200s.
+    clock.setSystemTime(1500 * 1000);
+    const message = {
+        sent_by_me: true,
+        type: "private",
+        timestamp: 1200,
+    };
+
+    server_time._reset_for_testing();
+    assert.equal(message_delete.get_deletability(message), true);
+
+    server_time.update_offset(2000);
+    assert.equal(message_delete.get_deletability(message), false);
+
+    server_time._reset_for_testing();
 });

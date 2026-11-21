@@ -3,11 +3,12 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 const message_edit = zrequire("message_edit");
+const server_time = zrequire("server_time");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
@@ -329,4 +330,48 @@ run_test("update_preview_embeds", ({override}) => {
     assert.deepEqual(applied_to, ["message row being edited"]);
 
     message_edit.currently_editing_messages.clear();
+});
+
+run_test("is_content_editable with client clock ahead of server (+1hr)", ({override}) => {
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+
+    // Client clock is 1 hour ahead (5600s), server is at 2000s, message sent at 1950s.
+    clock.setSystemTime(5600 * 1000);
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        type: "private",
+        timestamp: 1950,
+    };
+
+    server_time._reset_for_testing();
+    assert.equal(is_content_editable(message), false);
+
+    server_time.update_offset(2000);
+    assert.equal(is_content_editable(message), true);
+
+    server_time._reset_for_testing();
+});
+
+run_test("is_content_editable with client clock behind server (-1hr)", ({override}) => {
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+
+    // Client clock is 1 hour behind (1500s), server is at 2000s, message sent at 1200s.
+    clock.setSystemTime(1500 * 1000);
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        type: "private",
+        timestamp: 1200,
+    };
+
+    server_time._reset_for_testing();
+    assert.equal(is_content_editable(message), true);
+
+    server_time.update_offset(2000);
+    assert.equal(is_content_editable(message), false);
+
+    server_time._reset_for_testing();
 });
