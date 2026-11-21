@@ -47,6 +47,7 @@ from zerver.models.push_notifications import AbstractPushDeviceToken as Abstract
 from zerver.models.push_notifications import PushDeviceToken as PushDeviceToken
 from zerver.models.realm_audit_logs import AbstractRealmAuditLog as AbstractRealmAuditLog
 from zerver.models.realm_audit_logs import RealmAuditLog as RealmAuditLog
+from zerver.models.realm_big_blue_button import RealmBigBlueButton as RealmBigBlueButton
 from zerver.models.realm_emoji import RealmEmoji as RealmEmoji
 from zerver.models.realm_playgrounds import RealmPlayground as RealmPlayground
 from zerver.models.realms import Realm as Realm
