@@ -31,13 +31,6 @@ html {
     position: fixed;
 }
 
-.digest-address-link {
-    margin-top: 10px;
-    color: hsl(0deg 0% 60%);
-    font-size: 12px;
-    text-align: center;
-}
-
 .normal {
     font-weight: normal;
 }
@@ -137,8 +130,35 @@ html {
     }
 }
 
+.digest-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    /* Like the help center header: the page name beside the logo. */
+    .header-main .logo .portico-header-text {
+        opacity: 1;
+
+        & a {
+            font-size: 1.4rem;
+            margin-left: 10px;
+            color: hsl(0deg 0% 27%);
+        }
+    }
+}
+
 .digest-container {
-    padding-top: 100px;
+    /* 1.5rem below the header, less the 2px cell spacing of the
+       email's outer table. */
+    padding-top: calc(1.5rem - 2px);
+}
+
+/* The email's own top spacing sits above its logo, which this page
+   leaves out. Overriding the email's inlined styles needs !important. */
+.digest-email-html .container,
+.digest-email-html .content {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 
 .digest-email-container {
@@ -146,12 +166,6 @@ html {
     margin: 0 auto !important;
     max-width: 700px;
     padding-bottom: 30px;
-}
-
-.digest-email-html {
-    padding: 20px;
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 5px;
 }
 
 .app.help {
@@ -381,9 +395,104 @@ html {
     margin-bottom: 60px;
 }
 
-.digest-page-title {
-    text-align: center;
+/* Lines up with the conversations in the email above, which are
+   inset by the email's .container and .content padding plus its
+   table cell spacing. */
+.digest-plain-text-section {
+    box-sizing: border-box;
+    max-width: 688px;
+    margin: 0 auto;
+    padding: 0 26px;
+}
+
+.digest-plain-text-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+
+    /* Chevron pointing right, turned down while open. */
+    &::before {
+        content: "";
+        width: 0.5em;
+        height: 0.5em;
+        border-right: 2px solid currentcolor;
+        border-bottom: 2px solid currentcolor;
+        transform: rotate(-45deg);
+    }
+}
+
+.digest-plain-text-section[open] .digest-plain-text-summary::before {
+    transform: rotate(45deg);
+}
+
+.digest-plain-text-title {
+    margin: 0;
     font-weight: 400;
+}
+
+.digest-plain-text-section .digest-plain-text {
+    margin-top: 15px;
+}
+
+/* The page around the digest email uses the email's own surfaces,
+   so the email's background fills the page, and follows the system
+   color scheme as the email does. */
+body:has(.digest-container) {
+    background-color: hsl(240deg 33% 94%);
+}
+
+@media (prefers-color-scheme: dark) {
+    body:has(.digest-container) {
+        background-color: hsl(240deg 30% 13%);
+        color: hsl(240deg 5% 90%);
+
+        .portico-header {
+            background-color: hsl(235deg 28% 21%);
+            color: hsl(240deg 5% 90%);
+
+            .brand-logo path {
+                fill: hsl(240deg 5% 90%);
+            }
+
+            .header-main .logo .portico-header-text,
+            .header-main .logo .portico-header-text a {
+                color: hsl(240deg 5% 90%);
+            }
+
+            .portico-header-dropdown-pill {
+                border-color: hsl(0deg 0% 100% / 20%);
+            }
+
+            .portico-header-dropdown ul {
+                background-color: hsl(235deg 28% 21%);
+                border-color: hsl(238deg 26% 31%);
+
+                &::before {
+                    color: hsl(238deg 26% 31%);
+                }
+
+                & li:hover {
+                    background-color: hsl(238deg 26% 31%);
+                }
+
+                & li a {
+                    color: hsl(240deg 5% 90%);
+                }
+            }
+        }
+
+        .digest-plain-text {
+            background-color: hsl(235deg 28% 21%);
+            border-color: hsl(238deg 26% 31%);
+            color: hsl(240deg 5% 90%);
+        }
+    }
 }
 
 .lead {
