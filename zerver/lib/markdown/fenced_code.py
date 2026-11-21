@@ -101,7 +101,7 @@ FENCE_RE = re.compile(
     r"""
     # ~~~ or ```
     (?P<fence>
-        ^(?:~{3,}|`{3,})
+        (?P<is_tilde>~{3,})|`{3,}
     )
 
     [ ]* # spaces
@@ -119,7 +119,7 @@ FENCE_RE = re.compile(
 
         # header for features that use fenced block header syntax (like spoilers)
         (?P<header>
-            [^ ~`][^~`]*
+            (?(is_tilde)[^ ~][^~]*|[^ ~`][^~`]*)
         )?
         \}?
     )?

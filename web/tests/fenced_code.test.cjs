@@ -142,6 +142,19 @@ run_test("process_fenced_code_spoiler", () => {
     assert.ok(output.includes("hidden content"));
     assert.ok(stashed.some((s) => s.includes("spoiler-block")));
 
+    // Tilde fences allow inline code spans (backticks) in spoiler headers (#37003).
+    const tilde_spoiler_input =
+        "~~~spoiler Title that includes an `inline code span`\nhidden content\n~~~";
+    const tilde_spoiler_output = fenced_code.process_fenced_code(tilde_spoiler_input);
+    assert.ok(tilde_spoiler_output.includes("Title that includes an `inline code span`"));
+    assert.ok(tilde_spoiler_output.includes("hidden content"));
+
+    // Backtick fences do NOT allow backticks in info strings per CommonMark spec.
+    const backtick_spoiler_input =
+        "```spoiler Title that includes an `inline code span`\nhidden content\n```";
+    const backtick_spoiler_output = fenced_code.process_fenced_code(backtick_spoiler_input);
+    assert.ok(!backtick_spoiler_output.includes("spoiler-block"));
+
     // Restore the default no-op stash func.
     fenced_code.set_stash_func((text) => text);
 });

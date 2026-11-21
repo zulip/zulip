@@ -22,23 +22,18 @@ type Handler = {
 // This supports arbitrarily nested code blocks as well as
 // auto-completing code blocks missing a trailing close.
 
-// See backend fenced_code.py:71 for associated regexp
-const fencestr =
-    "^(~{3,}|`{3,})" + // Opening fence
-    "[ ]*" + // Spaces
-    "(" +
-    "\\{?\\.?" +
-    "([a-zA-Z0-9_+-./#]*)" + // Language
-    "\\}?" +
-    ")" +
-    "[ ]*" + // Spaces
-    "(" +
-    "\\{?\\.?" +
-    "([^~`]*)" + // Header (see fenced_code.py)
-    "\\}?" +
-    ")" +
-    "$";
-const fence_re = new RegExp(fencestr);
+// See backend fenced_code.py:100 for associated regexp
+// Tilde fences (~{3,}) allow backticks in the header (CommonMark 0.30 sec 4.5).
+// Backtick fences (`{3,}) forbid backticks in the info string/header.
+const fence_tilde_re = /^(~{3,})[ ]*(\{?\.?([a-zA-Z0-9_+-./#]*)\}?)[ ]*(\{?\.?([^~]*)\}?)$/;
+const fence_backtick_re = /^(`{3,})[ ]*(\{?\.?([a-zA-Z0-9_+-./#]*)\}?)[ ]*(\{?\.?([^~`]*)\}?)$/;
+
+function match_fence(line: string): RegExpExecArray | null {
+    if (line.startsWith("~")) {
+        return fence_tilde_re.exec(line);
+    }
+    return fence_backtick_re.exec(line);
+}
 
 // Default stashing function does nothing
 let stash_func = function (text: string): string {
@@ -209,7 +204,7 @@ export function process_fenced_code(content: string): string {
     }
 
     consume_line = function consume_line(output_lines: string[], line: string) {
-        const match = fence_re.exec(line);
+        const match = match_fence(line);
         if (match) {
             const fence = match[1]!;
             const lang = match[3]!;
