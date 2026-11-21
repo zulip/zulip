@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import type {Page} from "puppeteer";
 
 import * as common from "./lib/common.ts";
@@ -50,9 +52,55 @@ async function test_user_status(page: Page): Promise<void> {
     await page.waitForSelector(`.user-presence-link .status-emoji${laughing_emoji_selector}`);
 }
 
+async function switch_emojiset(page: Page, emojiset: string): Promise<void> {
+    await common.open_personal_menu(page);
+    const settings_selector = "#personal-menu-dropdown a[href^='#settings']";
+    await page.waitForSelector(settings_selector, {visible: true});
+    await page.click(settings_selector);
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
+
+    await page.click('[data-section="preferences"]');
+    const emojiset_selector = `#user_emojiset .setting_emojiset_choice[value="${emojiset}"]`;
+    await page.waitForSelector(emojiset_selector, {visible: true});
+    await page.click(emojiset_selector);
+    // The checkmark is added once the server event applying the new
+    // emoji set has been processed.
+    await page.waitForSelector(
+        "#user-preferences .emoji-preferences-settings-status .settings-save-checkmark",
+    );
+
+    await page.keyboard.press("Escape");
+    await page.waitForSelector("#settings_overlay_container", {hidden: true});
+}
+
+async function test_user_status_with_text_emojiset(page: Page): Promise<void> {
+    await switch_emojiset(page, "text");
+    await open_set_user_status_modal(page);
+
+    // Pick an emoji other than the one already set, since otherwise
+    // the Save button stays disabled.
+    const grinning_emoji_selector = ".emoji-1f600";
+    await page.click("#selected_emoji .status-emoji-wrapper");
+    await page.waitForSelector(`.emoji-popover ${grinning_emoji_selector}`, {visible: true});
+    await page.click(`.emoji-popover ${grinning_emoji_selector}`);
+    await page.waitForSelector(".emoji-picker-popover", {hidden: true});
+    await page.waitForSelector(`.selected-emoji${grinning_emoji_selector}`);
+
+    await page.click("#set-user-status-modal .dialog_submit_button");
+    await page.waitForSelector("#set-user-status-modal", {hidden: true});
+
+    // Status emoji are hidden with the plain-text emoji set, and
+    // shown again once the user switches back.
+    const my_status_emoji_selector = ".user_sidebar_entry_me .user-presence-link .status-emoji";
+    assert.equal(await page.$(my_status_emoji_selector), null);
+    await switch_emojiset(page, "google");
+    await page.waitForSelector(`${my_status_emoji_selector}${grinning_emoji_selector}`);
+}
+
 async function user_status_test(page: Page): Promise<void> {
     await common.log_in(page);
     await test_user_status(page);
+    await test_user_status_with_text_emojiset(page);
 }
 
 await common.run_test(user_status_test);

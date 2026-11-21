@@ -18,11 +18,13 @@ const search_pill = zrequire("search_pill");
 const search_suggestion = zrequire("search_suggestion");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");

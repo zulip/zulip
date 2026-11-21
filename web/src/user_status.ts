@@ -8,9 +8,7 @@ import {user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
-export type UserStatusEmojiInfo = EmojiRenderingDetails & {
-    emoji_alt_code?: boolean;
-};
+export type UserStatusEmojiInfo = EmojiRenderingDetails;
 
 const user_status_event_schema = z.intersection(
     z.object({
@@ -81,7 +79,22 @@ export function set_status_text(opts: {user_id: number; status_text: string}): v
 }
 
 export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefined {
+    // The plain-text emoji set is for users who find lots of images
+    // distracting, so we don't show them status emoji.
+    if (user_settings.emojiset === "text") {
+        return undefined;
+    }
     return user_status_emoji_info.get(user_id);
+}
+
+// The "Set status" modal shows status emoji with every emoji set,
+// like the emoji picker does.
+export function get_status_emoji_for_editing(user_id: number): UserStatusEmojiInfo | undefined {
+    return user_status_emoji_info.get(user_id);
+}
+
+export function get_user_ids_with_status_emoji(): number[] {
+    return user_status_emoji_info.keys().toArray();
 }
 
 export function set_status_emoji(event: UserStatusEvent): void {
@@ -94,14 +107,14 @@ export function set_status_emoji(event: UserStatusEvent): void {
         return;
     }
 
-    user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
-        ...emoji.get_emoji_details_for_rendering({
+    user_status_emoji_info.set(
+        opts.user_id,
+        emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         }),
-    });
+    );
 }
 
 export function initialize(params: StateData["user_status"]): void {
