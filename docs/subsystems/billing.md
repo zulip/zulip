@@ -8,7 +8,7 @@ This section deals with developing and testing the billing system.
   - Make sure that the country of your Stripe account is set to USA when
     you create the account.
   - You might need to use a VPN for this.
-- Ensure that the [API version](https://stripe.com/docs/api/versioning) of
+- Ensure that the [API version](https://docs.stripe.com/api/versioning) of
   your Stripe account is same as `STRIPE_API_VERSION` defined in
   `corporate/lib/stripe.py`. You can upgrade to a higher version from
   the Stripe dashboard.
@@ -31,20 +31,20 @@ Apart from the common setup mentioned above, you also need to set up your
 development environment to receive webhook events from Stripe.
 
 - Install the Stripe CLI locally by following the instructions
-  [here](https://stripe.com/docs/stripe-cli).
+  [here](https://docs.stripe.com/stripe-cli).
 - Log in to Stripe CLI using the command `stripe login`.
 - You can get Stripe CLI to forward all Stripe webhook events to our local
   webhook endpoint using the following command:
   `stripe listen --forward-to http://localhost:9991/stripe/webhook/`
 - Note that the webhook secret key needs to be updated every 90 days following
-  the steps [here](https://stripe.com/docs/stripe-cli#install).
+  the steps [here](https://docs.stripe.com/stripe-cli#install).
 - Wait for the `stripe listen` command in the previous step to output the
   webhook signing secret.
   - The signing secret would be used by our billing system to verify that
     the events received by our webhook endpoint are sent by Stripe and not
     by an intruder. In production, there is no Stripe CLI, so the step for
     configuring this is a bit different. See Stripe's documentation on
-    [taking webhooks live](https://stripe.com/docs/webhooks/go-live) for
+    [taking webhooks live](https://docs.stripe.com/webhooks/quickstart) for
     more details.
 - Copy the webhook signing secret and set it as `stripe_webhook_endpoint_secret`
   in `zproject/dev-secrets.conf`.
@@ -74,7 +74,7 @@ populate_billing_realms` output.
 
 Stripe provides various card numbers to test for specific responses from Stripe.
 The most commonly used ones are mentioned in below wherever appropriate. The full
-list is available [here](https://stripe.com/docs/testing#cards).
+list is available [here](https://docs.stripe.com/testing#cards).
 
 ### Flows to test
 
@@ -178,7 +178,7 @@ changes, though breaking changes should be unlikely given the parts of the
 product we use. The main remaining work for handling breaking version upgrades
 is ensuring that we set the stripe version in our API calls.
 Stripe's documentation for
-[Upgrading your API version](https://stripe.com/docs/upgrades#how-can-i-upgrade-my-api)
+[Upgrading your API version](https://docs.stripe.com/upgrades)
 has some additional information.
 
 ## Writing tests
