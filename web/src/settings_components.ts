@@ -397,6 +397,28 @@ function get_message_retention_setting_value(
     return util.check_time_input(custom_input_val);
 }
 
+function get_default_color_setting_value(
+    $input_elem: JQuery<HTMLSelectElement>,
+    for_api_data = true,
+): string | null {
+    const select_elem_val = $input_elem.val();
+    if (select_elem_val === "none") {
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify(null);
+    }
+
+    const custom_input_val = $input_elem
+        .parent()
+        .find<HTMLInputElement>(".default-color-custom-input")
+        .val()!;
+    if (!for_api_data) {
+        return custom_input_val;
+    }
+    return JSON.stringify(custom_input_val);
+}
+
 export const custom_profile_field_choices_schema = z.record(
     z.string(),
     z.object({text: z.string(), order: z.string()}),
@@ -751,6 +773,9 @@ export let get_input_element_value = (
         case "message-retention-setting":
             assert(input_elem instanceof HTMLSelectElement);
             return get_message_retention_setting_value($(input_elem));
+        case "default-color-setting":
+            assert(input_elem instanceof HTMLSelectElement);
+            return get_default_color_setting_value($(input_elem));
         case "dropdown-list-widget":
             return get_dropdown_list_widget_setting_value($input_elem);
         case "field-data-setting":
@@ -958,6 +983,10 @@ export function check_stream_settings_property_changed(
         case "message_retention_days":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
+            break;
+        case "default_color":
+            assert(elem instanceof HTMLSelectElement);
+            proposed_val = get_default_color_setting_value($(elem), false);
             break;
         case "channel_privacy":
             proposed_val = get_dropdown_list_widget_setting_value($(elem));

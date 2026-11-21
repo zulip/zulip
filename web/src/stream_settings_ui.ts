@@ -245,6 +245,14 @@ export function update_default_push_notifications_setting(
     stream_ui_updates.update_setting_element(sub, "default_push_notifications");
 }
 
+export function update_default_color_setting(
+    sub: StreamSubscription,
+    new_value: string | null,
+): void {
+    stream_data.update_default_color(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "default_color");
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
