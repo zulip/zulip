@@ -99,6 +99,10 @@ def get_avatar_field(
     if is_cross_realm_bot_email(email):
         return get_static_avatar_url(email, medium)
 
+    # Avatars provided by Zulip are served from a static URL.
+    if avatar_source == UserProfile.AVATAR_FROM_SYSTEM:
+        return get_avatar_for_inaccessible_user(medium)
+
     """
     If our client knows how to calculate gravatar hashes, we
     will return None and let the client compute the gravatar
@@ -177,8 +181,11 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
     return True
 
 
-def get_avatar_for_inaccessible_user() -> str:
-    return staticfiles_storage.url("images/unknown-user-avatar.png")
+def get_avatar_for_inaccessible_user(medium: bool) -> str:
+    avatar_file_name = (
+        "images/unknown-user-avatar-medium.png" if medium else "images/unknown-user-avatar.png"
+    )
+    return staticfiles_storage.url(avatar_file_name)
 
 
 def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
