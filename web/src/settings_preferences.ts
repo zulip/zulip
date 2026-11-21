@@ -400,7 +400,25 @@ function language_select_callback(
     change_display_setting(
         data,
         $("#user-preferences").find(".general-settings-status"),
-        undefined,
+        (response_data) => {
+            const parsed = z.object({msg: z.optional(z.string())}).safeParse(response_data);
+            const msg = parsed.success ? parsed.data.msg : undefined;
+            if (msg) {
+                const $banner = $("<div>").text(msg);
+                $banner.html(
+                    $banner
+                        .html()
+                        .replace(
+                            /&lt;z-link&gt;(.*?)&lt;\/z-link&gt;/,
+                            '<a class="reload_link">$1</a>',
+                        ),
+                );
+                ui_report.success(
+                    $banner.html(),
+                    $("#user-preferences").find(".general-settings-status"),
+                );
+            }
+        },
         undefined,
         language_select_message_html,
         true,
