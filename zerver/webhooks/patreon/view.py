@@ -34,12 +34,29 @@ def get_members_create_body(payload: WildValue) -> str | None:
         return template.format(
             user_name=get_user_name(payload),
         ).rstrip()
+    # Patreon "members:create" test payloads (and some live joins) already
+    # include patron status / pledge amount; surface those as pledge notices.
+    if last_charge_status in ("Paid", None) and get_pledge_amount(payload) > 0:
+        return get_members_pledge_create_body(payload)
     return None
 
 
 def get_members_update_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     patron_status = get_patron_status(payload)
+    pledge_amount = get_pledge_amount(payload)
+
+    # In production Patreon often sends members:update for new pledges and
+    # pledge amount changes instead of members:pledge:create/update (#40261).
+    if (
+        last_charge_status in ("Paid", None)
+        and patron_status == "active_patron"
+        and pledge_amount > 0
+    ):
+        if last_charge_status is None:
+            return get_members_pledge_create_body(payload)
+        return get_members_pledge_update_body(payload)
+
     if last_charge_status in ("Paid", None) and patron_status in ("active_patron", "former_patron"):
         template = "{user_name}'s membership has been updated to {patron_status}."
         return template.format(
