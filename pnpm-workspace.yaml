@@ -34,3 +34,6 @@ allowBuilds:
   ttf2woff2: false
   unrs-resolver: false
   vnu-jar: false
+
+minimumReleaseAgeExclude:
+  - "@swc/plugin-formatjs@15.0.0"

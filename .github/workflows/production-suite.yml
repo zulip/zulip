@@ -16,8 +16,8 @@ on:
       - uv.lock
       - web/babel.config.js
       - web/postcss.config.js
+      - web/rspack.config.ts
       - web/third/**
-      - web/webpack.config.ts
       - zerver/apps.py
       - zerver/checks.py
       - zerver/worker/queue_processors.py
