@@ -83,14 +83,21 @@ export function get_subscriber_fetch_failure_message(failed_stream_id: number): 
 export async function get_user_ids(
     pill_widget: StreamPillWidget | CombinedPillContainer,
 ): Promise<UserIdsFetchResult> {
-    const stream_ids = get_stream_ids(pill_widget);
-    const results = await Promise.all(
-        stream_ids.map(async (stream_id) =>
-            peer_data.get_subscribers_with_possible_fetch(stream_id, true),
-        ),
-    );
+    let stream_ids: number[];
+    let results: (number[] | null)[];
+    let current_stream_ids_in_widget = get_stream_ids(pill_widget);
+    // Channel pills added while we were waiting need their
+    // subscribers too, so wait for those as well.
+    do {
+        stream_ids = current_stream_ids_in_widget;
+        results = await Promise.all(
+            stream_ids.map(async (stream_id) =>
+                peer_data.get_subscribers_with_possible_fetch(stream_id, true),
+            ),
+        );
+        current_stream_ids_in_widget = get_stream_ids(pill_widget);
+    } while (!new Set(current_stream_ids_in_widget).isSubsetOf(new Set(stream_ids)));
 
-    const current_stream_ids_in_widget = get_stream_ids(pill_widget);
     let user_ids: number[] = [];
     for (const [index, stream_id] of stream_ids.entries()) {
         const subscribers = results[index]!;

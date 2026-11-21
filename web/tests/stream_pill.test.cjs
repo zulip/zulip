@@ -162,6 +162,22 @@ run_test("get_user_ids_fetch_failed", async () => {
     blueslip.reset();
 });
 
+run_test("get_user_ids_pill_added_during_fetch", async () => {
+    // Sweden's pill is added while we wait for Germany's subscribers,
+    // so Sweden's subscribers must be included too.
+    const items = [germany_pill];
+    const widget = {items: () => items};
+    mock_channel_get(channel, (opts) => {
+        assert.equal(opts.url, `/json/streams/${germany.stream_id}/members`);
+        items.push(sweden_pill);
+        opts.success({subscribers: [6]});
+    });
+    assert.deepEqual(await stream_pill.get_user_ids(widget), {
+        status: "success",
+        user_ids: [1, 2, 3, 4, 5, 6],
+    });
+});
+
 run_test("get_subscriber_fetch_failure_message", () => {
     assert.equal(
         stream_pill.get_subscriber_fetch_failure_message(germany.stream_id),
