@@ -1604,3 +1604,18 @@ test("empty query suggestions in an inaccessible narrow", ({override}) => {
     suggestions = search.get_suggestions([], [], true);
     assert.deepEqual(suggestions, search.get_suggestions([], [], false));
 });
+
+test("search_term_description_html", () => {
+    assert.equal(
+        search.search_term_description_html("lunch", true),
+        "translated: Search for lunch",
+    );
+    assert.equal(
+        search.search_term_description_html("lunch", false),
+        "translated: search for lunch",
+    );
+    assert.equal(
+        search.search_term_description_html("<b>lunch</b>", true),
+        "translated: Search for &lt;b&gt;lunch&lt;/b&gt;",
+    );
+});

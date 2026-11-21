@@ -1903,236 +1903,304 @@ test("unparse", () => {
 });
 
 test("describe", ({mock_template, override}) => {
-    let narrow;
+    let term;
     let string;
-    let terms;
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    narrow = [{operator: "channels", operand: "public"}];
-    string = "all public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "public"};
+    string = "translated: All public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "public", negated: true}];
-    string = "exclude all public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "public", negated: true};
+    string = "translated: Exclude all public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "archived"}];
-    string = "archived channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "archived"};
+    string = "translated: Archived channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "archived", negated: true}];
-    string = "exclude archived channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "archived", negated: true};
+    string = "translated: Exclude archived channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "web-public"}];
-    string = "all web-public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "web-public"};
+    string = "translated: All web-public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "web-public", negated: true}];
-    string = "exclude all web-public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "web-public", negated: true};
+    string = "translated: Exclude all web-public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
     page_params.is_spectator = true;
-    narrow = [{operator: "channels", operand: "public"}];
-    string = "all public channels that you can view";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "public"};
+    string = "translated: All public channels that you can view";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "web-public"}];
-    string = "all web-public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "public", negated: true};
+    string = "translated: Exclude all public channels that you can view";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "channels", operand: "web-public", negated: true}];
-    string = "exclude all web-public channels";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channels", operand: "web-public"};
+    string = "translated: All web-public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "channels", operand: "web-public", negated: true};
+    string = "translated: Exclude all web-public channels";
+    assert.equal(Filter.search_description_as_html(term, false), string);
     page_params.is_spectator = false;
 
-    narrow = [{operator: "date", operand: ""}];
-    string = "messages sent around a specific date";
-    assert.equal(Filter.search_description_as_html(narrow, true), string);
+    term = {operator: "channels", operand: "private", negated: true};
+    string = "translated: Exclude channel type private";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "date", operand: "2026-03-15"}];
-    string = "messages sent around March 15, 2026";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "date", operand: ""};
+    string = "translated: Messages sent around a specific date";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "date", operand: "2026-03-15"};
+    string = "translated: Messages sent around March 15, 2026";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "date", operand: "yesterday"};
+    string = "translated: Messages sent around yesterday";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
     const devel_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">devel</span></span>`;
-    const river_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">river</span></span>`;
 
     const devel_id = new_stream_id();
     make_sub("devel", devel_id);
 
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "is", operand: "starred"},
-    ];
-    string = `messages in ${devel_decorated}, starred messages`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channel", operand: devel_id.toString()};
+    string = `translated: Messages in ${devel_decorated}`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    const river_id = new_stream_id();
-    make_sub("river", river_id);
-    narrow = [
-        {operator: "channel", operand: river_id.toString()},
-        {operator: "is", operand: "unread"},
-    ];
-    string = `messages in ${river_decorated}, unread messages`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "channel", operand: devel_id.toString(), negated: true};
+    string = `translated: Exclude messages in ${devel_decorated}`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "topic", operand: "JS"},
-    ];
-    string = `messages in ${devel_decorated} > JS`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "stream", operand: devel_id.toString()};
+    string = `translated: Messages in ${devel_decorated}`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "is", operand: "dm"},
-        {operator: "search", operand: "lunch"},
-    ];
-    string = "direct messages, search for lunch";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    // A channel this client doesn't know about.
+    term = {operator: "channel", operand: new_stream_id().toString(), negated: true};
+    string = "translated: Exclude messages in a specific channel";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "id", operand: "99"}];
-    string = "message ID 99";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "topic", operand: "JS"};
+    string = "translated: Topic JS";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "in", operand: "home"}];
-    string = "messages in home";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    // Operands that are also `has` operands aren't pluralized.
+    term = {operator: "topic", operand: "image"};
+    string = "translated: Topic image";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "mentioned"}];
-    string = "messages that mention you";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "topic", operand: "JS", negated: true};
+    string = "translated: Exclude topic JS";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "alerted"}];
-    string = "alerted messages";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "subject", operand: "JS", negated: true};
+    string = "translated: Exclude topic JS";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "resolved"}];
-    string = "resolved topics";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "search", operand: "lunch"};
+    string = "translated: Search for lunch";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "followed"}];
-    string = "followed topics";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "search", operand: "lunch", negated: true};
+    string = "translated: Exclude lunch";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "muted"}];
-    string = "muted messages";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "search", operand: ""};
+    string = "translated: Search for";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "id", operand: "99"};
+    string = "translated: Message ID 99";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "near", operand: "99", negated: true};
+    string = "translated: Exclude messages around 99";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "home"};
+    string = "translated: Messages in home";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "home", negated: true};
+    string = "translated: Exclude messages in home";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "all"};
+    string = "translated: Messages in all";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "in", operand: "nowhere"};
+    string = "translated: Messages in nowhere";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "dm"};
+    string = "translated: Direct messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "dm", negated: true};
+    string = "translated: Exclude direct messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "starred"};
+    string = "translated: Starred messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "starred", negated: true};
+    string = "translated: Exclude starred messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "unread"};
+    string = "translated: Unread messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "mentioned"};
+    string = "translated: Messages that mention you";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "mentioned", negated: true};
+    string = "translated: Exclude messages that mention you";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "alerted"};
+    string = "translated: Alerted messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "resolved"};
+    string = "translated: Resolved topics";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "followed"};
+    string = "translated: Followed topics";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "is", operand: "muted"};
+    string = "translated: Muted messages";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
     // operands with their own negative words, like resolved.
-    narrow = [{operator: "is", operand: "resolved", negated: true}];
-    string = "unresolved topics";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "is", operand: "resolved", negated: true};
+    string = "translated: Unresolved topics";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "is", operand: "something_we_do_not_support"}];
-    string = "invalid something_we_do_not_support operand for is operator";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "is", operand: "something_we_do_not_support"};
+    string = "translated: Invalid something_we_do_not_support operand for is operator";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    // All the `is` operands are handled in search_suggestions. This is just
-    // for coverage.
-    assert.equal(Filter.operator_to_prefix("is"), "messages that are");
+    // "unresolved" is only the description of -is:resolved, not an operand.
+    term = {operator: "is", operand: "unresolved"};
+    string = "translated: Invalid unresolved operand for is operator";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [{operator: "with", operand: "12"}];
-    string = "unknown operator";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "with", operand: "12"};
+    string = "translated: Unknown operator";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "topic", operand: "JS", negated: true},
-    ];
-    string = `messages in ${devel_decorated}, exclude topic JS`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "has", operand: "image", negated: true};
+    string = "translated: Exclude messages with images";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "is", operand: "dm"},
-        {operator: "search", operand: "lunch", negated: true},
-    ];
-    string = "direct messages, exclude lunch";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "has", operand: "link"};
+    string = "translated: Messages with links";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "is", operand: "starred", negated: true},
-    ];
-    string = `messages in ${devel_decorated}, exclude starred messages`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "has", operand: "attachment"};
+    string = "translated: Messages with attachments";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "has", operand: "image", negated: true},
-    ];
-    string = `messages in ${devel_decorated}, exclude messages with images`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "has", operand: "reactions"};
+    string = "translated: Messages with reactions";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "has", operand: "abc", negated: true},
-        {operator: "channel", operand: devel_id.toString()},
-    ];
-    string = `invalid abc operand for has operator, messages in ${devel_decorated}`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
-
-    narrow = [
-        {operator: "has", operand: "image", negated: true},
-        {operator: "channel", operand: devel_id.toString()},
-    ];
-    string = `exclude messages with images, messages in ${devel_decorated}`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
-
-    narrow = [];
-    string = "combined feed";
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
-
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "subject", operand: "JS", negated: true},
-    ];
-    string = `messages in ${devel_decorated}, exclude topic JS`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "has", operand: "abc", negated: true};
+    string = "translated: Invalid abc operand for has operator";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
     // Empty string topic involved.
     override(realm, "realm_empty_topic_display_name", "general chat");
-    narrow = [
-        {operator: "channel", operand: devel_id.toString()},
-        {operator: "topic", operand: ""},
-    ];
-    string = `messages in ${devel_decorated} > <span class="empty-topic-display">translated: general chat</span>`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "topic", operand: ""};
+    string = `translated: Topic <span class="empty-topic-display">translated: general chat</span>`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
-    narrow = [
-        {operator: "topic", operand: ""},
-        {operator: "is", operand: "starred"},
-    ];
-    string =
-        'topic <span class="empty-topic-display">translated: general chat</span>, starred messages';
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
-
-    narrow = [{operator: "topic", operand: ""}];
-    string = `topic <span class="empty-topic-display">translated: general chat</span>`;
-    assert.equal(Filter.search_description_as_html(narrow, false), string);
+    term = {operator: "topic", operand: "", negated: true};
+    string = `translated: Exclude topic <span class="empty-topic-display">translated: general chat</span>`;
+    assert.equal(Filter.search_description_as_html(term, false), string);
 
     /* Description for operator suggestion search terms */
-    terms = [{operator: "channels", operand: ""}];
-    string = "channel type";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "channel", operand: ""};
+    string = "translated: Messages in a specific channel";
+    assert.equal(Filter.search_description_as_html(term, true), string);
 
-    terms = [{operator: "topic", operand: ""}];
-    string = "topic";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "channels", operand: ""};
+    string = "translated: Channel type";
+    assert.equal(Filter.search_description_as_html(term, true), string);
 
-    terms = [{operator: "near", operand: ""}];
-    string = "messages around";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "topic", operand: ""};
+    string = "translated: Topic";
+    assert.equal(Filter.search_description_as_html(term, true), string);
 
-    terms = [{operator: "sender", operand: ""}];
-    string = "sent by";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "topic", operand: "", negated: true};
+    string = "translated: Exclude topic";
+    assert.equal(Filter.search_description_as_html(term, true), string);
 
-    terms = [{operator: "dm-including", operand: ""}];
-    string = "direct messages including";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "near", operand: ""};
+    string = "translated: Messages around";
+    assert.equal(Filter.search_description_as_html(term, true), string);
 
-    terms = [{operator: "mentions", operand: ""}];
-    string = "messages mentioning";
-    assert.equal(Filter.search_description_as_html(terms, true), string);
+    term = {operator: "id", operand: "", negated: true};
+    string = "translated: Exclude message ID";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "in", operand: ""};
+    string = "translated: Messages in";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "sender", operand: ""};
+    string = "translated: Sent by";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "sender", operand: "", negated: true};
+    string = "translated: Exclude sent by";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "dm", operand: ""};
+    string = "translated: Direct messages with";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "dm-including", operand: ""};
+    string = "translated: Direct messages including";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    term = {operator: "mentions", operand: ""};
+    string = "translated: Messages mentioning";
+    assert.equal(Filter.search_description_as_html(term, true), string);
+
+    /* Description for user operators whose operand isn't a valid user */
+    term = {operator: "sender", operand: "nobody@example.com"};
+    string = "translated: Sent by nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "from", operand: "nobody@example.com", negated: true};
+    string = "translated: Exclude sent by nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "dm", operand: "nobody@example.com"};
+    string = "translated: Direct messages with nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "dm-including", operand: "nobody@example.com", negated: true};
+    string = "translated: Exclude direct messages including nobody@example.com";
+    assert.equal(Filter.search_description_as_html(term, false), string);
+
+    term = {operator: "mentions", operand: "<b>nobody</b>"};
+    string = "translated: Messages mentioning &lt;b&gt;nobody&lt;/b&gt;";
+    assert.equal(Filter.search_description_as_html(term, false), string);
 });
 
 test("can_bucket_by", () => {
