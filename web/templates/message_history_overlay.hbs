@@ -15,6 +15,14 @@
                     <h1>{{t "Message move history" }}</h1>
                 {{/if}}
                 {{/if}}
+                {{#if can_delete_history}}
+                {{> components/action_button
+                  label=(t "Delete prior versions of this message")
+                  variant="subtle"
+                  intent="danger"
+                  custom_classes="delete-edit-history-button"
+                  }}
+                {{/if}}
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
@@ -27,4 +35,3 @@
         </div>
     </div>
 </div>
-
