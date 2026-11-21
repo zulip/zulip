@@ -12,7 +12,7 @@ from zerver.lib.exceptions import (
     AuthenticationFailedError,
     InvalidSubdomainError,
     JsonableError,
-    RealmDeactivatedError,
+    RealmDeactivatedAuthenticationError,
     UserDeactivatedError,
 )
 from zerver.lib.response import json_success
@@ -123,7 +123,7 @@ def api_dev_fetch_api_key(request: HttpRequest, *, username: str) -> HttpRespons
     return_data: dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):
-        raise RealmDeactivatedError
+        raise RealmDeactivatedAuthenticationError
     if return_data.get("inactive_user"):
         raise UserDeactivatedError
     if return_data.get("invalid_subdomain"):  # nocoverage

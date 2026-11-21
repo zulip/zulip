@@ -27,7 +27,7 @@ from zerver.lib.event_types import (
 from zerver.lib.exceptions import (
     DeliveryTimeNotInFutureError,
     JsonableError,
-    RealmDeactivatedError,
+    RealmDeactivatedAuthenticationError,
     UserDeactivatedError,
 )
 from zerver.lib.message import SendMessageRequest, access_message, truncate_topic
@@ -338,7 +338,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     # Repeat the checks from validate_account_and_subdomain, in case
     # the state changed since the message was scheduled.
     if scheduled_message.realm.deactivated:
-        raise RealmDeactivatedError
+        raise RealmDeactivatedAuthenticationError
 
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
@@ -482,7 +482,7 @@ def try_deliver_one_scheduled_message() -> bool:
                 and scheduled_message.delivery_type != ScheduledMessage.REMIND
                 # Do not send notification if either the realm or
                 # the sending user account has been deactivated.
-                and not isinstance(e, RealmDeactivatedError)
+                and not isinstance(e, RealmDeactivatedAuthenticationError)
                 and not isinstance(e, UserDeactivatedError)
                 # Cross-realm system bots (welcome-bot, notification-bot,
                 # emailgateway) have no human behind them to read the
