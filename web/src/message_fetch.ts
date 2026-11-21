@@ -774,6 +774,16 @@ export function initialize(finished_initial_fetch: () => void): void {
             return;
         }
 
+        // Spectators are usually one-off visitors following a link,
+        // so backfilling history for each of them is expensive for
+        // the server when a public conversation gets a lot of
+        // traffic. They can still load older history on demand via
+        // the "Load more" button in Recent conversations.
+        if (page_params.is_spectator) {
+            post_initial_backfill_for_all_messages_done();
+            return;
+        }
+
         // Stop once we've hit the minimum backfill quantity of
         // messages if we've received a message older than
         // `target_days_of_history`.
