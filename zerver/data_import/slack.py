@@ -60,6 +60,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel_queue
@@ -823,6 +824,7 @@ def convert_slack_workspace_messages(
     total_uploads: list[UploadRecordData] = []
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, ThreadMetadata] = {}
+    slack_file_id_to_attachment: dict[str, AttachmentRecordData] = {}
 
     dump_file_id = 1
 
@@ -847,6 +849,7 @@ def convert_slack_workspace_messages(
             thread_counter,
             thread_map,
             thread_reply_counts,
+            slack_file_id_to_attachment,
         )
 
         message_json = dict(
@@ -1196,6 +1199,7 @@ def channel_message_to_zerver_message(
     thread_counter: dict[str, int],
     thread_map: dict[str, ThreadMetadata],
     thread_reply_counts: dict[str, int],
+    slack_file_id_to_attachment: dict[str, AttachmentRecordData],
 ) -> MessageConversionResult:
     zerver_message: list[ZerverFieldsT] = []
     zerver_usermessage: list[ZerverFieldsT] = []
@@ -1274,6 +1278,7 @@ def channel_message_to_zerver_message(
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
             do_download_and_export_upload_file=do_download_and_export_upload_file,
+            slack_file_id_to_attachment=slack_file_id_to_attachment,
         )
 
         has_link = has_link or file_info["has_link"]
@@ -1356,6 +1361,7 @@ def process_message_files(
     zerver_attachment: list[AttachmentRecordData],
     uploads_list: list[UploadRecordData],
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
+    slack_file_id_to_attachment: dict[str, AttachmentRecordData],
 ) -> dict[str, Any]:
     has_attachment = False
     has_image = False
@@ -1394,6 +1400,20 @@ def process_message_files(
             has_link = True
             has_image = has_image or "image" in fileinfo["mimetype"]
 
+            # A file, like a canvas, can be shared in several messages. If its
+            # download has already been queued, just attach it to each of
+            # those messages.
+            attachment = slack_file_id_to_attachment.get(fileinfo["id"])
+            if attachment is not None:
+                if message_id not in attachment.messages:
+                    attachment.messages.append(message_id)
+                markdown_links.append(
+                    get_markdown_link_for_url(
+                        fileinfo["title"], f"/user_uploads/{attachment.path_id}"
+                    )
+                )
+                continue
+
             attachment_data = get_attachment_path_and_content(
                 link_name=fileinfo["title"], filename=fileinfo["name"], realm_id=realm_id
             )
@@ -1421,7 +1441,7 @@ def process_message_files(
                 ),
             )
 
-            build_attachment(
+            slack_file_id_to_attachment[fileinfo["id"]] = build_attachment(
                 realm_id,
                 {message_id},
                 slack_user_id_to_zulip_user_id[slack_user_id],

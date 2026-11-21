@@ -595,7 +595,7 @@ def build_attachment(
     fileinfo: ZerverFieldsT,
     s3_path: str,
     zerver_attachment: list[AttachmentRecordData],
-) -> None:
+) -> AttachmentRecordData:
     """
     This function should be passed a 'fileinfo' dictionary, which contains
     information about 'size', 'created' (created time) and ['name'] (filename).
@@ -617,7 +617,9 @@ def build_attachment(
     attachment_dict["messages"] = list(message_ids)
     attachment_dict["realm"] = realm_id
 
-    zerver_attachment.append(AttachmentRecordData(**attachment_dict))
+    attachment_record = AttachmentRecordData(**attachment_dict)
+    zerver_attachment.append(attachment_record)
+    return attachment_record
 
 
 def get_avatar(avatar_dir: str, size_url_suffix: str, avatar_upload_item: list[str]) -> None:
@@ -700,7 +702,19 @@ def process_avatars(
 _data_import_session = OutgoingSession(
     role="data_import",
     timeout=60,
-    max_retries=Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504]),
+    max_retries=Retry(
+        # Slack's file server doesn't send a Retry-After header with
+        # its 429s, so assume it has per-minute rate-limit windows like
+        # Slack's Web API, and back off for 4 + 8 + 16 + 32 + 64
+        # seconds before giving up.
+        total=6,
+        backoff_factor=2,
+        # Imports download files with several parallel workers, so jitter
+        # keeps workers that were rate-limited together from retrying
+        # together.
+        backoff_jitter=4,
+        status_forcelist=[429, 500, 502, 503, 504],
+    ),
 )
 
 
