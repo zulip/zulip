@@ -132,6 +132,7 @@ def update_realm(
     can_set_delete_message_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
+    can_unsubscribe_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
     default_avatar_source: Annotated[str, check_string_in_validator(DEFAULT_AVATAR_SOURCES)]
     | None = None,
