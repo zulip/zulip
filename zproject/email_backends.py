@@ -93,7 +93,7 @@ class EmailLogBackEnd(EmailBackend):
 
     @staticmethod
     def prepare_email_messages_for_forwarding(email_messages: Sequence[EmailMessage]) -> None:
-        localhost_email_images_base_url = settings.ROOT_DOMAIN_URI + "/static/images/emails"
+        localhost_email_images_base_url = settings.ROOT_DOMAIN_URL + "/static/images/emails"
         czo_email_images_base_url = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
@@ -132,7 +132,7 @@ class EmailLogBackEnd(EmailBackend):
         if settings.DEVELOPMENT_LOG_EMAILS:
             for email in email_messages:
                 self.log_email(email)
-                email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
+                email_log_url = settings.ROOT_DOMAIN_URL + "/emails"
                 logging.info("Emails sent in development are available at %s", email_log_url)
         return num_sent
 

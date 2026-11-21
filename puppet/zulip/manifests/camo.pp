@@ -36,7 +36,15 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
   }
 
   $zulip_version = $facts['zulip_version']
-  $external_uri = pick(get_django_setting_slow('ROOT_DOMAIN_URI'), 'https://zulip.com')
+  # TODO/compatibility: Puppet runs during an upgrade before the
+  # "current" deployment is switched, so this may query an older
+  # deployment, which only has ROOT_DOMAIN_URI.  We can remove that
+  # fallback when upgrading directly from 12.x is no longer possible.
+  $external_uri = pick(
+    get_django_setting_slow('ROOT_DOMAIN_URL'),
+    get_django_setting_slow('ROOT_DOMAIN_URI'),
+    'https://zulip.com',
+  )
   file { "${zulip::common::supervisor_conf_dir}/go-camo.conf":
     ensure  => file,
     require => [
