@@ -17,6 +17,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.openapi.markdown_extension import generate_curl_example, render_curl_example
 from zerver.openapi.openapi import (
     OPENAPI_SPEC_PATH,
+    ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES,
     OpenAPISpec,
     Parameter,
     SchemaError,
@@ -208,12 +209,17 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### For current endpoint documentation priorities see
         #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
-        # These are a priority to document but don't match our normal URL schemes
-        # and thus may be complicated to document with our current tooling.
+        #### non_v1_api_or_json_media_endpoints - These are a priority to document but
+        # don't match our normal URL schemes and thus may be complicated to document
+        # with our current tooling.
         # (No /api/v1/ or /json prefix).
-        "/avatar/{email_or_id}",
-        ## This one isn't really representable
+        "/thumbnail",
+        "/user_avatars/{path}",
+        ## These aren't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
+        "/user_uploads/temporary/{token}/{filename}",
+        "/user_uploads/download/{realm_id_str}/{filename}",
+        "/user_uploads/thumbnail/{realm_id_str}/{filename}/{thumbnail_format}",
         #### These realm administration settings are valuable to document:
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
@@ -535,6 +541,14 @@ so maybe we shouldn't include it in pending_endpoints.
         from zproject import tornado_urls as tornado_urlconf
         from zproject import urls as urlconf
 
+        media_endpoints = [
+            p
+            for p in urlconf.non_v1_api_or_json_media_endpoints
+            # There's an /api/v1 version of this path, so this one can't be documented
+            # alongside it.
+            if str(p.pattern) != "user_uploads/<realm_id_str>/<path:filename>"
+        ]
+
         # We loop through all the API patterns, looking in particular
         # for those using the rest_dispatch or remote_server_dispatch decorator;
         # we then parse its mapping of (HTTP_METHOD -> FUNCTION).
@@ -543,6 +557,7 @@ so maybe we shouldn't include it in pending_endpoints.
             + urlconf.v1_api_mobile_patterns
             + zilencer_urlconf.v1_api_bouncer_patterns
             + tornado_urlconf.api_and_json_patterns
+            + media_endpoints
         ):
             methods_endpoints: dict[str, Any] = {}
             if p.callback not in [rest_dispatch, remote_server_dispatch]:
@@ -889,6 +904,48 @@ class TestCurlExampleGeneration(ZulipTestCase):
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
 
+    def test_generate_and_render_curl_example_for_user_id_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{user_id}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12 \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{user_id}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/12/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+    def test_generate_and_render_curl_example_for_email_avatar_endpoints(self) -> None:
+        generated_curl_example = self.curl_example("/avatar/{email}", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
+        generated_curl_example = self.curl_example("/avatar/{email}/medium", "GET")
+        expected_curl_example = [
+            "```curl",
+            "curl -si http://localhost:9991/avatar/iago@zulip.com/medium \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
+            "    | grep -i '^location:'",
+            "```",
+        ]
+        self.assertEqual(generated_curl_example, expected_curl_example)
+
 
 class OpenAPIAttributesTest(ZulipTestCase):
     def test_attributes(self) -> None:
@@ -926,6 +983,10 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
                 for status_code, response in operation["responses"].items():
+                    if status_code in ZULIP_API_REDIRECT_RESPONSE_STATUS_CODES:
+                        # Redirect responses have no body to validate.
+                        assert "Location" in response["headers"]
+                        continue
                     schema = response["content"]["application/json"]["schema"]
                     # Validate the documented examples for each event type
                     # in api/get-events for the documented event schemas.
