@@ -973,6 +973,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_summarize_topics(self) -> bool:
         return self.has_permission("can_summarize_topics_group")
 
+    def can_create_video_calls(self) -> bool:
+        return self.has_permission("can_create_video_calls_group")
+
     def can_access_public_streams(self) -> bool:
         return not self.is_guest
 

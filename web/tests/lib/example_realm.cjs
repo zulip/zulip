@@ -47,6 +47,7 @@ exports.make_realm = (opts = {}) => {
         realm_can_create_groups: 0,
         realm_can_create_public_channel_group: 0,
         realm_can_create_private_channel_group: 0,
+        realm_can_create_video_calls_group: 0,
         realm_can_create_web_public_channel_group: 0,
         realm_can_create_write_only_bots_group: 0,
         realm_can_delete_any_message_group: {

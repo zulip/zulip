@@ -113,6 +113,14 @@ export function user_can_summarize_topics(): boolean {
     );
 }
 
+export function user_can_create_video_calls(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_create_video_calls_group,
+        "can_create_video_calls_group",
+        "realm",
+    );
+}
+
 export function can_subscribe_others_to_all_accessible_streams(): boolean {
     return user_has_permission_for_group_setting(
         realm.realm_can_add_subscribers_group,

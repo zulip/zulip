@@ -8,8 +8,12 @@ from django.http import HttpResponseRedirect
 from django.test import override_settings
 from typing_extensions import override
 
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.models import NamedUserGroup
+from zerver.models.groups import SystemGroups
+from zerver.models.realms import get_realm
 
 
 @override_settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None)
@@ -1146,3 +1150,73 @@ class GoogleMeetVideoCallTest(ZulipTestCase):
 
         response = self.client_post("/json/calls/google_meet/create")
         self.assert_json_error(response, "Invalid Google Meet access token")
+
+
+class VideoCallPermissionTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_create_video_calls_group_blocks_all_providers(self) -> None:
+        realm = get_realm("zulip")
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_video_calls_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        self.assert_json_error(
+            self.client_post("/json/calls/zoom/create"),
+            "Insufficient permission",
+        )
+        self.assert_json_error(
+            self.client_post("/json/calls/webex/create"),
+            "Insufficient permission",
+        )
+        self.assert_json_error(
+            self.client_post("/json/calls/google_meet/create"),
+            "Insufficient permission",
+        )
+        self.assert_json_error(
+            self.client_get("/json/calls/bigbluebutton/create?meeting_name=test"),
+            "Insufficient permission",
+        )
+        self.assert_json_error(
+            self.client_post("/json/calls/constructorgroups/create"),
+            "Insufficient permission",
+        )
+        self.assert_json_error(
+            self.client_post("/json/calls/nextcloud_talk/create", {"room_name": "test"}),
+            "Insufficient permission",
+        )
+
+    def test_create_bigbluebutton_link_allowed_when_in_group(self) -> None:
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_create_video_calls_group",
+            members_group,
+            acting_user=None,
+        )
+
+        with mock.patch("zerver.views.video_calls.random.randint", return_value="1"):
+            response = self.client_get(
+                "/json/calls/bigbluebutton/create?meeting_name=test",
+            )
+        self.assert_json_success(response)
+
+        # A guest is still refused because the group does not include guests.
+        self.login_user(self.example_user("polonius"))
+        self.assert_json_error(
+            self.client_get("/json/calls/bigbluebutton/create?meeting_name=test"),
+            "Insufficient permission",
+        )

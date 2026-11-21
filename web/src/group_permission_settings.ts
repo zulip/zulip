@@ -49,6 +49,7 @@ const realm_group_setting_names_supporting_anonymous_groups = [
     "can_create_bots_group",
     "can_create_public_channel_group",
     "can_create_private_channel_group",
+    "can_create_video_calls_group",
     "can_create_write_only_bots_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",

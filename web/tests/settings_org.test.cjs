@@ -418,6 +418,10 @@ function test_discard_changes_button({override}, discard_changes) {
 
 test("set_up", ({override, override_rewire}) => {
     override(realm, "realm_available_video_chat_providers", {
+        disabled: {
+            id: 0,
+            name: "None",
+        },
         jitsi_meet: {
             id: 1,
             name: "Jitsi Meet",

@@ -146,6 +146,7 @@ class HomeTest(ZulipTestCase):
         "realm_can_create_groups",
         "realm_can_create_private_channel_group",
         "realm_can_create_public_channel_group",
+        "realm_can_create_video_calls_group",
         "realm_can_create_web_public_channel_group",
         "realm_can_create_write_only_bots_group",
         "realm_can_delete_any_message_group",

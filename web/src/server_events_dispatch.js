@@ -326,6 +326,8 @@ export function dispatch_normal_event(event) {
                 can_create_groups: user_group_edit.update_group_creation_ui,
                 can_create_private_channel_group: noop,
                 can_create_public_channel_group: noop,
+                can_create_video_calls_group:
+                    compose_call_ui.update_audio_and_video_chat_button_display,
                 can_create_web_public_channel_group: noop,
                 can_create_write_only_bots_group: settings_bots.update_bot_permissions_ui,
                 can_delete_any_message_group: noop,
