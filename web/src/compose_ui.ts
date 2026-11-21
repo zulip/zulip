@@ -1716,7 +1716,11 @@ function apply_preview_render(
     loading.destroy_indicator($preview_container.find(".markdown_preview_spinner"));
     const $preview_content_box = $preview_container.find(".preview_content");
     destroy_preview_emoji_tooltips($preview_container);
-    $preview_content_box.html(postprocess_content(rendered_preview_html));
+    $preview_content_box.html(
+        postprocess_content(rendered_preview_html, {
+            honor_emoji_animation_setting: false,
+        }),
+    );
     rendered_markdown.update_elements($preview_content_box);
 
     // Check for thumbnail loading placeholders and start polling

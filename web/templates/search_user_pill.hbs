@@ -4,7 +4,7 @@
         {{ operator }}:
     </span>
     {{#each users}}
-        <div class="pill{{#if deactivated}} deactivated-pill{{/if}}" data-user-id="{{this.user_id}}">
+        <div class="pill{{#if this.status_emoji_info}} emoji-animation-hover-area{{/if}}{{#if deactivated}} deactivated-pill{{/if}}" data-user-id="{{this.user_id}}">
             <img class="pill-image" src="{{this.img_src}}" />
             <div class="pill-image-border"></div>
             {{#if deactivated}}
