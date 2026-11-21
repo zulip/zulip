@@ -2167,12 +2167,10 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids["hamlet_and_othello_recipient"] = self.get_dm_group_recipient(
             hamlet_user, othello_user
         ).id
-        recipients = (
-            get_public_streams_queryset(hamlet_user.realm)
-            .values_list("recipient_id", flat=True)
-            .order_by("id")
+        recipients = get_public_streams_queryset(hamlet_user.realm).values_list(
+            "recipient_id", flat=True
         )
-        query_ids["public_channels_recipients"] = ", ".join(str(r) for r in recipients)
+        query_ids["public_channels_recipients"] = ", ".join(str(r) for r in sorted(recipients))
         return query_ids
 
     def check_unauthenticated_response(
