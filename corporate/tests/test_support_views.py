@@ -1982,6 +1982,57 @@ class TestSupportEndpoint(ZulipTestCase):
                 ["Realm reactivation email sent to admins of lear"], result
             )
 
+    def test_deactivate_demo_organization_owner_email_not_configured(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        demo_realm = demo_owner_account.realm
+
+        self.login("iago")
+
+        with mock.patch("corporate.views.support.do_deactivate_realm") as m:
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{demo_realm.id}",
+                    "status": "deactivated",
+                    "deactivation_reason": "tos_violation",
+                },
+            )
+            m.assert_called_once_with(
+                demo_realm,
+                acting_user=self.example_user("iago"),
+                deactivation_reason="tos_violation",
+                email_owners=False,
+            )
+            self.assert_in_success_response([f"{demo_realm.subdomain} deactivated"], result)
+            self.assert_not_in_success_response(["Reactivate"], result)
+
+    def test_deactivate_demo_organization_owner_email_configured(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        demo_realm = demo_owner_account.realm
+
+        # Set an email for the demo organization owner's account.
+        demo_owner_account.delivery_email = "demo-owner@example.com"
+        demo_owner_account.save()
+
+        self.login("iago")
+
+        with mock.patch("corporate.views.support.do_deactivate_realm") as m:
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{demo_realm.id}",
+                    "status": "deactivated",
+                    "deactivation_reason": "tos_violation",
+                },
+            )
+            m.assert_called_once_with(
+                demo_realm,
+                acting_user=self.example_user("iago"),
+                deactivation_reason="tos_violation",
+                email_owners=True,
+            )
+            self.assert_in_success_response([f"{demo_realm.subdomain} deactivated"], result)
+
     def test_change_subdomain(self) -> None:
         cordelia = self.example_user("cordelia")
         lear_realm = get_realm("lear")

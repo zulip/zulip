@@ -94,6 +94,8 @@
 {% if realm_is_scrubbed %}
 {% elif not realm.deactivated_redirect %}
 <div>
+    {% if realm.deactivated and first_human_user.delivery_email == "" %}
+    {% else %}
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
         {% if realm.deactivated %}
@@ -175,6 +177,7 @@
         </form>
         {% endif %}
     </div>
+    {% endif %}
     {% if not demo_organization_deletion %}
     {% if realm.deactivated %}
     <div class="support-sponsorship-container">
