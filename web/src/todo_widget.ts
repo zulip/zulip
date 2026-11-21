@@ -4,7 +4,8 @@ import assert from "minimalistic-assert";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
-import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
+import render_widgets_todo_widget_task from "../templates/widgets/todo_widget_task.hbs";
+import render_widgets_todo_widget_task_label from "../templates/widgets/todo_widget_task_label.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -13,8 +14,21 @@ import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {TaskData} from "./todo_data.ts";
+import * as util from "./util.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
+
+// The HTML each task label element was rendered from, so that updates
+// can skip labels whose content hasn't changed. It's keyed by element
+// rather than by task, since a message's widget can be rendered in
+// more than one message list.
+const task_label_html_by_element = new WeakMap<HTMLElement, string>();
+
+function get_task_key($task_list_item: JQuery): string {
+    const key = $task_list_item.attr("data-key");
+    assert(key !== undefined);
+    return key;
+}
 
 export function activate({any_data, message}: {any_data: AnyWidgetData; message: Message}): {
     inbound_events_handler: (events: Event[]) => void;
@@ -121,7 +135,7 @@ export function render({
     }
 
     function add_task(): void {
-        $elem.find(".widget-error").text("");
+        $elem.find(".add-task-bar .widget-error").text("");
         const task =
             $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
         const desc =
@@ -136,7 +150,9 @@ export function render({
         // This case should not generally occur.
         const task_exists = task_data.name_in_use(task);
         if (task_exists) {
-            $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            $elem
+                .find(".add-task-bar .widget-error")
+                .text($t({defaultMessage: "Task already exists"}));
             return;
         }
 
@@ -152,7 +168,7 @@ export function render({
 
         // This throttling ensures that the function runs only after the user stops typing.
         const throttled_update_add_task_button = _.throttle(update_add_task_button, 300);
-        $elem.find("input.add-task").on("keyup", (e) => {
+        $elem.find(".add-task-bar input.add-task").on("keyup", (e) => {
             e.stopPropagation();
             throttled_update_add_task_button();
         });
@@ -191,25 +207,46 @@ export function render({
             abort_edit();
         });
 
-        $elem.find("button.add-task").on("click", (e) => {
+        $elem.find(".add-task-bar button.add-task").on("click", (e) => {
             e.stopPropagation();
             add_task();
         });
 
-        $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.stopPropagation();
-                e.preventDefault();
-                add_task();
+        $elem
+            .find(".add-task-bar input.add-task, .add-task-bar input.add-desc")
+            .on("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    add_task();
+                }
+            });
+
+        $elem.find("ul.todo-widget").on("click", "input.task", (e) => {
+            e.stopPropagation();
+
+            if (page_params.is_spectator) {
+                // Logically, spectators should not be able to toggle
+                // TODO checkboxes. However, the browser changes the
+                // checkbox's state before calling handlers like this,
+                // so we need to just toggle the checkbox back to its
+                // previous state.
+                $(e.currentTarget).prop("checked", !$(e.currentTarget).is(":checked"));
+                $(e.currentTarget).trigger("blur");
+                return;
             }
+            const key = get_task_key($(e.currentTarget).closest(".todo-task-item"));
+            const data = task_data.handle.strike.outbound(key);
+            callback(data);
         });
     }
 
     function update_add_task_button(): void {
-        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const task =
+            $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
         const task_exists = task_data.name_in_use(task);
-        const $add_task_wrapper = $elem.find(".add-task-wrapper");
-        const $add_task_button = $elem.find("button.add-task");
+        const $add_task_wrapper = $elem.find(".add-task-bar .add-task-wrapper");
+        const $add_task_button = $elem.find(".add-task-bar button.add-task");
 
         if (task === "") {
             $add_task_wrapper.attr(
@@ -230,30 +267,33 @@ export function render({
     }
 
     function render_results(): void {
-        const widget_data = task_data.get_widget_data();
-        const html = render_widgets_todo_widget_tasks(widget_data);
-        $elem.find("ul.todo-widget").html(html);
-        $elem.find(".widget-error").text("");
-
-        $elem.find("input.task").on("click", (e) => {
-            e.stopPropagation();
-
-            if (page_params.is_spectator) {
-                // Logically, spectators should not be able to toggle
-                // TODO checkboxes. However, the browser changes the
-                // checkbox's state before calling handlers like this,
-                // so we need to just toggle the checkbox back to its
-                // previous state.
-                $(e.target).prop("checked", !$(e.target).is(":checked"));
-                $(e.target).trigger("blur");
-                return;
+        const $task_list = $elem.find("ul.todo-widget");
+        const task_list_items_by_key = new Map<string, JQuery>();
+        for (const task_list_item of $task_list.children(".todo-task-item")) {
+            const $task_list_item = $(task_list_item);
+            task_list_items_by_key.set(get_task_key($task_list_item), $task_list_item);
+        }
+        for (const task of task_data.get_widget_data().all_tasks) {
+            const $task_list_item = task_list_items_by_key.get(task.key);
+            const task_label_html = render_widgets_todo_widget_task_label(task);
+            if ($task_list_item === undefined) {
+                const $new_task_list_item = $(render_widgets_todo_widget_task(task));
+                task_label_html_by_element.set(
+                    util.the($new_task_list_item.find(".todo-task")),
+                    task_label_html,
+                );
+                $task_list.append($new_task_list_item);
+            } else {
+                $task_list_item.find("input.task").prop("checked", task.completed);
+                const $task_label = $task_list_item.find(".todo-task");
+                if (task_label_html_by_element.get(util.the($task_label)) !== task_label_html) {
+                    const $new_task_label = $(task_label_html);
+                    task_label_html_by_element.set(util.the($new_task_label), task_label_html);
+                    $task_label.replaceWith($new_task_label);
+                }
             }
-            const key = $(e.target).attr("data-key");
-            assert(key !== undefined);
-
-            const data = task_data.handle.strike.outbound(key);
-            callback(data);
-        });
+        }
+        $elem.find(".add-task-bar .widget-error").text("");
 
         update_add_task_button();
     }
