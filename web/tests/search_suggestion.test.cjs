@@ -59,6 +59,8 @@ const jeff = make_user({
 
 const example_avatar_url = "http://example.com/example.png";
 
+const pm_conversations = zrequire("pm_conversations");
+
 let _stream_id = 0;
 function new_stream_id() {
     _stream_id += 1;
@@ -443,6 +445,70 @@ test("group_suggestions", () => {
     suggestions = get_suggestions(query);
     expected = [];
     assert.deepEqual(suggestions, expected);
+});
+
+test("deactivated_users_rank_below_active_users", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+
+    const user_a = make_user({
+        email: "user-a@zulip.com",
+        user_id: 301,
+        full_name: "User A",
+    });
+    const user_b = make_user({
+        email: "user-b@zulip.com",
+        user_id: 302,
+        full_name: "User B",
+    });
+    const user_c = make_user({
+        email: "user-c@zulip.com",
+        user_id: 303,
+        full_name: "User C",
+    });
+    const user_d = make_user({
+        email: "user-d@zulip.com",
+        user_id: 304,
+        full_name: "User D",
+    });
+    const user_e = make_user({
+        email: "user-e@zulip.com",
+        user_id: 305,
+        full_name: "User E",
+    });
+    for (const user of [user_a, user_b, user_c, user_d, user_e]) {
+        people.add_active_user(user, "server_events");
+    }
+
+    // We have 5 users, with DM history for only User A, User B and
+    // User E. User B and User D are deactivated afterwards. DM recency
+    // is the first sort key, so without special handling, User B would
+    // outrank all of the active users.
+    pm_conversations.recent.insert([user_a.user_id], 1000);
+    pm_conversations.recent.insert([user_e.user_id], 2000);
+    pm_conversations.recent.insert([user_b.user_id], 3000);
+    people.deactivate(user_b);
+    people.deactivate(user_d);
+
+    // Only look at the person suggestions, so the assertion doesn't
+    // depend on the default search line or unrelated suggestions.
+    const suggestions = get_suggestions("user");
+    const person_suggestions = suggestions.filter((s) =>
+        /^(dm|sender|dm-including|mentions):\d+$/.test(s),
+    );
+
+    // All suggestions for active users come before all suggestions for
+    // deactivated users. Suggestion list keeps its existing sort logic.
+    const operators = ["dm", "sender", "dm-including", "mentions"];
+    const active_user_ids = [user_e.user_id, user_a.user_id, user_c.user_id];
+    const deactivated_user_ids = [user_b.user_id, user_d.user_id];
+    assert.deepEqual(person_suggestions, [
+        ...operators.flatMap((operator) =>
+            active_user_ids.map((user_id) => `${operator}:${user_id}`),
+        ),
+        ...operators.flatMap((operator) =>
+            deactivated_user_ids.map((user_id) => `${operator}:${user_id}`),
+        ),
+    ]);
 });
 
 test("empty_query_suggestions", () => {
