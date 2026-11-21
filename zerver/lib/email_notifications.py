@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
 import base64
+import itertools
 import logging
 import os
 import re
@@ -25,6 +26,7 @@ from lxml.html import builder as e
 from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
@@ -34,12 +36,13 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.tex import change_katex_to_raw_latex
-from zerver.lib.timestamp import format_datetime_to_string
+from zerver.lib.timestamp import format_datetime_to_string, format_datetime_with_skeleton
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
+    stream_message_url,
     stream_narrow_url,
     topic_narrow_url,
 )
@@ -53,12 +56,17 @@ from zerver.models.users import get_user_profile_by_id
 class FormattedText:
     plain: str
     html: Markup
+    # For messages shown with sender avatars, in digests: a link to the
+    # message, and when it was sent.
+    url: str | None = None
+    time: str | None = None
 
 
 @dataclass
 class SenderPayload:
     sender: str
     content: list[FormattedText]
+    avatar_url: str | None = None
 
 
 @dataclass
@@ -266,14 +274,30 @@ def get_channel_privacy_icon(channel: Stream) -> str:
     return "#"
 
 
+def format_message_time(date_sent: datetime, user: UserProfile) -> str:
+    # Like message timestamps in the web app: in the recipient's time
+    # zone and time format, with the date when it isn't today.
+    user_tz = zoneinfo.ZoneInfo(user.timezone or timezone_get_current_timezone_name())
+    local_time = date_sent.astimezone(user_tz)
+    skeleton = "Hm" if user.twenty_four_hour_time else "hm"
+    if local_time.date() != timezone_now().astimezone(user_tz).date():
+        skeleton = "MMMd" + skeleton
+    return format_datetime_with_skeleton(local_time, skeleton)
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
+    with_sender_avatars: bool = False,
 ) -> MessageListPayload:
     """
     Builds the message list object for the message notification email and
     digest email template. All `messages` share the same recipient (and topic).
+
+    With `with_sender_avatars`, each sender block carries the sender's
+    avatar for the template to show beside their name, like the web app's
+    message list, instead of prepending "Name: " to their first message.
     """
 
     def sender_string(message: Message) -> str:
@@ -331,10 +355,33 @@ def build_message_list(
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
+        if with_sender_avatars:
+            assert stream_id_map is not None
+            stream = stream_id_map[message.recipient.type_id]
+            return FormattedText(
+                plain=plain,
+                html=html,
+                url=stream_message_url(
+                    user.realm,
+                    dict(
+                        id=message.id,
+                        stream_id=stream.id,
+                        display_recipient=stream.name,
+                        topic=message.topic_name(),
+                    ),
+                ),
+                time=format_message_time(message.date_sent, user),
+            )
         return FormattedText(plain=plain, html=html)
 
     def build_sender_payload(message: Message) -> SenderPayload:
         sender = sender_string(message)
+        if with_sender_avatars:
+            return SenderPayload(
+                sender=sender,
+                content=[build_message_payload(message)],
+                avatar_url=absolute_avatar_url(message.sender, realm_url=user.realm.url),
+            )
         return SenderPayload(sender=sender, content=[build_message_payload(message, sender)])
 
     def digest_block_header(message: Message) -> FormattedText:
@@ -359,7 +406,7 @@ def build_message_list(
             )
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
-            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_html}</a>"
+            "<a href='{stream_link}'><span class='hot_convo_privacy_icon'>{channel_privacy_icon}</span>{stream_name}</a> <span class='hot_convo_separator'>&gt;</span> <a href='{narrow_link}'>{topic_html}</a>"
         ).format(
             stream_link=stream_link,
             channel_privacy_icon=channel_privacy_icon,
@@ -381,10 +428,14 @@ def build_message_list(
         # Needed only for digest emails
         messages_to_render.header = digest_block_header(messages[0])
 
-    for message in messages[1:]:
+    for previous_message, message in itertools.pairwise(messages):
         sender = sender_string(message)
-        # Same message sender, collapse again using object attributes
-        if sender_block[-1].sender == sender:
+        # Same message sender, collapse again using object attributes.
+        # Senders shown with avatars are matched by ID, since two
+        # users can share a name but not an avatar.
+        if sender_block[-1].sender == sender and (
+            not with_sender_avatars or previous_message.sender_id == message.sender_id
+        ):
             sender_block[-1].content.append(build_message_payload(message))
         else:
             # Start a new sender block

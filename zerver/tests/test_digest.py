@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import mock
 
 import time_machine
+from django.template.loader import render_to_string
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -12,6 +13,7 @@ from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.digest import (
     DigestTopic,
     _enqueue_emails_for_realm,
@@ -26,8 +28,13 @@ from zerver.lib.digest import (
     get_recently_created_streams,
     get_user_stream_map,
 )
-from zerver.lib.email_notifications import get_channel_privacy_icon
+from zerver.lib.email_notifications import (
+    build_message_list,
+    format_message_time,
+    get_channel_privacy_icon,
+)
 from zerver.lib.message import get_last_message_id
+from zerver.lib.stream_color import get_stream_colors
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
@@ -35,6 +42,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Stream,
+    Subscription,
     UserActivityInterval,
     UserProfile,
     UserTopic,
@@ -90,6 +98,32 @@ class TestDigestEmailMessages(ZulipTestCase):
         teaser_messages = hot_convo.first_few_messages.senders
         self.assertIn("some content", teaser_messages[0].content[0].plain)
         self.assertIn(teaser_messages[0].sender, expected_participants)
+
+        # Senders are shown with their avatars, rather than with their
+        # names prepended to their first message.
+        sender = next(
+            self.example_user(name)
+            for name in senders
+            if self.example_user(name).full_name == teaser_messages[0].sender
+        )
+        self.assertEqual(teaser_messages[0].avatar_url, absolute_avatar_url(sender))
+        self.assertNotIn(f"<b>{sender.full_name}</b>", teaser_messages[0].content[0].html)
+        # The plain text version names the sender above their messages.
+        plain_text = render_to_string(
+            "zerver/emails/digest.txt", kwargs["context"], using="Jinja2_plaintext"
+        )
+        self.assertIn(f"{sender.full_name}:\n{teaser_messages[0].content[0].plain}", plain_text)
+
+        # The recipient bar uses Othello's own color for the channel.
+        verona = get_stream("Verona", othello.realm)
+        self.assertEqual(hot_convo.stream_id, verona.id)
+        othello_verona_color = Subscription.objects.get(
+            user_profile=othello, recipient=verona.recipient
+        ).color
+        self.assertEqual(
+            kwargs["context"]["channel_colors"],
+            {verona.id: get_stream_colors(othello_verona_color)},
+        )
 
         # If we run another batch, we reuse the topic queries; there
         # are 3 reused streams and one new one, for a net of two fewer
@@ -393,15 +427,15 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # make sure we don't mix up Othello and Cordelia
         streams = get_user_stream_map([othello.id, cordelia.id], one_hour_ago)
-        self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
-        self.assertEqual(streams[cordelia.id], {verona.id, scotland.id, denmark.id})
+        self.assertEqual(set(streams[othello.id]), {scotland.id, denmark.id})
+        self.assertEqual(set(streams[cordelia.id]), {verona.id, scotland.id, denmark.id})
 
         self.unsubscribe(cordelia, "Denmark")
         self.subscribe(cordelia, "Denmark")
 
         streams = get_user_stream_map([othello.id, cordelia.id], one_hour_ago)
-        self.assertEqual(streams[othello.id], {scotland.id, denmark.id})
-        self.assertEqual(streams[cordelia.id], {verona.id, scotland.id})
+        self.assertEqual(set(streams[othello.id]), {scotland.id, denmark.id})
+        self.assertEqual(set(streams[cordelia.id]), {verona.id, scotland.id})
 
     def active_human_users(self, realm: Realm) -> list[UserProfile]:
         users = list(
@@ -781,12 +815,63 @@ class TestDigestEmailMessages(ZulipTestCase):
         header_plain = hot_convo.first_few_messages.header.plain
         self.assertIn("general chat", header_plain)
 
+    def test_teaser_senders_with_same_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        othello.full_name = hamlet.full_name
+        othello.save()
+        verona = get_stream("Verona", hamlet.realm)
+        message_ids = [
+            self.send_stream_message(hamlet, "Verona", "first", "topic"),
+            self.send_stream_message(othello, "Verona", "second", "topic"),
+        ]
+        messages = list(Message.objects.filter(id__in=message_ids))
+
+        # Two senders with the same name are separate sender blocks,
+        # each with their own avatar.
+        message_list = build_message_list(
+            hamlet, messages, stream_id_map={verona.id: verona}, with_sender_avatars=True
+        )
+        self.assertEqual(
+            [sender_block.avatar_url for sender_block in message_list.senders],
+            [absolute_avatar_url(hamlet), absolute_avatar_url(othello)],
+        )
+
+        # Each message links to itself, with when it was sent.
+        first_message = message_list.senders[0].content[0]
+        assert first_message.url is not None
+        self.assertTrue(first_message.url.endswith(f"/near/{message_ids[0]}"))
+        self.assertIsNotNone(first_message.time)
+
+    def test_format_message_time(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.timezone = "America/New_York"
+        now = datetime(2026, 11, 16, 15, 0, tzinfo=timezone.utc)
+        with time_machine.travel(now, tick=False):
+            # Messages from today show only the time, in the
+            # recipient's time zone and time format.
+            self.assertEqual(format_message_time(now - timedelta(hours=1), hamlet), "9:00 AM")
+            self.assertEqual(
+                format_message_time(now - timedelta(days=2), hamlet), "Nov 14, 10:00 AM"
+            )
+            hamlet.twenty_four_hour_time = True
+            self.assertEqual(format_message_time(now - timedelta(days=2), hamlet), "Nov 14, 10:00")
+
 
 class TestDigestContentInBrowser(ZulipTestCase):
     def test_get_digest_content_in_browser(self) -> None:
         self.login("hamlet")
         result = self.client_get("/digest/")
-        self.assert_in_success_response(["Log in to Zulip to catch up"], result)
+        self.assert_in_success_response(
+            ["Open Zulip</a> to catch up.", "Open Zulip to catch up:"], result
+        )
+        # Only the page's own <html> and <body>; the email's are left out.
+        self.assertEqual(result.content.decode().count("<body"), 1)
+        self.assertEqual(result.content.decode().count("<html"), 1)
+        self.assert_in_success_response(['<div class="default-email-font-settings"'], result)
+        # The page header shows the logo, so the email's own logo is
+        # left out of the page.
+        self.assert_not_in_success_response(["email_logo_color.png"], result)
 
 
 class TestDigestTopics(ZulipTestCase):
