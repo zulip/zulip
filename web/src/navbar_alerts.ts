@@ -62,6 +62,51 @@ export function should_show_desktop_notifications_banner(ls: LocalStorage): bool
         desktop_notifications.permission_state() !== "denied"
     );
 }
+export function format_retry_delay(retry_after_sec: number): string {
+    const total_secs = Math.ceil(retry_after_sec);
+    const minutes = Math.floor(total_secs / 60);
+    const seconds = total_secs % 60;
+    if (minutes === 0) {
+        return $t(
+            {defaultMessage: "{seconds, plural, one {# second} other {# seconds}}"},
+            {seconds},
+        );
+    }
+    if (seconds === 0) {
+        return $t(
+            {defaultMessage: "{minutes, plural, one {# minute} other {# minutes}}"},
+            {minutes},
+        );
+    }
+    return $t(
+        {
+            defaultMessage:
+                "{minutes, plural, one {# minute} other {# minutes}} {seconds, plural, one {# second} other {# seconds}}",
+        },
+        {minutes, seconds},
+    );
+}
+
+export const rate_limit_exceeded_banner = (retry_after_secs: number | undefined): AlertBanner => ({
+    process: "rate-limit-exceeded",
+    intent: "danger",
+    label:
+        retry_after_secs === undefined || retry_after_secs <= 0
+            ? $t({
+                  defaultMessage:
+                      "You've exceeded Zulip's usage limits. Please close any extra Zulip tabs, and try again shortly.",
+              })
+            : $t(
+                  {
+                      defaultMessage:
+                          "You've exceeded Zulip's usage limits. Please close any extra Zulip tabs, and try again after {retry_delay}.",
+                  },
+                  {retry_delay: format_retry_delay(retry_after_secs)},
+              ),
+    buttons: [],
+    close_button: true,
+    custom_classes: "rate-limit-exceeded navbar-alert-banner",
+});
 
 export function should_show_bankruptcy_banner(): boolean {
     // Until we've handled possibly declaring bankruptcy, don't show
@@ -518,7 +563,19 @@ export function check_and_show_muted_messages_banner(): void {
         open_navbar_banner_and_resize(majority_messages_muted_banner(percent_muted_messages));
     }
 }
-
+export function show_rate_limit_banner(retry_after_secs: number | undefined): void {
+    const banner = rate_limit_exceeded_banner(retry_after_secs);
+    const $banner = $("#navbar_alerts_wrapper").find(".rate-limit-exceeded");
+    if ($banner.length > 0) {
+        // Rate limited requests can fail repeatedly; keep the open
+        // banner and just refresh the wait time.
+        $banner.find(".banner-label").text(banner.label.toString());
+        // The new label may wrap differently.
+        $(window).trigger("resize");
+        return;
+    }
+    open_navbar_banner_and_resize(banner);
+}
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -550,6 +607,7 @@ export function initialize(): void {
     } else {
         maybe_toggle_empty_required_profile_fields_banner();
     }
+    channel.set_rate_limited_handler(show_rate_limit_banner);
 
     // Configure click handlers.
 
