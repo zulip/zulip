@@ -37,6 +37,17 @@
                hold variable-width content and stay auto/1fr. */
             grid-template-columns: auto 1em auto 1fr auto auto;
             align-items: stretch;
+
+            &.channel-name-hidden {
+                /* The channel label and separator are omitted, so
+                   collapse the separator's fixed-width track. */
+                grid-template-columns: 0 0 auto 1fr auto auto;
+
+                .stream_topic {
+                    /* Match the channel label's left padding. */
+                    padding-left: 10px;
+                }
+            }
         }
 
         & .message_label_clickable {
