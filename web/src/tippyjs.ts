@@ -283,6 +283,21 @@ export function initialize(): void {
     // not have the tippy-zulip-tooltip class.
 
     tippy.delegate("body", {
+        target: ".left-sidebar-topics-order-override-button",
+        appendTo: () => document.body,
+        onShow(instance) {
+            // Only show tooltip if the button's label is hidden,
+            // which it is when the modal is narrow.
+            const $label = $(instance.reference).find(".action-button-label");
+            if ($label.css("display") !== "none") {
+                return false;
+            }
+            instance.setContent($label.text());
+            return undefined;
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".draft-selection-tooltip",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,

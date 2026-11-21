@@ -54,6 +54,7 @@ mock_esm("../src/user_settings", {
 });
 
 const stream_ui_updates = mock_esm("../src/stream_ui_updates");
+const topic_list = mock_esm("../src/topic_list");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
@@ -246,6 +247,8 @@ test("update_property", ({override, override_rewire}) => {
 
     // Test left sidebar topics order
     {
+        override(topic_list, "update", noop);
+        override(stream_ui_updates, "update_left_sidebar_topics_order_widget", noop);
         stream_events.update_property(stream_id, "web_left_sidebar_topics_order", 2);
         assert.equal(sub.web_left_sidebar_topics_order, 2);
     }
