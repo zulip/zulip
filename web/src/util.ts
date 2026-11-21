@@ -686,3 +686,19 @@ export function convert_emoji_code_to_unicode(emoji_code: string): string | unde
     }
     return emoji_unicode_parts.join("");
 }
+
+export function truncate_utf16_safely(str: string, max_length: number): string {
+    if (str.length <= max_length) {
+        return str;
+    }
+    // If slicing at max_length would split a surrogate pair, drop the orphaned high surrogate
+    // so the truncated string remains valid Unicode.
+    const code_point = str.codePointAt(max_length - 1);
+    if (
+        code_point !== undefined &&
+        (code_point > 0xffff || (code_point >= 0xd800 && code_point <= 0xdbff))
+    ) {
+        return str.slice(0, max_length - 1);
+    }
+    return str.slice(0, max_length);
+}

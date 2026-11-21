@@ -752,7 +752,7 @@ export function initialize(): void {
     function handle_topic_length_limit(): void {
         let topic = compose_state.topic();
         if (topic.length > realm.max_topic_length) {
-            topic = topic.slice(0, realm.max_topic_length);
+            topic = util.truncate_utf16_safely(topic, realm.max_topic_length);
             compose_state.topic(topic);
             $("input#stream_message_recipient_topic").addClass("input-validation-shake");
         }

@@ -744,3 +744,26 @@ run_test("convert_emoji_code_to_unicode", () => {
     assert.equal(util.convert_emoji_code_to_unicode("1f468-110000-1f373"), undefined);
     assert.equal(util.convert_emoji_code_to_unicode("1f468--1f373"), undefined);
 });
+
+run_test("truncate_utf16_safely", () => {
+    // Strings shorter than or equal to max_length are untouched
+    assert.equal(util.truncate_utf16_safely("hello", 10), "hello");
+    assert.equal(util.truncate_utf16_safely("hello", 5), "hello");
+
+    // Standard ASCII truncation
+    assert.equal(util.truncate_utf16_safely("hello world", 5), "hello");
+
+    // Emoji surrogate pair: 🐙 is U+1F419, which is 2 UTF-16 code units (\uD83D\uDC19)
+    // Slicing "a" + "🐙" (length 3) at length 3 keeps the full emoji
+    assert.equal(util.truncate_utf16_safely("a🐙", 3), "a🐙");
+
+    // Slicing "a" + "🐙" at length 2 would leave "a" + high surrogate (\uD83D)
+    // truncate_utf16_safely drops the high surrogate to preserve valid Unicode
+    assert.equal(util.truncate_utf16_safely("a🐙", 2), "a");
+
+    // Multiple emojis: "😀😃😄" -> each emoji is 2 UTF-16 code units (total 6)
+    // Truncating at 4 code units keeps first 2 emojis
+    assert.equal(util.truncate_utf16_safely("😀😃😄", 4), "😀😃");
+    // Truncating at 5 code units would split the 3rd emoji; drops high surrogate
+    assert.equal(util.truncate_utf16_safely("😀😃😄", 5), "😀😃");
+});
