@@ -45,6 +45,7 @@ def events_register_backend(
     apply_markdown: Json[bool] = False,
     client_capabilities: Json[ClientCapabilities] = DEFAULT_CLIENT_CAPABILITIES,
     client_gravatar_raw: Annotated[Json[bool | None], ApiParamConfig("client_gravatar")] = None,
+    defer_long_term_idle_reactivation: Json[bool] = False,
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
     include_subscribers: Literal["true", "false", "partial"] = "false",
@@ -130,5 +131,6 @@ def events_register_backend(
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
+        defer_long_term_idle_reactivation=defer_long_term_idle_reactivation,
     )
     return json_success(request, data=ret)
