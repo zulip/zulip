@@ -337,6 +337,79 @@ run_test("comma", ({mock_template}) => {
     });
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+
+    // Test with allow_comma_in_item_text: true
+    {
+        $.clear_all_elements();
+        const info = set_up();
+        const config = {
+            ...info.config,
+            allow_comma_in_item_text: true,
+            create_pill_on_comma: true,
+            show_outline_on_invalid_input: true,
+        };
+        const widget = input_pill.create(config);
+        widget.appendValue("blue");
+
+        const key_handler = info.$container.get_on_handler("keydown", ".input");
+        const $pill_input = info.$pill_input;
+
+        let prevent_default_count = 0;
+        const preventDefault = () => {
+            prevent_default_count += 1;
+        };
+
+        // Allow the comma in empty input because commas can be part of an item.
+        $pill_input.text("");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 0);
+        assert.deepEqual(widget.items(), [items.blue]);
+
+        // Allow the comma without invalid feedback while the item is incomplete.
+        $pill_input.text(" yel");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 0);
+        assert.deepEqual(widget.items(), [items.blue]);
+        assert.equal($pill_input.text(), " yel");
+        assert.ok(!$pill_input.hasClass("input-validation-shake"));
+        assert.ok(!info.$container.hasClass("invalid"));
+
+        // Valid item SHOULD be converted to a pill and the input cleared
+        $pill_input.text(" yellow");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 1);
+        assert.deepEqual(widget.items(), [items.blue, items.yellow]);
+        assert.equal($pill_input.text(), "");
+    }
+});
+
+run_test("commas in search text leave valid items unpilled", () => {
+    const info = set_up();
+    const widget = input_pill.create({
+        ...info.config,
+        allow_comma_in_item_text: true,
+        convert_to_pill_on_enter: false,
+    });
+    const key_handler = info.$container.get_on_handler("keydown", ".input");
+    // Even valid item text stays unpilled when commas belong to the search.
+    info.$pill_input.text("blue");
+    key_handler({
+        key: ",",
+        // An uncalled wrapper would leave the test below full line coverage.
+        preventDefault: assert.fail,
+    });
+    assert.equal(info.$pill_input.text(), "blue");
+    assert.deepEqual(widget.items(), []);
+    assert.ok(!info.$pill_input.hasClass("input-validation-shake"));
 });
 
 run_test("Enter key with text", ({mock_template}) => {
