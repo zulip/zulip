@@ -52,6 +52,7 @@ export const CLASSNAMES = {
     guest_in_dm_recipient_warning: "guest_in_dm_recipient_warning",
     unscheduled_message: "unscheduled_message",
     search_view: "search_view",
+    message_edited_elsewhere: "message_edited_elsewhere",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
