@@ -21,7 +21,7 @@
         .exit {
             float: right;
             font-size: 1.5rem;
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-overlay-header-control);
             font-weight: 600;
             margin: 0 15px;
             cursor: pointer;
