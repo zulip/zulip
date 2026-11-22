@@ -192,7 +192,8 @@ img.responsive-width {
     padding: 10px 0;
     margin: 20px 0;
     width: 200px;
-    color: #fff; /* white for sufficient contrast on the filled button */
+    color: #fff;
+    /* white for sufficient contrast on the filled button */
     background-color: #5f5fff;
     border-radius: 4px;
     font-size: 16px;
@@ -344,6 +345,33 @@ img.responsive-width {
     border-left: none;
     margin: 0 0 5px;
     padding: 0 0 0 15px;
+}
+
+/* Headings: smaller than the web app, so they don't dominate the email */
+.hot_convo_message_content_block h1,
+.hot_convo_message_content_block h2,
+.hot_convo_message_content_block h3,
+.hot_convo_message_content_block h4,
+.hot_convo_message_content_block h5,
+.hot_convo_message_content_block h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 10px 0 4px;
+}
+
+.hot_convo_message_content_block h1 {
+    font-size: 18px;
+}
+
+.hot_convo_message_content_block h2 {
+    font-size: 16px;
+}
+
+.hot_convo_message_content_block h3,
+.hot_convo_message_content_block h4,
+.hot_convo_message_content_block h5,
+.hot_convo_message_content_block h6 {
+    font-size: 14px;
 }
 
 /* Markdown tables */
