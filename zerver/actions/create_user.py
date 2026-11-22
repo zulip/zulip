@@ -43,14 +43,14 @@ from zerver.lib.internal_event_types import InternalRealmUserAddEvent
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
-from zerver.lib.streams import can_access_stream_history
+from zerver.lib.streams import user_has_content_access
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.user_counts import (
     realm_user_count,
     realm_user_count_by_role,
     update_billing_records_if_needed,
 )
-from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
     format_user_row,
@@ -213,16 +213,53 @@ def add_new_user_history(
     """
 
     realm = user_profile.realm
+    streams = list(streams)
+
     # Find recipient ids for the user's streams, limiting to just
     # those where we can access the streams' full history.
-    #
-    # TODO: This will do database queries in a loop if many private
-    # streams are involved.
-    recipient_ids = [
-        assert_is_not_none(stream.recipient_id)
-        for stream in streams
-        if can_access_stream_history(user_profile, stream)
-    ]
+    streams_needing_sub_check = []
+    for stream in streams:
+        if user_profile.realm_id != stream.realm_id:
+            raise AssertionError("user_profile and stream realms don't match")
+        if stream.is_web_public:
+            continue
+        if stream.is_history_realm_public() and not user_profile.is_guest:
+            continue
+        if stream.is_history_public_to_subscribers() and not stream.deactivated:
+            streams_needing_sub_check.append(stream)
+
+    subscribed_recipient_ids: set[int] = set()
+    if streams_needing_sub_check:
+        subscribed_recipient_ids = set(
+            Subscription.objects.filter(
+                user_profile=user_profile,
+                recipient_id__in=[
+                    assert_is_not_none(stream.recipient_id) for stream in streams_needing_sub_check
+                ],
+                active=True,
+            ).values_list("recipient_id", flat=True)
+        )
+
+    user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+    recipient_ids: list[int] = []
+    for stream in streams:
+        recipient_id = assert_is_not_none(stream.recipient_id)
+        if stream.is_web_public or (stream.is_history_realm_public() and not user_profile.is_guest):
+            recipient_ids.append(recipient_id)
+        elif (
+            stream.is_history_public_to_subscribers()
+            and not stream.deactivated
+            and (
+                recipient_id in subscribed_recipient_ids
+                or user_has_content_access(
+                    user_profile,
+                    stream,
+                    user_group_membership_details,
+                    is_subscribed=False,
+                )
+            )
+        ):
+            recipient_ids.append(recipient_id)
 
     # Start by finding recent messages matching those recipients.
     recent_message_ids = set(

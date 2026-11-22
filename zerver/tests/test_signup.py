@@ -473,6 +473,70 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 f"<UserMessage: recip / {user_profile.email} (['read'])>",
             )
 
+    def test_add_new_user_history_private_streams_query_count(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+
+        with patch("zerver.actions.create_user.add_new_user_history"):
+            self.register(self.nonreg_email("test"), "test")
+        user_profile = self.nonreg_user("test")
+
+        accessible_streams = []
+        expected_message_ids = set()
+        for i in range(10):
+            stream = self.make_stream(
+                f"private_history_{i}",
+                realm=realm,
+                invite_only=True,
+                history_public_to_subscribers=True,
+            )
+            self.subscribe(hamlet, stream.name)
+            msg_id = self.send_stream_message(hamlet, stream.name, f"hello {i}")
+            self.subscribe(user_profile, stream.name)
+            accessible_streams.append(stream)
+            expected_message_ids.add(msg_id)
+
+        # Private stream with protected history should not have history backfilled.
+        protected_stream = self.make_stream(
+            "private_protected_history",
+            realm=realm,
+            invite_only=True,
+            history_public_to_subscribers=False,
+        )
+        self.subscribe(hamlet, protected_stream.name)
+        protected_msg_id = self.send_stream_message(hamlet, protected_stream.name, "secret")
+        self.subscribe(user_profile, protected_stream.name)
+
+        # Private stream the user is not subscribed to should not have history backfilled.
+        unsubscribed_stream = self.make_stream(
+            "private_unsubscribed",
+            realm=realm,
+            invite_only=True,
+            history_public_to_subscribers=True,
+        )
+        self.subscribe(hamlet, unsubscribed_stream.name)
+        unsubscribed_msg_id = self.send_stream_message(
+            hamlet, unsubscribed_stream.name, "unsubscribed"
+        )
+
+        all_streams = [*accessible_streams, protected_stream, unsubscribed_stream]
+
+        # Batching subscription and group-access checks keeps query count constant
+        # (6 queries) regardless of the number of private streams:
+        # 1. Subscription lookup, 2. Recursive user-group lookup (for unsubscribed stream),
+        # 3. Message lookup, 4. OnboardingUserMessage lookup,
+        # 5. Existing UserMessage lookup, 6. UserMessage bulk_create.
+        with self.assert_database_query_count(6):
+            add_new_user_history(user_profile, all_streams)
+
+        backfilled_message_ids = set(
+            UserMessage.objects.filter(
+                user_profile=user_profile,
+                message_id__in=expected_message_ids | {protected_msg_id, unsubscribed_msg_id},
+            ).values_list("message_id", flat=True)
+        )
+        self.assertEqual(backfilled_message_ids, expected_message_ids)
+
 
 class InitialPasswordTest(ZulipTestCase):
     def test_none_initial_password_salt(self) -> None:
