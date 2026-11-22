@@ -23321,6 +23321,7 @@ paths:
           [zulip-terminal](https://github.com/zulip/zulip-terminal/)) needs to
           know in order to display a login prompt for the server (e.g. what
           authentication methods are available).
+      security: []
       responses:
         "200":
           description: Success.
@@ -27927,7 +27928,7 @@ components:
   # Security definitions
   #######################
   securitySchemes:
-    BasicAuth:
+    basicAuth:
       type: http
       scheme: basic
       description: |
