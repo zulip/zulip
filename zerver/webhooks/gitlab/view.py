@@ -565,11 +565,12 @@ def get_emoji_event_url_id(payload: WildValue, type: str) -> tuple[str, str]:
 
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
 
-    # Extract the last numeric ID in the URL path before any '#' fragment.
-    # Example:
-    # https://gitlab.com/abc/def/issues/123 → "123"
-    # https://gitlab.com/abc/def/-/merge_requests/456#note_789 → "456"
     clean_url = url.split("#")[0]
+    if type == "commit":
+        commit_match = re.search(r"/commit/([0-9a-fA-F]+)(?:/)?$", clean_url)
+        assert commit_match is not None
+        return url, commit_match.group(1)[:11]
+
     match = re.search(r"/(\d+)(?:/)?$", clean_url)
     assert match is not None
     return url, match.group(1)
@@ -579,7 +580,7 @@ def get_emoji_event_topic_title(
     payload: WildValue, awardable_type: str, type: str, use_merge_request_title: bool
 ) -> str:
     """
-    The payload format depends on the event target type (MR / issue / snippet).
+    The payload format depends on the event target type (MR / issue / snippet / commit).
     Get topic from the corresponding payload section's title.
     """
     event_type = ""
@@ -589,15 +590,17 @@ def get_emoji_event_topic_title(
         event_type = "issue" if awardable_type == "Note" else "work_item"
     elif type == "snippet":
         event_type = "project_snippet"
+    elif type == "commit":
+        event_type = "commit"
 
-    if event_type:
+    if event_type and event_type in payload and "title" in payload[event_type]:
         return payload[event_type]["title"].tame(check_string)
 
     return ""
 
 
 def get_emoji_event_number_sign(type: str) -> str:
-    return "" if type == "design" else "#"
+    return "" if type in ("design", "commit") else "#"
 
 
 def get_emoji_event_body(action: str, payload: WildValue, include_title: bool, realm: Realm) -> str:
@@ -871,6 +874,12 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
                 repo=get_repo_name(payload), type="design", design_name=id
             )
+        if transformed_type == "commit":
+            title = get_emoji_event_topic_title(
+                payload, awardable_type, transformed_type, use_merge_request_title
+            )
+            title_suffix = f" {title}" if title else ""
+            return f"{get_repo_name(payload)} / commit {id}{title_suffix}"
 
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),

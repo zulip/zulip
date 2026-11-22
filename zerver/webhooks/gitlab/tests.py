@@ -884,6 +884,28 @@ A trivial change that should probably be ignored.
             expected_message,
         )
 
+    def test_emoji_award_in_commit(self) -> None:
+        expected_topic_name = "testing-zulip-gitlab-integration / commit 0a156ba5afc add..."
+        expected_message = "Satyam Bansal added the emoji :thumbsup:."
+
+        self.check_webhook("emoji_hook__award__commit", expected_topic_name, expected_message)
+
+    def test_emoji_award_in_commit_with_custom_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+
+        expected_topic_name = "notifications"
+        expected_message = (
+            "[[testing-zulip-gitlab-integration](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration)] "
+            "Satyam Bansal added the emoji :thumbsup: to [commit 0a156ba5afc]"
+            "(https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/0a156ba5afc84646e6ac9ece810a70b6280c033e)."
+        )
+
+        self.check_webhook(
+            "emoji_hook__award__commit",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_push_event_message_silent_mention(self) -> None:
         realm = get_realm("zulip")
         gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")

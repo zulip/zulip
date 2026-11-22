@@ -1,0 +1,51 @@
+{
+  "object_kind": "emoji",
+  "event_type": "award",
+  "user": {
+    "id": 14613894,
+    "name": "Satyam Bansal",
+    "username": "sbansal1999",
+    "avatar_url": "https://secure.gravatar.com/avatar/f4dd7cfc79fac91db4d9ecbb443a0519?s=80&d=identicon",
+    "email": "[REDACTED]"
+  },
+  "project_id": 46186758,
+  "project": {
+    "id": 46186758,
+    "name": "testing-zulip-gitlab-integration",
+    "description": null,
+    "web_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "git_http_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration.git",
+    "namespace": "Satyam Bansal",
+    "visibility_level": 0,
+    "path_with_namespace": "sbansal1999/testing-zulip-gitlab-integration",
+    "default_branch": "main",
+    "ci_config_path": "",
+    "homepage": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration",
+    "url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "ssh_url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "http_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration.git"
+  },
+  "object_attributes": {
+    "user_id": 14613894,
+    "created_at": "2025-04-06 03:56:58 UTC",
+    "id": 33658637,
+    "name": "thumbsup",
+    "awardable_type": "Commit",
+    "awardable_id": null,
+    "updated_at": "2025-04-06 03:56:58 UTC",
+    "awarded_on_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/0a156ba5afc84646e6ac9ece810a70b6280c033e"
+  },
+  "commit": {
+    "id": "0a156ba5afc84646e6ac9ece810a70b6280c033e",
+    "message": "added some lines in second file\n",
+    "title": "added some lines in second file",
+    "timestamp": "2023-05-25T22:21:16+05:30",
+    "url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/0a156ba5afc84646e6ac9ece810a70b6280c033e",
+    "author": {
+      "name": "Satyam Bansal",
+      "email": "sbansal1999@gmail.com"
+    }
+  }
+}
