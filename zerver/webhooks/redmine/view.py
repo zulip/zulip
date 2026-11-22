@@ -5,7 +5,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, markdown_link
 from zerver.models import UserProfile
 
 ISSUE_OPENED_MESSAGE_TEMPLATE = (
@@ -32,7 +32,7 @@ def _get_issue_link(payload: WildValue) -> str:
     url = payload["url"].tame(check_string)
     issue = payload["issue"]
     issue_label = _extract_issue_label(issue)
-    return f"[{issue_label}]({url})"
+    return markdown_link(issue_label, url)
 
 
 def _get_user_name(user: WildValue) -> str:

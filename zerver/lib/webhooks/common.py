@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import importlib
 import logging
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
@@ -110,6 +111,17 @@ class WebhookUrlOption:
                 )
 
         raise AssertionError(_("Unknown 'PresetUrlOption': {config}").format(config=config))
+
+
+def markdown_link(text: str, url: str) -> str:
+    """Return a Markdown link, stripping brackets from the link text.
+
+    Zulip Markdown cannot escape brackets inside link text, so titles
+    containing "]" would otherwise terminate the link early. Same approach
+    as get_markdown_link_for_url.
+    """
+    link_text = re.sub(r"\[|\]", "", text).strip()
+    return f"[{link_text}]({url})"
 
 
 def get_setup_webhook_message(integration: str, user_name: str | None = None) -> str:
