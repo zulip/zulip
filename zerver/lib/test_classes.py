@@ -43,6 +43,7 @@ from openapi_core.contrib.django import DjangoOpenAPIRequest, DjangoOpenAPIRespo
 from requests import PreparedRequest
 from two_factor.plugins.phonenumber.models import PhoneDevice
 from typing_extensions import override
+from werkzeug.datastructures import Headers
 
 from corporate.models.customers import Customer
 from corporate.models.licenses import LicenseLedger
@@ -186,6 +187,10 @@ class ZulipClientHandler(ClientHandler):
             )
         ):
             openapi_request = DjangoOpenAPIRequest(request)
+            if "HTTP_AUTHORIZATION" in request.META:
+                headers = Headers(openapi_request.parameters.header)
+                headers["Authorization"] = request.META["HTTP_AUTHORIZATION"]
+                openapi_request.parameters.header = headers
             openapi_response = DjangoOpenAPIResponse(response)
             response_validated = validate_test_response(openapi_request, openapi_response)
             if response_validated:

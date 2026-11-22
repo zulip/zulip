@@ -17,6 +17,7 @@ from openapi_core.protocols import Request, Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 from pydantic import BaseModel
+from werkzeug.datastructures import Headers
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -564,6 +565,8 @@ def validate_request(
     intentionally_undocumented: bool = False,
 ) -> None:
     assert isinstance(data, dict)
+    http_headers = http_headers.copy()
+    http_headers.setdefault("Authorization", "Basic Og==")
     mock_request = MockRequest(
         "http://localhost:9991/",
         method,
@@ -581,6 +584,9 @@ def validate_test_request(
 ) -> None:
     method = request.method.lower()
     if request.path.startswith("/json/"):
+        headers = Headers(request.parameters.header)
+        headers.setdefault("Authorization", "Basic Og==")
+        request.parameters.header = headers
         url = request.path.removeprefix("/json")
         # Some JSON endpoints have different parameters compared to
         # their `/api/v1` counterparts.
