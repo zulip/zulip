@@ -702,12 +702,23 @@ class Command(ZulipBaseCommand):
             zulip_sandbox_channel_name,
         ]
         stream_dict: dict[str, dict[str, Any]] = {
-            "Denmark": {"description": "A Scandinavian country"},
-            "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
-            "Venice": {"description": "A northeastern Italian city", "creator": polonius},
-            "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+            "Denmark": {
+                "description": "A **Scandinavian country** :sparkles: See [Zulip documentation](https://zulip.readthedocs.io)."
+            },
+            "Scotland": {
+                "description": "*Located* in the United Kingdom :scotland:",
+                "creator": iago,
+            },
+            "Venice": {
+                "description": "A **northeastern Italian city** — visit the `Venice` topic.",
+                "creator": polonius,
+            },
+            "Rome": {
+                "description": "Yet another **Italian city** :it:",
+                "is_web_public": True,
+            },
             "core team": {
-                "description": "A private channel for core team members",
+                "description": "A *private* channel for `core team` members :lock:",
                 "invite_only": True,
                 "creator": desdemona,
             },
@@ -1115,36 +1126,39 @@ class Command(ZulipBaseCommand):
             )
             zulip_stream_dict: dict[str, dict[str, Any]] = {
                 "devel": {
-                    "description": "For developing",
+                    "description": "**Developers**, welcome! Share code using `backticks` :computer:",
                     "folder_id": engineering_channel_folder.id,
                 },
                 # ビデオゲーム - VideoGames (japanese)
                 "ビデオゲーム": {
-                    "description": f"Share your favorite video games!  {raw_emojis[2]}",
+                    "description": f"*Share* your favorite **video games**!  {raw_emojis[2]}",
                     "creator": shiva,
                 },
                 "announce": {
-                    "description": "For announcements",
+                    "description": ":loudspeaker: **Official announcements** — read [the Zulip docs](https://zulip.readthedocs.io).",
                     "can_send_message_group": admins_system_group,
                     "folder_id": information_channel_folder.id,
                 },
-                "design": {"description": "For design", "creator": hamlet},
+                "design": {
+                    "description": "*Discuss* **design ideas** and share `mockups` :art:",
+                    "creator": hamlet,
+                },
                 "support": {
-                    "description": "For support",
+                    "description": "Ask for **help** or share *support tips* :question:",
                     "folder_id": information_channel_folder.id,
                 },
-                "social": {"description": "For socializing"},
+                "social": {"description": "*Socialize* with coworkers :wave:"},
                 "test": {
-                    "description": "For testing `code`",
+                    "description": "For *testing* `code` and running **experiments** :test_tube:",
                     "folder_id": engineering_channel_folder.id,
                 },
                 "errors": {
-                    "description": "For errors",
+                    "description": "**Report bugs** and discuss *error logs* :warning:",
                     "folder_id": engineering_channel_folder.id,
                 },
                 # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                 "조리법 " + raw_emojis[0]: {
-                    "description": "Everything cooking, from pasta to Пельмени"
+                    "description": "*Everything cooking*: share recipes for `pasta` and **Пельмени** :fork_and_knife:"
                 },
             }
 
@@ -1188,7 +1202,7 @@ class Command(ZulipBaseCommand):
                     extra_stream_name += random.choice(raw_emojis)
 
                 zulip_stream_dict[extra_stream_name] = {
-                    "description": "Auto-generated extra stream.",
+                    "description": "**Auto-generated** stream for *extra* experiments. See [Zulip documentation](https://zulip.readthedocs.io) :sparkles:",
                 }
 
             bulk_create_streams(zulip_realm, zulip_stream_dict)
