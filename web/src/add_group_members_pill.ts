@@ -190,6 +190,7 @@ export function set_up_handlers({
     pill_selector,
     button_selector,
     spinner_selector,
+    disabled_class,
     action,
 }: {
     get_pill_widget: () => CombinedPillContainer;
@@ -197,6 +198,7 @@ export function set_up_handlers({
     pill_selector: string;
     button_selector: string;
     spinner_selector: string;
+    disabled_class: string;
     action: ({
         pill_user_ids,
         pill_group_ids,
@@ -214,10 +216,19 @@ export function set_up_handlers({
     function callback(): void {
         const pill_widget = get_pill_widget();
         const $loading_spinner = $parent_container.find(spinner_selector);
+        const $add_button = $parent_container.find(button_selector);
+        const $add_button_container = $add_button.closest(".add-button-container");
         void (async () => {
             loading.make_indicator($loading_spinner, {
                 height: 28, // 2em at 14px / 1em
             });
+            // Lock the input and the Add button until the request finishes.
+            add_subscribers_pill.set_pill_input_disabled(
+                $add_button_container,
+                disabled_class,
+                true,
+            );
+            $add_button.prop("disabled", true);
             const result = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
             // subscriber data, don't update the UI. We don't need
@@ -228,6 +239,15 @@ export function set_up_handlers({
                 return;
             }
             loading.destroy_indicator($loading_spinner);
+            // If action sends a request, it locks the input and the Add
+            // button again. The browser does not repaint in between, so
+            // the user never sees them unlocked.
+            add_subscribers_pill.set_pill_input_disabled(
+                $add_button_container,
+                disabled_class,
+                false,
+            );
+            $add_button.prop("disabled", pill_widget.items().length === 0);
             if (result.status === "failed") {
                 return;
             }

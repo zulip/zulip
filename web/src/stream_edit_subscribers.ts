@@ -308,11 +308,20 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
     const $pill_widget_button_wrapper = $(".add_subscriber_button_wrapper");
     const $add_subscriber_button = $pill_widget_button_wrapper.find(".add-subscriber-button");
     $add_subscriber_button.prop("disabled", true);
-    $(".add_subscribers_container").addClass("add_subscribers_disabled");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
+    add_subscribers_pill.set_pill_input_disabled(
+        $add_subscribers_container,
+        "add_subscribers_disabled",
+        true,
+    );
     buttons.show_button_loading_indicator($add_subscriber_button);
 
     function invite_success(raw_data: unknown): void {
-        $(".add_subscribers_container").removeClass("add_subscribers_disabled");
+        add_subscribers_pill.set_pill_input_disabled(
+            $add_subscribers_container,
+            "add_subscribers_disabled",
+            false,
+        );
         const data = add_user_ids_api_response_schema.parse(raw_data);
         pill_widget.clear();
         const subscribed_users = Object.keys(data.subscribed).map((user_id) =>
@@ -344,7 +353,11 @@ function subscribe_new_users({pill_user_ids}: {pill_user_ids: number[]}): void {
 
     function invite_failure(xhr: JQuery.jqXHR): void {
         buttons.hide_button_loading_indicator($add_subscriber_button);
-        $(".add_subscribers_container").removeClass("add_subscribers_disabled");
+        add_subscribers_pill.set_pill_input_disabled(
+            $add_subscribers_container,
+            "add_subscribers_disabled",
+            false,
+        );
 
         let error_message = "Failed to subscribe user!";
         const parsed = z
@@ -564,6 +577,7 @@ export function initialize(): void {
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
         spinner_selector: ".edit_subscribers_for_stream .add-subscriber-loading-spinner",
+        disabled_class: "add_subscribers_disabled",
         action: subscribe_new_users,
     });
 

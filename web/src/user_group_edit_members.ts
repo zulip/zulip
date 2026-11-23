@@ -9,6 +9,7 @@ import render_user_group_members_table from "../templates/user_group_settings/us
 import render_user_group_subgroup_entry from "../templates/user_group_settings/user_group_subgroup_entry.hbs";
 
 import * as add_group_members_pill from "./add_group_members_pill.ts";
+import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
@@ -458,10 +459,19 @@ function add_new_members({
     const $pill_widget_button_wrapper = $(".add_member_button_wrapper");
     const $add_member_button = $pill_widget_button_wrapper.find(".add-member-button");
     $add_member_button.prop("disabled", true);
-    $(".add_members_container").addClass("add_members_disabled");
+    const $add_members_container = $(".edit_members_for_user_group .add_members_container");
+    add_subscribers_pill.set_pill_input_disabled(
+        $add_members_container,
+        "add_members_disabled",
+        true,
+    );
     buttons.show_button_loading_indicator($add_member_button);
     function invite_success(): void {
-        $(".add_members_container").removeClass("add_members_disabled");
+        add_subscribers_pill.set_pill_input_disabled(
+            $add_members_container,
+            "add_members_disabled",
+            false,
+        );
         const $check_icon = $pill_widget_button_wrapper.find(".check");
 
         $check_icon.removeClass("hidden-below");
@@ -487,7 +497,11 @@ function add_new_members({
     }
 
     function invite_failure(xhr?: JQuery.jqXHR): void {
-        $(".add_members_container").removeClass("add_members_disabled");
+        add_subscribers_pill.set_pill_input_disabled(
+            $add_members_container,
+            "add_members_disabled",
+            false,
+        );
         buttons.hide_button_loading_indicator($add_member_button);
 
         let error_message = "Failed to add user!";
@@ -619,6 +633,7 @@ export function initialize(): void {
         pill_selector: ".edit_members_for_user_group .pill-container",
         button_selector: ".edit_members_for_user_group .add-member-button",
         spinner_selector: ".edit_members_for_user_group .add-group-member-loading-spinner",
+        disabled_class: "add_members_disabled",
         action: add_new_members,
     });
 
