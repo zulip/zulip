@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from unittest import mock
 
 import time_machine
+from django.conf import settings
 from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
@@ -675,6 +676,55 @@ Does it work?
             scheduled_message.rendered_content,
         )
         self.assertIn("<p>Does it work?</p>\n</blockquote>", scheduled_message.rendered_content)
+
+    def test_reminder_for_message_with_unclosed_code_block(self) -> None:
+        content = "Look at this:\n```\nprint('hello')"
+        message_id = self.send_channel_message_for_hamlet(content)
+        result = self.do_schedule_reminder(message_id, int(time.time() + 86400))
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            f"""
+You requested a reminder for the following message.
+
+@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{message_id}):
+````quote
+Look at this:
+```
+print('hello')
+```
+````
+""".strip(),
+        )
+        self.assertNotIn("````", scheduled_message.rendered_content)
+
+    def test_reminder_truncating_message_inside_code_block(self) -> None:
+        content = "```\n" + "x" * (settings.MAX_MESSAGE_LENGTH - len("```\n"))
+        message_id = self.send_channel_message_for_hamlet(content)
+        result = self.do_schedule_reminder(message_id, int(time.time() + 86400))
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        reminder_without_code = f"""
+You requested a reminder for the following message.
+
+@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{message_id}):
+````quote
+```
+{{code}}
+```
+[message truncated]
+````
+""".strip()
+        code_length = settings.MAX_MESSAGE_LENGTH - len(reminder_without_code.format(code=""))
+        self.assertEqual(
+            scheduled_message.content, reminder_without_code.format(code="x" * code_length)
+        )
+        self.assertIn(
+            "</code></pre></div>\n<p>[message truncated]</p>", scheduled_message.rendered_content
+        )
 
     def test_schedule_reminder_ones_own_message(self) -> None:
         content = "Test message"
