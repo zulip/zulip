@@ -1210,7 +1210,7 @@ def get_message_payload_apns(
         alert_title = get_apns_alert_title(message)
 
     assert message.rendered_content is not None
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
         apns_data = {
             "alert": {
@@ -1255,7 +1255,7 @@ def get_message_payload_gcm(
         message_payload["message_id"] = message.id
 
     assert message.rendered_content is not None
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         content, _truncated = truncate_content(get_mobile_push_content(message.rendered_content))
         message_payload.update(
             time=datetime_to_timestamp(message.date_sent),

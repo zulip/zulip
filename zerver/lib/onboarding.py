@@ -89,7 +89,7 @@ def send_initial_direct_messages_to_user(
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
     # request and thus may not have the user's language context yet.
-    with override_language(user.default_language):
+    with override_language(user.default_language or user.realm.default_language):
         if education_organization:
             getting_started_string = _("""
 To learn more, check out our [using Zulip for a class guide]({getting_started_url})!

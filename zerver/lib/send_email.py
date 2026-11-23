@@ -77,7 +77,7 @@ class FromAddress:
     ) -> str:
         if language is None:
             assert user_profile is not None
-            language = user_profile.default_language
+            language = user_profile.default_language or user_profile.realm.default_language
 
         with override_language(language):
             return _("{service_name} account security").format(

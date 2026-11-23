@@ -2541,7 +2541,7 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(RealmUserDefault.objects.filter(realm=imported_realm).exists())
 
         realm_user_default = RealmUserDefault.objects.get(realm=imported_realm)
-        self.assertEqual(realm_user_default.default_language, "en")
+        self.assertEqual(realm_user_default.default_language, "")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
     def test_import_third_party_export_with_archived_announcements_channel(self) -> None:

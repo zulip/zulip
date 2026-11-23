@@ -990,7 +990,7 @@ def registration_helper(
             do_change_user_setting(
                 user_profile,
                 "default_language",
-                get_default_language_for_new_user(realm, request=request),
+                "",
                 acting_user=None,
             )
 
@@ -1014,7 +1014,7 @@ def registration_helper(
                     role=role,
                     tos_version=settings.TERMS_OF_SERVICE_VERSION,
                     timezone=timezone,
-                    default_language=get_default_language_for_new_user(realm, request=request),
+                    default_language="",
                     default_stream_groups=default_stream_groups,
                     source_profile=source_profile,
                     realm_creation=realm_creation,

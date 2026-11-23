@@ -9,7 +9,7 @@ from django.utils import translation
 from typing_extensions import override
 
 from zerver.lib.email_notifications import enqueue_welcome_emails
-from zerver.lib.i18n import get_browser_language_code
+from zerver.lib.i18n import get_and_set_request_language, get_browser_language_code
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.management.commands import makemessages
@@ -192,6 +192,33 @@ class JsonTranslationTestCase(ZulipTestCase):
 
         expected_error = "this arg is bad: 'invitee_emails' (translated to German)"
         self.assert_json_error_contains(result, expected_error, status_code=400)
+
+    def test_request_locale_default_language(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.default_language = ""
+        hamlet.save(update_fields=["default_language"])
+
+        req = HostRequestMock()
+        req.user = hamlet
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND;q=0.9,de;q=0.8,fr;q=0.6"
+        self.assertEqual(get_and_set_request_language(req, hamlet.default_language), "de")
+
+        # Unsupported Accept-Language falls back to realm.default_language.
+        req = HostRequestMock()
+        req.user = hamlet
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND"
+        self.assertEqual(
+            get_and_set_request_language(req, hamlet.default_language),
+            hamlet.realm.default_language,
+        )
+
+        # Explicit default_language overrides the request locale.
+        hamlet.default_language = "es"
+        hamlet.save(update_fields=["default_language"])
+        req = HostRequestMock()
+        req.user = hamlet
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de"
+        self.assertEqual(get_and_set_request_language(req, hamlet.default_language), "es")
 
     @mock.patch("zerver.views.auth._")
     def test_jsonable_error(self, mock_gettext: Any) -> None:

@@ -399,7 +399,7 @@ def send_failed_scheduled_message_notification(
 ) -> None:
     scheduled_message = access_scheduled_message(user_profile, scheduled_message_id)
 
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         error_string = scheduled_message.failure_message
         delivery_time_markdown = datetime_to_global_time(scheduled_message.scheduled_timestamp)
 

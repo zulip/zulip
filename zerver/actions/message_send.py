@@ -2417,7 +2417,7 @@ def send_user_profile_update_notification(
             return "*None*"
         return value
 
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         # We can't name which user made the change, since it was done either on the command line or via an automated job like LDAP synchronization.
         # It's still useful to tell the user about the update.
         if acting_user is None:

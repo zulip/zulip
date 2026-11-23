@@ -122,7 +122,7 @@ def handle_realm_export_event(
 
     # Send a direct message notification letting the user who
     # triggered the export know the export finished.
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         content = _(
             "Your data export is complete. [View and download exports]({export_settings_link})."
         ).format(export_settings_link="/#organization/data-exports-admin")

@@ -219,7 +219,11 @@ def check_settings_values(
     # We can't use typed_endpoint for this widget because
     # get_available_language_codes requires provisioning to be
     # complete.
-    if default_language is not None and default_language not in get_available_language_codes():
+    if (
+        default_language is not None
+        and default_language != ""
+        and default_language not in get_available_language_codes()
+    ):
         raise JsonableError(_("Invalid default_language"))
 
     if (

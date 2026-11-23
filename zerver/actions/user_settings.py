@@ -194,7 +194,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         activate_url=activation_url,
         organization_host=user_profile.realm.host,
     )
-    language = user_profile.default_language
+    language = user_profile.default_language or user_profile.realm.default_language
 
     email_template = "zerver/emails/confirm_new_email"
 

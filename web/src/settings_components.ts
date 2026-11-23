@@ -2087,14 +2087,21 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
     return value;
 }
 
-export const language_options = (): Option[] => {
+export const language_options = (include_automatic = false): Option[] => {
     const languages = get_language_list_columns(realm.realm_default_language).toSorted((a, b) =>
         util.strcmp(a.name_with_percent, b.name_with_percent),
     );
-    return languages.map((language) => ({
+    const options: Option[] = languages.map((language) => ({
         name: language.name_with_percent,
         unique_id: language.code,
     }));
+    if (include_automatic) {
+        options.unshift({
+            name: $t({defaultMessage: "Automatic (browser default)"}),
+            unique_id: "",
+        });
+    }
+    return options;
 };
 
 export function resize_textareas_in_section($section: JQuery): void {

@@ -417,7 +417,7 @@ export function set_default_language(default_language: string): void {
 function render_language_dropdown_widget(): void {
     default_language_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "default_language",
-        get_options: settings_components.language_options,
+        get_options: () => settings_components.language_options(true),
         item_click_callback: language_select_callback,
         default_id: user_settings.default_language,
         $events_container: $("#user-preferences .preferences-settings-form"),

@@ -24,6 +24,8 @@ def get_language_list() -> list[dict[str, Any]]:
 
 
 def get_language_name(code: str) -> str:
+    if code == "":
+        return translation.gettext("Automatic (browser default)")
     for lang in get_language_list():
         if code in (lang["code"], lang["locale"]):
             return lang["name"]
@@ -63,7 +65,15 @@ def get_and_set_request_language(
     # * If not in the URL, we use the language from the user's settings.
     request_language = testing_url_language
     if request_language is None:
-        request_language = user_configured_language
+        if user_configured_language == "":
+            fallback_language = (
+                request.user.realm.default_language
+                if request.user.is_authenticated
+                else settings.LANGUAGE_CODE
+            )
+            request_language = get_browser_language_code(request) or fallback_language
+        else:
+            request_language = user_configured_language
     translation.activate(request_language)
 
     # We also want to save the language to the user's cookies, so that

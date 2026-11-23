@@ -1577,8 +1577,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
-        self.assertNotEqual(user_profile.default_language, realm.default_language)
-        self.assertEqual(user_profile.default_language, "fr")
+        self.assertEqual(user_profile.default_language, "")
         self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
 
@@ -1608,7 +1607,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
-        self.assertEqual(user_profile.default_language, realm.default_language)
+        self.assertEqual(user_profile.default_language, "")
         from django.core.mail import outbox
 
         outbox.pop()
@@ -2181,7 +2180,7 @@ class UserSignUpTest(ZulipTestCase):
 
         hamlet = get_user(self.example_email("hamlet"), realm)
         self.assertEqual(hamlet.left_side_userlist, False)
-        self.assertEqual(hamlet.default_language, "en")
+        self.assertEqual(hamlet.default_language, "")
         self.assertEqual(hamlet.emojiset, "google")
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_audible_notifications, False)

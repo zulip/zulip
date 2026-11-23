@@ -649,7 +649,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         user_profile, unique_triggers, mentioned_user_group_members_count
     )
 
-    with override_language(user_profile.default_language):
+    with override_language(user_profile.default_language or user_profile.realm.default_language):
         from_name: str = _("{service_name} notifications").format(
             service_name=settings.INSTALLATION_NAME
         )
