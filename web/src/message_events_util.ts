@@ -94,13 +94,16 @@ export function maybe_add_narrowed_messages(
             }
             if (attempt >= 5) {
                 // Too many retries -- bail out.  However, this means the `messages` are potentially
-                // missing from the search results view.  Since this is a very unlikely circumstance
-                // (Tornado is up, Django is down for 5 retries, user is in a search view that it
-                // cannot apply itself) and the failure mode is not bad (it will simply fail to
-                // include live updates of new matching messages), just log an error.
-                blueslip.error(
-                    "Failed to determine if new message matches current narrow, after 5 tries",
-                );
+                // missing from the search results view.  Since the failure mode is not bad (it
+                // will simply fail to include live updates of new matching messages), just log
+                // an error.  We skip that for network failures, timeouts, and server errors
+                // (e.g., Tornado is up, Django is down for 5 retries), which are expected
+                // when the server is unavailable.
+                if (!channel.xhr_error_is_transient(xhr)) {
+                    blueslip.error(
+                        "Failed to determine if new message matches current narrow, after 5 tries",
+                    );
+                }
                 return;
             }
             // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
