@@ -216,6 +216,8 @@ def require_billing_access(
     ) -> HttpResponse:
         if not user_profile.has_billing_access:
             raise JsonableError(_("Insufficient permission"))
+        if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+            raise JsonableError(_("Not allowed for demo organizations"))
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
