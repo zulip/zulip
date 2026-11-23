@@ -56,6 +56,14 @@ class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError)
     http_status_code = 502
 
 
+class PushNotificationBouncerRateLimitedError(PushNotificationBouncerRetryLaterError):
+    http_status_code = 502
+
+    def __init__(self, msg: str, secs_to_freedom: float | None) -> None:
+        super().__init__(msg)
+        self.secs_to_freedom = secs_to_freedom
+
+
 class RealmCountDataForAnalytics(BaseModel):
     property: str
     realm: int
@@ -139,6 +147,21 @@ class UserDataForRemoteBilling(BaseModel):
     full_name: str
 
 
+def get_bouncer_retry_after(res: requests.Response) -> float | None:
+    # The bouncer's RateLimitedError response includes the number of
+    # seconds until the limit resets as "retry-after" in its JSON body.
+    try:
+        result_dict = orjson.loads(res.content)
+    except orjson.JSONDecodeError:
+        return None
+    if not isinstance(result_dict, dict):
+        return None
+    retry_after = result_dict.get("retry-after")
+    if not isinstance(retry_after, int | float) or retry_after < 0:
+        return None
+    return float(retry_after)
+
+
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
@@ -155,6 +178,10 @@ def send_to_push_bouncer(
 
     * 500 errors from the push bouncer or other unexpected responses;
       we don't try to parse the response, but do make clear the cause.
+
+    * 429 errors from the push bouncer, when this server has exceeded
+      its rate limit.  We raise an exception that tells callers how
+      long to wait before retrying.
 
     * 400 errors from the push bouncer.  Here there are 2 categories:
       Our server failed to connect to the push bouncer (should throw)
@@ -205,6 +232,15 @@ def send_to_push_bouncer(
         error_msg = f"Received {res.status_code} from push notification bouncer"
         logging.warning(error_msg)
         raise PushNotificationBouncerServerError(error_msg)
+    elif res.status_code == 429:
+        # The bouncer only rate-limits a server after validating its
+        # credentials, so this is a temporary condition; callers can
+        # retry, ideally after the time the bouncer asked us to wait.
+        error_msg = f"Received {res.status_code} from push notification bouncer"
+        logging.warning(error_msg)
+        raise PushNotificationBouncerRateLimitedError(
+            error_msg, secs_to_freedom=get_bouncer_retry_after(res)
+        )
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)
@@ -301,6 +337,11 @@ def maybe_mark_pushes_disabled(
     if isinstance(e, PushNotificationBouncerServerError):
         # We don't fall through and deactivate the flag, since this is
         # not under the control of the caller.
+        return
+
+    if isinstance(e, PushNotificationBouncerRateLimitedError):
+        # Being rate-limited means the bouncer accepted our credentials,
+        # so push notifications aren't broken; we just need to slow down.
         return
 
     if isinstance(e, JsonableError):

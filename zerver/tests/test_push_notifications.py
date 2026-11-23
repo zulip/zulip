@@ -29,7 +29,7 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_upd
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.push_notifications import (
     APNS_MAX_RETRIES,
     DeviceToken,
@@ -51,6 +51,7 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
+    PushNotificationBouncerRateLimitedError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
     get_realms_info_for_push_bouncer,
@@ -2267,6 +2268,30 @@ class TestSendToPushBouncer(ZulipTestCase):
             with self.assertRaises(PushNotificationBouncerServerError):
                 send_to_push_bouncer("POST", "register", {"data": "true"})
             self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
+
+    @responses.activate
+    def test_429_error(self) -> None:
+        error_response = json_response_from_error(RateLimitedError(secs_to_freedom=12.5))
+        self.add_mock_response(body=error_response.content, status=error_response.status_code)
+        with self.assertLogs(level="WARNING") as m:
+            with self.assertRaises(PushNotificationBouncerRateLimitedError) as exc:
+                send_to_push_bouncer("POST", "register", {"data": "true"})
+            self.assertEqual(m.output, ["WARNING:root:Received 429 from push notification bouncer"])
+        self.assertEqual(exc.exception.secs_to_freedom, 12.5)
+
+    @responses.activate
+    def test_429_error_without_usable_retry_after(self) -> None:
+        error_response = json_response_from_error(RateLimitedError())
+        for body in [error_response.content, b"Too many requests", b"[]"]:
+            responses.reset()
+            self.add_mock_response(body=body, status=429)
+            with self.assertLogs(level="WARNING") as m:
+                with self.assertRaises(PushNotificationBouncerRateLimitedError) as exc:
+                    send_to_push_bouncer("POST", "register", {"data": "true"})
+                self.assertEqual(
+                    m.output, ["WARNING:root:Received 429 from push notification bouncer"]
+                )
+            self.assertIsNone(exc.exception.secs_to_freedom)
 
     @responses.activate
     def test_400_error(self) -> None:
