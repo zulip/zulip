@@ -42,6 +42,7 @@ const sample_message = {
 
 const channel = mock_esm("../src/channel", {
     xhr_error_code: (xhr) => xhr.responseJSON?.code,
+    xhr_error_is_transient: (xhr) => xhr.status === 0 || xhr.status >= 500,
 });
 const message_store = mock_esm("../src/message_store");
 const settings_data = mock_esm("../src/settings_data");

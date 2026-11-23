@@ -334,6 +334,14 @@ test("xhr_error_code", () => {
     assert.equal(channel.xhr_error_code({responseJSON: undefined}), undefined);
 });
 
+test("xhr_error_is_transient", () => {
+    assert.ok(channel.xhr_error_is_transient({status: 0}));
+    assert.ok(channel.xhr_error_is_transient({status: 500}));
+    assert.ok(channel.xhr_error_is_transient({status: 502}));
+    assert.ok(!channel.xhr_error_is_transient({status: 400}));
+    assert.ok(!channel.xhr_error_is_transient({status: 429}));
+});
+
 test("while_reloading", () => {
     reload_state.set_state_to_in_progress();
 

@@ -297,7 +297,7 @@ function bulk_update_read_flags_for_narrow(
             let parsed;
             // Network drop (status 0) and gateway/server errors deserve some
             // retries with exponential backoff.
-            const is_transient_error = xhr.status === 0 || xhr.status >= 500;
+            const is_transient_error = channel.xhr_error_is_transient(xhr);
             if (xhr.readyState === 0) {
                 // client cancelled the request
             } else if (
@@ -614,7 +614,7 @@ function handle_mark_unread_from_here_error(
     let parsed;
     // Network drop (status 0) and gateway/server errors deserve some
     // retries with exponential backoff.
-    const is_transient_error = xhr.status === 0 || xhr.status >= 500;
+    const is_transient_error = channel.xhr_error_is_transient(xhr);
     if (xhr.readyState === 0) {
         // client cancelled the request
     } else if (
