@@ -56,7 +56,6 @@ const localStorage = {
     setItem(key, val) {
         ls_container.set(key, val);
     },
-    /* istanbul ignore next */
     removeItem(key) {
         ls_container.delete(key);
     },

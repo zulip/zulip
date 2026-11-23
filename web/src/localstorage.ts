@@ -54,17 +54,25 @@ const ls = {
     },
 
     // set the wrapped version of the data into localStorage.
-    setData(version: number, name: string, data: unknown): void {
+    // Returns whether the data was stored.
+    setData(version: number, name: string, data: unknown): boolean {
         const key = this.formGetter(version, name);
         const val = this.formData(data);
 
+        if (!localstorage.supported()) {
+            return false;
+        }
         localStorage.setItem(key, JSON.stringify(val));
+        return true;
     },
 
     // remove the key from localStorage and from memory.
     removeData(version: number, name: string): void {
         const key = this.formGetter(version, name);
 
+        if (!localstorage.supported()) {
+            return;
+        }
         localStorage.removeItem(key);
     },
 
@@ -148,8 +156,7 @@ export const localstorage = function (): LocalStorage {
 
         set(name: string, data: unknown): boolean {
             if (_data.VERSION !== undefined) {
-                ls.setData(_data.VERSION, name, data);
-                return true;
+                return ls.setData(_data.VERSION, name, data);
             }
 
             return false;
@@ -194,6 +201,8 @@ export const localstorage = function (): LocalStorage {
 let warned_of_localstorage = false;
 
 localstorage.supported = function supports_localstorage(): boolean {
+    // Browsers can expose a null localStorage when DOM storage is
+    // disabled.
     try {
         return window.localStorage !== undefined && window.localStorage !== null;
     } catch {
