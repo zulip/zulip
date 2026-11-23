@@ -317,8 +317,8 @@ class ReportMessageTest(ZulipTestCase):
         assert submitted_report.rendered_content is not None
         self.assertIn(
             "<blockquote>\n<p><strong>Other reason</strong>. Breaking out:</p>\n"
-            '<p><div class="codehilite"><pre><span></span><code>**Not quoted**\n'
-            "</code></pre></div><br>\n</p>\n</blockquote>\n"
+            '<div class="codehilite"><pre><span></span><code>**Not quoted**\n'
+            "</code></pre></div>\n</blockquote>\n"
             '<div class="spoiler-block">',
             submitted_report.rendered_content,
         )

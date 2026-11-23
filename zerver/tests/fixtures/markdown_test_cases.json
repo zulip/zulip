@@ -1125,6 +1125,21 @@
       "text_content": "[…]outside quote"
     },
     {
+      "name": "fenced_quote_ending_in_code_block",
+      "input": "````quote\nLook at this:\n```\ncode\n```\n````",
+      "expected_output": "<blockquote>\n<p>Look at this:</p>\n<div class=\"codehilite\"><pre><span></span><code>code\n</code></pre></div>\n</blockquote>"
+    },
+    {
+      "name": "fenced_quote_ending_in_spoiler",
+      "input": "~~~quote\n```spoiler header\ncontent\n```\n~~~",
+      "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n</blockquote>"
+    },
+    {
+      "name": "fenced_quote_ending_in_quote",
+      "input": "~~~quote\n```quote\ninner\n```\n~~~",
+      "expected_output": "<blockquote>\n<blockquote>\n<p>inner</p>\n</blockquote>\n</blockquote>"
+    },
+    {
       "name": "spoilers_with_header_markdown",
       "input": "```spoiler [Header](https://example.com) :slight_smile:\ncontent\n```",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
