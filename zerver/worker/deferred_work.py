@@ -13,6 +13,7 @@ from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import (
     PushNotificationBouncerRetryLaterError,
+    maybe_wait_for_bouncer_rate_limit_reset,
     send_server_data_to_push_bouncer,
 )
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
@@ -68,7 +69,7 @@ class DeferredWorker(QueueProcessingWorker):
             )
             try:
                 clear_push_device_tokens(event["user_profile_id"])
-            except PushNotificationBouncerRetryLaterError:
+            except PushNotificationBouncerRetryLaterError as e:
 
                 def failure_processor(event: dict[str, Any]) -> None:
                     logger.warning(
@@ -76,6 +77,7 @@ class DeferredWorker(QueueProcessingWorker):
                         event["user_profile_id"],
                     )
 
+                maybe_wait_for_bouncer_rate_limit_reset(e)
                 retry_event(self.queue_name, event, failure_processor)
         elif event["type"] == "realm_export":
             handle_realm_export_event(event, threaded=self.threaded, logger=logger)

@@ -7,7 +7,7 @@ from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager, suppress
 from datetime import datetime, timedelta, timezone
 from typing import Any, TypeAlias
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import orjson
 import time_machine
@@ -26,7 +26,10 @@ from zerver.lib.cache import (
 )
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.queue import MAX_REQUEST_RETRIES
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.remote_server import (
+    PushNotificationBouncerRateLimitedError,
+    PushNotificationBouncerRetryLaterError,
+)
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
@@ -586,6 +589,7 @@ class WorkerTest(ZulipTestCase):
                         "zerver.lib.queue.queue_json_publish_rollback_unsafe",
                         side_effect=fake_publish,
                     ),
+                    patch("zerver.lib.remote_server.time.sleep") as mock_sleep,
                     self.assertLogs(
                         "zerver.worker.missedmessage_mobile_notifications", "WARNING"
                     ) as warn_logs,
@@ -594,6 +598,8 @@ class WorkerTest(ZulipTestCase):
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_register.call_count, 1 + MAX_REQUEST_RETRIES)
+                    # Only rate limiting makes the worker wait before retrying.
+                    mock_sleep.assert_not_called()
                 self.assertEqual(
                     warn_logs.output[0:2],
                     [
@@ -604,6 +610,43 @@ class WorkerTest(ZulipTestCase):
                 self.assertEqual(
                     warn_logs.output[2],
                     "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for device_id:3 event:register_push_device_to_bouncer",
+                )
+
+            # When the bouncer rate-limits us, the worker waits for the limit
+            # to reset before each retry, but never longer than the bouncer's
+            # 60-second rate limit window.
+            with (
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
+                    side_effect=PushNotificationBouncerRateLimitedError("test", secs_to_freedom=90),
+                ) as mock_handle_new,
+                patch(
+                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
+                ),
+            ):
+                event_new = generate_new_message_notification()
+                fake_client.enqueue("missedmessage_mobile_notifications", event_new)
+
+                with (
+                    mock_queue_publish(
+                        "zerver.lib.queue.queue_json_publish_rollback_unsafe",
+                        side_effect=fake_publish,
+                    ),
+                    patch("zerver.lib.remote_server.time.sleep") as mock_sleep,
+                    self.assertLogs(
+                        "zerver.worker.missedmessage_mobile_notifications", "WARNING"
+                    ) as warn_logs,
+                ):
+                    worker.start()
+                    self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
+                    self.assertEqual(
+                        mock_sleep.call_args_list, [call(60)] * (1 + MAX_REQUEST_RETRIES)
+                    )
+                self.assertEqual(
+                    warn_logs.output,
+                    [
+                        "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for trigger:1 event:push_notification",
+                    ],
                 )
 
     @patch("zerver.worker.email_mirror.mirror_email")

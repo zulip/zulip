@@ -1,5 +1,6 @@
 import logging
 import secrets
+import time
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import urljoin
@@ -295,6 +296,20 @@ def send_to_push_bouncer(
 
     # If we don't throw an exception, it's a successful bounce!
     return orjson.loads(res.content)
+
+
+# Remote servers are rate-limited over a 60-second window (see
+# "api_by_remote_server" in DEFAULT_RATE_LIMITING_RULES), so the bouncer
+# never legitimately asks us to wait longer than this.
+MAX_BOUNCER_RATE_LIMIT_WAIT_SECONDS = 60
+
+
+def maybe_wait_for_bouncer_rate_limit_reset(e: PushNotificationBouncerRetryLaterError) -> None:
+    """Called by queue workers before retrying a request that failed with
+    this error, so that a rate-limited retry doesn't immediately hit the
+    same limit again."""
+    if isinstance(e, PushNotificationBouncerRateLimitedError) and e.secs_to_freedom is not None:
+        time.sleep(min(e.secs_to_freedom, MAX_BOUNCER_RATE_LIMIT_WAIT_SECONDS))
 
 
 def send_json_to_push_bouncer(

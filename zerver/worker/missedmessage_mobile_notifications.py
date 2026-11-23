@@ -12,7 +12,10 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.push_registration import handle_register_push_device_to_bouncer
 from zerver.lib.queue import retry_event
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.remote_server import (
+    PushNotificationBouncerRetryLaterError,
+    maybe_wait_for_bouncer_rate_limit_reset,
+)
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -55,7 +58,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
                 handle_remove_push_notification(event["user_profile_id"], message_ids)
             else:
                 handle_push_notification(event["user_profile_id"], event)
-        except PushNotificationBouncerRetryLaterError:
+        except PushNotificationBouncerRetryLaterError as e:
 
             def failure_processor(event: dict[str, Any]) -> None:
                 if event_type == "register_push_device_to_bouncer":
@@ -69,4 +72,5 @@ class PushNotificationsWorker(QueueProcessingWorker):
                         event["user_profile_id"],
                     )
 
+            maybe_wait_for_bouncer_rate_limit_reset(e)
             retry_event(self.queue_name, event, failure_processor)
