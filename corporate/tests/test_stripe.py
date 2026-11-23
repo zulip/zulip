@@ -47,6 +47,7 @@ from corporate.models.plans import (
     get_current_plan_by_customer,
     get_current_plan_by_realm,
 )
+from corporate.models.sponsorships import ZulipSponsorshipRequest
 from corporate.models.stripe_state import Event, Invoice
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
@@ -4448,6 +4449,40 @@ class RequiresBillingAccessTest(StripeTestCase):
             if pat.startswith("json/") and not (pat.startswith(("json/realm/", "json/server/")))
         }
         self.assert_length(json_endpoints, len(tested_endpoints))
+
+    def test_json_endpoints_for_demo_organizations(self) -> None:
+        demo_owner = self.create_demo_organization_owner()
+        realm = demo_owner.realm
+        self.assertTrue(demo_owner.has_billing_access)
+
+        for url in [
+            "/json/billing/upgrade",
+            "/json/billing/session/start_card_update_session",
+            "/json/upgrade/session/start_card_update_session",
+        ]:
+            result = self.client_post(url, {}, subdomain=realm.subdomain)
+            self.assert_json_error(result, "Not allowed for demo organizations")
+        result = self.client_patch("/json/billing/plan", {}, subdomain=realm.subdomain)
+        self.assert_json_error(result, "Not allowed for demo organizations")
+        result = self.client_get("/json/billing/event/status", {}, subdomain=realm.subdomain)
+        self.assert_json_error(result, "Not allowed for demo organizations")
+
+        # Test sponsorship view with valid data.
+        sponsorship_data = {
+            "organization_type": Realm.ORG_TYPES["opensource"]["id"],
+            "website": "https://example.com/",
+            "description": "Demo example sponsorship request.",
+            "expected_total_users": "10",
+            "plan_to_use_zulip": "For chat.",
+            "paid_users_count": "1",
+            "paid_users_description": "We have 1 paid staff member.",
+        }
+        result = self.client_post(
+            "/json/billing/sponsorship", sponsorship_data, subdomain=realm.subdomain
+        )
+        self.assert_json_error(result, "Not allowed for demo organizations")
+        self.assertIsNone(get_customer_by_realm(realm))
+        self.assertFalse(ZulipSponsorshipRequest.objects.exists())
 
     @mock_stripe()
     def test_billing_page_permissions(self, *mocks: Mock) -> None:
