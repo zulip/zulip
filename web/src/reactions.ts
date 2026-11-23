@@ -129,7 +129,7 @@ function send_reaction_request(
         error(xhr: JQuery.jqXHR) {
             // Network drop (status 0) and gateway/server errors deserve some
             // retries with exponential backoff.
-            const is_transient_error = xhr.status === 0 || xhr.status >= 500;
+            const is_transient_error = channel.xhr_error_is_transient(xhr);
             const code = channel.xhr_error_code(xhr);
             let parsed;
             if (xhr.readyState === 0) {

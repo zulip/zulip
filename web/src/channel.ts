@@ -221,3 +221,8 @@ export function xhr_error_code(xhr: JQuery.jqXHR<unknown>): string | undefined {
     const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
     return parsed.success ? parsed.data.code : undefined;
 }
+
+export function xhr_error_is_transient(xhr: JQuery.jqXHR<unknown>): boolean {
+    // Network drop (status 0) and gateway/server errors.
+    return xhr.status === 0 || xhr.status >= 500;
+}
