@@ -387,6 +387,7 @@ export let add_reaction = (event: ReactionEvent): void => {
         });
 
         message.clean_reactions.set(local_id, clean_reaction_object);
+        update_message_reactions(message);
         insert_new_reaction(clean_reaction_object, message, user_id);
     }
 };
@@ -505,6 +506,7 @@ export let remove_reaction = (event: ReactionEvent): void => {
     clean_reaction_object.user_ids = clean_reaction_object.user_ids.filter((id) => id !== user_id);
     if (clean_reaction_object.user_ids.length === 0) {
         message.clean_reactions.delete(local_id);
+        update_message_reactions(message);
     }
 
     const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
@@ -579,6 +581,14 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
     }
 
     return names;
+}
+
+function update_message_reactions(message: Message): void {
+    // message_list_view saves the list of reactions on the message when
+    // rendering it, and redraws of its message group reuse that list, so
+    // update it whenever an emoji is added or removed. Vote changes don't
+    // need this, since they update the shared reaction objects in place.
+    message.message_reactions = message.clean_reactions.values().toArray();
 }
 
 export function get_message_reactions(message: Message): MessageCleanReaction[] {
