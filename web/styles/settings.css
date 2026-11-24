@@ -1454,6 +1454,11 @@ label.preferences-radio-choice-label {
         text-align: right;
     }
 
+    .time-limit-custom-unit {
+        width: auto;
+        vertical-align: middle;
+    }
+
     .realm-time-limit-label {
         vertical-align: middle;
     }
@@ -1669,7 +1674,7 @@ label.preferences-radio-choice-label {
     }
 }
 
-.time-limit-custom-input,
+.time-limit-custom-input:where(:not(.custom-time-input-value)),
 .realm_jitsi_server_url_custom_input {
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
@@ -2416,7 +2421,8 @@ label.preferences-radio-choice-label {
 /* Use `input.settings_*:disabled` to match the specificity of the
    `input[type=...]` rule in zulip.css and override its background. */
 input.settings_url_input:disabled,
-input.settings_text_input:disabled {
+input.settings_text_input:disabled,
+input.time-limit-custom-input.custom-time-input-value:disabled {
     background-color: var(--color-background-disabled-settings-select);
     opacity: 0.7;
 }

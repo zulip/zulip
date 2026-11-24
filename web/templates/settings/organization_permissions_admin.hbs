@@ -164,20 +164,23 @@
                     {{/each}}
                 </select>
                 <div class="dependent-settings-block">
-                    <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
-                        {{t 'Time limit'}}:&nbsp;
+                    <label for="id_realm_message_content_edit_limit_minutes" class="settings-field-label">
+                        {{t "Time limit" }}
                     </label>
                     <input type="text" id="id_realm_message_content_edit_limit_minutes"
                       name="realm_message_content_edit_limit_minutes"
-                      class="time-limit-custom-input"
+                      class="time-limit-custom-input custom-time-input-value"
                       autocomplete="off"
-                      value="{{ realm_message_content_edit_limit_minutes }}"
-                      {{#unless realm_allow_message_editing}}disabled{{/unless}}/>&nbsp;
-                    <span class="time-unit-text">
-                        {{t "{realm_message_content_edit_limit_minutes, plural, one {minute} other {minutes}}"}}
-                    </span>
-
-
+                      {{#unless realm_allow_message_editing}}disabled{{/unless}}/>
+                    <select id="id_realm_message_content_edit_limit_unit"
+                      name="realm_message_content_edit_limit_unit"
+                      class="time-limit-custom-unit settings_select bootstrap-focus-style"
+                      aria-label="{{t 'Time limit unit' }}"
+                      {{#unless realm_allow_message_editing}}disabled{{/unless}}>
+                        {{#each (object_values time_unit_values)}}
+                            <option value="{{this.name}}">{{this.description}}</option>
+                        {{/each}}
+                    </select>
                 </div>
             </div>
         </div>
@@ -202,16 +205,21 @@
                     {{/each}}
                 </select>
                 <div class="dependent-settings-block">
-                    <label for="id_realm_move_messages_within_stream_limit_minutes" class="inline-block realm-time-limit-label">
-                        {{t 'Time limit'}}:&nbsp;
+                    <label for="id_realm_move_messages_within_stream_limit_minutes" class="settings-field-label">
+                        {{t "Time limit" }}
                     </label>
                     <input type="text" id="id_realm_move_messages_within_stream_limit_minutes"
                       name="realm_move_messages_within_stream_limit_minutes"
-                      class="time-limit-custom-input"
-                      autocomplete="off"/>&nbsp;
-                    <span class="time-unit-text">
-                        {{t "{realm_move_messages_within_stream_limit_minutes, plural, one {minute} other {minutes}}"}}
-                    </span>
+                      class="time-limit-custom-input custom-time-input-value"
+                      autocomplete="off"/>
+                    <select id="id_realm_move_messages_within_stream_limit_unit"
+                      name="realm_move_messages_within_stream_limit_unit"
+                      class="time-limit-custom-unit settings_select bootstrap-focus-style"
+                      aria-label="{{t 'Time limit unit' }}">
+                        {{#each (object_values time_unit_values)}}
+                            <option value="{{this.name}}">{{this.description}}</option>
+                        {{/each}}
+                    </select>
                 </div>
             </div>
 
@@ -227,16 +235,21 @@
                     {{/each}}
                 </select>
                 <div class="dependent-settings-block">
-                    <label for="id_realm_move_messages_between_streams_limit_minutes" class="inline-block realm-time-limit-label">
-                        {{t 'Time limit'}}:&nbsp;
+                    <label for="id_realm_move_messages_between_streams_limit_minutes" class="settings-field-label">
+                        {{t "Time limit" }}
                     </label>
                     <input type="text" id="id_realm_move_messages_between_streams_limit_minutes"
                       name="realm_move_messages_between_streams_limit_minutes"
-                      class="time-limit-custom-input"
-                      autocomplete="off"/>&nbsp;
-                    <span class="time-unit-text">
-                        {{t "{realm_move_messages_between_streams_limit_minutes, plural, one {minute} other {minutes}}"}}
-                    </span>
+                      class="time-limit-custom-input custom-time-input-value"
+                      autocomplete="off"/>
+                    <select id="id_realm_move_messages_between_streams_limit_unit"
+                      name="realm_move_messages_between_streams_limit_unit"
+                      class="time-limit-custom-unit settings_select bootstrap-focus-style"
+                      aria-label="{{t 'Time limit unit' }}">
+                        {{#each (object_values time_unit_values)}}
+                            <option value="{{this.name}}">{{this.description}}</option>
+                        {{/each}}
+                    </select>
                 </div>
             </div>
 
@@ -270,15 +283,21 @@
                     {{/each}}
                 </select>
                 <div class="dependent-settings-block">
-                    <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
-                        {{t "Time limit" }}:&nbsp;
+                    <label for="id_realm_message_content_delete_limit_minutes" class="settings-field-label">
+                        {{t "Time limit" }}
                     </label>
                     <input type="text" id="id_realm_message_content_delete_limit_minutes"
                       name="realm_message_content_delete_limit_minutes"
-                      class="time-limit-custom-input"
-                      autocomplete="off"
-                      value="{{ realm_message_content_delete_limit_minutes }}"/>&nbsp;
-                    <span class="time-unit-text">{{t "{realm_message_content_delete_limit_minutes, plural, one {minute} other {minutes}}"}}</span>
+                      class="time-limit-custom-input custom-time-input-value"
+                      autocomplete="off"/>
+                    <select id="id_realm_message_content_delete_limit_unit"
+                      name="realm_message_content_delete_limit_unit"
+                      class="time-limit-custom-unit settings_select bootstrap-focus-style"
+                      aria-label="{{t 'Time limit unit' }}">
+                        {{#each (object_values time_unit_values)}}
+                            <option value="{{this.name}}">{{this.description}}</option>
+                        {{/each}}
+                    </select>
                 </div>
             </div>
 

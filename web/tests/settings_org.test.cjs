@@ -26,7 +26,9 @@ mock_esm("../src/buttons", {
 mock_esm("../src/scroll_util", {scroll_element_into_container: noop});
 mock_esm("../src/ui_util", {
     disable_element_and_add_tooltip: noop,
-    enable_element_and_remove_tooltip: noop,
+    enable_element_and_remove_tooltip($element) {
+        $element.prop("disabled", false);
+    },
 });
 set_global("document", "document-stub");
 
@@ -38,12 +40,17 @@ const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
 const pygments_data = zrequire("pygments_data");
+const {initialize: initialize_realm_user_settings_defaults} = zrequire(
+    "realm_user_settings_defaults",
+);
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
+const realm_user_settings_defaults = {};
+initialize_realm_user_settings_defaults({realm_user_settings_defaults});
 initialize_user_settings({user_settings: {}});
 
 function test(label, f) {
@@ -277,6 +284,13 @@ function test_sync_realm_settings({override}) {
 
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
+        assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "minutes");
+
+        override(realm, "realm_message_content_edit_limit_seconds", 1209600);
+        settings_org.sync_realm_settings("message_content_edit_limit_seconds");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "custom_period");
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
+        assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "weeks");
     }
 
     {
@@ -284,10 +298,13 @@ function test_sync_realm_settings({override}) {
         override(realm, "realm_message_content_edit_limit_seconds", 120);
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "120");
+        assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "minutes");
 
         override(realm, "realm_message_content_edit_limit_seconds", 130);
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "custom_period");
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2.2");
+        assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "minutes");
     }
 
     {
@@ -315,19 +332,47 @@ function test_sync_realm_settings({override}) {
 
 function test_parse_time_limit({override}) {
     const $elem = $("#id_realm_message_content_edit_limit_minutes");
-    const test_function = (value, expected_value = value) => {
+    const $unit_elem = $("#id_realm_message_content_edit_limit_unit");
+    const $dependent_block = $.create("<dependent-settings-block-stub>");
+    $elem.set_closest_results(".dependent-settings-block", $dependent_block);
+
+    const test_function = (
+        value,
+        expected_value = value,
+        unit,
+        expected_custom_input_values,
+        expected_seconds,
+    ) => {
         $elem.val(value);
-        override(
-            realm,
-            "realm_message_content_edit_limit_seconds",
-            settings_components.parse_time_limit($elem),
-        );
+        if (unit === undefined) {
+            $dependent_block.set_find_results(".time-limit-custom-unit", []);
+        } else {
+            $dependent_block.set_find_results(".time-limit-custom-unit", $unit_elem);
+            $unit_elem.val(unit);
+        }
+        const parsed_seconds = settings_components.parse_time_limit($elem);
+        if (expected_seconds !== undefined) {
+            assert.equal(parsed_seconds, expected_seconds);
+        }
+        override(realm, "realm_message_content_edit_limit_seconds", parsed_seconds);
         assert.equal(
             settings_components.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
             ),
             expected_value,
         );
+        if (expected_custom_input_values !== undefined) {
+            const custom_input_values =
+                settings_components.get_realm_time_limit_custom_input_values(
+                    "realm_message_content_edit_limit_seconds",
+                );
+            assert.deepEqual(custom_input_values, expected_custom_input_values);
+
+            // Round-trip: re-parsing the loaded value and unit yields the exact same seconds.
+            $elem.val(custom_input_values.value);
+            $unit_elem.val(custom_input_values.unit);
+            assert.equal(settings_components.parse_time_limit($elem), parsed_seconds);
+        }
     };
 
     test_function("0.01", "0");
@@ -338,14 +383,59 @@ function test_parse_time_limit({override}) {
     test_function("0.5");
     test_function("1");
     test_function("1.1");
+    test_function("1.5", "1.5", "minutes", {value: "1.5", unit: "minutes"}, 90);
     test_function("10.5");
     test_function("50.3");
+    test_function("90", "90", "minutes", {value: "90", unit: "minutes"}, 5400);
     test_function("100");
     test_function("100.1");
+    test_function("120", "120", "minutes", {value: "2", unit: "hours"}, 7200);
     test_function("127.79", "127.8");
     test_function("201.1");
     test_function("501.15", "501.1");
     test_function("501.34", "501.3");
+    test_function("0.5", "30", "hours", {value: "30", unit: "minutes"}, 1800);
+    test_function("1.25", "75", "hours", {value: "75", unit: "minutes"}, 4500);
+    test_function("2.", "120", "hours", {value: "2", unit: "hours"}, 7200);
+    test_function("2", "120", "hours", {value: "2", unit: "hours"}, 7200);
+
+    // Whole-second inputs that are not multiples of 6 seconds (e.g., 1.0625 hours = 3825s)
+    // round-trip cleanly via 2-decimal minutes (63.75 minutes).
+    $elem.val("1.0625");
+    $unit_elem.val("hours");
+    assert.equal(settings_components.parse_time_limit($elem), 3825);
+    override(realm, "realm_message_content_edit_limit_seconds", 3825);
+    const quarter_minute_values = settings_components.get_realm_time_limit_custom_input_values(
+        "realm_message_content_edit_limit_seconds",
+    );
+    assert.deepEqual(quarter_minute_values, {value: "63.75", unit: "minutes"});
+    $elem.val(quarter_minute_values.value);
+    $unit_elem.val(quarter_minute_values.unit);
+    assert.equal(settings_components.parse_time_limit($elem), 3825);
+
+    // Non-exact inputs with a unit dropdown return NaN rather than silently rounding.
+    $dependent_block.set_find_results(".time-limit-custom-unit", $unit_elem);
+    $unit_elem.val("minutes");
+    $elem.val("0.122");
+    assert.ok(Number.isNaN(settings_components.parse_time_limit($elem)));
+    $unit_elem.val("hours");
+    $elem.val("1.0001");
+    assert.ok(Number.isNaN(settings_components.parse_time_limit($elem)));
+    test_function("24", "1440", "hours", {value: "1", unit: "days"}, 86400);
+    test_function("3", "4320", "days", {value: "3", unit: "days"}, 259200);
+    test_function("14", "20160", "days", {value: "2", unit: "weeks"}, 1209600);
+    test_function("1.3", "13104", "weeks", {value: "13104", unit: "minutes"}, 786240);
+    test_function("1.01", "10180.8", "weeks", {value: "10180.8", unit: "minutes"}, 610848);
+    test_function("2", "20160", "weeks", {value: "2", unit: "weeks"}, 1209600);
+
+    // Null ("Any time") resets custom input to empty string and minutes.
+    override(realm, "realm_message_content_edit_limit_seconds", null);
+    assert.deepEqual(
+        settings_components.get_realm_time_limit_custom_input_values(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        {value: "", unit: "minutes"},
+    );
 }
 
 function test_discard_changes_button({override}, discard_changes) {
@@ -372,12 +462,18 @@ function test_discard_changes_button({override}, discard_changes) {
     const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
+    const $message_content_edit_limit_unit = $("#id_realm_message_content_edit_limit_unit").val(
+        "days",
+    );
     const $msg_delete_limit_setting = $("#id_realm_message_content_delete_limit_seconds").val(
         "custom_period",
     );
     const $message_content_delete_limit_minutes = $(
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
+    const $message_content_delete_limit_unit = $("#id_realm_message_content_delete_limit_unit").val(
+        "weeks",
+    );
 
     $message_edit_history_visibility_policy.attr(
         "id",
@@ -410,10 +506,37 @@ function test_discard_changes_button({override}, discard_changes) {
         settings_config.message_edit_history_visibility_policy_values.always.code,
     );
     assert.equal($msg_edit_limit_setting.val(), "3600");
-    assert.equal($message_content_edit_limit_minutes.val(), "60");
+    assert.equal($message_content_edit_limit_minutes.val(), "1");
+    assert.equal($message_content_edit_limit_unit.val(), "hours");
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
+    assert.equal($message_content_delete_limit_unit.val(), "minutes");
     assert.ok(!$save_button_controls.visible());
+
+    // Discarding edits to a saved custom value (2 weeks) restores Custom + 2 + weeks,
+    // and discarding an unchecked "Allow message editing" re-enables all 3 sub-settings.
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 1209600);
+    const $allow_message_editing = $("#id_realm_allow_message_editing");
+    $allow_message_editing.attr("id", "id_realm_allow_message_editing");
+    $allow_message_editing.prop("checked", false);
+    $msg_edit_limit_setting.prop("disabled", true);
+    $message_content_edit_limit_minutes.val("5").prop("disabled", true);
+    $message_content_edit_limit_unit.val("days").prop("disabled", true);
+
+    $discard_button_parent.set_find_results(".prop-element", [
+        $allow_message_editing,
+        $msg_edit_limit_setting,
+    ]);
+    discard_changes.call({to_$: () => $(".discard-button")}, ev);
+
+    assert.equal($allow_message_editing.prop("checked"), true);
+    assert.equal($msg_edit_limit_setting.prop("disabled"), false);
+    assert.equal($message_content_edit_limit_minutes.prop("disabled"), false);
+    assert.equal($message_content_edit_limit_unit.prop("disabled"), false);
+    assert.equal($msg_edit_limit_setting.val(), "custom_period");
+    assert.equal($message_content_edit_limit_minutes.val(), "2");
+    assert.equal($message_content_edit_limit_unit.val(), "weeks");
 }
 
 test("set_up", ({override, override_rewire}) => {
@@ -495,6 +618,10 @@ test("set_up", ({override, override_rewire}) => {
         ".time-limit-custom-input",
         $custom_edit_limit_input,
     );
+    $stub_message_content_edit_limit_parent.set_find_results(
+        ".time-limit-custom-unit",
+        $("#id_realm_message_content_edit_limit_unit"),
+    );
     $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
 
     const $custom_move_within_stream_limit_input = $(
@@ -503,6 +630,10 @@ test("set_up", ({override, override_rewire}) => {
     $stub_move_within_stream_limit_parent.set_find_results(
         ".time-limit-custom-input",
         $custom_move_within_stream_limit_input,
+    );
+    $stub_move_within_stream_limit_parent.set_find_results(
+        ".time-limit-custom-unit",
+        $("#id_realm_move_messages_within_stream_limit_unit"),
     );
     $custom_move_within_stream_limit_input.attr(
         "id",
@@ -516,6 +647,10 @@ test("set_up", ({override, override_rewire}) => {
         ".time-limit-custom-input",
         $custom_move_between_streams_limit_input,
     );
+    $stub_move_between_streams_limit_parent.set_find_results(
+        ".time-limit-custom-unit",
+        $("#id_realm_move_messages_between_streams_limit_unit"),
+    );
     $custom_move_between_streams_limit_input.attr(
         "id",
         "id_realm_move_messages_between_streams_limit_minutes",
@@ -525,6 +660,10 @@ test("set_up", ({override, override_rewire}) => {
     $stub_message_content_delete_limit_parent.set_find_results(
         ".time-limit-custom-input",
         $custom_delete_limit_input,
+    );
+    $stub_message_content_delete_limit_parent.set_find_results(
+        ".time-limit-custom-unit",
+        $("#id_realm_message_content_delete_limit_unit"),
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
 
@@ -608,6 +747,238 @@ test("set_up", ({override, override_rewire}) => {
             ".subsection-header .subsection-changes-discard button",
         ),
     );
+
+    // Toggling "Allow message editing" synchronizes disabled state on the unit dropdown.
+    const allow_edit_change_handler = $("input#id_realm_allow_message_editing").get_on_handler(
+        "change",
+    );
+    allow_edit_change_handler.call({checked: false});
+    assert.equal($("#id_realm_message_content_edit_limit_seconds").prop("disabled"), true);
+    assert.equal($("#id_realm_message_content_edit_limit_minutes").prop("disabled"), true);
+    assert.equal($("#id_realm_message_content_edit_limit_unit").prop("disabled"), true);
+    allow_edit_change_handler.call({checked: true});
+    assert.equal($("#id_realm_message_content_edit_limit_seconds").prop("disabled"), false);
+    assert.equal($("#id_realm_message_content_edit_limit_minutes").prop("disabled"), false);
+    assert.equal($("#id_realm_message_content_edit_limit_unit").prop("disabled"), false);
+
+    // Switching the main dropdown to Custom populates both custom value and unit.
+    override(realm, "realm_message_content_edit_limit_seconds", 1209600);
+    $("#id_realm_message_content_edit_limit_seconds").val("custom_period");
+    $("#id_realm_message_content_edit_limit_minutes").val("");
+    $("#id_realm_message_content_edit_limit_unit").val("minutes");
+    settings_components.update_custom_value_input("realm_message_content_edit_limit_seconds");
+    assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
+    assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "weeks");
+});
+
+test("custom time limit save validation and change detection", ({override}) => {
+    const select_elements = new Set();
+    const register_select = ($el) => {
+        select_elements.add($el);
+        if ($el[0] !== undefined) {
+            select_elements.add($el[0]);
+        }
+    };
+    override(global, "HTMLSelectElement", {
+        [Symbol.hasInstance]: (instance) => select_elements.has(instance),
+    });
+    const {$save_button, $save_button_controls, $save_button_header} =
+        createSaveButtons("msg-editing");
+    $save_button_header.attr("id", "org-msg-editing");
+    $save_button_header.set_matches(".subsection-header", true);
+    $save_button_header.set_closest_results(".channel-permissions", []);
+    $save_button_header.set_closest_results(".advanced-configurations-container", []);
+
+    const $setting_elem = $.create("<time-limit-setting-stub>");
+    const $dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
+    const $custom_input_elem = $("#id_realm_message_content_edit_limit_minutes");
+    const $unit_elem = $("#id_realm_message_content_edit_limit_unit");
+    const $dependent_block = $.create("<dependent-settings-block-stub>");
+    const $settings_section = $.create("<settings-section-stub>");
+
+    register_select($dropdown_elem);
+    register_select($unit_elem);
+    $dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
+    $dropdown_elem.attr("data-setting-widget-type", "time-limit");
+    $dropdown_elem.set_parent($setting_elem);
+    $dropdown_elem.set_closest_results(".settings-section.show", $settings_section);
+    $custom_input_elem.set_closest_results(".dependent-settings-block", $dependent_block);
+    $dependent_block.set_find_results(".time-limit-custom-unit", $unit_elem);
+
+    $setting_elem.set_find_results(
+        "select:not([multiple]):not(.time-limit-custom-unit)",
+        $dropdown_elem,
+    );
+    $setting_elem.set_find_results("input.time-limit-custom-input", $custom_input_elem);
+    $save_button_header.set_find_results(".time-limit-setting", [$setting_elem]);
+    $save_button_header.set_find_results(".prop-element", [$dropdown_elem]);
+    $save_button_header.set_find_results(
+        ".subsection-header .save-button-controls",
+        $save_button_controls,
+    );
+    $save_button_header.set_find_results(".alert-notification", $.create("<alert-stub>"));
+    $save_button_header.set_find_results(".save-button", $save_button);
+
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+    $dropdown_elem.val("custom_period");
+
+    const check_state = (value, unit) => {
+        $custom_input_elem.val(value);
+        $unit_elem.val(unit);
+        settings_components.save_discard_realm_settings_widget_status_handler($save_button_header);
+    };
+
+    // Same duration (10 minutes = 600s): no unsaved changes.
+    check_state("10", "minutes");
+    assert.equal($save_button_controls.visible(), false);
+
+    // Changing only the unit dropdown triggers change detection and enables saving.
+    check_state("10", "hours");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 36000);
+
+    // Fractional inputs that map to exact 0.1-minute increments are valid.
+    check_state("0.5", "hours");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 1800);
+
+    check_state("1.25", "hours");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 4500);
+
+    check_state("2.", "hours");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 7200);
+
+    check_state("1.0625", "hours");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 3825);
+
+    check_state("1.3", "weeks");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 786240);
+
+    check_state("1.01", "weeks");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 610848);
+
+    // Inputs that would lose precision on round-trip disable Save rather than silently rounding.
+    check_state("1.001", "hours");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), true);
+
+    check_state("0.122", "minutes");
+    assert.equal($save_button.prop("disabled"), true);
+
+    check_state("0.01", "minutes");
+    assert.equal($save_button.prop("disabled"), true);
+
+    // Upper bound (32-bit signed integer seconds = 2147483647) and invalid inputs.
+    check_state("3550", "weeks");
+    assert.equal($save_button.prop("disabled"), false);
+    assert.equal(settings_components.get_input_element_value($dropdown_elem), 2147040000);
+
+    check_state("3551", "weeks");
+    assert.equal($save_button.prop("disabled"), true);
+
+    check_state("0", "minutes");
+    assert.equal($save_button.prop("disabled"), true);
+
+    check_state("-5", "days");
+    assert.equal($save_button.prop("disabled"), true);
+
+    check_state("24a", "hours");
+    assert.equal($save_button.prop("disabled"), true);
+
+    // Invalid input that would round to the saved value (1.0001 hours ~= 3600s)
+    // must remain a pending change with Save disabled and Discard visible.
+    override(realm, "realm_message_content_edit_limit_seconds", 3600);
+    check_state("1.0001", "hours");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), true);
+
+    // Neighbor setting without a unit dropdown (email_notifications_batching_period_seconds)
+    // continues defaulting to minutes and validating properly.
+    const $batch_section = $.create("<realm-default-settings-section>");
+    $batch_section.attr("id", "realm-user-default-settings");
+    const $batch_setting_elem = $.create("<batch-time-limit-setting-stub>");
+    const $batch_dropdown = $("#realm_email_notifications_batching_period_seconds");
+    const $batch_input = $("#realm_email_notification_batching_period_edit_minutes");
+    const $batch_dependent_block = $.create("<batch-dependent-block-stub>");
+
+    register_select($batch_dropdown);
+    $batch_dropdown.attr("id", "realm_email_notifications_batching_period_seconds");
+    $batch_dropdown.attr("data-setting-widget-type", "time-limit");
+    $batch_dropdown.val("custom_period");
+    $batch_dropdown.set_parent($batch_setting_elem);
+    $batch_dropdown.set_closest_results(".settings-section.show", $batch_section);
+    $batch_input.set_closest_results(".dependent-settings-block", $batch_dependent_block);
+    $batch_dependent_block.set_find_results(".time-limit-custom-unit", []);
+
+    $batch_setting_elem.set_find_results(
+        "select:not([multiple]):not(.time-limit-custom-unit)",
+        $batch_dropdown,
+    );
+    $batch_setting_elem.set_find_results("input.time-limit-custom-input", $batch_input);
+    $save_button_header.set_find_results(".time-limit-setting", [$batch_setting_elem]);
+    $save_button_header.set_find_results(".prop-element", [$batch_dropdown]);
+
+    override(realm_user_settings_defaults, "email_notifications_batching_period_seconds", 120);
+    // Preserves legacy behavior: 1.25 minutes is allowed and rounded to 1.3 min (78s),
+    // while values < 1 minute (like 0.5 or 0.122) remain disabled.
+    $batch_input.val("1.25");
+    assert.equal(settings_components.parse_time_limit($batch_input), 78);
+    settings_components.save_discard_default_realm_settings_widget_status_handler(
+        $save_button_header,
+    );
+    assert.equal($save_button.prop("disabled"), false);
+
+    $batch_input.val("0.5");
+    settings_components.save_discard_default_realm_settings_widget_status_handler(
+        $save_button_header,
+    );
+    assert.equal($save_button.prop("disabled"), true);
+
+    $batch_input.val("0.122");
+    settings_components.save_discard_default_realm_settings_widget_status_handler(
+        $save_button_header,
+    );
+    assert.equal($save_button.prop("disabled"), true);
+
+    $batch_input.val("0");
+    settings_components.save_discard_default_realm_settings_widget_status_handler(
+        $save_button_header,
+    );
+    assert.equal($save_button.prop("disabled"), true);
+
+    // Waiting period threshold (days) keeps allowing 0 and rejecting negative/invalid values.
+    const $waiting_setting_elem = $.create("<waiting-time-limit-setting-stub>");
+    const $waiting_dropdown = $("#id_realm_waiting_period_threshold");
+    const $waiting_input = $("#id_realm_waiting_period_threshold_custom_input");
+    register_select($waiting_dropdown);
+    $waiting_dropdown.attr("id", "id_realm_waiting_period_threshold");
+    $waiting_dropdown.attr("data-setting-widget-type", "time-limit");
+    $waiting_dropdown.val("custom_period");
+    $waiting_dropdown.set_parent($waiting_setting_elem);
+    $waiting_dropdown.set_closest_results(".settings-section.show", $settings_section);
+    $waiting_setting_elem.set_find_results(
+        "select:not([multiple]):not(.time-limit-custom-unit)",
+        $waiting_dropdown,
+    );
+    $waiting_setting_elem.set_find_results("input.time-limit-custom-input", $waiting_input);
+    $save_button_header.set_find_results(".time-limit-setting", [$waiting_setting_elem]);
+    $save_button_header.set_find_results(".prop-element", [$waiting_dropdown]);
+    override(realm, "realm_waiting_period_threshold", 3);
+
+    $waiting_input.val("0");
+    settings_components.save_discard_realm_settings_widget_status_handler($save_button_header);
+    assert.equal($save_button.prop("disabled"), false);
+
+    $waiting_input.val("-1");
+    settings_components.save_discard_realm_settings_widget_status_handler($save_button_header);
+    assert.equal($save_button.prop("disabled"), true);
 });
 
 test("test get_organization_settings_options", () => {
