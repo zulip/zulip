@@ -417,7 +417,7 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
 }
 
 export function get_full_names_for_poll_option(user_ids: number[]): string {
-    return get_display_full_names(user_ids).join(", ");
+    return get_display_full_names(merge_loading_user_ids(user_ids)).join(", ");
 }
 
 export function get_display_full_name(user_id: number): string {

@@ -93,6 +93,9 @@ mock_esm("../src/reactions", {
     update_user_full_name() {},
     update_user_full_names() {},
 });
+const submessage = mock_esm("../src/submessage", {
+    rerender_widgets_in_current_list() {},
+});
 const narrow_title = mock_esm("../src/narrow_title", {
     update_narrow_title() {},
 });
@@ -504,6 +507,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     override(message_live_update, "update_full_names_and_avatars", (users) => {
         updated_users = users;
     });
+    let widgets_rerendered = false;
+    override(submessage, "rerender_widgets_in_current_list", () => {
+        widgets_rerendered = true;
+    });
     let narrow_title_filter;
     override(narrow_title, "update_narrow_title", (filter) => {
         narrow_title_filter = filter;
@@ -525,6 +532,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     user_events.initialize();
     people.notify_users_fetched([isaac.user_id]);
 
+    assert.ok(widgets_rerendered);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.deepEqual(updated_users, [people.get_by_user_id(isaac.user_id)]);
 

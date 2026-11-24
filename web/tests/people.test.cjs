@@ -553,6 +553,21 @@ run_test("get_full_names_for_poll_option", () => {
     people.add_active_user(isaac);
     const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
     assert.equal(names, "Me Myself, Isaac Newton");
+
+    for (const user_id of [42, 43]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+    assert.equal(
+        people.get_full_names_for_poll_option([42, isaac.user_id, 43]),
+        "Loading…, Isaac Newton",
+    );
 });
 
 run_test("get_display_full_names", ({override}) => {
