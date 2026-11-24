@@ -4,6 +4,9 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
@@ -18,6 +21,7 @@ mock_esm("../src/timerender", {
     stringify_time(time) {
         return time.toString("h:mm TT");
     },
+    get_full_datetime: () => "formatted delivery time",
 });
 
 mock_esm("../src/people", {
@@ -30,11 +34,23 @@ mock_esm("../src/people", {
     maybe_get_user_by_id: noop,
 });
 
+mock_esm("../src/message_edit", {
+    is_topic_editable: () => false,
+});
+mock_esm("../src/message_lists", {
+    all_rendered_row_for_message_id: () => ({length: 0}),
+});
+
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
+const message_reminder = zrequire("message_reminder");
 const muted_users = zrequire("muted_users");
+const {set_current_user, set_realm} = zrequire("state_data");
+const stream_data = zrequire("stream_data");
+const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
 
 let next_timestamp = 1500000000;
 
@@ -1236,6 +1252,90 @@ test("set_subscription_dividers_and_markers ignores non-channel narrows", () => 
     assert.doesNotThrow(() => {
         view.set_subscription_dividers_and_markers([], "bottom");
     });
+});
+
+test("reminders in redrawn message groups", ({mock_template}) => {
+    let rendered_html;
+    mock_template("message_group.hbs", true, (_data, html) => {
+        rendered_html = html;
+        return html;
+    });
+    const everyone = make_user_group({
+        id: 1,
+        name: "role:everyone",
+        members: new Set([10]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    user_groups.initialize({realm_user_groups: [everyone]});
+    set_realm(make_realm({realm_can_resolve_topics_group: everyone.id}));
+    set_current_user({user_id: 10});
+    initialize_user_settings({user_settings: {}});
+    stream_data.add_sub_for_tests(make_stream({stream_id: 2, name: "Denmark", subscribed: true}));
+
+    function make_message(message) {
+        return {
+            type: "stream",
+            is_stream: true,
+            stream_id: 2,
+            display_recipient: "Denmark",
+            topic: "Test topic 1",
+            topic_links: [],
+            sender_id: 10,
+            sender_email: "test@example.com",
+            content: "<p>test</p>",
+            url: "#narrow/near",
+            clean_reactions: new Map(),
+            ...message,
+        };
+    }
+
+    const list = new message_list.MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
+        is_node_test: true,
+    });
+    const view = list.view;
+
+    const rendered_message = make_message({id: 101, timestamp: (next_timestamp += 1)});
+    view._message_groups = view.build_message_groups([rendered_message]);
+    view._render_group({
+        message_groups: view._message_groups,
+        use_match_properties: false,
+    });
+    assert.ok(!rendered_html.includes("message-reminders"));
+
+    message_reminder.add_reminders([
+        {
+            reminder_id: 7,
+            reminder_target_message_id: rendered_message.id,
+            scheduled_delivery_timestamp: next_timestamp + 3600,
+        },
+    ]);
+
+    // An older message in the same topic joins the rendered group,
+    // which render() then redraws in place. We call the steps of
+    // render() that do this directly, since render() itself needs
+    // much more of the DOM.
+    const older_message = make_message({id: 100, timestamp: next_timestamp - 60});
+    const message_actions = view.merge_message_groups(
+        view.build_message_groups([older_message]),
+        "top",
+    );
+    assert.deepEqual(
+        message_actions.rerender_groups.map((group) =>
+            group.message_containers.map((message_container) => message_container.msg.id),
+        ),
+        [[older_message.id, rendered_message.id]],
+    );
+
+    view._render_group({
+        message_groups: message_actions.rerender_groups,
+        use_match_properties: false,
+    });
+    assert.ok(rendered_html.includes('data-reminder-id="7"'));
 });
 
 test("render_windows", ({mock_template}) => {
