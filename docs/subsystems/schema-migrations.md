@@ -1,7 +1,7 @@
 # Schema migrations
 
 Zulip uses the [standard Django system for doing schema
-migrations](https://docs.djangoproject.com/en/5.0/topics/migrations/).
+migrations](https://docs.djangoproject.com/en/5.2/topics/migrations/).
 There is some example usage in the [new feature
 tutorial](../tutorials/new-feature-tutorial.md).
 
@@ -114,7 +114,7 @@ which merges the two resulting tips; you can make such a merge with
 `manage.py makemigrations --merge`. Structuring the fork this way
 makes the migration safe to cherry-pick back into the stable release
 branch. See Django's [Controlling the order of
-migrations](https://docs.djangoproject.com/en/6.0/howto/writing-migrations/#controlling-the-order-of-migrations)
+migrations](https://docs.djangoproject.com/en/5.2/howto/writing-migrations/#controlling-the-order-of-migrations)
 for the underlying `dependencies` / `run_before` mechanics, or
 `zerver/migrations/0754_merge_20251014_1855.py` for an example of
 the merge migration that joins the forked tips.
@@ -173,7 +173,7 @@ A canonical recent example is the trio
 `0712_alter_realm_topics_policy.py`. Many of the per-stream and
 per-realm group-permission settings follow this pattern as well.
 Django's [Migrations that add unique
-fields](https://docs.djangoproject.com/en/6.0/howto/writing-migrations/#migrations-that-add-unique-fields)
+fields](https://docs.djangoproject.com/en/5.2/howto/writing-migrations/#migrations-that-add-unique-fields)
 documents the same structural pattern.
 
 For this sequence to be safe on the shared database, two
@@ -593,7 +593,7 @@ def backfill(apps, schema_editor):
 See `0765_set_default_can_create_topic_group.py` for a complete
 example. The considerations:
 
-- **Set [`atomic = False`](https://docs.djangoproject.com/en/6.0/howto/writing-migrations/#non-atomic-migrations)
+- **Set [`atomic = False`](https://docs.djangoproject.com/en/5.2/howto/writing-migrations/#non-atomic-migrations)
   on the migration class** and wrap each batch in its own
   `transaction.atomic()`. Django's default per-migration
   transaction would hold row locks for the entire
@@ -672,7 +672,7 @@ window. The common cases are:
 - **A schema reshape where the intermediate state can't be read
   correctly by either the old or new code.** For example,
   restructuring a many-to-many relationship (Django's
-  [worked example](https://docs.djangoproject.com/en/6.0/howto/writing-migrations/#changing-a-manytomanyfield-to-use-a-through-model)
+  [worked example](https://docs.djangoproject.com/en/5.2/howto/writing-migrations/#changing-a-manytomanyfield-to-use-a-through-model)
   for swapping in a `through` model is a useful reference), or
   splitting one column's data across two new columns where the
   previous release expects the original column to be authoritative.
