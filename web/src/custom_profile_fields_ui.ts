@@ -9,6 +9,7 @@ import render_user_display_only_pill from "../templates/user_display_only_pill.h
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
+import * as date_util from "./date_util.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
@@ -257,6 +258,12 @@ export function initialize_custom_date_type_fields(
         return;
     }
 
+    function parse_date(date_str: string): Date {
+        // Stored calendar dates have no timezone, but Date parses them as UTC.
+        // Fall back to Date for other formats users can type, such as MM/DD/YYYY.
+        return date_util.maybe_get_parsed_iso_8601_date(date_str) ?? new Date(date_str);
+    }
+
     function update_date(instance: flatpickr.Instance, date_str: string): void {
         const $input_elem = $(instance.element);
         const field_id = Number.parseInt($input_elem.attr("data-field-id")!, 10);
@@ -329,10 +336,7 @@ export function initialize_custom_date_type_fields(
         altInputClass: "date-field-alt-input " + common_class_name,
         altFormat: "F j, Y",
         allowInput: true,
-        // This helps us in accepting inputs in other formats
-        // like MM/DD/YYYY and basically any other format
-        // which is accepted by Date.
-        parseDate: (date_str) => new Date(date_str),
+        parseDate: parse_date,
         // We pass allowInvalidPreload as true because we handle
         // invalid values typed in the input ourselves. Also,
         // formatDate function is customized to handle "undefined"
@@ -377,7 +381,7 @@ export function initialize_custom_date_type_fields(
         .on("change", function () {
             const instance = the($(this).parent().find(".datepicker"))._flatpickr;
             assert(instance !== undefined);
-            const date = new Date($(this).val()!);
+            const date = parse_date($(this).val()!);
             const date_str = format_date(date, "Y-m-d");
             update_date(instance, date_str);
         });
