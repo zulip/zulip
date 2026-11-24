@@ -1470,7 +1470,7 @@ export class Filter {
                 case "dm":
                     return (
                         "/#narrow/dm/" +
-                        people.user_ids_to_slug(
+                        people.dm_user_ids_to_slug(
                             this.terms_with_operator("dm").flatMap((term) => term.operand),
                         )
                     );

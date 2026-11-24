@@ -601,6 +601,15 @@ export function get_slug_from_full_name(full_name: string): string {
     );
 }
 
+// The name of a placeholder user isn't known yet, so a link to our
+// 1:1 direct messages with them ends in "dm", as in pm_perma_link.
+function get_dm_slug_suffix(person: User): string {
+    if (person.is_placeholder_user) {
+        return "dm";
+    }
+    return get_slug_from_full_name(person.full_name);
+}
+
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
@@ -615,7 +624,7 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     } else {
         const person = maybe_get_user_by_id(user_ids[0]);
         if (person?.full_name) {
-            suffix = get_slug_from_full_name(person.full_name);
+            suffix = get_dm_slug_suffix(person);
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -652,9 +661,17 @@ export function user_ids_to_slug(user_ids: number[]): string {
     return ids + "-" + get_slug_from_full_name(get_by_user_id(user_id).full_name);
 }
 
-export function user_ids_string_to_slug(user_ids_string: string): string {
+export function dm_user_ids_to_slug(user_ids: number[]): string {
+    const user_id = user_ids[0];
+    if (user_ids.length !== 1 || user_id === undefined || !is_valid_user_id(user_id)) {
+        return user_ids_to_slug(user_ids);
+    }
+    return user_id + "-" + get_dm_slug_suffix(get_by_user_id(user_id));
+}
+
+export function dm_user_ids_string_to_slug(user_ids_string: string): string {
     const user_ids = user_ids_string_to_ids_array(user_ids_string);
-    return user_ids_to_slug(user_ids);
+    return dm_user_ids_to_slug(user_ids);
 }
 
 export function sender_is_bot(message: Message): boolean {

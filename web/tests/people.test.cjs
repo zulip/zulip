@@ -1051,14 +1051,26 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
-    assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
+    assert.equal(people.dm_user_ids_string_to_slug("401,402"), "401,402-group");
+    assert.equal(people.dm_user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
     assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
     // An empty list has no IDs to write.
     assert.equal(people.user_ids_to_slug([]), "");
     assert.equal(people.user_ids_to_slug([9999]), "9999");
     assert.equal(people.user_ids_to_slug([401, 9999]), "401,9999-group");
+
+    assert.equal(people.dm_user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.dm_user_ids_to_slug([402]), "402-whatever-402");
+    assert.equal(people.dm_user_ids_to_slug([]), "");
+    assert.equal(people.dm_user_ids_to_slug([9999]), "9999");
+
+    // The name of a placeholder user isn't known yet.
+    people.add_active_user({...emp402, is_placeholder_user: true}, source);
+    assert.equal(people.dm_user_ids_to_slug([402]), "402-dm");
+    assert.equal(people.dm_user_ids_string_to_slug("402"), "402-dm");
+    assert.equal(people.dm_user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
 });
 
 run_test("user_ids_to_full_names_string", () => {
@@ -1163,6 +1175,11 @@ run_test("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
     assert.equal(people.small_avatar_url(message), "legacy.png");
+
+    // The name of a placeholder user isn't known yet.
+    people.add_active_user({...maria, is_placeholder_user: true}, "server_events");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/302-dm");
+    people.add_active_user(maria, "server_events");
 
     message = {
         avatar_url: undefined,

@@ -40,7 +40,7 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
     switch (term.operator) {
         case "dm-including":
         case "dm":
-            return people.user_ids_to_slug(term.operand);
+            return people.dm_user_ids_to_slug(term.operand);
         case "sender":
         case "mentions":
             return people.user_ids_to_slug([term.operand]);
@@ -181,7 +181,7 @@ export function by_sender_url(user_id: number): string {
 }
 
 export function pm_with_url(user_ids_string: string): string {
-    const slug = people.user_ids_string_to_slug(user_ids_string);
+    const slug = people.dm_user_ids_string_to_slug(user_ids_string);
     return "#narrow/dm/" + slug;
 }
 
