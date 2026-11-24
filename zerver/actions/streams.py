@@ -16,8 +16,8 @@ from zerver.actions.default_streams import (
 from zerver.actions.message_edit import update_user_topic_visibility_policies_on_move
 from zerver.actions.message_send import maybe_send_channel_events_notice
 from zerver.lib.cache import (
+    cache_delete,
     cache_delete_many,
-    cache_set,
     display_recipient_cache_key,
     to_dict_cache_key_id,
 )
@@ -269,7 +269,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
     ChannelEmailAddress.objects.filter(realm=realm, channel=stream).update(deactivated=False)
 
     # Update caches
-    cache_set(display_recipient_cache_key(stream.recipient_id), new_name, pickled_tupled=False)
+    cache_delete(display_recipient_cache_key(stream.recipient_id))
     messages = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_id
         realm_id=realm.id,
@@ -1525,11 +1525,10 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         recipient_id=recipient_id,
     ).only("id")
 
-    cache_set(display_recipient_cache_key(recipient_id), stream.name, pickled_tupled=False)
-
-    # Delete cache entries for everything else, which is cheaper and
-    # clearer than trying to set them. display_recipient is the out of
-    # date field in all cases.
+    # Delete the cache entries that hold the name, which is cheaper
+    # and clearer than trying to set them. display_recipient is the
+    # out of date field in all cases.
+    cache_delete(display_recipient_cache_key(recipient_id))
     transaction.on_commit(
         lambda: cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
     )
