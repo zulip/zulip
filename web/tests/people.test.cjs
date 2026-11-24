@@ -2113,7 +2113,12 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
         2,
     );
 
+    const fetch_failing_notifications = [];
+    people.set_users_fetch_failing_callback((is_failing) => {
+        fetch_failing_notifications.push(is_failing);
+    });
     await people.initialize(my_user_id, people_params, user_group_params);
+    assert.deepEqual(fetch_failing_notifications, [true, false, true, false]);
 
     // Only the failed batches are requested twice; the rest are not refetched.
     assert.deepEqual(
@@ -2136,6 +2141,69 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
         assert.ok(people.get_by_user_id(user_id).is_inaccessible_user);
     }
 });
+
+run_test(
+    "user fetch failing state ends when an overlapping fetch succeeds",
+    async ({override, override_rewire}) => {
+        initialize();
+        people.init();
+        override(settings_data, "user_can_access_all_other_users", () => false);
+        people.add_valid_user_id(71);
+        people.add_valid_user_id(72);
+
+        const fetch_failing_notifications = [];
+        people.set_users_fetch_failing_callback((is_failing) => {
+            fetch_failing_notifications.push(is_failing);
+        });
+
+        const requested_batches = [];
+        override(channel, "get", ({data, success, error}) => {
+            requested_batches.push(JSON.parse(data.user_ids));
+            if (requested_batches.length === 1) {
+                error({responseJSON: {msg: "test error"}});
+                return;
+            }
+            success({members: [], result: "success", msg: ""});
+        });
+        override_rewire(retry_backoff, "get_retry_backoff_seconds", () => 0);
+        blueslip.expect(
+            "warn",
+            "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        );
+
+        // Timers are run by hand, so that the second fetch can succeed
+        // while the first one is still waiting to retry.
+        const pending_timers = [];
+        override(global, "setTimeout", (func) => {
+            pending_timers.push(func);
+        });
+        const run_next_timer = async () => {
+            pending_timers.shift()();
+            // Let the fetch run until it waits for its next timer.
+            for (let i = 0; i < 20; i += 1) {
+                await Promise.resolve();
+            }
+        };
+
+        const first_fetch = people.get_or_fetch_users_from_ids([71]);
+        await run_next_timer();
+        assert.deepEqual(requested_batches, [[71]]);
+        assert.deepEqual(fetch_failing_notifications, [true]);
+
+        const second_fetch = people.get_or_fetch_users_from_ids([72]);
+        // The retry of the first fetch is ahead of the start of the second.
+        pending_timers.reverse();
+        await run_next_timer();
+        assert.deepEqual(requested_batches, [[71], [72]]);
+        assert.deepEqual(fetch_failing_notifications, [true, false]);
+
+        await run_next_timer();
+        await first_fetch;
+        await second_fetch;
+        assert.deepEqual(requested_batches, [[71], [72], [71]]);
+        assert.deepEqual(fetch_failing_notifications, [true, false]);
+    },
+);
 
 run_test("user fetch corner case", async ({override, override_rewire}) => {
     // We test here for the following sequence of fetches:

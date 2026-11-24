@@ -517,4 +517,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.notify_users_fetched([isaac.user_id]);
 
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
+
+    // The loading shimmers stop moving while requests for users fail.
+    people.notify_users_fetch_failing(true);
+    assert.ok($("body").hasClass("users-fetch-failing"));
+    people.notify_users_fetch_failing(false);
+    assert.ok(!$("body").hasClass("users-fetch-failing"));
 });

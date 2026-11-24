@@ -1479,6 +1479,13 @@ input.invalid-input {
     }
 }
 
+/* While requests for users are failing, the data may not arrive,
+   so the shimmer stops moving until a request succeeds. */
+.users-fetch-failing .loading-shimmer,
+.users-fetch-failing .pill-loading-shimmer::before {
+    @extend %loading-shimmer-static;
+}
+
 .loading-shimmer {
     --shimmer-color-base: var(--color-fill-loading-shimmer-base);
     --shimmer-color-highlight: var(--color-fill-loading-shimmer-highlight);

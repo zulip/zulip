@@ -322,5 +322,8 @@ function refresh_ui_after_users_fetched(_user_ids: number[]): void {
 }
 
 export function initialize(): void {
+    people.set_users_fetch_failing_callback((is_failing) => {
+        $("body").toggleClass("users-fetch-failing", is_failing);
+    });
     people.set_users_fetched_callback(refresh_ui_after_users_fetched);
 }

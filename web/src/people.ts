@@ -64,6 +64,8 @@ let fetch_users_storage: {
 };
 
 let users_fetched_callback: ((user_ids: number[]) => void) | undefined;
+let users_fetch_failing_callback: ((is_failing: boolean) => void) | undefined;
+let is_users_fetch_failing = false;
 
 export let INACCESSIBLE_USER_NAME: string;
 let PLACEHOLDER_USER_NAME: string;
@@ -106,6 +108,8 @@ export function init(): void {
     };
 
     users_fetched_callback = undefined;
+    users_fetch_failing_callback = undefined;
+    is_users_fetch_failing = false;
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -1606,6 +1610,20 @@ export function notify_users_fetched(user_ids: number[]): void {
     users_fetched_callback?.(user_ids);
 }
 
+export function set_users_fetch_failing_callback(callback: (is_failing: boolean) => void): void {
+    users_fetch_failing_callback = callback;
+}
+
+// Requests for users can overlap, so a success of any of them ends
+// the failing state, not only a success of the request that failed.
+export function notify_users_fetch_failing(is_failing: boolean): void {
+    if (is_failing === is_users_fetch_failing) {
+        return;
+    }
+    is_users_fetch_failing = is_failing;
+    users_fetch_failing_callback?.(is_failing);
+}
+
 export function get_user_by_id_assert_valid(
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
@@ -1926,9 +1944,11 @@ async function start_fetch_for_requested_users(): Promise<void> {
             // that its users are usable, and are not requested again, while
             // the later batches are still in flight.
             add_fetched_users(await fetch_next_user_batch(user_ids_remaining));
+            notify_users_fetch_failing(false);
             num_consecutive_failures = 0;
         } catch (error) {
             num_consecutive_failures += 1;
+            notify_users_fetch_failing(true);
             const retry_delay_secs = get_retry_backoff_seconds(undefined, num_consecutive_failures);
 
             // Since users are in `valid_user_ids`, we expect
