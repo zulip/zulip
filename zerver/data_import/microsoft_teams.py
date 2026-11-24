@@ -331,9 +331,11 @@ def create_is_mirror_dummy_user(
     realm: dict[str, Any],
     realm_id: int,
     domain_name: str,
+    *,
+    full_name: str | None = None,
 ) -> None:
     zulip_user_id = NEXT_ID("user")
-    user_full_name = f"Deleted Teams user {microsoft_team_user_id}"
+    user_full_name = full_name or f"Deleted Teams user {microsoft_team_user_id}"
     email = Address(username=microsoft_team_user_id, domain=domain_name).addr_spec
     user_profile_dict = build_user_profile(
         avatar_source=UserProfile.DEFAULT_AVATAR_SOURCE,
@@ -617,7 +619,15 @@ def process_messages(
             # the user messages.
             continue
 
-        microsoft_teams_sender_id: str = get_microsoft_teams_sender_id_from_message(message)
+        sender = message["From"]
+        application = sender.get("Application") if sender.get("User") is None else None
+        if application is None:
+            microsoft_teams_sender_id = get_microsoft_teams_sender_id_from_message(message)
+            application_name = None
+        else:
+            # Application and user identities have separate namespaces in Teams.
+            microsoft_teams_sender_id = f"application-{application['Id']}"
+            application_name = application.get("DisplayName") or "Teams application"
 
         if microsoft_teams_sender_id not in microsoft_teams_user_id_to_zulip_user_id:
             create_is_mirror_dummy_user(
@@ -626,6 +636,7 @@ def process_messages(
                 realm,
                 realm_id,
                 domain_name,
+                full_name=application_name,
             )
 
         message_id = NEXT_ID("message")

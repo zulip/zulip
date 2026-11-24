@@ -17,7 +17,7 @@ from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
 from typing_extensions import ParamSpec
 
-from zerver.data_import.import_util import AttachmentRecordData, get_data_file
+from zerver.data_import.import_util import AttachmentRecordData, ZerverFieldsT, get_data_file
 from zerver.data_import.microsoft_teams import (
     MICROSOFT_GRAPH_API_URL,
     ChannelMetadata,
@@ -25,6 +25,7 @@ from zerver.data_import.microsoft_teams import (
     MicrosoftTeamsUserIdToZulipUserIdT,
     MicrosoftTeamsUserRoleData,
     ODataQueryParameter,
+    TeamMetadata,
     convert_users,
     do_convert_directory,
     download_and_export_microsoft_teams_upload_file,
@@ -35,6 +36,7 @@ from zerver.data_import.microsoft_teams import (
     get_user_roles,
     is_microsoft_teams_event_message,
     process_hosted_content_attachments,
+    process_messages,
 )
 from zerver.data_import.microsoft_teams_message_conversion import (
     HOSTED_CONTENT_GRAPH_API_URL_REGEX,
@@ -529,6 +531,61 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
 
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
+    def test_convert_messages_sent_by_application(self) -> None:
+        team_id = EXPORTED_MICROSOFT_TEAMS_TEAM_ID["Core team"]
+        channel_metadata = get_exported_team_channel_metadata(team_id)
+        message = next(
+            message
+            for message in get_exported_team_message_list(team_id)
+            if message["MessageType"] == "message"
+            and message["From"] is not None
+            and message["From"]["User"] is not None
+            and message["ChannelIdentity"] is not None
+            and channel_metadata[message["ChannelIdentity"]["ChannelId"]].membership_type
+            == "standard"
+        )
+        message["Body"] = {"ContentType": "html", "Content": "<p>Build passed</p>"}
+        human_sender_id = message["From"]["User"]["Id"]
+        application_message = {
+            **message,
+            "From": {
+                "Application": {"Id": human_sender_id, "DisplayName": "Build bot"},
+                "Device": None,
+                "User": None,
+            },
+        }
+        another_application_message = {
+            **application_message,
+            "Id": str(int(message["Id"]) + 1),
+            "From": {"Application": application_message["From"]["Application"]},
+        }
+        realm: dict[str, list[ZerverFieldsT]] = {"zerver_userprofile": []}
+
+        def unexpected_upload(_request: object) -> None:
+            self.fail("A plain-text post should not generate an upload")
+
+        converted = process_messages(
+            added_teams={team_id: TeamMetadata("", "Core team", "public", False, 1, 2)},
+            channel_metadata=channel_metadata,
+            do_download_and_export_upload_file=unexpected_upload,
+            domain_name="zulip.example.com",
+            messages=[application_message, message, another_application_message],
+            microsoft_graph_api_token="",
+            microsoft_teams_user_id_to_zulip_user_id={human_sender_id: 123},
+            realm=realm,
+            realm_id=1,
+            subscriber_map={},
+        )
+
+        (sender,) = realm["zerver_userprofile"]
+        self.assertEqual(sender["full_name"], "Build bot")
+        self.assertFalse(sender["is_active"])
+        self.assertTrue(sender["is_mirror_dummy"])
+        self.assertEqual(
+            [(msg["sender"], msg["content"]) for msg in converted.zerver_messages],
+            [(sender["id"], "Build passed"), (123, "Build passed"), (sender["id"], "Build passed")],
+        )
+
     def convert_users_handler(
         self,
         realm: dict[str, Any] | None = None,
