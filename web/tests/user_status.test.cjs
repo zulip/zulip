@@ -56,7 +56,6 @@ run_test("basics", () => {
     initialize();
 
     assert.deepEqual(user_status.get_status_emoji(5), {
-        emoji_alt_code: false,
         emoji_code: "992",
         emoji_name: "deactivated_realm_emoji",
         reaction_type: "realm_emoji",
@@ -75,7 +74,6 @@ run_test("basics", () => {
     });
 
     assert.deepEqual(user_status.get_status_emoji(5), {
-        emoji_alt_code: false,
         emoji_code: "991",
         emoji_name: "example_realm_emoji",
         reaction_type: "realm_emoji",
@@ -115,7 +113,6 @@ run_test("basics", () => {
         emoji_name: "smiley",
         emoji_code: "1f603",
         reaction_type: "unicode_emoji",
-        emoji_alt_code: false,
     });
 
     user_status.set_status_emoji({
@@ -191,18 +188,23 @@ run_test("defensive checks", () => {
     );
 });
 
-run_test("emoji_alt_code follows the current emojiset", ({override}) => {
-    // The `text` emojiset renders a status emoji as `:name:` text
-    // rather than an image, which status_emoji.hbs decides from
-    // emoji_alt_code; this has to track the emojiset setting both at
-    // page load and after it changes.
+run_test("plain-text emoji set", ({override}) => {
+    // The plain-text emoji set hides status emoji, both at page load
+    // and after the setting changes; the "Set status" modal still
+    // shows them.
     initialize();
-    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, false);
+    const smiley = {
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+    };
+    assert.deepEqual(user_status.get_status_emoji(4), smiley);
 
     override(user_settings, "emojiset", "text");
-    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, true);
-    assert.equal(user_status.get_status_emoji(4).emoji_alt_code, true);
+    assert.equal(user_status.get_status_emoji(4), undefined);
+    assert.equal(user_status.get_status_emoji(5), undefined);
+    assert.deepEqual(user_status.get_status_emoji_for_editing(4), smiley);
 
     override(user_settings, "emojiset", "google");
-    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, false);
+    assert.deepEqual(user_status.get_status_emoji(4), smiley);
 });
