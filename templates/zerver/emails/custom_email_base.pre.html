@@ -15,7 +15,7 @@
     {% if remote_server_email %}
         {% if released_version %}
         <p>You are receiving this email because you opted into release notifications.</p>
-        {% else %}
+        {% elif unsubscribe_link %}
         <p>You are receiving this email to update you about important changes to Zulip's Terms of Service.</p>
         <a href="{{ unsubscribe_link }}">Unsubscribe</a>
         {% endif %}
