@@ -44,9 +44,15 @@ let previous_search_term = "";
 
 let topic_list_cursor: ListCursor<JQuery>;
 
+const ZOOMED_IN_SCROLL_CONTAINER_SELECTOR = "#more-topics-modal .topic-list-scroll-container";
+
+function get_zoomed_in_scroll_container(): JQuery {
+    return $(ZOOMED_IN_SCROLL_CONTAINER_SELECTOR);
+}
+
 function get_topic_items(): JQuery {
     return scroll_util
-        .get_content_element($("#more-topics-modal .topic-list-scroll-container"))
+        .get_content_element(get_zoomed_in_scroll_container())
         .find("li.topic-list-item");
 }
 
@@ -54,7 +60,7 @@ function initialize_topic_list_cursor(): void {
     topic_list_cursor = new ListCursor({
         highlight_class: "highlighted_row",
         list: {
-            scroll_container_selector: "#more-topics-modal .topic-list-scroll-container",
+            scroll_container_selector: ZOOMED_IN_SCROLL_CONTAINER_SELECTOR,
             find_li(opts) {
                 return opts.key;
             },
@@ -573,7 +579,7 @@ export function rebuild_left_sidebar(
 // Does nothing when the active topic is not in the list, e.g.
 // because a topic filter excludes it.
 export function keep_zoomed_in_active_topic_visible(): void {
-    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
+    const $scroll_container = get_zoomed_in_scroll_container();
     const $selected_topic = $scroll_container.find(".topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
         return;
@@ -583,7 +589,7 @@ export function keep_zoomed_in_active_topic_visible(): void {
 
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const $scroll_container = zoomed
-        ? $("#more-topics-modal .topic-list-scroll-container")
+        ? get_zoomed_in_scroll_container()
         : $("#left_sidebar_scroll_container");
     const $selected_topic = $scroll_container.find(".topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
