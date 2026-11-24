@@ -391,7 +391,7 @@ previews:
 
 ### Changes to image formatting
 
-**Before Zulip 14.0 (feature level ZF-7e1ae3)**, Markdown image
+**Before Zulip 14.0 (feature level 527)**, Markdown image
 syntax that now renders as [a link to the uploaded file](#images) was
 left as literal Markdown text. If thumbnailing an image in Markdown
 image syntax failed after the message was sent, the image was removed.
@@ -455,7 +455,7 @@ Markdown image syntax for an uploaded video (e.g.,
 link](#images) to the video, so Zulip may generate this preview for
 it as well.
 
-**Changes**: Before Zulip 14.0 (feature level ZF-7e1ae3), Markdown
+**Changes**: Before Zulip 14.0 (feature level 527), Markdown
 image syntax for an uploaded video was left as literal Markdown text.
 
 ## Audio Players

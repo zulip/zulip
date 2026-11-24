@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 14.0
 
+**Feature level 527**
+
+* [Message formatting](/api/message-formatting#images): Markdown image
+  syntax for an uploaded file that the server can't preview as an
+  image or audio player now renders as a link to the file, rather
+  than as literal Markdown text. If thumbnailing an image in Markdown
+  image syntax fails after the message is sent, the image is now
+  replaced with that link, rather than removed.
+
 **Feature level 526**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
