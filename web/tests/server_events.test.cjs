@@ -11,6 +11,7 @@ mock_esm("../src/message_feed_loading", {
     hide_loading_initial_page: noop,
 });
 set_global("addEventListener", noop);
+set_global("setTimeout", noop);
 
 const channel = mock_esm("../src/channel");
 mock_esm("../src/reload_state", {
@@ -48,6 +49,7 @@ const message_events = mock_esm("../src/message_events", {
 });
 
 const server_events = zrequire("server_events");
+const server_events_state = zrequire("server_events_state");
 
 const message = {
     id: 1,
@@ -82,7 +84,44 @@ const message = {
     content_type: "text/html",
 };
 
-server_events.finished_initial_fetch();
+function clear_initial_fetch_state() {
+    server_events.clear_for_testing();
+    server_events_state.clear_for_testing();
+}
+
+run_test("events response during initial fetch is applied when it finishes", ({override}) => {
+    clear_initial_fetch_state();
+    let get_events_options;
+    override(channel, "get", (options) => {
+        get_events_options = options;
+    });
+
+    // Events received before the initial message fetch finishes are
+    // stored, not applied.
+    server_events.restart_get_events();
+    get_events_options.success({events: []});
+    assert.ok(!server_events_state.has_applied_first_events_response());
+
+    server_events.finished_initial_fetch();
+    assert.ok(server_events_state.has_applied_first_events_response());
+});
+
+run_test("events response after initial fetch is applied immediately", ({override}) => {
+    clear_initial_fetch_state();
+    let get_events_options;
+    override(channel, "get", (options) => {
+        get_events_options = options;
+    });
+
+    // Finishing the initial message fetch does not count as an
+    // events response.
+    server_events.finished_initial_fetch();
+    assert.ok(!server_events_state.has_applied_first_events_response());
+
+    server_events.restart_get_events();
+    get_events_options.success({events: []});
+    assert.ok(server_events_state.has_applied_first_events_response());
+});
 
 run_test("message_event", ({override}) => {
     const event = {

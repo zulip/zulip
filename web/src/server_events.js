@@ -12,7 +12,7 @@ import * as reload_state from "./reload_state.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
-import {mark_first_events_response_received, queue_id} from "./server_events_state.ts";
+import {mark_first_events_response_applied, queue_id} from "./server_events_state.ts";
 import {server_message_schema} from "./server_message.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -24,6 +24,7 @@ let event_queue_longpoll_timeout_seconds;
 let waiting_on_initial_fetch = true;
 
 let events_stored_while_loading = [];
+let received_events_response_while_loading = false;
 
 let get_events_xhr;
 let get_events_timeout;
@@ -197,7 +198,11 @@ function get_events({dont_block = false} = {}) {
                 popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
-                mark_first_events_response_received();
+                if (waiting_on_initial_fetch) {
+                    received_events_response_while_loading = true;
+                } else {
+                    mark_first_events_response_applied();
+                }
             } catch (error) {
                 blueslip.error("Failed to handle get_events success", undefined, error);
             }
@@ -263,9 +268,18 @@ export function force_get_events() {
     get_events_timeout = setTimeout(get_events, 0);
 }
 
+export function clear_for_testing() {
+    waiting_on_initial_fetch = true;
+    events_stored_while_loading = [];
+    received_events_response_while_loading = false;
+}
+
 export function finished_initial_fetch() {
     waiting_on_initial_fetch = false;
     get_events_success([]);
+    if (received_events_response_while_loading) {
+        mark_first_events_response_applied();
+    }
     // Hide the loading indicator after we added fetched messages.
     message_feed_loading.hide_loading_initial_page();
 }

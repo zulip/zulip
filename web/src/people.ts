@@ -1456,15 +1456,16 @@ export function report_late_add(user_id: number, email: string): void {
     // who don't exist in our users data set. This can happen because
     // we're in the middle of a reload (and thus stopped our event
     // queue polling), because we are a spectator and never had an
-    // event queue in the first place, or because the first
-    // /json/events poll for this page's queue hasn't yet returned —
-    // in which case the message fetch may reference users created
-    // after the /register snapshot, and the corresponding
-    // realm_user/add event simply hasn't been delivered yet.
+    // event queue in the first place, or because no /json/events
+    // response for this page's queue has been applied yet — in which
+    // case the message fetch may reference users created after the
+    // /register snapshot, and the corresponding realm_user/add event
+    // hasn't been delivered yet, or is being stored until the initial
+    // message fetch finishes.
     if (
         reload_state.is_in_progress() ||
         page_params.is_spectator ||
-        !server_events_state.has_received_first_events_response()
+        !server_events_state.has_applied_first_events_response()
     ) {
         blueslip.log("Added user late", {user_id, email});
     } else if (!settings_data.user_can_access_all_other_users()) {
