@@ -816,8 +816,11 @@ def send_custom_server_email(
         generate_confirmation_link_for_server_deactivation,
     )
 
+    # The management command always gives from_address. Its value is
+    # None if the user does not give --from-address.
+    from_address = options.get("from_address") or BILLING_SUPPORT_EMAIL
     email_sender = custom_email_sender(
-        **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
+        **(options | {"from_address": from_address}), dry_run=dry_run
     )
 
     for server in remote_servers:

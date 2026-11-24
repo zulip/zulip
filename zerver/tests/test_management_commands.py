@@ -10,6 +10,7 @@ from urllib.parse import quote, quote_plus
 
 from django.apps import apps
 from django.conf import settings
+from django.core import mail
 from django.core.management import call_command, find_commands
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -18,6 +19,7 @@ from django.test import override_settings
 from typing_extensions import override
 
 from confirmation.models import Confirmation, generate_realm_creation_url
+from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
@@ -620,6 +622,33 @@ class TestSendCustomEmail(ZulipTestCase):
         # Verify log entries not created in dry-run
         audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
         self.assert_length(audit_logs, 0)
+
+    def test_custom_email_to_remote_servers(self) -> None:
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+
+        call_command(
+            self.COMMAND_NAME,
+            "--remote-servers",
+            f"--path={path}",
+            "--campaign-name=test_remote_servers",
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.to, ["remotezulipserver@zulip.com"])
+        self.assertEqual(msg.extra_headers["From"], f"TestFrom <{BILLING_SUPPORT_EMAIL}>")
+
+        mail.outbox = []
+        call_command(
+            self.COMMAND_NAME,
+            "--remote-servers",
+            f"--path={path}",
+            "--campaign-name=test_remote_servers",
+            "--from-address=security@example.com",
+        )
+        self.assert_length(mail.outbox, 1)
+        msg = mail.outbox[0]
+        self.assertEqual(msg.to, ["remotezulipserver@zulip.com"])
+        self.assertEqual(msg.extra_headers["From"], "TestFrom <security@example.com>")
 
     def test_custom_email_duplicate_prevention_by_user(self) -> None:
         path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
