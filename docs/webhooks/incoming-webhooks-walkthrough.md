@@ -184,7 +184,7 @@ The webhook function should be named as in the example above,
 integration, in lower case.
 
 At minimum, the webhook function must accept `request` (Django
-[HttpRequest](https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest)
+[HttpRequest](https://docs.djangoproject.com/en/5.2/ref/request-response/#django.http.HttpRequest)
 object), and `user_profile` (Zulip's user object). You can also define
 additional parameters using the `typed_endpoint` decorator.
 

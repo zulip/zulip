@@ -20,7 +20,7 @@ tests, use Django's tooling.
 Zulip's [directory structure](../subsystems/directory-structure.md)
 will also be helpful to review when creating a new feature. Many
 aspects of the structure will be familiar to Django developers. Visit
-[Django's documentation](https://docs.djangoproject.com/en/5.0/#index-first-steps)
+[Django's documentation](https://docs.djangoproject.com/en/5.2/#index-first-steps)
 for more information about how Django projects are typically
 organized. And finally, the
 [message sending](../subsystems/sending-messages.md) documentation on
@@ -252,7 +252,7 @@ git: `git add zerver/migrations/NNNN_my_fantastic_feature.py` (NNNN is a
 number that is equal to the current number of migrations.)
 
 If you run into problems, the
-[Django migration documentation](https://docs.djangoproject.com/en/5.0/topics/migrations/)
+[Django migration documentation](https://docs.djangoproject.com/en/5.2/topics/migrations/)
 is helpful.
 
 ### Test your migration changes

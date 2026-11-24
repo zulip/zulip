@@ -35,7 +35,7 @@ Since 500 errors in any Zulip server are usually a problem the server
 administrator should investigate and/or report upstream, we have this
 email reporting system configured to report errors by default.
 
-[django-errors]: https://docs.djangoproject.com/en/5.0/howto/error-reporting/
+[django-errors]: https://docs.djangoproject.com/en/5.2/howto/error-reporting/
 
 ### Sentry error logging
 
@@ -269,5 +269,5 @@ a new view:
   (intended to catch issues where we generate a lot of deferred work).
 
 [python-logging]: https://docs.python.org/3/library/logging.html
-[django-logging]: https://docs.djangoproject.com/en/5.0/topics/logging/
+[django-logging]: https://docs.djangoproject.com/en/5.2/topics/logging/
 [sentry]: https://sentry.io

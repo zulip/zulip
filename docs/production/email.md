@@ -89,8 +89,8 @@ follows:
 
 If your SMTP provider uses implicit SSL/TLS on port 465 (and not `STARTTLS` on
 port 587), you need to set `EMAIL_PORT = 465`, as well as replacing
-[`EMAIL_USE_TLS = True`](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-EMAIL_USE_TLS)
-with [`EMAIL_USE_SSL = True`](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-EMAIL_USE_SSL).
+[`EMAIL_USE_TLS = True`](https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-EMAIL_USE_TLS)
+with [`EMAIL_USE_SSL = True`](https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-EMAIL_USE_SSL).
 
 ### Using system email
 
@@ -222,7 +222,7 @@ aren't receiving emails from Zulip:
   exceptions Zulip encounters.
 
 - Zulip's email sending configuration is based on the standard Django
-  [SMTP backend](https://docs.djangoproject.com/en/5.0/topics/email/#smtp-backend)
+  [SMTP backend](https://docs.djangoproject.com/en/5.2/topics/email/#smtp-backend)
   configuration. So if you're having trouble getting your email
   provider working, you may want to search for documentation related
   to using your email provider with Django.
