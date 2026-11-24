@@ -1108,6 +1108,28 @@ export class Filter {
         return adjusted_terms;
     }
 
+    static get_dm_title_user_name(user_id: number): string {
+        const ignore_missing = true;
+        const person = people.maybe_get_user_by_id(user_id, ignore_missing);
+        if (!person) {
+            if (user_id === filter_util.UNKNOWN_USER_ID) {
+                return people.INACCESSIBLE_USER_NAME;
+            }
+            return $t({defaultMessage: "Unknown user ({user_id})"}, {user_id});
+        }
+        if (muted_users.is_user_muted(person.user_id)) {
+            if (people.should_add_guest_user_indicator(person.user_id)) {
+                return $t({defaultMessage: "Muted user (guest)"});
+            }
+
+            return $t({defaultMessage: "Muted user"});
+        }
+        if (people.should_add_guest_user_indicator(person.user_id)) {
+            return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
+        }
+        return person.full_name;
+    }
+
     setup_filter(terms: NarrowTerm[]): void {
         this._terms = this.fix_terms(terms);
         this.cached_sorted_terms_for_comparison = undefined;
@@ -1600,26 +1622,7 @@ export class Filter {
                     return $t({defaultMessage: "Messages with yourself"});
                 }
             }
-            const names = user_ids.map((user_id) => {
-                const person = people.maybe_get_user_by_id(user_id, ignore_missing);
-                if (!person) {
-                    if (user_id === filter_util.UNKNOWN_USER_ID) {
-                        return people.INACCESSIBLE_USER_NAME;
-                    }
-                    return $t({defaultMessage: "Unknown user ({user_id})"}, {user_id});
-                }
-                if (muted_users.is_user_muted(person.user_id)) {
-                    if (people.should_add_guest_user_indicator(person.user_id)) {
-                        return $t({defaultMessage: "Muted user (guest)"});
-                    }
-
-                    return $t({defaultMessage: "Muted user"});
-                }
-                if (people.should_add_guest_user_indicator(person.user_id)) {
-                    return $t({defaultMessage: "{name} (guest)"}, {name: person.full_name});
-                }
-                return person.full_name;
-            });
+            const names = user_ids.map((user_id) => Filter.get_dm_title_user_name(user_id));
             names.sort(util.make_strcmp());
             return util.format_array_as_list(names, "long", "conjunction");
         }
