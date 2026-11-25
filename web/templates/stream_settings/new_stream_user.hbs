@@ -2,7 +2,9 @@
     <td class="panel_user_list">
         {{> ../user_display_only_pill . display_value=full_name strikethrough=soft_removed is_active=true is_bot=is_bot}}
     </td>
-    {{#if email}}
+    {{#if is_placeholder_user}}
+        <td class="subscriber-email settings-email-column"><span class="loading-shimmer"></span></td>
+    {{else if email}}
         <td class="subscriber-email settings-email-column {{#if soft_removed}} strikethrough {{/if}}">{{email}}</td>
     {{else}}
         <td class="hidden-subscriber-email {{#if soft_removed}} strikethrough {{/if}}">{{t "(hidden)"}}</td>

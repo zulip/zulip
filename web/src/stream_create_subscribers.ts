@@ -161,6 +161,7 @@ export function build_widgets(): void {
                 full_name: user.full_name,
                 is_current_user: user.user_id === current_user_id,
                 img_src: people.small_avatar_url_for_person(user),
+                is_placeholder_user: user.is_placeholder_user ?? false,
                 soft_removed: stream_create_subscribers_data.user_id_in_soft_remove_list(
                     user.user_id,
                 ),
@@ -185,6 +186,18 @@ export function build_widgets(): void {
     });
     const current_person = people.get_by_user_id(current_user.user_id);
     user_pill.append_user(current_person, pill_widget);
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.streams_open() || $("#stream-creation").css("display") === "none") {
+        return;
+    }
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of one of its users has arrived.
+    const listed_user_ids = new Set(stream_create_subscribers_data.sorted_user_ids());
+    if (user_ids.some((user_id) => listed_user_ids.has(user_id))) {
+        redraw_subscriber_list();
+    }
 }
 
 export function add_user_id_to_new_stream(user_id: number): void {

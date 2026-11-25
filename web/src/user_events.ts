@@ -50,6 +50,7 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_create_subscribers from "./stream_create_subscribers.ts";
 import * as stream_edit from "./stream_edit.ts";
 import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_events from "./stream_events.ts";
@@ -365,6 +366,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     settings_emoji.handle_users_fetched(user_ids);
     settings_muted_users.handle_users_fetched(user_ids);
     settings_exports.handle_users_fetched(user_ids);
+    stream_create_subscribers.handle_users_fetched(user_ids);
     stream_edit.handle_users_fetched(user_ids);
     user_group_edit.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
