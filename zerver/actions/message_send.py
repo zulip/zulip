@@ -292,6 +292,51 @@ class PrefetchedDirectMessageData:
     direct_message_groups: Mapping[str, DirectMessageGroup]
 
 
+def get_active_user_rows(user_ids: Collection[int]) -> list[ActiveUserDict]:
+    query: QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict] = (
+        # We use 'cast' because django-stubs says:
+        # Currently, the mypy plugin can recognize that specific names were passed to `QuerySet.annotate`
+        # and include them in the type, but does not record the types of these attributes.
+        #
+        # The knowledge of the specific annotated fields is not yet used in creating more specific types
+        # for `QuerySet`'s `values` method, however knowledge that the model was annotated _is_ used to
+        # create a broader type result type for `values`, and to allow `filter`ing on any field.
+        #
+        # ref: https://github.com/typeddjango/django-stubs/blob/de8e0b4dd6588129f0e02f601a71486f42799533/README.md?plain=1#L263
+        cast(
+            "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
+            UserProfile.objects.filter(is_active=True)
+            .annotate(
+                # Uses index "zerver_device_user_push_token_id_idx"
+                # and "zerver_pushdevicetoken_user_id_015e5dc1".
+                has_push_device_registered=Exists(
+                    Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
+                )
+                | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
+            )
+            .values(
+                "id",
+                "enable_online_push_notifications",
+                "enable_offline_email_notifications",
+                "enable_offline_push_notifications",
+                "is_bot",
+                "bot_type",
+                "long_term_idle",
+                "has_push_device_registered",
+            ),
+        )
+    )
+
+    # query_for_ids is fast highly optimized for large queries, and we
+    # need this codepath to be fast (it's part of sending messages)
+    query = query_for_ids(
+        query=query,
+        user_ids=sorted(user_ids),
+        field="id",
+    )
+    return list(query)
+
+
 def get_recipient_info(
     *,
     realm_id: int,
@@ -502,48 +547,7 @@ def get_recipient_info(
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
     if user_ids:
-        query: QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict] = (
-            # We use 'cast' because django-stubs says:
-            # Currently, the mypy plugin can recognize that specific names were passed to `QuerySet.annotate`
-            # and include them in the type, but does not record the types of these attributes.
-            #
-            # The knowledge of the specific annotated fields is not yet used in creating more specific types
-            # for `QuerySet`'s `values` method, however knowledge that the model was annotated _is_ used to
-            # create a broader type result type for `values`, and to allow `filter`ing on any field.
-            #
-            # ref: https://github.com/typeddjango/django-stubs/blob/de8e0b4dd6588129f0e02f601a71486f42799533/README.md?plain=1#L263
-            cast(
-                "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
-                UserProfile.objects.filter(is_active=True)
-                .annotate(
-                    # Uses index "zerver_device_user_push_token_id_idx"
-                    # and "zerver_pushdevicetoken_user_id_015e5dc1".
-                    has_push_device_registered=Exists(
-                        Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
-                    )
-                    | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
-                )
-                .values(
-                    "id",
-                    "enable_online_push_notifications",
-                    "enable_offline_email_notifications",
-                    "enable_offline_push_notifications",
-                    "is_bot",
-                    "bot_type",
-                    "long_term_idle",
-                    "has_push_device_registered",
-                ),
-            )
-        )
-
-        # query_for_ids is fast highly optimized for large queries, and we
-        # need this codepath to be fast (it's part of sending messages)
-        query = query_for_ids(
-            query=query,
-            user_ids=sorted(user_ids),
-            field="id",
-        )
-        rows = list(query)
+        rows = get_active_user_rows(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient
         #       of any message we send.  Right now the exception to this
