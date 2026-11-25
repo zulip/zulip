@@ -182,16 +182,8 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     DirectMessageGroup object does not yet exist, it will be
     transparently created.
     """
-    assert len(id_list) == len(set(id_list))
-    direct_message_group_hash = get_direct_message_group_hash(id_list)
-    with transaction.atomic(savepoint=False):
-        (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(
-            huddle_hash=direct_message_group_hash,
-            group_size=len(id_list),
-        )
-        if created:
-            set_up_new_direct_message_groups([(direct_message_group, id_list)])
-        return direct_message_group
+    direct_message_groups = bulk_get_or_create_direct_message_groups([id_list])
+    return direct_message_groups[get_direct_message_group_hash(id_list)]
 
 
 def bulk_get_or_create_direct_message_groups(

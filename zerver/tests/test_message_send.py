@@ -3040,7 +3040,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         prospero = self.example_user("prospero")
 
         # A normal user sends a personal message.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             self.send_personal_message(hamlet, cordelia)
 
         # Give guests limited user access.
@@ -3051,12 +3051,12 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends a personal message
         # to another accessible user.
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             self.send_personal_message(polonius, hamlet)
 
         # A guest with limited user access sends a personal message
         # to themself.
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             self.send_personal_message(polonius, polonius)
 
         # A guest with limited user access sends a personal message
@@ -3089,7 +3089,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A normal user sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             self.send_group_direct_message(iago, recipients)
 
         # A normal user sends a message
@@ -3108,7 +3108,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(26):
             self.send_group_direct_message(polonius, recipients)
 
         # A guest with limited user access sends a message
@@ -3206,7 +3206,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         othello = self.example_user("othello")
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             self.send_personal_message(user_profile, othello)
 
     def test_direct_message_permission_group_setting(self) -> None:
@@ -3234,7 +3234,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         # Tests if the user is allowed to send to administrators.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             self.send_personal_message(user_profile, admin)
         self.send_personal_message(admin, user_profile)
         # Tests if we can send messages to self irrespective of the value of the setting.
@@ -3252,7 +3252,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # We can send to this direct message group as it has administrator as one of the
         # recipient.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             self.send_group_direct_message(user_profile, direct_message_group)
         self.send_group_direct_message(admin, direct_message_group)
 
