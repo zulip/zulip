@@ -87,6 +87,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -6108,6 +6109,53 @@ class SubscriptionAPITest(ZulipTestCase):
             )
         data = self.assert_json_success(response)
         self.assertNotIn("new_subscription_messages_sent", data)
+
+    def test_notification_bot_dms_query_count(self) -> None:
+        """
+        Each user subscribed to a channel by someone else gets a
+        Notification Bot DM. This checks how the database queries for
+        those DMs depend on the number of users, and on whether each
+        user already has a DM conversation with Notification Bot.
+        """
+        iago = self.example_user("iago")
+        notification_bot = self.notification_bot(iago.realm)
+        users = [
+            self.example_user(name)
+            for name in ["cordelia", "hamlet", "othello", "prospero", "aaron", "ZOE"]
+        ]
+
+        def has_dm_conversation_with_notification_bot(user: UserProfile) -> bool:
+            return get_direct_message_group([notification_bot.id, user.id]) is not None
+
+        def subscribe_with_dms(
+            channel_name: str, subscribers: list[UserProfile], query_count: int
+        ) -> None:
+            self.make_stream(channel_name)
+            with self.assert_database_query_count(query_count):
+                response = self.subscribe_via_post(
+                    iago,
+                    [channel_name],
+                    dict(principals=orjson.dumps([user.id for user in subscribers]).decode()),
+                )
+            data = self.assert_json_success(response)
+            self.assertEqual(data["new_subscription_messages_sent"], True)
+            for user in subscribers:
+                message = most_recent_message(user)
+                self.assertEqual(message.sender_id, notification_bot.id)
+                self.assertEqual(
+                    message.content,
+                    f"@_**Iago|{iago.id}** subscribed you to #**{channel_name}**.",
+                )
+
+        # Queries for each DM: 2, plus 5 to create the user's DM
+        # conversation with Notification Bot.
+        self.assertFalse(any(has_dm_conversation_with_notification_bot(user) for user in users))
+        subscribe_with_dms("first DMs to 2 users", users[:2], 32 + 7 * 2)
+        subscribe_with_dms("first DMs to 4 users", users[2:], 32 + 7 * 4)
+        self.assertTrue(all(has_dm_conversation_with_notification_bot(user) for user in users))
+
+        subscribe_with_dms("DMs to 2 users", users[:2], 32 + 2 * 2)
+        subscribe_with_dms("DMs to 4 users", users[:4], 32 + 2 * 4)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):
