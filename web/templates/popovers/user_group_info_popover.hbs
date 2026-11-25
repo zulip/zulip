@@ -42,7 +42,7 @@
                             {{else}}
                                 <span class="popover-group-member-icon user-circle zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} popover-group-menu-user-presence hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
                             {{/if}}
-                            <span class="popover-group-menu-member-name">{{full_name}}</span>
+                            <span class="popover-group-menu-member-name">{{#if is_placeholder_user}}<span class="loading-shimmer {{loading_shimmer_width_class}}"></span>{{else}}{{full_name}}{{/if}}</span>
                         </li>
                     {{/each}}
                     {{#unless display_all_subgroups_and_members}}

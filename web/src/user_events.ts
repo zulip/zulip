@@ -51,6 +51,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as submessage from "./submessage.ts";
 import * as typing_events from "./typing_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_popover from "./user_group_popover.ts";
 import * as user_profile from "./user_profile.ts";
 
 export const user_update_schema = z.intersection(
@@ -351,6 +352,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     composebox_typeahead.handle_users_fetched();
     user_profile.handle_users_fetched(user_ids);
     custom_profile_fields_ui.handle_users_fetched();
+    user_group_popover.handle_users_fetched();
     message_edit_history.handle_users_fetched(user_ids);
     message_report.handle_users_fetched(user_ids);
     stream_popover.handle_users_fetched(user_ids);

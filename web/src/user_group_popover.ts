@@ -23,13 +23,19 @@ import * as util from "./util.ts";
 
 const MAX_ROWS_IN_POPOVER = 30;
 let user_group_popover_instance: tippy.Instance | undefined;
+let user_group_popover_group_id: number | undefined;
 
-type PopoverGroupMember = User & {user_circle_class: string; user_last_seen_time_status: string};
+type PopoverGroupMember = User & {
+    user_circle_class: string;
+    user_last_seen_time_status: string;
+    loading_shimmer_width_class?: string;
+};
 
 export function hide(): void {
     if (user_group_popover_instance !== undefined) {
         user_group_popover_instance.destroy();
         user_group_popover_instance = undefined;
+        user_group_popover_group_id = undefined;
     }
 }
 
@@ -96,6 +102,24 @@ function get_user_group_info_popover_html(group: UserGroup): string {
     return render_user_group_info_popover(args);
 }
 
+export function handle_users_fetched(): void {
+    if (user_group_popover_instance === undefined || user_group_popover_group_id === undefined) {
+        return;
+    }
+    // Redrawing resets the scroll position of the member list, so we
+    // only redraw a popover that is showing a placeholder user.
+    if ($(user_group_popover_instance.popper).find(".loading-shimmer").length === 0) {
+        return;
+    }
+    const group = user_groups.maybe_get_user_group_from_id(user_group_popover_group_id);
+    if (group === undefined) {
+        return;
+    }
+    user_group_popover_instance.setContent(
+        ui_util.parse_html(get_user_group_info_popover_html(group)),
+    );
+}
+
 // element is the target element to pop off of;
 // the element could be user group pill or mentions in a message;
 // in case of message, message_id is the message id containing it;
@@ -136,6 +160,7 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
+                user_group_popover_group_id = group.id;
                 instance.setContent(ui_util.parse_html(get_user_group_info_popover_html(group)));
             },
             onHidden() {
@@ -222,6 +247,9 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
                 ...p,
                 user_circle_class: buddy_data.get_user_circle_class(p.user_id),
                 user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+                ...(p.is_placeholder_user && {
+                    loading_shimmer_width_class: people.get_loading_shimmer_width_class(p.user_id),
+                }),
             }))
     );
 }
