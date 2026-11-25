@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+"""Which orgs are using the app server's Django time right now?
+
+Reads the last few minutes of Django's request log, server.log, going
+backwards from the end so it never scans the whole file, and adds up
+per org: Django time, database time, requests, the share from
+logged-out visitors, and the busiest paths.
+
+It keeps no state, so it can run three ways:
+
+    org-load                       # a table, for whoever got paged
+    org-load --nagios              # a Nagios check, run over check_by_ssh
+    org-load --state-file org-load # a check_cron_file result, from cron
+
+Only Django requests count. Tornado's lines ([zr:PORT]) and long-polls
+are skipped, because their times include waiting for events.
+"""
+
+import argparse
+import os
+import re
+import sys
+import time
+from collections import defaultdict
+from collections.abc import Iterator
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+
+LOG_PATH = "/var/log/zulip/server.log"
+STATE_DIR = "/var/lib/nagios_state"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
+# Requests aren't written in strict time order, so keep reading this
+# far past the start of the window before stopping.
+STRAGGLER_SECONDS = 10
+
+# One request, as zerver/middleware.py's write_log_line writes it:
+#   2030-01-01 12:00:00.512 INFO [zr] 203.0.113.7     GET     200  4.6s (db: 1.4s/80q)
+#       /json/messages (unauth@example via website)
+# (one line in the log; wrapped here)
+REQUEST_RE = re.compile(
+    r"^(?P<ts>\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\.\d+ \S+\s+(?:pid:\d+ )?\[zr\] "
+    r"\S+\s+\S+\s+\d{3} +(?P<time>[\d.]+m?s)"
+    r"(?P<parts>(?: \((?:lp|mem|md|ai|db|\+start): [^)]*\))*)"
+    r" (?P<path>\S+)"
+)
+REQUESTER_RE = re.compile(r" \((?P<requester>[^\s()]+) via [^\n]*\)$")
+DB_RE = re.compile(r"\(db: (?P<time>[\d.]+m?s)/")
+USER_RE = re.compile(r"^(?P<who>\d+|unauth)@(?P<org>.+)$")
+TIMESTAMP_RE = re.compile(r"^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d")
+LONG_POLL_PATHS = {"/json/events", "/api/v1/events"}
+PREFIX_PATHS = ("/user_uploads/", "/avatar/", "/user_avatars/", "/thumbnail/", "/static/")
+
+
+def seconds(logged: str) -> float:
+    """540ms -> 0.54, 4.6s -> 4.6"""
+    if logged.endswith("ms"):
+        return float(logged[:-2]) / 1000
+    return float(logged[:-1])
+
+
+def parse_timestamp(ts: str) -> datetime:
+    """Only differences between log timestamps are used, so any time zone will do."""
+    return datetime.strptime(ts, TIMESTAMP_FORMAT).replace(tzinfo=timezone.utc)
+
+
+def org_of(requester: str) -> tuple[str, bool]:
+    """The org a request belongs to, and whether it was logged out."""
+    m = USER_RE.match(requester)
+    if m:
+        return m.group("org"), m.group("who") == "unauth"
+    if requester.startswith("zulip-server:"):
+        return "(push bouncer clients)", False
+    if requester.startswith("scim-client:"):
+        return "(scim realm " + requester.rsplit(":", 1)[-1] + ")", False
+    return f"({requester})", False
+
+
+def path_group(path: str) -> str:
+    """Group similar URLs: numeric segments become N, and file paths collapse to their prefix."""
+    for prefix in PREFIX_PATHS:
+        if path.startswith(prefix):
+            return prefix + "…"
+    return re.sub(r"/\d+(?=/|$)", "/N", path)
+
+
+def lines_backwards(path: str, block_size: int = 1 << 20) -> Iterator[str]:
+    """The file's lines, last first, reading only as far back as the caller asks."""
+    with open(path, "rb") as f:
+        f.seek(0, os.SEEK_END)
+        position = f.tell()
+        rest = b""
+        while position > 0:
+            step = min(block_size, position)
+            position -= step
+            f.seek(position)
+            chunk = f.read(step) + rest
+            lines = chunk.split(b"\n")
+            # The first piece may be the end of a line that starts in the previous block.
+            rest = lines.pop(0)
+            for line in reversed(lines):
+                if line:
+                    yield line.decode("utf-8", "replace")
+        if rest:
+            yield rest.decode("utf-8", "replace")
+
+
+@dataclass
+class OrgLoad:
+    seconds: float = 0.0
+    db_seconds: float = 0.0
+    logged_out_seconds: float = 0.0
+    requests: int = 0
+    paths: defaultdict[str, float] = field(default_factory=lambda: defaultdict(float))
+
+
+@dataclass
+class Window:
+    start: str | None = None
+    end: str | None = None
+    oldest_seen: str | None = None
+    files: list[str] = field(default_factory=list)
+    orgs: dict[str, OrgLoad] = field(default_factory=lambda: defaultdict(OrgLoad))
+
+    @property
+    def total_seconds(self) -> float:
+        return sum(o.seconds for o in self.orgs.values())
+
+    @property
+    def span_seconds(self) -> float:
+        if self.end is None or self.oldest_seen is None:
+            return 0.0
+        start = max(self.oldest_seen, self.start or self.oldest_seen)
+        span = parse_timestamp(self.end) - parse_timestamp(start)
+        return max(span.total_seconds(), 1.0)
+
+
+def read_window(log_path: str, minutes: float) -> Window:
+    """Add up the last `minutes` of server.log, continuing into
+    server.log.1 when the window starts before the last rotation."""
+    window = Window()
+    cutoff = stop_at = None
+    for path in (log_path, log_path + ".1"):
+        if not os.path.exists(path):
+            continue
+        window.files.append(path)
+        reached_start = False
+        for line in lines_backwards(path):
+            if not TIMESTAMP_RE.match(line):
+                continue  # a traceback or other continuation line
+            ts = line[:19]
+            if window.end is None:
+                # The newest line sets the end of the window, so the
+                # server's clock and time zone don't matter.
+                window.end = ts
+                end = parse_timestamp(ts)
+                cutoff = (end - timedelta(minutes=minutes)).strftime(TIMESTAMP_FORMAT)
+                window.start = cutoff
+                stop_at = (end - timedelta(minutes=minutes, seconds=STRAGGLER_SECONDS)).strftime(
+                    TIMESTAMP_FORMAT
+                )
+            assert cutoff is not None and stop_at is not None
+            if ts < stop_at:
+                reached_start = True
+                break
+            if ts < cutoff:
+                continue
+            m = REQUEST_RE.match(line)
+            if m is None or m.group("path") in LONG_POLL_PATHS:
+                continue
+            r = REQUESTER_RE.search(line)
+            org, logged_out = org_of(r.group("requester")) if r else ("(unknown)", False)
+            took = seconds(m.group("time"))
+            db = DB_RE.search(m.group("parts"))
+            load = window.orgs[org]
+            load.seconds += took
+            load.db_seconds += seconds(db.group("time")) if db else 0.0
+            load.logged_out_seconds += took if logged_out else 0.0
+            load.requests += 1
+            load.paths[path_group(m.group("path"))] += took
+            if window.oldest_seen is None or ts < window.oldest_seen:
+                window.oldest_seen = ts
+        if reached_start:
+            break
+    return window
+
+
+def pct(part: float, whole: float) -> str:
+    return f"{100 * part / whole:.0f}%" if whole else "-"
+
+
+def busiest_paths(load: OrgLoad, n: int = 3) -> str:
+    busiest = sorted(load.paths.items(), key=lambda kv: kv[1], reverse=True)[:n]
+    return " · ".join(f"{p} {pct(s, load.seconds)}" for p, s in busiest)
+
+
+def top_orgs(window: Window, n: int) -> list[tuple[str, OrgLoad]]:
+    return sorted(window.orgs.items(), key=lambda kv: kv[1].seconds, reverse=True)[:n]
+
+
+def table(window: Window, n: int, workers: int) -> str:
+    span = window.span_seconds
+    total = window.total_seconds
+    requests = sum(o.requests for o in window.orgs.values())
+    out = [
+        f"Django time in {', '.join(window.files)}, {window.start} to {window.end} "
+        f"({span / 60:.1f} min): {total:,.0f} s in {requests:,} requests, "
+        f"{total / span:.1f} workers' worth" + (f" of {workers}." if workers else "."),
+        "",
+        (
+            f"{'org':<24} {'workers':>7} {'share':>6} {'db':>5} {'logged-out':>10} "
+            f"{'requests':>9}  busiest paths"
+        ),
+    ]
+    for org, load in top_orgs(window, n):
+        out.append(
+            f"{org[:24]:<24} {load.seconds / span:>7.1f} {pct(load.seconds, total):>6} "
+            f"{pct(load.db_seconds, load.seconds):>5} "
+            f"{pct(load.logged_out_seconds, load.seconds):>10} "
+            f"{load.requests:>9,}  {busiest_paths(load)}"
+        )
+    out += [
+        "",
+        "workers: seconds of Django time per second, so 10 means ten workers busy all the time.",
+        "db: the share of that org's time spent in database queries.",
+    ]
+    return "\n".join(out)
+
+
+def check(window: Window, warn: float, crit: float) -> tuple[int, str, str]:
+    """The Nagios exit code, status, and one line naming the top org and the next few."""
+    if window.end is None or not window.orgs:
+        where = ", ".join(window.files) or "server.log"
+        return 3, "UNKNOWN", f"no Django requests found in {where}"
+    span = window.span_seconds
+    total = window.total_seconds
+    ranked = top_orgs(window, 5)
+    org, load = ranked[0]
+    used = load.seconds / span
+    summary = (
+        f"{org} used {used:.1f} workers' worth ({pct(load.seconds, total)} of Django time) "
+        f"in the last {span / 60:.0f} min; "
+        f"{pct(load.logged_out_seconds, load.seconds)} logged-out; "
+        f"busiest {busiest_paths(load, 2)}"
+    )
+    others = "Top orgs: " + " · ".join(f"{name} {o.seconds / span:.1f}" for name, o in ranked)
+    if crit and used >= crit:
+        return 2, "CRITICAL", f"{summary}. {others}"
+    if warn and used >= warn:
+        return 1, "WARNING", f"{summary}. {others}"
+    return 0, "OK", f"top org {org} at {used:.1f} workers' worth. {others}"
+
+
+def write_state(name: str, code: int, status: str, message: str) -> None:
+    """The file format that check_cron_file reads: time|code|status|message."""
+    path = os.path.join(STATE_DIR, name)
+    with open(path + ".tmp", "w") as f:
+        fields = [str(int(time.time())), str(code), status.lower(), message.replace("|", "/")]
+        f.write("|".join(fields) + "\n")
+    os.rename(path + ".tmp", path)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("--log", default=LOG_PATH, help=f"request log (default {LOG_PATH})")
+    parser.add_argument("--minutes", type=float, default=5, help="how far back (default 5)")
+    parser.add_argument("--top", type=int, default=8, help="orgs to show (default 8)")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=0,
+        help="uwsgi workers, shown next to the total; 0 leaves it out",
+    )
+    parser.add_argument(
+        "--nagios", action="store_true", help="print a Nagios result and exit with its code"
+    )
+    parser.add_argument(
+        "--state-file", metavar="NAME", help=f"write a check_cron_file result to {STATE_DIR}/NAME"
+    )
+    parser.add_argument(
+        "--warn-workers",
+        type=float,
+        default=10,
+        help="WARNING when one org uses this many workers' worth (default 10)",
+    )
+    parser.add_argument(
+        "--crit-workers",
+        type=float,
+        default=0,
+        help="CRITICAL at this many workers' worth; 0 turns it off (default 0)",
+    )
+    args = parser.parse_args()
+
+    try:
+        window = read_window(args.log, args.minutes)
+    except OSError as e:
+        if args.nagios or args.state_file:
+            message = f"can't read {args.log}: {e.strerror}"
+            if args.state_file:
+                write_state(args.state_file, 3, "UNKNOWN", message)
+                return 1
+            print(f"UNKNOWN: {message}")
+            return 3
+        raise
+
+    if not (args.nagios or args.state_file):
+        if window.end is None:
+            print(f"No Django requests found in {args.log}.")
+            return 1
+        print(table(window, args.top, args.workers))
+        return 0
+
+    code, status, message = check(window, args.warn_workers, args.crit_workers)
+    if args.state_file:
+        write_state(args.state_file, code, status, message)
+    if args.nagios:
+        print(f"{status}: {message}")
+        return code
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
