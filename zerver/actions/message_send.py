@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from collections.abc import Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
@@ -128,6 +128,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import (
     DirectMessageGroup,
+    bulk_get_or_create_direct_message_groups,
     get_direct_message_group_hash,
     get_direct_message_group_user_ids,
 )
@@ -280,6 +281,15 @@ class SentMessageResult:
     message_url: str
     message_link: str
     automatic_new_visibility_policy: int | None = None
+
+
+@dataclass(frozen=True)
+class PrefetchedDirectMessageData:
+    """Data fetched with bulk queries for a batch of direct messages
+    being prepared together."""
+
+    # By get_direct_message_group_hash of their users.
+    direct_message_groups: Mapping[str, DirectMessageGroup]
 
 
 def get_recipient_info(
@@ -1921,10 +1931,14 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
+
+    prefetched_direct_message_data has data already fetched for a
+    batch of direct messages that this message is part of.
     """
     stream = None
     user_group_membership_details: UserGroupMembershipDetails | None = None
@@ -2018,7 +2032,15 @@ def check_message(
 
         try:
             recipient = recipient_for_user_profiles(
-                recipient_users, forwarder_user_profile, sender, forged=forged
+                recipient_users,
+                forwarder_user_profile,
+                sender,
+                forged=forged,
+                prefetched_direct_message_groups=(
+                    prefetched_direct_message_data.direct_message_groups
+                    if prefetched_direct_message_data is not None
+                    else None
+                ),
             )
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
@@ -2123,6 +2145,7 @@ def _internal_prep_message(
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -2156,6 +2179,7 @@ def _internal_prep_message(
             forged_timestamp=forged_timestamp,
             archived_channel_notice=archived_channel_notice,
             acting_user=acting_user,
+            prefetched_direct_message_data=prefetched_direct_message_data,
         )
     except JsonableError as e:
         logging.exception(
@@ -2231,6 +2255,7 @@ def internal_prep_private_message(
     mention_backend: MentionBackend | None = None,
     disable_external_notifications: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -2249,6 +2274,7 @@ def internal_prep_private_message(
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
         acting_user=acting_user,
+        prefetched_direct_message_data=prefetched_direct_message_data,
     )
 
 
@@ -2262,10 +2288,24 @@ def internal_prep_private_messages(
     """
     Prepares direct messages from one sender to several users in the
     given realm, such as Notification Bot's messages to the users
-    affected by an action.
+    affected by an action. The sender must be allowed to send direct
+    messages to each of them.
     See _internal_prep_message for details of how this works.
     """
     mention_backend = MentionBackend(realm.id)
+
+    prefetched_direct_message_data = PrefetchedDirectMessageData(
+        # Deactivated users can't receive these messages, so we don't
+        # create DM groups for them. Mirror dummy users are the
+        # exception; their groups are created one at a time.
+        direct_message_groups=bulk_get_or_create_direct_message_groups(
+            [
+                list({sender.id, recipient_user.id})
+                for recipient_user, content in recipient_users_and_contents
+                if recipient_user.is_active
+            ]
+        ),
+    )
     return [
         internal_prep_private_message(
             sender,
@@ -2273,6 +2313,7 @@ def internal_prep_private_messages(
             content,
             mention_backend=mention_backend,
             acting_user=acting_user,
+            prefetched_direct_message_data=prefetched_direct_message_data,
         )
         for recipient_user, content in recipient_users_and_contents
     ]

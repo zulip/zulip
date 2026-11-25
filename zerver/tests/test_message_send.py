@@ -5,7 +5,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -84,7 +84,11 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
-from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
+from zerver.models.recipients import (
+    DirectMessageGroup,
+    get_direct_message_group,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 
@@ -3751,6 +3755,54 @@ class InternalPrepTest(ZulipTestCase):
             "Hello, Othello!",
         )
         self.assertIsNone(get_direct_message_group([notification_bot.id, cordelia.id]))
+
+    def test_internal_prep_private_messages_with_concurrently_created_group(self) -> None:
+        """
+        If another request creates a DM conversation after
+        internal_prep_private_messages looks for it, the message should
+        go to that conversation, which shouldn't be set up again.
+        """
+        realm = get_realm("zulip")
+        notification_bot = self.notification_bot(realm)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        concurrent_group = get_or_create_direct_message_group([notification_bot.id, hamlet.id])
+
+        real_filter = DirectMessageGroup.objects.filter
+        filter_calls = 0
+
+        # The first filter call is the lookup of existing groups, and
+        # the second fetches the groups after inserting them.
+        def filter_before_concurrent_creation(**kwargs: object) -> QuerySet[DirectMessageGroup]:
+            nonlocal filter_calls
+            filter_calls += 1
+            if filter_calls == 1:
+                return real_filter(**kwargs).exclude(id=concurrent_group.id)
+            return real_filter(**kwargs)
+
+        with mock.patch.object(
+            DirectMessageGroup.objects, "filter", side_effect=filter_before_concurrent_creation
+        ):
+            send_requests = internal_prep_private_messages(
+                realm,
+                notification_bot,
+                [(hamlet, "Hello, Hamlet!"), (cordelia, "Hello, Cordelia!")],
+            )
+        self.assertEqual(filter_calls, 2)
+        do_send_messages(send_requests)
+
+        for user, content in [(hamlet, "Hello, Hamlet!"), (cordelia, "Hello, Cordelia!")]:
+            message = most_recent_message(user)
+            self.assertEqual(message.content, content)
+            self.assertEqual(
+                set(
+                    Subscription.objects.filter(recipient_id=message.recipient_id).values_list(
+                        "user_profile_id", flat=True
+                    )
+                ),
+                {notification_bot.id, user.id},
+            )
+        self.assertEqual(most_recent_message(hamlet).recipient_id, concurrent_group.recipient_id)
 
 
 class TestCrossRealmPMs(ZulipTestCase):

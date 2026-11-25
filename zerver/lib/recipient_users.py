@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -19,6 +19,8 @@ def get_recipient_from_user_profiles(
     sender: UserProfile,
     create: bool = True,
     forged: bool = False,
+    *,
+    prefetched_direct_message_groups: Mapping[str, DirectMessageGroup] | None = None,
 ) -> Recipient:
     # Avoid mutating the passed in list of recipient_profiles.
     recipient_user_ids = {user_profile.id for user_profile in recipient_profiles}
@@ -37,7 +39,13 @@ def get_recipient_from_user_profiles(
     user_ids = list(recipient_user_ids)
 
     if create:
-        direct_message_group = get_or_create_direct_message_group(user_ids)
+        direct_message_group = None
+        if prefetched_direct_message_groups is not None:
+            direct_message_group = prefetched_direct_message_groups.get(
+                get_direct_message_group_hash(user_ids)
+            )
+        if direct_message_group is None:
+            direct_message_group = get_or_create_direct_message_group(user_ids)
     else:
         # We intentionally let the DirectMessageGroup.DoesNotExist escape,
         # in the case that there is no such direct message group, and the
@@ -90,13 +98,19 @@ def recipient_for_user_profiles(
     allow_deactivated: bool = False,
     create: bool = True,
     forged: bool = False,
+    prefetched_direct_message_groups: Mapping[str, DirectMessageGroup] | None = None,
 ) -> Recipient:
     recipient_profiles = validate_recipient_user_profiles(
         user_profiles, sender, allow_deactivated=allow_deactivated
     )
 
     return get_recipient_from_user_profiles(
-        recipient_profiles, forwarder_user_profile, sender, create=create, forged=forged
+        recipient_profiles,
+        forwarder_user_profile,
+        sender,
+        create=create,
+        forged=forged,
+        prefetched_direct_message_groups=prefetched_direct_message_groups,
     )
 
 

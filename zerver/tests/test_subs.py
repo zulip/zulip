@@ -3371,7 +3371,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=35,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3406,7 +3406,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=56,
+            query_count=45,
             cache_count=26,
             target_users=target_users,
             is_realm_admin=True,
@@ -3426,7 +3426,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=38,
+            query_count=39,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3453,7 +3453,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=39,
+            query_count=40,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=False,
@@ -3489,7 +3489,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=35,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3511,7 +3511,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=44,
+            query_count=39,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3982,7 +3982,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(public_stream)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, public_stream)
-        with self.assert_database_query_count(40):
+        with self.assert_database_query_count(35):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -3995,7 +3995,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(private_stream, invite_only=True)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, private_stream)
-        with self.assert_database_query_count(34):
+        with self.assert_database_query_count(33):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -5927,7 +5927,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        with self.assert_database_query_count(67):
+        with self.assert_database_query_count(44):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -6147,15 +6147,15 @@ class SubscriptionAPITest(ZulipTestCase):
                     f"@_**Iago|{iago.id}** subscribed you to #**{channel_name}**.",
                 )
 
-        # Queries for each DM: 2, plus 5 to create the user's DM
-        # conversation with Notification Bot.
+        # Queries for each DM: 1. Creating the users' DM conversations
+        # with Notification Bot takes 6 more in total.
         self.assertFalse(any(has_dm_conversation_with_notification_bot(user) for user in users))
-        subscribe_with_dms("first DMs to 2 users", users[:2], 32 + 7 * 2)
-        subscribe_with_dms("first DMs to 4 users", users[2:], 32 + 7 * 4)
+        subscribe_with_dms("first DMs to 2 users", users[:2], 39 + 1 * 2)
+        subscribe_with_dms("first DMs to 4 users", users[2:], 39 + 1 * 4)
         self.assertTrue(all(has_dm_conversation_with_notification_bot(user) for user in users))
 
-        subscribe_with_dms("DMs to 2 users", users[:2], 32 + 2 * 2)
-        subscribe_with_dms("DMs to 4 users", users[:4], 32 + 2 * 4)
+        subscribe_with_dms("DMs to 2 users", users[:2], 33 + 1 * 2)
+        subscribe_with_dms("DMs to 4 users", users[:4], 33 + 1 * 4)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):
