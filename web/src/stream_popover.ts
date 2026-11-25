@@ -52,6 +52,7 @@ import * as util from "./util.ts";
 // that pop up from the left sidebar.
 let stream_widget_value: number | undefined;
 let move_topic_to_stream_topic_typeahead: Typeahead<string> | undefined;
+let update_unsubscribed_participants_warning: ((fetched_user_ids: number[]) => void) | undefined;
 const last_propagate_mode_for_conversation = new Map<string, string>();
 
 export function stream_sidebar_menu_handle_keyboard(key: string): void {
@@ -615,6 +616,14 @@ export async function build_move_topic_to_stream_popover(
     // Warn if any sender of the messages being moved is NOT subscribed
     // to the destination stream.
     async function warn_unsubscribed_participants(selected_propagate_mode: string): Promise<void> {
+        update_unsubscribed_participants_warning = (fetched_user_ids) => {
+            const participant_ids = new ConversationParticipants(
+                get_messages_to_be_moved(selected_propagate_mode, message),
+            ).visible();
+            if (fetched_user_ids.some((user_id) => participant_ids.has(user_id))) {
+                void warn_unsubscribed_participants(selected_propagate_mode);
+            }
+        };
         $("#move_topic_modal .unsubscribed-participants-warning").remove();
 
         const destination_stream_id = stream_widget_value;
@@ -660,9 +669,17 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        const unsubscribed_participant_names = unsubscribed_participant_ids.map(
-            (user_id) => people.get_user_by_id_assert_valid(user_id).full_name,
+        // The banner shows the real name of a muted user too, so every
+        // placeholder user counts as loading, and they share one name.
+        const first_placeholder_user_id = unsubscribed_participant_ids.find((user_id) =>
+            people.is_placeholder_user(user_id),
         );
+        const unsubscribed_participant_names = unsubscribed_participant_ids
+            .filter(
+                (user_id) =>
+                    !people.is_placeholder_user(user_id) || user_id === first_placeholder_user_id,
+            )
+            .map((user_id) => people.get_user_by_id_assert_valid(user_id).full_name);
 
         const destination_stream = stream_data.get_sub_by_id(destination_stream_id)!;
         const can_subscribe_other_users = stream_data.can_subscribe_others(destination_stream);
@@ -685,6 +702,9 @@ export async function build_move_topic_to_stream_popover(
         };
 
         const warning_banner = render_unsubscribed_participants_warning_banner(context);
+        // Another run of this function may have added its banner while
+        // this one was waiting.
+        $("#move_topic_modal .unsubscribed-participants-warning").remove();
         $("#move_topic_modal .simplebar-content").prepend($(warning_banner));
 
         $(
@@ -1248,9 +1268,16 @@ export async function build_move_topic_to_stream_popover(
         on_shown: focus_on_move_modal_render,
         on_hidden() {
             move_topic_to_stream_topic_typeahead = undefined;
+            update_unsubscribed_participants_warning = undefined;
         },
         post_render: move_topic_post_render,
     });
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    // Which participants the warning names can change once a
+    // placeholder user's data arrives, for example if they are a bot.
+    update_unsubscribed_participants_warning?.(user_ids);
 }
 
 export function initialize(): void {

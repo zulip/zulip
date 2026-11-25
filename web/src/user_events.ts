@@ -46,6 +46,7 @@ import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_events from "./stream_events.ts";
+import * as stream_popover from "./stream_popover.ts";
 import * as submessage from "./submessage.ts";
 import * as typing_events from "./typing_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -349,6 +350,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     composebox_typeahead.handle_users_fetched();
     message_edit_history.handle_users_fetched(user_ids);
     message_report.handle_users_fetched(user_ids);
+    stream_popover.handle_users_fetched(user_ids);
     if (narrow_state.is_message_feed_visible()) {
         compose_closed_ui.update_reply_button();
         narrow_title.update_narrow_title(narrow_state.filter());
