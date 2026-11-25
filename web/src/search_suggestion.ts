@@ -268,6 +268,7 @@ function format_as_suggestion(terms: NarrowTerm[], is_operator_suggestion = fals
 
 function compare_by_direct_message_group(
     valid_user_ids: number[],
+    query: string,
 ): (person1: User, person2: User) => number {
     assert(people.is_valid_user_ids(valid_user_ids));
     // Construct dict for all direct message groups, so we can
@@ -299,7 +300,7 @@ function compare_by_direct_message_group(
         if (diff !== 0) {
             return diff;
         }
-        return typeahead_helper.compare_users_for_dms(person1, person2);
+        return typeahead_helper.compare_users_for_dms(person1, person2, query);
     };
 }
 
@@ -498,7 +499,7 @@ function get_group_suggestions(
             return new_query === "" || person_matcher(person);
         });
 
-        persons.sort(compare_by_direct_message_group(existing_user_ids));
+        persons.sort(compare_by_direct_message_group(existing_user_ids, new_query));
 
         // Take top 15 persons, since they're ordered by direct message recency.
         persons = persons.slice(0, 15);
@@ -547,7 +548,9 @@ function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
         }
 
         persons = people.get_people_for_search_bar(query);
-        persons.sort(typeahead_helper.compare_users_for_dms);
+        persons.sort((person_a, person_b) =>
+            typeahead_helper.compare_users_for_dms(person_a, person_b, query),
+        );
         return persons;
     };
 }

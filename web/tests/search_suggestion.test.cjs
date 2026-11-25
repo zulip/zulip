@@ -361,6 +361,58 @@ test("dm_suggestions_for_exact_full_name", () => {
     assert.deepEqual(suggestions, [`dm:${john_doe.user_id}`]);
 });
 
+test("person_suggestions_prefer_shorter_names_while_typing", () => {
+    // While the user is typing, person suggestions are ordered by name
+    // length so the shorter (and therefore more likely) match comes
+    // first, matching the behavior of the compose typeahead. This only
+    // works if the typed query is passed down to compare_users_for_dms.
+    //
+    // "Zebediah Long" sorts before "Zed" alphabetically, so the order
+    // asserted here only holds when the name-length tiebreaker applies.
+    const zeb = make_user({
+        email: "zeb@zulip.com",
+        user_id: 301,
+        full_name: "Zebediah Long",
+    });
+    const zed = make_user({
+        email: "zed@zulip.com",
+        user_id: 302,
+        full_name: "Zed",
+    });
+    people.add_active_user(zeb, "server_events");
+    people.add_active_user(zed, "server_events");
+
+    assert.deepEqual(get_suggestions("dm:ze"), [`dm:${zed.user_id}`, `dm:${zeb.user_id}`]);
+    assert.deepEqual(get_suggestions("sender:ze"), [
+        `sender:${zed.user_id}`,
+        `sender:${zeb.user_id}`,
+    ]);
+});
+
+test("group_suggestions_prefer_shorter_names_while_typing", () => {
+    // Same name-length tiebreaker, for the suggestion of which user to add
+    // to an existing group direct message.
+    const zeb = make_user({
+        email: "zeb@zulip.com",
+        user_id: 301,
+        full_name: "Zebediah Long",
+    });
+    const zed = make_user({
+        email: "zed@zulip.com",
+        user_id: 302,
+        full_name: "Zed",
+    });
+    people.add_active_user(zeb, "server_events");
+    people.add_active_user(zed, "server_events");
+
+    const suggestions = get_suggestions("ze", `dm:${alice.user_id}`);
+    const zed_suggestion = `dm:${alice.user_id},${zed.user_id}`;
+    const zeb_suggestion = `dm:${alice.user_id},${zeb.user_id}`;
+    assert.ok(suggestions.includes(zed_suggestion));
+    assert.ok(suggestions.includes(zeb_suggestion));
+    assert.ok(suggestions.indexOf(zed_suggestion) < suggestions.indexOf(zeb_suggestion));
+});
+
 test("group_suggestions", () => {
     // If there's an existing completed user pill right before
     // the input string, we suggest a user group as one of the
@@ -1509,8 +1561,9 @@ test("people_suggestions", ({override}) => {
 
     let suggestions = get_suggestions(query);
 
-    // Both match "te"; compare_users_for_dms called without query
-    // so no name-length tiebreaker — alphabetical by full_name.
+    // Both match "te", and both names are 9 characters long, so the
+    // name-length tiebreaker doesn't separate them and they sort
+    // alphabetically by full_name.
     let expected = [
         "te",
         `dm:${bob.user_id}`, // Bob Térry
