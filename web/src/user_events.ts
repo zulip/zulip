@@ -17,6 +17,7 @@ import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_report from "./message_report.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -345,6 +346,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     drafts_overlay_ui.handle_users_fetched();
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
+    message_report.handle_users_fetched(user_ids);
     if (narrow_state.is_message_feed_visible()) {
         compose_closed_ui.update_reply_button();
         narrow_title.update_narrow_title(narrow_state.filter());

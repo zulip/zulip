@@ -2,7 +2,9 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
+import render_recipient_row from "../templates/recipient_row.hbs";
 import render_report_message_modal from "../templates/report_message_modal.hbs";
+import render_single_message from "../templates/single_message.hbs";
 
 import * as channel from "./channel.ts";
 import * as condense from "./condense.ts";
@@ -16,6 +18,7 @@ import {
     get_timestr,
     populate_group_from_message,
 } from "./message_list_view.ts";
+import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import {update_elements} from "./rendered_markdown.ts";
@@ -121,6 +124,52 @@ function post_process_message_preview($row: JQuery): void {
     const $widget_content = $content.find(".widget-content");
     $widget_content.find("button, input, select").prop("disabled", true);
     $widget_content.find(".poll-edit-question, .poll-option-bar").hide();
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    const $message_preview_container = $("#report-message-preview-container");
+    const $message_row = $message_preview_container.find(".message_row");
+    if ($message_row.length === 0) {
+        return;
+    }
+    const message = message_store.get(rows.id($message_row));
+    assert(message !== undefined);
+    // The preview shows the sender, the DM recipients and, in a
+    // widget like a poll, the users who have used it.
+    const shown_user_ids = new Set([
+        message.sender_id,
+        ...(people.pm_with_user_ids(message) ?? []),
+        ...message.submessages.map((submessage) => submessage.sender_id),
+    ]);
+    const shows_fetched_user = user_ids.some((user_id) => shown_user_ids.has(user_id));
+    if (!shows_fetched_user) {
+        return;
+    }
+    // We redraw only the message preview, so that what the user has
+    // entered in the rest of the form is kept.
+    const is_collapsed = $message_preview_container.find(".message_content").hasClass("collapsed");
+    $message_preview_container.html(
+        render_recipient_row(get_message_group_for_message_preview(message)) +
+            render_single_message({
+                ...get_message_container_for_preview(message),
+                message_list_id: "",
+            }),
+    );
+    post_process_message_preview($message_preview_container.find(".message_row"));
+    if (is_collapsed) {
+        $message_preview_container.find(".message_content").addClass("collapsed");
+        condense.show_message_expander(
+            $message_preview_container,
+            null,
+            $t({defaultMessage: "Show message"}),
+        );
+    } else {
+        condense.show_message_condenser(
+            $message_preview_container,
+            null,
+            $t({defaultMessage: "Hide message"}),
+        );
+    }
 }
 
 export function show_message_report_modal(message: Message): void {
