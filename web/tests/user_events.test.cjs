@@ -102,6 +102,9 @@ const narrow_banner = mock_esm("../src/narrow_banner", {
 const narrow_title = mock_esm("../src/narrow_title", {
     update_narrow_title() {},
 });
+const typing_events = mock_esm("../src/typing_events", {
+    render_notifications_for_narrow() {},
+});
 mock_esm("../src/narrow_state", {
     filter: () => message_lists.current?.data.filter,
     is_message_feed_visible: () => message_lists.current !== undefined,
@@ -523,6 +526,11 @@ run_test("initialize registers users_fetched callback", ({override}) => {
         narrow_banner_user_ids = user_ids;
     });
 
+    let typing_notifications_rendered = false;
+    override(typing_events, "render_notifications_for_narrow", () => {
+        typing_notifications_rendered = true;
+    });
+
     const isaac = make_user({
         email: "isaac@example.com",
         user_id: 32,
@@ -542,6 +550,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     assert.ok(widgets_rerendered);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
+    assert.ok(typing_notifications_rendered);
     assert.deepEqual(updated_users, [people.get_by_user_id(isaac.user_id)]);
 
     // The loading shimmers stop moving while requests for users fail.
