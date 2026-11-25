@@ -569,6 +569,35 @@ export function timer_text(seconds_left: number): string {
     return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
+export function get_edit_time_limit_tooltip(edit_limit_seconds: number): string {
+    const minutes = Math.floor(edit_limit_seconds / 60);
+    if (minutes % (24 * 60) === 0) {
+        return $t(
+            {
+                defaultMessage:
+                    "This organization is configured to restrict editing of message content to {N, plural, one {# day} other {# days}} after it is sent.",
+            },
+            {N: minutes / (24 * 60)},
+        );
+    }
+    if (minutes % 60 === 0) {
+        return $t(
+            {
+                defaultMessage:
+                    "This organization is configured to restrict editing of message content to {N, plural, one {# hour} other {# hours}} after it is sent.",
+            },
+            {N: minutes / 60},
+        );
+    }
+    return $t(
+        {
+            defaultMessage:
+                "This organization is configured to restrict editing of message content to {N, plural, one {# minute} other {# minutes}} after it is sent.",
+        },
+        {N: minutes},
+    );
+}
+
 function create_copy_to_clipboard_handler(
     $row: JQuery,
     source: HTMLElement,
@@ -636,7 +665,9 @@ function edit_message($row: JQuery, raw_content: string): void {
             file_upload_enabled,
             giphy_enabled: gif_state.is_giphy_enabled(),
             tenor_enabled: gif_state.is_tenor_enabled(),
-            minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
+            edit_time_limit_tooltip: get_edit_time_limit_tooltip(
+                realm.realm_message_content_edit_limit_seconds ?? 0,
+            ),
             max_message_length: realm.max_message_length,
         }),
     );

@@ -346,3 +346,22 @@ run_test("timer_text", () => {
     assert.equal(timer_text(day), "translated: 1 day to edit");
     assert.equal(timer_text(7 * day - 1), "translated: 6 days to edit");
 });
+
+run_test("get_edit_time_limit_tooltip", () => {
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(90 * 60),
+        "translated: This organization is configured to restrict editing of message content to 90 minutes after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 1 hour after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(24 * 60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 1 day after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(7 * 24 * 60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 7 days after it is sent.",
+    );
+});
