@@ -3370,7 +3370,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=38,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3405,7 +3405,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=59,
+            query_count=57,
             cache_count=26,
             target_users=target_users,
             is_realm_admin=True,
@@ -3425,7 +3425,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=41,
+            query_count=39,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3452,7 +3452,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=42,
+            query_count=40,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=False,
@@ -3488,7 +3488,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=38,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3510,7 +3510,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=47,
+            query_count=45,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3981,7 +3981,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(public_stream)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, public_stream)
-        with self.assert_database_query_count(43):
+        with self.assert_database_query_count(41):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -3994,7 +3994,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(private_stream, invite_only=True)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, private_stream)
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(35):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -4764,7 +4764,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(45),
+            self.assert_database_query_count(43),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -5712,7 +5712,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(43):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -5720,7 +5720,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(50):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -5732,7 +5732,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(53):
+        with self.assert_database_query_count(51):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],
@@ -5926,7 +5926,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        with self.assert_database_query_count(70):
+        with self.assert_database_query_count(68):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -5956,7 +5956,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # we expect an announcement message and new channel message,
         # but no DM notifications.
         now = timezone_now()
-        with self.assert_database_query_count(53):
+        with self.assert_database_query_count(51):
             response = self.subscribe_via_post(
                 desdemona,
                 ["test B"],
@@ -6045,7 +6045,7 @@ class SubscriptionAPITest(ZulipTestCase):
         now = timezone_now()
         with (
             self.settings(MAX_BULK_SUBSCRIPTION_MESSAGES=5),
-            self.assert_database_query_count(53),
+            self.assert_database_query_count(51),
         ):
             response = self.subscribe_via_post(
                 desdemona,
@@ -6097,7 +6097,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # When send_new_subscription_messages is false, confirm that the
         # response doesn't include new_subscription_messages_sent boolean
         # field.
-        with self.assert_database_query_count(45):
+        with self.assert_database_query_count(43):
             response = self.subscribe_via_post(
                 desdemona,
                 ["test E"],

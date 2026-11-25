@@ -76,12 +76,21 @@ def message_to_encoded_cache(message: Message) -> bytes:
 
 
 def update_message_cache(
-    changed_messages: Iterable[Message], realm_id: int | None = None
+    changed_messages: Iterable[Message],
+    realm_id: int | None = None,
+    *,
+    new_message_submessages: Mapping[int, list[dict[str, Any]]] | None = None,
 ) -> dict[int, bytes]:
     """Updates the message as stored in the to_dict cache (for serving
-    messages)."""
+    messages).
+
+    For messages that are being sent, pass the submessages created
+    while sending them as new_message_submessages, to save querying
+    for their submessages and reactions."""
     items_for_remote_cache = {}
-    changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
+    changed_messages_to_dict = MessageDict.messages_to_encoded_cache(
+        changed_messages, realm_id, new_message_submessages=new_message_submessages
+    )
     for msg_id, msg in changed_messages_to_dict.items():
         items_for_remote_cache[to_dict_cache_key_id(msg_id)] = msg
 
@@ -151,8 +160,11 @@ class MessageDict:
         messages: list[Message],
         realm_id: int,
         recipient_dm_user_ids: Mapping[int, set[int]],
+        submessages: Mapping[int, list[dict[str, Any]]],
     ) -> dict[int, dict[str, Any]]:
-        encoded_messages = update_message_cache(messages, realm_id)
+        encoded_messages = update_message_cache(
+            messages, realm_id, new_message_submessages=submessages
+        )
         objs = [
             extract_message_dict(encoded_message) for encoded_message in encoded_messages.values()
         ]
@@ -290,15 +302,23 @@ class MessageDict:
 
     @staticmethod
     def messages_to_encoded_cache(
-        messages: Iterable[Message], realm_id: int | None = None
+        messages: Iterable[Message],
+        realm_id: int | None = None,
+        *,
+        new_message_submessages: Mapping[int, list[dict[str, Any]]] | None = None,
     ) -> dict[int, bytes]:
-        messages_dict = MessageDict.messages_to_encoded_cache_helper(messages, realm_id)
+        messages_dict = MessageDict.messages_to_encoded_cache_helper(
+            messages, realm_id, new_message_submessages=new_message_submessages
+        )
         encoded_messages = {msg["id"]: stringify_message_dict(msg) for msg in messages_dict}
         return encoded_messages
 
     @staticmethod
     def messages_to_encoded_cache_helper(
-        messages: Iterable[Message], realm_id: int | None = None
+        messages: Iterable[Message],
+        realm_id: int | None = None,
+        *,
+        new_message_submessages: Mapping[int, list[dict[str, Any]]] | None = None,
     ) -> list[dict[str, Any]]:
         # Near duplicate of the build_message_dict + get_raw_db_rows
         # code path that accepts already fetched Message objects
@@ -313,7 +333,7 @@ class MessageDict:
                 return Stream.objects.get(id=message.recipient.type_id).realm_id
             return message.realm_id
 
-        message_rows = [
+        message_rows: list[dict[str, Any]] = [
             {
                 "id": message.id,
                 DB_TOPIC_NAME: message.topic_name(),
@@ -334,7 +354,14 @@ class MessageDict:
             for message in messages
         ]
 
-        MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+        if new_message_submessages is None:
+            MessageDict.sew_submessages_and_reactions_to_msgs(message_rows)
+        else:
+            # Messages that are being sent have no reactions yet, and
+            # no submessages other than those created while sending.
+            for row in message_rows:
+                row["submessages"] = new_message_submessages[row["id"]]
+                row["reactions"] = []
         return [MessageDict.build_dict_from_raw_db_row(row) for row in message_rows]
 
     @staticmethod
