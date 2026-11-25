@@ -199,6 +199,28 @@ export function update_pill_full_name(
     pill_widget.updatePill(pill.$element[0]!, {...pill.item, full_name});
 }
 
+export function update_placeholder_user_pills(
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+): void {
+    for (const item of pill_widget.items()) {
+        if (item.type !== "user" || !item.is_placeholder_user) {
+            continue;
+        }
+        const user = people.maybe_get_user_by_id(item.user_id, true);
+        if (user === undefined || user.is_placeholder_user) {
+            continue;
+        }
+        const pill = pill_widget.getPillByPredicate(
+            (pill_item: CombinedPill) =>
+                pill_item.type === "user" && pill_item.user_id === item.user_id,
+        );
+        assert(pill !== undefined);
+        // updatePill doesn't run the widget's create and remove
+        // callbacks, so this isn't treated as an edit by the user.
+        pill_widget.updatePill(pill.$element[0]!, create_pill_data(user));
+    }
+}
+
 export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
     let status_emoji_info;
     let has_status;

@@ -235,3 +235,48 @@ test("update_pill_full_name", () => {
     user_pill.update_pill_full_name(pill_widget, 999, "Nobody");
     assert.ok(!pill_updated);
 });
+
+test("update_placeholder_user_pills", () => {
+    const loading_user = make_user({
+        email: "user105@example.com",
+        user_id: 105,
+        full_name: "translated: Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(loading_user);
+
+    const group_pill = {item: {type: "user_group", group_id: 1}, $element: {0: {}}};
+    const loaded_pill = {item: {...isaac_item}, $element: {0: {}}};
+    const loading_pill = {item: user_pill.create_pill_data(loading_user), $element: {0: {}}};
+    assert.ok(loading_pill.item.is_placeholder_user);
+    const pills = [group_pill, loaded_pill, loading_pill];
+
+    let updated_pills = [];
+    pill_widget.items = () => pills.map((pill) => pill.item);
+    pill_widget.getPillByPredicate = (predicate) => pills.find((pill) => predicate(pill.item));
+    pill_widget.updatePill = (element, item) => {
+        const updated_pill = pills.find((pill) => pill.$element[0] === element);
+        updated_pill.item = item;
+        updated_pills.push(updated_pill);
+    };
+
+    // The user is still a placeholder, so their pill stays as it is.
+    user_pill.update_placeholder_user_pills(pill_widget);
+    assert.deepEqual(updated_pills, []);
+
+    // Once the user's data arrives, only their pill is updated.
+    people.add_active_user({
+        ...loading_user,
+        full_name: "Grace Hopper",
+        is_placeholder_user: false,
+    });
+    user_pill.update_placeholder_user_pills(pill_widget);
+    assert.deepEqual(updated_pills, [loading_pill]);
+    assert.equal(loading_pill.item.full_name, "Grace Hopper");
+    assert.equal(loading_pill.item.is_placeholder_user, false);
+
+    // A pill that has been updated is left alone afterwards.
+    updated_pills = [];
+    user_pill.update_placeholder_user_pills(pill_widget);
+    assert.deepEqual(updated_pills, []);
+});
