@@ -590,6 +590,52 @@ export class Typeahead<ItemType extends string | object> {
         return this.shown && this.$menu.find(".active").length > 0;
     }
 
+    get_active_item(): ItemType | undefined {
+        if (!this.has_active_item()) {
+            return undefined;
+        }
+        return this.values.get(the(this.$menu.find(".active")));
+    }
+
+    // Reruns the lookup for a typeahead that is showing, for when the
+    // data behind its items changes without the user typing. The
+    // highlight stays on the item it was on, so that pressing Enter
+    // still selects what the user chose.
+    lookup_keeping_active_item(
+        is_same_item: (item: ItemType, active_item: ItemType) => boolean,
+        force_lookup?: boolean,
+    ): this {
+        if (!this.shown) {
+            return this;
+        }
+        const active_item = this.get_active_item();
+
+        this.lookup(false, force_lookup);
+
+        if (!this.shown) {
+            return this;
+        }
+        if (active_item === undefined) {
+            if (!this.requireHighlight) {
+                this.$menu.find(".active").removeClass("active");
+            }
+            return this;
+        }
+        const $same_item = this.$menu
+            .find(".typeahead-item")
+            .filter((_index, element) => {
+                const item = this.values.get(element);
+                return item !== undefined && is_same_item(item, active_item);
+            })
+            .first();
+        if ($same_item.length > 0) {
+            this.$menu.find(".active").removeClass("active");
+            $same_item.addClass("active");
+            scroll_util.scroll_element_into_container($same_item, this.$menu);
+        }
+        return this;
+    }
+
     defaultMatcher(item: ItemType, query: string): boolean {
         assert(typeof item === "string");
         return item.toLowerCase().includes(query.toLowerCase());
