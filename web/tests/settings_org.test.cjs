@@ -282,9 +282,18 @@ function test_sync_realm_settings({override}) {
 
         override(realm, "realm_message_content_edit_limit_seconds", 120);
 
+        // An error shown for an invalid custom value is cleared when the
+        // saved value is synced to the page.
+        $property_elem.addClass("invalid-input");
+        const $property_error_elem = $("#id_realm_message_content_edit_limit_minutes_error");
+        $property_error_elem.text("translated: Time limit must be a positive number.");
+        $property_error_elem.show();
+
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), "2");
         assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "minutes");
+        assert.ok(!$property_elem.hasClass("invalid-input"));
+        assert.ok(!$property_error_elem.visible());
 
         override(realm, "realm_message_content_edit_limit_seconds", 1209600);
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -499,6 +508,12 @@ function test_discard_changes_button({override}, discard_changes) {
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
+    // An error shown for an invalid custom value is cleared by discarding.
+    $message_content_edit_limit_minutes.addClass("invalid-input");
+    const $edit_limit_error_elem = $("#id_realm_message_content_edit_limit_minutes_error");
+    $edit_limit_error_elem.text("translated: Time limit must be a positive number.");
+    $edit_limit_error_elem.show();
+
     discard_changes.call({to_$: () => $(".discard-button")}, ev);
 
     assert.equal(
@@ -508,6 +523,8 @@ function test_discard_changes_button({override}, discard_changes) {
     assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "1");
     assert.equal($message_content_edit_limit_unit.val(), "hours");
+    assert.ok(!$message_content_edit_limit_minutes.hasClass("invalid-input"));
+    assert.ok(!$edit_limit_error_elem.visible());
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
     assert.equal($message_content_delete_limit_unit.val(), "minutes");
@@ -803,6 +820,8 @@ test("custom time limit save validation and change detection", ({override}) => {
     $dropdown_elem.set_parent($setting_elem);
     $dropdown_elem.set_closest_results(".settings-section.show", $settings_section);
     $custom_input_elem.set_closest_results(".dependent-settings-block", $dependent_block);
+    // The element showing why the value is invalid is looked up by the input's id.
+    $custom_input_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
     $dependent_block.set_find_results(".time-limit-custom-unit", $unit_elem);
 
     $setting_elem.set_find_results(
@@ -826,6 +845,20 @@ test("custom time limit save validation and change detection", ({override}) => {
         $custom_input_elem.val(value);
         $unit_elem.val(unit);
         settings_components.save_discard_realm_settings_widget_status_handler($save_button_header);
+    };
+
+    const $error_elem = $("#id_realm_message_content_edit_limit_minutes_error");
+    const positive_number_error = "translated: Time limit must be a positive number.";
+    const whole_seconds_error = "translated: Time limit must be a whole number of seconds.";
+    const too_large_error = "translated: Time limit is too large.";
+
+    // An invalid value is highlighted and explained; anything else is not.
+    const check_error = (expected_error) => {
+        assert.equal($custom_input_elem.hasClass("invalid-input"), expected_error !== undefined);
+        assert.equal($error_elem.visible(), expected_error !== undefined);
+        if (expected_error !== undefined) {
+            assert.equal($error_elem.text(), expected_error);
+        }
     };
 
     // Same duration (10 minutes = 600s): no unsaved changes.
@@ -868,29 +901,58 @@ test("custom time limit save validation and change detection", ({override}) => {
     check_state("1.001", "hours");
     assert.equal($save_button_controls.visible(), true);
     assert.equal($save_button.prop("disabled"), true);
+    check_error(whole_seconds_error);
 
     check_state("0.122", "minutes");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(whole_seconds_error);
 
     check_state("0.01", "minutes");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(whole_seconds_error);
 
     // Upper bound (32-bit signed integer seconds = 2147483647) and invalid inputs.
     check_state("3550", "weeks");
     assert.equal($save_button.prop("disabled"), false);
     assert.equal(settings_components.get_input_element_value($dropdown_elem), 2147040000);
+    check_error(undefined);
 
     check_state("3551", "weeks");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(too_large_error);
 
     check_state("0", "minutes");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(positive_number_error);
 
     check_state("-5", "days");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(positive_number_error);
+
+    check_state("0.0", "hours");
+    assert.equal($save_button.prop("disabled"), true);
+    check_error(positive_number_error);
 
     check_state("24a", "hours");
     assert.equal($save_button.prop("disabled"), true);
+    check_error(positive_number_error);
+
+    // An empty value is not an error: Save stays disabled, but the input is
+    // neither highlighted nor explained.
+    check_state("abc", "hours");
+    check_error(positive_number_error);
+    check_state("", "minutes");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), true);
+    check_error(undefined);
+
+    // A whitespace-only value is treated like an empty one.
+    check_state("abc", "hours");
+    check_error(positive_number_error);
+    check_state(" ".repeat(3), "minutes");
+    assert.equal($save_button_controls.visible(), true);
+    assert.equal($save_button.prop("disabled"), true);
+    check_error(undefined);
 
     // Invalid input that would round to the saved value (1.0001 hours ~= 3600s)
     // must remain a pending change with Save disabled and Discard visible.
@@ -1201,4 +1263,177 @@ test("misc", ({override}) => {
 
     settings_account.update_avatar_change_display();
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
+});
+
+test("update_custom_time_limit_input_validity", () => {
+    const $subsection = $.create("<validity-subsection-stub>");
+    const $settings_section = $.create("<settings-section-stub>");
+
+    const $edit_setting = $.create("<edit-time-limit-setting-stub>");
+    const $edit_dropdown = $("#id_realm_message_content_edit_limit_seconds");
+    const $edit_input = $("#id_realm_message_content_edit_limit_minutes");
+    const $edit_unit = $("#id_realm_message_content_edit_limit_unit");
+    const $edit_dependent_block = $.create("<edit-dependent-block-stub>");
+
+    $edit_dropdown.attr("id", "id_realm_message_content_edit_limit_seconds");
+    $edit_dropdown.set_parent($edit_setting);
+    $edit_dropdown.set_closest_results(".settings-section.show", $settings_section);
+    $edit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
+    $edit_input.set_parent($edit_dependent_block);
+    $edit_input.set_closest_results(".dependent-settings-block", $edit_dependent_block);
+    $edit_dependent_block.set_find_results(".time-limit-custom-unit", $edit_unit);
+    $edit_setting.set_find_results(
+        "select:not([multiple]):not(.time-limit-custom-unit)",
+        $edit_dropdown,
+    );
+    $edit_setting.set_find_results("input.time-limit-custom-input", $edit_input);
+    $edit_setting.set_find_results(".time-limit-custom-input", $edit_input);
+
+    const $delete_setting = $.create("<delete-time-limit-setting-stub>");
+    const $delete_dropdown = $("#id_realm_message_content_delete_limit_seconds");
+    const $delete_input = $("#id_realm_message_content_delete_limit_minutes");
+    const $delete_unit = $("#id_realm_message_content_delete_limit_unit");
+    const $delete_dependent_block = $.create("<delete-dependent-block-stub>");
+
+    $delete_dropdown.attr("id", "id_realm_message_content_delete_limit_seconds");
+    $delete_dropdown.set_parent($delete_setting);
+    $delete_dropdown.set_closest_results(".settings-section.show", $settings_section);
+    $delete_input.attr("id", "id_realm_message_content_delete_limit_minutes");
+    $delete_input.set_closest_results(".dependent-settings-block", $delete_dependent_block);
+    $delete_dependent_block.set_find_results(".time-limit-custom-unit", $delete_unit);
+    $delete_setting.set_find_results(
+        "select:not([multiple]):not(.time-limit-custom-unit)",
+        $delete_dropdown,
+    );
+    $delete_setting.set_find_results("input.time-limit-custom-input", $delete_input);
+
+    $subsection.set_find_results(".time-limit-setting", [$edit_setting]);
+
+    const $edit_error = $("#id_realm_message_content_edit_limit_minutes_error");
+    const $delete_error = $("#id_realm_message_content_delete_limit_minutes_error");
+    const positive_number_error = "translated: Time limit must be a positive number.";
+    const whole_seconds_error = "translated: Time limit must be a whole number of seconds.";
+    const too_large_error = "translated: Time limit is too large.";
+
+    // An invalid value is highlighted and explained; anything else is not.
+    const check_edit_input = (value, unit, expected_error) => {
+        $edit_dropdown.val("custom_period");
+        $edit_input.val(value);
+        $edit_unit.val(unit);
+        settings_components.update_custom_time_limit_input_validity($subsection);
+        assert.equal($edit_input.hasClass("invalid-input"), expected_error !== undefined);
+        assert.equal($edit_error.visible(), expected_error !== undefined);
+        if (expected_error !== undefined) {
+            assert.equal($edit_error.text(), expected_error);
+        }
+    };
+
+    // Values that cannot be converted to whole seconds.
+    check_edit_input("0.123", "weeks", whole_seconds_error);
+    check_edit_input("0.12345678", "minutes", whole_seconds_error);
+    check_edit_input("2", "weeks", undefined);
+
+    // The same value can become valid or invalid when only the unit changes.
+    check_edit_input("0.125", "hours", undefined);
+    check_edit_input("0.125", "minutes", whole_seconds_error);
+    check_edit_input("0.125", "hours", undefined);
+
+    // Values that are not positive numbers.
+    check_edit_input("0", "minutes", positive_number_error);
+    check_edit_input("-5", "days", positive_number_error);
+    check_edit_input("0.0", "hours", positive_number_error);
+    check_edit_input("abc", "minutes", positive_number_error);
+
+    // Values above the upper bound.
+    check_edit_input("3551", "weeks", too_large_error);
+    check_edit_input("3550", "weeks", undefined);
+
+    // An empty value is not an error and clears an error shown earlier.
+    check_edit_input("abc", "minutes", positive_number_error);
+    check_edit_input("", "minutes", undefined);
+
+    // A whitespace-only value is treated like an empty one.
+    check_edit_input("abc", "minutes", positive_number_error);
+    check_edit_input(" ".repeat(3), "minutes", undefined);
+
+    // Each setting shows the error for its own value.
+    $subsection.set_find_results(".time-limit-setting", [$edit_setting, $delete_setting]);
+    $edit_dropdown.val("custom_period");
+    $edit_unit.val("weeks");
+    $edit_input.val("0.123");
+    $delete_dropdown.val("custom_period");
+    $delete_unit.val("minutes");
+    $delete_input.val("0");
+    settings_components.update_custom_time_limit_input_validity($subsection);
+    assert.ok($edit_input.hasClass("invalid-input"));
+    assert.ok($delete_input.hasClass("invalid-input"));
+    assert.ok($edit_error.visible());
+    assert.ok($delete_error.visible());
+    assert.equal($edit_error.text(), whole_seconds_error);
+    assert.equal($delete_error.text(), positive_number_error);
+
+    $subsection.set_find_results(".time-limit-setting", [$edit_setting]);
+
+    // Choosing a preset instead of Custom clears the error along with the highlight.
+    $edit_input.addClass("invalid-input");
+    $edit_error.show();
+    $edit_dropdown.val("600");
+    settings_components.update_custom_value_input("realm_message_content_edit_limit_seconds");
+    assert.ok(!$edit_input.hasClass("invalid-input"));
+    assert.ok(!$edit_error.visible());
+});
+
+test("parse_custom_time_limit_input", () => {
+    // Values that are not numbers are rejected for any unit.
+    for (const value of ["abc", "-5", "1e3", "1..2", "1,5"]) {
+        assert.deepEqual(settings_components.parse_custom_time_limit_input(value, "minutes"), {
+            status: "error",
+            error: "not_a_positive_number",
+        });
+    }
+
+    // Values that are not a whole number of seconds are rejected.
+    for (const [value, unit] of [
+        ["0.125", "minutes"],
+        ["0.123", "weeks"],
+        ["1.0001", "hours"],
+        ["0.12345678", "minutes"],
+    ]) {
+        assert.deepEqual(settings_components.parse_custom_time_limit_input(value, unit), {
+            status: "error",
+            error: "not_whole_seconds",
+        });
+    }
+
+    // Whether a value is positive or within the allowed range is not checked here.
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("0", "minutes"), {
+        status: "parsed",
+        seconds: 0,
+    });
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("0.0", "hours"), {
+        status: "parsed",
+        seconds: 0,
+    });
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("3551", "weeks"), {
+        status: "parsed",
+        seconds: 2147644800,
+    });
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("596524", "hours"), {
+        status: "parsed",
+        seconds: 2147486400,
+    });
+
+    // Values that convert to whole seconds.
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("2", "hours"), {
+        status: "parsed",
+        seconds: 7200,
+    });
+    assert.deepEqual(settings_components.parse_custom_time_limit_input("0.125", "hours"), {
+        status: "parsed",
+        seconds: 450,
+    });
+    assert.deepEqual(settings_components.parse_custom_time_limit_input(" 2 ", "weeks"), {
+        status: "parsed",
+        seconds: 1209600,
+    });
 });

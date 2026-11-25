@@ -159,32 +159,55 @@ function get_time_limit_unit($elem: JQuery<HTMLInputElement>): CustomTimeUnit | 
     return "minutes";
 }
 
-function parse_exact_custom_time_seconds(
+type CustomTimeLimitParseResult =
+    | {status: "parsed"; seconds: number}
+    | {status: "error"; error: "not_a_positive_number" | "not_whole_seconds"};
+
+export type CustomTimeLimitInputError = "not_a_positive_number" | "not_whole_seconds" | "too_large";
+
+type CustomTimeLimitInputResult =
+    {status: "valid"; seconds: number} | {status: "error"; error: CustomTimeLimitInputError};
+
+// Converts a custom time limit into exact whole seconds, or reports why it
+// cannot. Whether the value is positive or within the allowed range is not
+// checked here.
+export function parse_custom_time_limit_input(
     input_value: string,
     time_unit: CustomTimeUnit,
-): number | undefined {
+): CustomTimeLimitParseResult {
     const trimmed = input_value.trim();
     if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(trimmed)) {
-        return undefined;
+        return {status: "error", error: "not_a_positive_number"};
     }
     const [int_part = "", raw_frac = ""] = trimmed.split(".", 2);
     const frac = raw_frac.replace(/0+$/, "");
     const unit_seconds = util.get_custom_time_in_minutes(time_unit, 1) * 60;
     const base_seconds = Number(int_part) * unit_seconds;
     if (frac === "") {
-        return base_seconds;
+        return {status: "parsed", seconds: base_seconds};
     }
     // Supported units have factors of at most 2^7 and 5^2 in seconds, so more
     // than 7 fractional digits can never represent an exact whole number of seconds.
     if (frac.length > 7) {
-        return undefined;
+        return {status: "error", error: "not_whole_seconds"};
     }
     const scale = 10 ** frac.length;
     const scaled_frac_seconds = Number(frac) * unit_seconds;
     if (scaled_frac_seconds % scale !== 0) {
+        return {status: "error", error: "not_whole_seconds"};
+    }
+    return {status: "parsed", seconds: base_seconds + scaled_frac_seconds / scale};
+}
+
+function parse_exact_custom_time_seconds(
+    input_value: string,
+    time_unit: CustomTimeUnit,
+): number | undefined {
+    const result = parse_custom_time_limit_input(input_value, time_unit);
+    if (result.status === "error") {
         return undefined;
     }
-    return base_seconds + scaled_frac_seconds / scale;
+    return result.seconds;
 }
 
 export function get_realm_time_limit_custom_input_values(property: MessageTimeLimitSetting): {
@@ -434,6 +457,7 @@ export function update_custom_value_input(property_name: MessageTimeLimitSetting
     const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
     change_element_block_display_property(custom_input_elem_id, show_custom_limit_input);
     if (!show_custom_limit_input) {
+        set_custom_time_limit_input_error($custom_input_elem, undefined);
         return;
     }
     const {value, unit} = get_realm_time_limit_custom_input_values(property_name);
@@ -465,6 +489,7 @@ export function set_time_limit_setting(property_name: MessageTimeLimitSetting): 
     const $custom_input = $dropdown_elem.parent().find(".time-limit-custom-input");
     const {value, unit} = get_realm_time_limit_custom_input_values(property_name);
     $custom_input.val(value);
+    set_custom_time_limit_input_error($custom_input, undefined);
     $dropdown_elem.parent().find(".time-limit-custom-unit").val(unit);
 
     change_element_block_display_property(
@@ -1427,6 +1452,7 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
 
     const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
+    update_custom_time_limit_input_validity($subsection);
     change_save_button_state($save_button_controls, button_state);
 }
 
@@ -1534,6 +1560,81 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val()!, true);
 }
 
+function get_custom_time_limit_input_status(
+    $custom_input_elem: JQuery<HTMLInputElement>,
+): CustomTimeLimitInputResult {
+    const time_unit = get_time_limit_unit($custom_input_elem) ?? "minutes";
+    const parse_result = parse_custom_time_limit_input($custom_input_elem.val()!, time_unit);
+    if (parse_result.status === "error") {
+        return parse_result;
+    }
+    const {seconds} = parse_result;
+    if (seconds <= 0) {
+        return {status: "error", error: "not_a_positive_number"};
+    }
+    if (seconds > MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE) {
+        return {status: "error", error: "too_large"};
+    }
+    return {status: "valid", seconds};
+}
+
+function is_custom_unit_time_limit_valid($custom_input_elem: JQuery<HTMLInputElement>): boolean {
+    return get_custom_time_limit_input_status($custom_input_elem).status === "valid";
+}
+
+function get_custom_time_limit_error_message(error: CustomTimeLimitInputError): string {
+    const error_messages = {
+        not_a_positive_number: $t({defaultMessage: "Time limit must be a positive number."}),
+        not_whole_seconds: $t({defaultMessage: "Time limit must be a whole number of seconds."}),
+        too_large: $t({defaultMessage: "Time limit is too large."}),
+    };
+    return error_messages[error];
+}
+
+// The element that explains why a custom time limit is invalid is rendered
+// right below its input, with an id derived from the input's id.
+function set_custom_time_limit_input_error(
+    $custom_input_elem: JQuery,
+    result: CustomTimeLimitInputResult | undefined,
+): void {
+    const $error_elem = $(`#${CSS.escape(`${$custom_input_elem.attr("id")!}_error`)}`);
+    if (result !== undefined && result.status === "error") {
+        $custom_input_elem.addClass("invalid-input");
+        $error_elem.text(get_custom_time_limit_error_message(result.error));
+        $error_elem.show();
+        return;
+    }
+    $custom_input_elem.removeClass("invalid-input");
+    $error_elem.hide();
+}
+
+export function update_custom_time_limit_input_validity($subsection: JQuery): void {
+    const time_limit_settings = [...$subsection.find(".time-limit-setting")];
+    for (const setting_elem of time_limit_settings) {
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>(
+            "select:not([multiple]):not(.time-limit-custom-unit)",
+        );
+        const for_realm_default_settings =
+            $dropdown_elem.closest(".settings-section.show").attr("id") ===
+            "realm-user-default-settings";
+        const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
+        if (!CUSTOM_UNIT_TIME_LIMIT_SETTINGS.has(property_name)) {
+            continue;
+        }
+        const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
+            "input.time-limit-custom-input",
+        );
+        if ($custom_input_elem.length === 0) {
+            continue;
+        }
+        let result: CustomTimeLimitInputResult | undefined;
+        if ($dropdown_elem.val() === "custom_period" && $custom_input_elem.val()!.trim() !== "") {
+            result = get_custom_time_limit_input_status($custom_input_elem);
+        }
+        set_custom_time_limit_input_error($custom_input_elem, result);
+    }
+}
+
 function should_disable_save_button_for_time_limit_settings(
     time_limit_settings: HTMLElement[],
 ): boolean {
@@ -1553,15 +1654,7 @@ function should_disable_save_button_for_time_limit_settings(
 
         if ($dropdown_elem.val() === "custom_period") {
             if (CUSTOM_UNIT_TIME_LIMIT_SETTINGS.has(property_name)) {
-                const time_unit = get_time_limit_unit($custom_input_elem) ?? "minutes";
-                const exact_seconds = parse_exact_custom_time_seconds(
-                    $custom_input_elem.val()!,
-                    time_unit,
-                );
-                disable_save_button =
-                    exact_seconds === undefined ||
-                    exact_seconds <= 0 ||
-                    exact_seconds > MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
+                disable_save_button = !is_custom_unit_time_limit_valid($custom_input_elem);
             } else {
                 const custom_input_elem_val = util.check_time_input($custom_input_elem.val()!);
                 disable_save_button =
