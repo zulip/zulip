@@ -155,6 +155,9 @@ mock_esm("../src/settings_muted_users", {
 mock_esm("../src/stream_create_subscribers", {
     handle_users_fetched() {},
 });
+mock_esm("../src/user_group_create_members", {
+    handle_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_reply_button() {},
 });

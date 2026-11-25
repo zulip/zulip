@@ -100,6 +100,19 @@ export async function add_members_from_pills(): Promise<
     return {status: "synced"};
 }
 
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.groups_open() || $("#user-group-creation").css("display") === "none") {
+        return;
+    }
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of one of its users has arrived.
+    const fetched_user_ids = new Set(user_ids);
+    const members = user_group_create_members_data.sorted_members();
+    if (members.some((member) => "user_id" in member && fetched_user_ids.has(member.user_id))) {
+        redraw_member_list();
+    }
+}
+
 function sync_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.sync_user_ids(user_ids);
     user_group_create_members_data.sync_subgroup_ids(subgroup_ids);
@@ -209,6 +222,7 @@ export function build_widgets(): void {
                     is_current_user: member.user_id === current_user_id,
                     is_bot: member.is_bot,
                     img_src: people.small_avatar_url_for_person(member),
+                    is_placeholder_user: member.is_placeholder_user ?? false,
                     soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
                         member.user_id,
                     ),

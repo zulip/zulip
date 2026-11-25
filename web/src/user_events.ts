@@ -57,6 +57,7 @@ import * as stream_events from "./stream_events.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as submessage from "./submessage.ts";
 import * as typing_events from "./typing_events.ts";
+import * as user_group_create_members from "./user_group_create_members.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
@@ -367,6 +368,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     settings_muted_users.handle_users_fetched(user_ids);
     settings_exports.handle_users_fetched(user_ids);
     stream_create_subscribers.handle_users_fetched(user_ids);
+    user_group_create_members.handle_users_fetched(user_ids);
     stream_edit.handle_users_fetched(user_ids);
     user_group_edit.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
