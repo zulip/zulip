@@ -16,8 +16,8 @@ type MutedUserItem = {
     date_muted_str: string;
 };
 
-export function populate_list(): void {
-    const all_muted_users = muted_users.get_muted_users().map((user) => {
+function get_muted_user_items(): MutedUserItem[] {
+    return muted_users.get_muted_users().map((user) => {
         const muted_user = people.get_user_by_id_assert_valid(user.id);
         return {
             user_id: user.id,
@@ -27,6 +27,10 @@ export function populate_list(): void {
             can_unmute: !muted_user.is_inaccessible_user,
         };
     });
+}
+
+export function populate_list(): void {
+    const all_muted_users = get_muted_user_items();
     const $muted_users_table = $("#muted_users_table");
     const $search_input = $<HTMLInputElement>("input#muted_users_search");
 
