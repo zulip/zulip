@@ -21,6 +21,7 @@ from zerver.actions.message_send import (
     extract_stream_indicator,
     filter_presence_idle_user_ids,
     internal_prep_private_message,
+    internal_prep_private_messages,
     internal_prep_stream_message,
     internal_prep_stream_message_by_name,
     internal_send_group_direct_message,
@@ -83,7 +84,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
-from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 
@@ -3622,6 +3623,134 @@ class InternalPrepTest(ZulipTestCase):
         msg = self.get_last_message()
         expected = "Test message to bot"
         self.assertEqual(msg.content, expected)
+
+    def test_internal_prep_private_messages_notification_data(self) -> None:
+        """
+        Messages prepared together should get the same recipient and
+        the same data about which users to notify as messages prepared
+        one at a time, whether they mention the acting user, another
+        user, or nobody.
+        """
+        realm = get_realm("zulip")
+        notification_bot = self.notification_bot(realm)
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        default_bot = self.example_user("default_bot")
+
+        hamlet.long_term_idle = True
+        hamlet.save(update_fields=["long_term_idle"])
+        do_change_user_setting(
+            cordelia, "enable_offline_push_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            cordelia, "enable_offline_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            cordelia, "enable_online_push_notifications", False, acting_user=None
+        )
+        self.register_push_device_token(othello.id)
+
+        recipient_users_and_contents = [
+            (hamlet, f"@_**Iago|{iago.id}** subscribed you to #**Verona**."),
+            (cordelia, f"@_**Iago|{iago.id}** subscribed you to #**Verona**."),
+            (othello, f"@**Prospero from The Tempest|{prospero.id}** can help."),
+            (default_bot, "Hello, bot!"),
+        ]
+        batch_send_requests = internal_prep_private_messages(
+            realm, notification_bot, recipient_users_and_contents, acting_user=iago
+        )
+        single_send_requests = [
+            internal_prep_private_message(
+                notification_bot, recipient_user, content, acting_user=iago
+            )
+            for recipient_user, content in recipient_users_and_contents
+        ]
+
+        for batch_send_request, single_send_request in zip(
+            batch_send_requests, single_send_requests, strict=True
+        ):
+            assert batch_send_request is not None
+            assert single_send_request is not None
+            for field in [
+                "active_user_ids",
+                "online_push_user_ids",
+                "dm_mention_push_disabled_user_ids",
+                "dm_mention_email_disabled_user_ids",
+                "um_eligible_user_ids",
+                "long_term_idle_user_ids",
+                "default_bot_user_ids",
+                "message_triggered_bot_tuples",
+                "all_bot_user_ids",
+                "push_device_registered_user_ids",
+            ]:
+                self.assertEqual(
+                    getattr(batch_send_request, field), getattr(single_send_request, field), field
+                )
+            self.assertEqual(
+                batch_send_request.message.recipient_id, single_send_request.message.recipient_id
+            )
+
+        [hamlet_request, cordelia_request, othello_request, bot_request] = batch_send_requests
+        assert hamlet_request is not None
+        assert cordelia_request is not None
+        assert othello_request is not None
+        assert bot_request is not None
+        self.assertEqual(hamlet_request.long_term_idle_user_ids, {hamlet.id})
+        self.assertEqual(cordelia_request.dm_mention_push_disabled_user_ids, {cordelia.id})
+        self.assertEqual(cordelia_request.dm_mention_email_disabled_user_ids, {cordelia.id})
+        self.assertEqual(cordelia_request.online_push_user_ids, {notification_bot.id})
+        self.assertEqual(othello_request.online_push_user_ids, {notification_bot.id, othello.id})
+        self.assertEqual(othello_request.push_device_registered_user_ids, {othello.id})
+        self.assertEqual(othello_request.active_user_ids, {notification_bot.id, othello.id})
+        self.assertEqual(bot_request.all_bot_user_ids, {notification_bot.id, default_bot.id})
+
+    def test_internal_prep_private_messages_with_deactivated_user(self) -> None:
+        """
+        A deactivated user in the batch shouldn't get a message or a DM
+        conversation, and the other users should still get theirs. That
+        includes a mirror dummy user, whose DM conversation still gets
+        the message while the user is inactive.
+        """
+        realm = get_realm("zulip")
+        notification_bot = self.notification_bot(realm)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        do_deactivate_user(cordelia, acting_user=None)
+        mirror_dummy = self.example_user("othello")
+        do_deactivate_user(mirror_dummy, acting_user=None)
+        mirror_dummy.is_mirror_dummy = True
+        mirror_dummy.save(update_fields=["is_mirror_dummy"])
+
+        with self.assertLogs(level="ERROR") as error_log:
+            send_requests = internal_prep_private_messages(
+                realm,
+                notification_bot,
+                [
+                    (cordelia, "Hello, Cordelia!"),
+                    (hamlet, "Hello, Hamlet!"),
+                    (mirror_dummy, "Hello, Othello!"),
+                ],
+            )
+        self.assert_length(error_log.output, 1)
+        self.assertIn("is no longer using Zulip.", error_log.output[0])
+        self.assertIsNone(send_requests[0])
+        do_send_messages(send_requests)
+
+        self.assertEqual(most_recent_message(hamlet).content, "Hello, Hamlet!")
+        mirror_dummy_group = get_direct_message_group([notification_bot.id, mirror_dummy.id])
+        assert mirror_dummy_group is not None
+        self.assertEqual(
+            Message.objects.filter(
+                realm_id=mirror_dummy.realm_id, recipient=mirror_dummy_group.recipient
+            )
+            .latest("id")
+            .content,
+            "Hello, Othello!",
+        )
+        self.assertIsNone(get_direct_message_group([notification_bot.id, cordelia.id]))
 
 
 class TestCrossRealmPMs(ZulipTestCase):

@@ -2252,6 +2252,32 @@ def internal_prep_private_message(
     )
 
 
+def internal_prep_private_messages(
+    realm: Realm,
+    sender: UserProfile,
+    recipient_users_and_contents: Sequence[tuple[UserProfile, str]],
+    *,
+    acting_user: UserProfile | None = None,
+) -> list[SendMessageRequest | None]:
+    """
+    Prepares direct messages from one sender to several users in the
+    given realm, such as Notification Bot's messages to the users
+    affected by an action.
+    See _internal_prep_message for details of how this works.
+    """
+    mention_backend = MentionBackend(realm.id)
+    return [
+        internal_prep_private_message(
+            sender,
+            recipient_user,
+            content,
+            mention_backend=mention_backend,
+            acting_user=acting_user,
+        )
+        for recipient_user, content in recipient_users_and_contents
+    ]
+
+
 def internal_send_private_message(
     sender: UserProfile,
     recipient_user: UserProfile,
