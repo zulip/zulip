@@ -38,6 +38,19 @@ class SenderInfoRow(TypedDict):
     email_address_visibility: int
 
 
+def get_sender_info_row(sender: UserProfile) -> SenderInfoRow:
+    return SenderInfoRow(
+        full_name=sender.full_name,
+        delivery_email=sender.delivery_email,
+        email=sender.email,
+        realm__string_id=sender.realm.string_id,
+        avatar_source=sender.avatar_source,
+        avatar_version=sender.avatar_version,
+        is_mirror_dummy=sender.is_mirror_dummy,
+        email_address_visibility=sender.email_address_visibility,
+    )
+
+
 def sew_messages_and_reactions(
     messages: list[dict[str, Any]], reactions: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -182,8 +195,13 @@ class MessageDict:
 
         # The steps below are similar to what we do in
         # post_process_dicts(), except we don't call finalize_payload(),
-        # since that step happens later in the queue processor.
-        MessageDict.bulk_hydrate_sender_info(objs)
+        # since that step happens later in the queue processor. The
+        # messages' sender objects are already loaded, so we build the
+        # sender info from them.
+        sender_dict = {
+            message.sender_id: get_sender_info_row(message.sender) for message in messages
+        }
+        MessageDict.hydrate_sender_info(objs, sender_dict)
         MessageDict.bulk_hydrate_recipient_info(objs, recipient_dm_user_ids)
 
         return {obj["id"]: obj for obj in objs}
