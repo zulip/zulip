@@ -546,9 +546,17 @@ function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: numb
     }
 }
 
-function timer_text(seconds_left: number): string {
+export function timer_text(seconds_left: number): string {
+    const days = Math.floor(seconds_left / 86400);
+    const hours = Math.floor(seconds_left / 3600);
     const minutes = Math.floor(seconds_left / 60);
     const seconds = seconds_left % 60;
+    if (days >= 1) {
+        return $t({defaultMessage: "{days, plural, one {# day} other {# days}} to edit"}, {days});
+    }
+    if (hours >= 1) {
+        return $t({defaultMessage: "{hours} hr to edit"}, {hours: hours.toString()});
+    }
     if (minutes >= 1) {
         return $t({defaultMessage: "{minutes} min to edit"}, {minutes: minutes.toString()});
     }
