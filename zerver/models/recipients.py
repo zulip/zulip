@@ -140,6 +140,41 @@ def get_direct_message_group_hash(id_list: list[int]) -> str:
     return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
+def set_up_new_direct_message_groups(
+    direct_message_groups: list[tuple[DirectMessageGroup, list[int]]],
+) -> None:
+    """
+    Takes newly created DirectMessageGroup objects, each with the
+    list of its user IDs, and creates their Recipient objects and
+    their users' subscriptions.
+    """
+    from zerver.models import Subscription, UserProfile
+
+    groups = [direct_message_group for direct_message_group, _ in direct_message_groups]
+    recipients = Recipient.objects.bulk_create(
+        Recipient(type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP)
+        for direct_message_group in groups
+    )
+    for direct_message_group, recipient in zip(groups, recipients, strict=True):
+        direct_message_group.recipient = recipient
+    DirectMessageGroup.objects.bulk_update(groups, ["recipient"])
+
+    user_ids = {user_id for _, id_list in direct_message_groups for user_id in id_list}
+    is_user_active = dict(
+        UserProfile.objects.filter(id__in=user_ids).values_list("id", "is_active")
+    )
+    Subscription.objects.bulk_create(
+        Subscription(
+            recipient=direct_message_group.recipient,
+            user_profile_id=user_id,
+            is_user_active=is_user_active[user_id],
+        )
+        for direct_message_group, id_list in direct_message_groups
+        for user_id in id_list
+        if user_id in is_user_active
+    )
+
+
 def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup:
     """
     Takes a list of user IDs and returns the DirectMessageGroup
@@ -147,8 +182,6 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     DirectMessageGroup object does not yet exist, it will be
     transparently created.
     """
-    from zerver.models import Subscription, UserProfile
-
     assert len(id_list) == len(set(id_list))
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic(savepoint=False):
@@ -157,22 +190,7 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
             group_size=len(id_list),
         )
         if created:
-            recipient = Recipient.objects.create(
-                type_id=direct_message_group.id, type=Recipient.DIRECT_MESSAGE_GROUP
-            )
-            direct_message_group.recipient = recipient
-            direct_message_group.save(update_fields=["recipient"])
-            subs_to_create = [
-                Subscription(
-                    recipient=recipient,
-                    user_profile_id=user_profile_id,
-                    is_user_active=is_active,
-                )
-                for user_profile_id, is_active in UserProfile.objects.filter(id__in=id_list)
-                .distinct("id")
-                .values_list("id", "is_active")
-            ]
-            Subscription.objects.bulk_create(subs_to_create)
+            set_up_new_direct_message_groups([(direct_message_group, id_list)])
         return direct_message_group
 
 
