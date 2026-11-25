@@ -664,10 +664,26 @@ test("update_vote_text_on_message", ({override, override_rewire}) => {
 
     override(user_settings, "display_emoji_reaction_users", true);
 
-    override_rewire(reactions, "find_reaction", noop);
+    const $wave_reaction = $.create("wave-reaction-stub");
+    const $realm_emoji_reaction = $.create("realm-emoji-reaction-stub");
+    $wave_reaction.attr("aria-label", "stale label");
+    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
+        assert.equal(message_id, 1001);
+        return local_id === "unicode_emoji,1f44b" ? $wave_reaction : $realm_emoji_reaction;
+    });
     override_rewire(reactions, "set_reaction_vote_text", noop);
 
     reactions.update_vote_text_on_message(message);
+
+    // The label of each reaction is set along with its vote text.
+    assert.equal(
+        $wave_reaction.attr("aria-label"),
+        "translated: You (click to remove) and Bob van Roberts reacted with :wave:",
+    );
+    assert.equal(
+        $realm_emoji_reaction.attr("aria-label"),
+        "translated: You (click to remove) reacted with :inactive_realm_emoji:",
+    );
 
     const updated_message = {
         clean_reactions: new Map(

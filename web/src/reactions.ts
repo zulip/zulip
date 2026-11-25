@@ -805,6 +805,8 @@ export let update_vote_text_on_message = (message: Message): void => {
         assert(message_clean_reaction !== undefined);
         message_clean_reaction.vote_list = vote_list;
         set_reaction_vote_text(reaction_elem, vote_list);
+        // The label names the reacting users too.
+        reaction_elem.attr("aria-label", clean_reaction.label);
     }
 };
 
