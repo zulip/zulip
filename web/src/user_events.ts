@@ -14,6 +14,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as message_edit_history from "./message_edit_history.ts";
@@ -349,6 +350,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
     user_profile.handle_users_fetched(user_ids);
+    custom_profile_fields_ui.handle_users_fetched();
     message_edit_history.handle_users_fetched(user_ids);
     message_report.handle_users_fetched(user_ids);
     stream_popover.handle_users_fetched(user_ids);

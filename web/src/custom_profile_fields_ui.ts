@@ -125,6 +125,10 @@ export type PillUpdateField = {
     display_in_profile_summary?: boolean | undefined;
 };
 
+// The pill widgets of the user-type fields in each form, keyed by
+// the form's selector.
+const user_type_field_pills = new Map<string, Map<number, UserPillWidget>>();
+
 export function initialize_custom_user_type_fields(
     element_id: string,
     user_id: number,
@@ -133,6 +137,7 @@ export function initialize_custom_user_type_fields(
 ): Map<number, UserPillWidget> {
     const field_types = realm.custom_profile_field_types;
     const user_pills = new Map<number, UserPillWidget>();
+    user_type_field_pills.set(element_id, user_pills);
 
     const person = people.get_by_user_id(user_id);
     if (person.is_bot) {
@@ -196,6 +201,14 @@ export function initialize_custom_user_type_fields(
         });
 
     return user_pills;
+}
+
+export function handle_users_fetched(): void {
+    for (const user_pills of user_type_field_pills.values()) {
+        for (const pills of user_pills.values()) {
+            user_pill.update_placeholder_user_pills(pills);
+        }
+    }
 }
 
 export function initialize_profile_user_type_pills(user_id: number): void {

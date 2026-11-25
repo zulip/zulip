@@ -126,6 +126,9 @@ mock_esm("../src/search", {
 mock_esm("../src/composebox_typeahead", {
     handle_users_fetched() {},
 });
+mock_esm("../src/custom_profile_fields_ui", {
+    handle_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_reply_button() {},
 });
