@@ -725,6 +725,10 @@ test("update_user_full_name", ({override, override_rewire}) => {
     updated_messages = [];
     reactions.update_user_full_name(999);
     assert.deepEqual(updated_messages, []);
+
+    // The message is updated once, however many of the users reacted.
+    reactions.update_user_full_names(new Set([alice_user_id, bob.user_id, 999]));
+    assert.deepEqual(updated_messages, [1001]);
 });
 
 test("find_reaction", () => {
