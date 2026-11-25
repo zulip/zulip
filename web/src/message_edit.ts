@@ -715,9 +715,9 @@ function edit_message($row: JQuery, raw_content: string): void {
         // If you change this number also change edit_limit_buffer in
         // zerver.actions.message_edit.check_update_message
         const min_seconds_to_edit = 10;
-        let seconds_left =
-            realm_message_content_edit_limit_seconds + (message.timestamp - Date.now() / 1000);
-        seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
+        let seconds_left = Math.floor(
+            Math.max(remaining_content_edit_time(message), min_seconds_to_edit),
+        );
 
         // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
