@@ -1,6 +1,6 @@
 {{#with muted_user}}
 <tr data-user-id="{{user_id}}" data-user-name="{{user_name}}" data-date-muted="{{date_muted_str}}">
-    <td>{{user_name}}</td>
+    <td>{{#if is_placeholder_user}}<span class="loading-shimmer {{loading_shimmer_width_class}}"></span>{{else}}{{user_name}}{{/if}}</td>
     <td>{{date_muted_str}}</td>
     <td class="actions">
         {{#if can_unmute}}

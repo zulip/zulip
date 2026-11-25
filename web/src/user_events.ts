@@ -41,6 +41,7 @@ import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
+import * as settings_muted_users from "./settings_muted_users.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -362,6 +363,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     settings_invites.handle_users_fetched(user_ids);
     settings_bots.handle_users_fetched(user_ids);
     settings_emoji.handle_users_fetched(user_ids);
+    settings_muted_users.handle_users_fetched(user_ids);
     stream_edit.handle_users_fetched(user_ids);
     user_group_edit.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);

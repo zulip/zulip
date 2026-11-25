@@ -12,6 +12,9 @@ const channel = mock_esm("../src/channel");
 const list_widget = mock_esm("../src/list_widget", {
     generic_sort_functions: noop,
 });
+const overlays = mock_esm("../src/overlays", {
+    settings_open: () => false,
+});
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
@@ -33,9 +36,19 @@ run_test("settings", ({override}) => {
             full_name: "Feivel Fiverson",
         }),
     );
+    people.add_active_user(
+        make_user({
+            user_id: 7,
+            email: "seven@zulip.com",
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
     muted_users.add_muted_user(5, 1577836800);
     muted_users.add_muted_user(10, 1577836900);
+    muted_users.add_muted_user(7, 1577837000);
     let populate_list_called = false;
+    let replaced_list_data;
     override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
             {
@@ -44,6 +57,7 @@ run_test("settings", ({override}) => {
                 user_id: 5,
                 user_name: "Feivel Fiverson",
                 can_unmute: true,
+                is_placeholder_user: false,
             },
             {
                 date_muted: 1577836900000,
@@ -51,9 +65,24 @@ run_test("settings", ({override}) => {
                 user_id: 10,
                 user_name: "translated: Unknown user",
                 can_unmute: false,
+                is_placeholder_user: false,
+            },
+            {
+                date_muted: 1577837000000,
+                date_muted_str: "Jan 1, 2020",
+                user_id: 7,
+                user_name: "Loading…",
+                can_unmute: true,
+                is_placeholder_user: true,
+                loading_shimmer_width_class: "loading-shimmer-width-2",
             },
         ]);
         populate_list_called = true;
+        return {
+            replace_list_data(list) {
+                replaced_list_data = list;
+            },
+        };
     });
 
     settings_muted_users.reset();
@@ -94,4 +123,37 @@ run_test("settings", ({override}) => {
     };
     muted_users.mute_user(5);
     assert.ok(mute_user_called);
+
+    people.add_active_user(
+        make_user({
+            user_id: 7,
+            email: "seven@zulip.com",
+            full_name: "Seven Sevenson",
+        }),
+    );
+    populate_list_called = false;
+    settings_muted_users.handle_users_fetched([7]);
+    assert.equal(replaced_list_data, undefined);
+
+    // Only the data of a muted user changes the list.
+    override(overlays, "settings_open", () => true);
+    settings_muted_users.handle_users_fetched([8]);
+    assert.equal(replaced_list_data, undefined);
+
+    // The list gets new items, without being made again.
+    settings_muted_users.handle_users_fetched([7, 8]);
+    assert.deepEqual(
+        replaced_list_data.map((item) => [item.user_name, item.is_placeholder_user]),
+        [
+            ["Feivel Fiverson", false],
+            ["translated: Unknown user", false],
+            ["Seven Sevenson", false],
+        ],
+    );
+    assert.ok(!populate_list_called);
+
+    replaced_list_data = undefined;
+    settings_muted_users.reset();
+    settings_muted_users.handle_users_fetched([7]);
+    assert.equal(replaced_list_data, undefined);
 });

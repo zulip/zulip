@@ -149,6 +149,9 @@ mock_esm("../src/custom_profile_fields_ui", {
 mock_esm("../src/settings_emoji", {
     handle_users_fetched() {},
 });
+mock_esm("../src/settings_muted_users", {
+    handle_users_fetched() {},
+});
 const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
     update_reply_button() {},
 });
