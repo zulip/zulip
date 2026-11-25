@@ -1368,7 +1368,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             othello, mm_address, "TestMissedMessageEmailMessages body"
         )
 
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(19):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1396,7 +1396,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             cordelia, mm_address, "TestMissedGroupDirectMessageEmailMessages body"
         )
 
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(19):
             process_message(incoming_valid_message)
 
         # Confirm Iago and Othello received the message.
@@ -1532,7 +1532,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
 
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(17):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message

@@ -914,7 +914,7 @@ class MessagePOSTTest(ZulipTestCase):
         # it reaches the check without its group memberships loaded, and we
         # treat those as empty rather than looking them up.
         flush_per_request_caches()
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(18):
             result = self.api_post(
                 bot,
                 "/api/v1/messages",
@@ -1884,7 +1884,7 @@ class StreamMessagesTest(ZulipTestCase):
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1904,7 +1904,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 5 queries: 1 to check if it is the first message in the topic +
         # 1 to check if the topic is already followed + 3 to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(18):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1924,7 +1924,7 @@ class StreamMessagesTest(ZulipTestCase):
         # a message to a topic with visibility policy other than FOLLOWED.
         # 1 to check if the topic is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(17):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1935,7 +1935,7 @@ class StreamMessagesTest(ZulipTestCase):
         # If the topic is already FOLLOWED, there will be an increase in the query
         # count of 1 to check if the topic is already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(14):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1960,7 +1960,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic
         # is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(22):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1973,7 +1973,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic is
         # already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1983,7 +1983,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         flush_per_request_caches()
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(16):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -2006,7 +2006,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
         flush_per_request_caches()
 
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(17):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -2896,7 +2896,7 @@ class DoSendMessagesTest(ZulipTestCase):
             internal_prep_stream_message(notification_bot, lear_stream, "#1234", "Hello, Lear!"),
         ]
         with (
-            self.assert_database_query_count(21),
+            self.assert_database_query_count(17),
             self.assert_memcached_count(11),
             self.capture_send_event_calls(expected_num_events=6) as events,
             mock.patch(
@@ -3035,7 +3035,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         prospero = self.example_user("prospero")
 
         # A normal user sends a personal message.
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(20):
             self.send_personal_message(hamlet, cordelia)
 
         # Give guests limited user access.
@@ -3046,17 +3046,17 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends a personal message
         # to another accessible user.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(21):
             self.send_personal_message(polonius, hamlet)
 
         # A guest with limited user access sends a personal message
         # to themself.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(17):
             self.send_personal_message(polonius, polonius)
 
         # A guest with limited user access sends a personal message
         # to another accessible guest.
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(18):
             self.send_personal_message(polonius, prospero)
 
     def test_group_direct_message(self) -> None:
@@ -3084,12 +3084,12 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A normal user sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(24):
             self.send_group_direct_message(iago, recipients)
 
         # A normal user sends a message
         # to an existing DirectMessageGroup.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(17):
             self.send_group_direct_message(iago, recipients)
 
         # Subscribe polonius to Verona to make the recipients
@@ -3103,12 +3103,12 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # A guest with limited user access sends the first message
         # to a new DirectMessageGroup.
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(26):
             self.send_group_direct_message(polonius, recipients)
 
         # A guest with limited user access sends a message
         # to an existing DirectMessageGroup.
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(19):
             self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:
@@ -3151,7 +3151,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Have the administrator send a message, and verify that allows the user to reply.
         self.send_personal_message(admin, user_profile)
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(15):
             self.send_personal_message(user_profile, admin)
 
         # Tests that user cannot initiate direct message thread in groups.
@@ -3161,7 +3161,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         # Have the administrator send a message to the direct message group, and verify
         # that allows the user to reply.
         self.send_group_direct_message(admin, direct_message_group_1)
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(16):
             self.send_group_direct_message(user_profile, direct_message_group_1)
 
         # We cannot sent to `direct_message_group_2` as no message has been sent to this group yet.
@@ -3187,7 +3187,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(15):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -3201,7 +3201,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         othello = self.example_user("othello")
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(19):
             self.send_personal_message(user_profile, othello)
 
     def test_direct_message_permission_group_setting(self) -> None:
@@ -3229,7 +3229,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         # Tests if the user is allowed to send to administrators.
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(20):
             self.send_personal_message(user_profile, admin)
         self.send_personal_message(admin, user_profile)
         # Tests if we can send messages to self irrespective of the value of the setting.
@@ -3247,7 +3247,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # We can send to this direct message group as it has administrator as one of the
         # recipient.
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(20):
             self.send_group_direct_message(user_profile, direct_message_group)
         self.send_group_direct_message(admin, direct_message_group)
 
@@ -3279,7 +3279,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assertRaises(DirectMessagePermissionError):
             self.send_personal_message(cordelia, polonius)
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(15):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -3292,7 +3292,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             members_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(14):
             self.send_personal_message(user_profile, cordelia)
 
         do_change_realm_permission_group_setting(

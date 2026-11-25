@@ -1096,10 +1096,15 @@ def get_wide_message_dicts(
         for send_request in send_message_requests
         if send_request.dm_involved_user_ids is not None
     }
+    submessages = {
+        send_request.message.id: send_request.submessages for send_request in send_message_requests
+    }
     wide_message_dicts: dict[int, dict[str, Any]] = {}
     for realm_id, messages in messages_by_realm_id.items():
         wide_message_dicts.update(
-            MessageDict.wide_dicts_for_new_messages(messages, realm_id, recipient_dm_user_ids)
+            MessageDict.wide_dicts_for_new_messages(
+                messages, realm_id, recipient_dm_user_ids, submessages
+            )
         )
     return wide_message_dicts
 
