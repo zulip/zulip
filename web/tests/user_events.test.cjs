@@ -58,6 +58,9 @@ mock_esm("../src/message_report", {
 mock_esm("../src/stream_popover", {
     handle_users_fetched() {},
 });
+mock_esm("../src/user_card_popover", {
+    handle_users_fetched() {},
+});
 
 const buddy_list = mock_esm("../src/buddy_list", {
     BuddyList: class {

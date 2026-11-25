@@ -136,8 +136,8 @@
         {{#if is_bot}}
             {{#if bot_owner}}
                 <li role="none" class="popover-menu-list-item user-card-popover-bot-owner-field text-item hidden-for-spectators">
-                    <span class="bot_owner" data-tippy-content="{{ bot_owner.full_name }}">{{t "Bot owner" }}:</span>
-                    {{> ../../user_display_only_pill display_value=bot_owner.full_name user_id=bot_owner.user_id img_src=bot_owner.avatar_url is_active=true}}
+                    <span class="bot_owner" {{#unless bot_owner.is_placeholder_user}}data-tippy-content="{{ bot_owner.full_name }}"{{/unless}}>{{t "Bot owner" }}:</span>
+                    {{> ../../user_display_only_pill display_value=bot_owner.full_name user_id=bot_owner.user_id img_src=bot_owner.avatar_url is_active=true is_placeholder_user=bot_owner.is_placeholder_user}}
                 </li>
             {{/if}}
         {{/if}}

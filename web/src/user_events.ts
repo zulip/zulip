@@ -58,6 +58,7 @@ import * as stream_events from "./stream_events.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as submessage from "./submessage.ts";
 import * as typing_events from "./typing_events.ts";
+import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_create_members from "./user_group_create_members.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
@@ -380,6 +381,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     message_edit_history.handle_users_fetched(user_ids);
     message_report.handle_users_fetched(user_ids);
     stream_popover.handle_users_fetched(user_ids);
+    user_card_popover.handle_users_fetched(user_ids);
     if (narrow_state.is_message_feed_visible()) {
         compose_closed_ui.update_reply_button();
         narrow_title.update_narrow_title(narrow_state.filter());
