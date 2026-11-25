@@ -290,6 +290,9 @@ class PrefetchedDirectMessageData:
 
     # By get_direct_message_group_hash of their users.
     direct_message_groups: Mapping[str, DirectMessageGroup]
+    # The get_active_user_rows rows by user ID, with None for users
+    # who aren't active.
+    active_user_rows: Mapping[int, ActiveUserDict | None]
 
 
 def get_active_user_rows(user_ids: Collection[int]) -> list[ActiveUserDict]:
@@ -347,6 +350,7 @@ def get_recipient_info(
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
     dm_involved_user_ids: set[int] | None = None,
+    prefetched_active_user_rows: Mapping[int, ActiveUserDict | None] | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -546,7 +550,15 @@ def get_recipient_info(
     # for our data structures not related to bots
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
-    if user_ids:
+    # A message can mention users whose rows weren't fetched for its
+    # batch, in which case we query as usual.
+    if prefetched_active_user_rows is not None and user_ids <= prefetched_active_user_rows.keys():
+        rows = [
+            active_user_row
+            for user_id in sorted(user_ids)
+            if (active_user_row := prefetched_active_user_rows[user_id]) is not None
+        ]
+    elif user_ids:
         rows = get_active_user_rows(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient
@@ -726,6 +738,7 @@ def build_message_send_dict(
     user_group_membership_details: UserGroupMembershipDetails | None = None,
     sender_is_subscribed: bool | None = None,
     dm_involved_user_ids: set[int] | None = None,
+    prefetched_active_user_rows: Mapping[int, ActiveUserDict | None] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -760,6 +773,7 @@ def build_message_send_dict(
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
         dm_involved_user_ids=dm_involved_user_ids,
+        prefetched_active_user_rows=prefetched_active_user_rows,
     )
 
     # Render our message_dicts.
@@ -2110,6 +2124,11 @@ def check_message(
         user_group_membership_details=user_group_membership_details,
         sender_is_subscribed=sender_is_subscribed,
         dm_involved_user_ids=dm_involved_user_ids,
+        prefetched_active_user_rows=(
+            prefetched_direct_message_data.active_user_rows
+            if prefetched_direct_message_data is not None
+            else None
+        ),
     )
 
     if (
@@ -2298,6 +2317,15 @@ def internal_prep_private_messages(
     """
     mention_backend = MentionBackend(realm.id)
 
+    # Messages about a user's action usually mention that user, so we
+    # fetch their row along with those of the messages' users.
+    user_ids = {sender.id} | {
+        recipient_user.id for recipient_user, content in recipient_users_and_contents
+    }
+    if acting_user is not None:
+        user_ids.add(acting_user.id)
+    active_user_rows = {row["id"]: row for row in get_active_user_rows(user_ids)}
+
     prefetched_direct_message_data = PrefetchedDirectMessageData(
         # Deactivated users can't receive these messages, so we don't
         # create DM groups for them. Mirror dummy users are the
@@ -2309,6 +2337,7 @@ def internal_prep_private_messages(
                 if recipient_user.is_active
             ]
         ),
+        active_user_rows={user_id: active_user_rows.get(user_id) for user_id in user_ids},
     )
     return [
         internal_prep_private_message(

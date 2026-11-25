@@ -3660,6 +3660,8 @@ class InternalPrepTest(ZulipTestCase):
         recipient_users_and_contents = [
             (hamlet, f"@_**Iago|{iago.id}** subscribed you to #**Verona**."),
             (cordelia, f"@_**Iago|{iago.id}** subscribed you to #**Verona**."),
+            # Prospero isn't one of the messages' users or the acting
+            # user, so preparing this message makes its own query.
             (othello, f"@**Prospero from The Tempest|{prospero.id}** can help."),
             (default_bot, "Hello, bot!"),
         ]

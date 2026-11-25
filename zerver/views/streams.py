@@ -1044,11 +1044,11 @@ def send_user_subscribed_and_new_channel_notifications(
 ) -> None:
     """
     If a user is subscribing lots of other users to existing channels,
-    then this function can be pretty expensive in terms of generating
-    lots of queries and sending lots of direct messages. We isolate
-    the code partly to make it easier to test things like
-    excessive query counts by mocking this function so that it
-    doesn't drown out query counts from other code.
+    then this function can be pretty expensive in terms of sending
+    lots of direct messages. We isolate the code partly to make it
+    easier to test things like excessive query counts by mocking this
+    function so that it doesn't drown out query counts from other
+    code.
     """
     notifications = []
     # Inform users if someone else subscribed them to an existing channel.
