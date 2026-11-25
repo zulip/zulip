@@ -15,6 +15,10 @@ import type {FullUnreadCountsData} from "./unread.ts";
 export let unread_count = 0;
 let pm_count = 0;
 export let narrow_title = "home";
+// While an overlay (settings, channels, drafts, etc.) is open, its
+// title replaces the narrow title, so that browser history entries
+// created for the overlay get a descriptive title.
+let overlay_title: string | undefined;
 
 export function compute_narrow_title(filter?: Filter): string {
     if (filter === undefined) {
@@ -71,7 +75,7 @@ export function redraw_title(): void {
     // Update window title to reflect unread messages in current view
     const new_title =
         (unread_count ? "(" + unread_count + ") " : "") +
-        narrow_title +
+        (overlay_title ?? narrow_title) +
         " - " +
         realm.realm_name +
         " - " +
@@ -97,6 +101,11 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
     electron_bridge?.send_event("total_unread_count", unread_count);
 
     // TODO: Add a `electron_bridge.updateDirectMessageCount(new_pm_count);` call?
+    redraw_title();
+}
+
+export function set_overlay_title(title?: string): void {
+    overlay_title = title;
     redraw_title();
 }
 

@@ -34,6 +34,12 @@ const spectators = mock_esm("../src/spectators", {
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
+let overlay_title;
+mock_esm("../src/narrow_title", {
+    set_overlay_title(title) {
+        overlay_title = title;
+    },
+});
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");
@@ -208,6 +214,11 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         sidebar_hide_all_called = true;
     });
     window.location.hash = "#unknown_hash";
+
+    let pre_close_hook;
+    override(overlays, "register_pre_close_hook", (hook) => {
+        pre_close_hook = hook;
+    });
 
     browser_history.clear_for_testing();
     hashchange.initialize();
@@ -414,6 +425,11 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [drafts_overlay_ui, "launch"],
     ]);
+    assert.equal(overlay_title, "translated: Drafts");
+
+    // Restoring a draft closes the overlay without a hashchange.
+    pre_close_hook();
+    assert.equal(overlay_title, undefined);
 
     window.location.hash = "#settings/alert-words";
 

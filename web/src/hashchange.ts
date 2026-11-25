@@ -10,13 +10,14 @@ import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import {Filter} from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as info_overlay from "./info_overlay.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -173,6 +174,7 @@ function show_invalid_url_error(): void {
 
 // Returns true if this function performed a narrow
 function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean): boolean {
+    narrow_title.set_overlay_title(undefined);
     message_viewport.stop_auto_scrolling();
 
     // NB: In Firefox, window.location.hash is URI-decoded.
@@ -285,6 +287,38 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             show_home_view(narrow_opts);
     }
     return false;
+}
+
+function get_overlay_title(base: string): string | undefined {
+    switch (base) {
+        case "channels":
+        case "streams":
+            return $t({defaultMessage: "Channels"});
+        case "groups":
+            return $t({defaultMessage: "Groups"});
+        case "drafts":
+            return $t({defaultMessage: "Drafts"});
+        case "settings":
+            return $t({defaultMessage: "Settings"});
+        case "organization":
+            return $t({defaultMessage: "Organization settings"});
+        case "keyboard-shortcuts":
+            return $t({defaultMessage: "Keyboard shortcuts"});
+        case "message-formatting":
+            return $t({defaultMessage: "Message formatting"});
+        case "search-operators":
+            return $t({defaultMessage: "Search filters"});
+        case "about-zulip":
+            return $t({defaultMessage: "About Zulip"});
+        case "scheduled":
+            return $t({defaultMessage: "Scheduled messages"});
+        case "reminders":
+            return $t({defaultMessage: "Reminders"});
+        case "invite":
+            return $t({defaultMessage: "Invite users"});
+        default:
+            return undefined;
+    }
 }
 
 function do_hashchange_overlay(old_hash: string | undefined): void {
@@ -439,6 +473,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
         }
         settings_toggle.goto(base);
+        narrow_title.set_overlay_title(get_overlay_title(base));
         return;
     }
 
@@ -449,6 +484,8 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base !== old_base) {
         overlays.close_for_hash_change();
     }
+
+    narrow_title.set_overlay_title(get_overlay_title(base));
 
     // NORMAL FLOW: basically, launch the overlay:
 
@@ -606,6 +643,12 @@ export function initialize(): void {
     // We don't want browser to restore the scroll
     // position of the new hash in the current hash.
     window.history.scrollRestoration = "manual";
+
+    // Overlays can be closed without a hashchange, for example when
+    // restoring a draft, so the title is cleared on every close.
+    overlays.register_pre_close_hook(() => {
+        narrow_title.set_overlay_title(undefined);
+    });
 
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
