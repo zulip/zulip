@@ -1703,6 +1703,14 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
     return pill_widget;
 }
 
+export function handle_users_fetched(): void {
+    for (const pill_widget of group_setting_widget_map.values()) {
+        if (pill_widget !== null) {
+            user_pill.update_placeholder_user_pills(pill_widget);
+        }
+    }
+}
+
 export function set_group_setting_widget_value(
     pill_widget: GroupSettingPillContainer,
     property_value: GroupSettingValue,

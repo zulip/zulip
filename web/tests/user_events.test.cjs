@@ -140,6 +140,9 @@ mock_esm("../src/user_group_edit_members", {
 mock_esm("../src/settings_invites", {
     handle_users_fetched() {},
 });
+mock_esm("../src/settings_components", {
+    handle_users_fetched() {},
+});
 mock_esm("../src/custom_profile_fields_ui", {
     handle_users_fetched() {},
 });
