@@ -1,6 +1,7 @@
 import * as condense from "./condense.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
+import type {User} from "./people.ts";
 import * as thumbnail from "./thumbnail.ts";
 
 export function rerender_messages_view(): void {
@@ -116,6 +117,21 @@ export function update_user_full_name(user_id: number, full_name: string): void 
 export function update_avatar(user_id: number, avatar_url: string | null): void {
     message_store.update_small_avatar_url(user_id, avatar_url);
     rerender_messages_sent_by_user(user_id);
+}
+
+// Many users can change at once. Calling update_user_full_name and
+// update_avatar for each of them would go through the stored
+// messages and every message list once per user.
+export function update_full_names_and_avatars(users: User[]): void {
+    message_store.update_user_fields(users);
+    const user_ids = new Set(users.map((user) => user.user_id));
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const messages = list.data.get_messages_involving_users(user_ids);
+        if (messages.length === 0) {
+            continue;
+        }
+        list.view.rerender_senders_and_dm_recipient_bars(messages);
+    }
 }
 
 export function update_thumbnails(): void {

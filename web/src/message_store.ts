@@ -9,6 +9,7 @@ import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
 import * as util from "./util.ts";
@@ -444,6 +445,32 @@ export function update_small_avatar_url(user_id: number, new_url: string | null)
         const message = message_data.message;
         if (message.sender_id && message.sender_id === user_id) {
             message.small_avatar_url = new_url;
+        }
+    }
+}
+
+// A message copies these fields from its sender and its DM recipients
+// when it is first processed.
+export function update_user_fields(users: User[]): void {
+    const users_by_id = new Map(users.map((user) => [user.user_id, user]));
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        const sender = users_by_id.get(message.sender_id);
+        if (sender !== undefined) {
+            message.sender_full_name = sender.full_name;
+            message.sender_email = sender.email;
+            message.small_avatar_url = sender.avatar_url ?? null;
+        }
+        if (message.type === "stream") {
+            if (sender !== undefined) {
+                message.reply_to = sender.email;
+            }
+            continue;
+        }
+        const pm_with_user_ids = people.pm_with_user_ids(message);
+        if (pm_with_user_ids?.some((user_id) => users_by_id.has(user_id))) {
+            message.reply_to = util.normalize_recipients(get_pm_emails(message));
+            message.display_reply_to = get_dm_full_names(message, pm_with_user_ids);
         }
     }
 }

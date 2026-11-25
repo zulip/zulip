@@ -451,6 +451,31 @@ test("update_property", () => {
     assert.equal(local_dm_message.display_reply_to, "Loading…");
     assert.equal(local_dm_message.reply_to, "user106@example.com");
 
+    message_store.update_user_fields([
+        {...bob, full_name: "Robert", email: "robert@example.com", avatar_url: "robert_url"},
+    ]);
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message1.reply_to, alice.email);
+    assert.equal(message2.sender_full_name, "Robert");
+    assert.equal(message2.sender_email, "robert@example.com");
+    assert.equal(message2.reply_to, "robert@example.com");
+    assert.equal(message2.small_avatar_url, "robert_url");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe");
+    message_store.update_user_fields([{...bob, full_name: "Robert", avatar_url: undefined}]);
+    assert.equal(message2.small_avatar_url, null);
+
+    // A DM also names its recipients.
+    const fetched_zoe = make_user({email: "zoe.z@example.com", user_id: 106, full_name: "Zoe Z"});
+    people.add_active_user(fetched_zoe);
+    message_store.update_user_fields([fetched_zoe]);
+    assert.equal(dm_message.sender_full_name, "Zoe Z");
+    assert.equal(dm_message.sender_email, "zoe.z@example.com");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe Z");
+    assert.equal(dm_message.reply_to, "alice@example.com,zoe.z@example.com");
+    assert.equal(local_dm_message.display_reply_to, "Zoe Z");
+    assert.equal(local_dm_message.reply_to, "zoe.z@example.com");
+
     assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, devel.name);
     assert.equal(message2.stream_id, denmark.stream_id);
