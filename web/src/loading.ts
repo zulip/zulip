@@ -78,6 +78,17 @@ export function make_indicator(
     $outer_container.data("destroying", false);
 }
 
+// Making an indicator again restarts its spinner, so code that runs
+// repeatedly while something loads uses this.
+export function make_indicator_if_missing(
+    $container: JQuery,
+    opts?: Parameters<typeof make_indicator>[1],
+): void {
+    if ($container.is(":empty")) {
+        make_indicator($container, opts);
+    }
+}
+
 export function destroy_indicator($container: JQuery): void {
     if ($container.data("destroying")) {
         return;
