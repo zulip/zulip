@@ -10,6 +10,7 @@ import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as overlays from "./overlays.ts";
@@ -100,6 +101,9 @@ function get_display_stream_name(stream_id: number): string {
     return stream_name;
 }
 
+// The users named in the open history who are placeholder users.
+let placeholder_user_ids: number[] = [];
+
 function show_loading_indicator(): void {
     loading.make_indicator($(".message-edit-history-container .loading_indicator"));
     $(".message-edit-history-container .loading_indicator").addClass(
@@ -131,6 +135,10 @@ export function fetch_and_render_message_history(message: Message): void {
     $("#message-edit-history-overlay-container").attr("data-message-id", message.id);
     open_overlay();
     show_loading_indicator();
+    fetch_message_history(message, move_history_only);
+}
+
+function fetch_message_history(message: Message, move_history_only: boolean): void {
     void channel.get({
         url: "/json/messages/" + message.id + "/history",
         data: {
@@ -284,12 +292,21 @@ export function fetch_and_render_message_history(message: Message): void {
                     content_edit_history[0]!.new_stream = stream_display_name;
                 }
             }
+            placeholder_user_ids = data.message_history.flatMap((msg) =>
+                msg.user_id !== null && people.is_placeholder_user(msg.user_id) ? msg.user_id : [],
+            );
             const rendered_list_html = render_message_edit_history({
                 edited_messages: content_edit_history,
             });
             $("#message-history-overlay").attr("data-message-id", message.id);
             hide_loading_indicator();
-            $("#message-history-overlay .overlay-messages-list").append($(rendered_list_html));
+            // A refetch replaces the entries, and keeps the focused entry
+            // and the scroll position.
+            const $messages_list = $("#message-history-overlay .overlay-messages-list");
+            const focused_element_id =
+                messages_overlay_ui.get_focused_element_id(keyboard_handling_context);
+            const scroll_top = $messages_list.scrollTop()!;
+            $messages_list.html(rendered_list_html);
 
             // Pass the history through rendered_markdown.ts
             // to update dynamic_elements in the content.
@@ -317,9 +334,10 @@ export function fetch_and_render_message_history(message: Message): void {
 
             const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
-                String(first_element_id),
+                focused_element_id ?? String(first_element_id),
                 keyboard_handling_context,
             );
+            $messages_list.scrollTop(scroll_top);
         },
         error(xhr) {
             ui_report.error(
@@ -331,6 +349,26 @@ export function fetch_and_render_message_history(message: Message): void {
             $("#message-history-error").show();
         },
     });
+}
+
+// The history names its editors, so we fetch it again once the data
+// of a placeholder user among them arrives.
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.message_edit_history_open()) {
+        return;
+    }
+    const shows_fetched_user = user_ids.some((user_id) => placeholder_user_ids.includes(user_id));
+    if (!shows_fetched_user) {
+        return;
+    }
+    const message = message_store.get(
+        Number($("#message-edit-history-overlay-container").attr("data-message-id")),
+    );
+    assert(message !== undefined);
+    const move_history_only =
+        realm.realm_message_edit_history_visibility_policy ===
+        message_edit_history_visibility_policy_values.moves_only.code;
+    fetch_message_history(message, move_history_only);
 }
 
 export function open_overlay(): void {

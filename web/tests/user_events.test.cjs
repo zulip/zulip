@@ -43,6 +43,9 @@ mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
 });
+mock_esm("../src/message_edit_history", {
+    handle_users_fetched() {},
+});
 mock_esm("../src/message_report", {
     handle_users_fetched() {},
 });
