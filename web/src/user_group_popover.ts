@@ -18,6 +18,7 @@ import {current_user} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_groups from "./user_groups.ts";
+import type {UserGroup} from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const MAX_ROWS_IN_POPOVER = 30;
@@ -54,6 +55,45 @@ function get_user_group_popover_items(): JQuery | undefined {
 export function handle_keyboard(key: string): void {
     const $items = get_user_group_popover_items();
     popover_menus.popover_items_handle_keyboard(key, $items);
+}
+
+function get_user_group_info_popover_html(group: UserGroup): string {
+    const subgroups = user_groups.convert_name_to_display_name_for_groups(
+        user_groups
+            .get_direct_subgroups_of_group(group)
+            .toSorted(user_group_components.sort_group_member_name),
+    );
+    const members = sort_group_members(fetch_group_members([...group.members]));
+    const all_individual_members = [...user_groups.get_recursive_group_members(group)];
+    const has_bots =
+        group.is_system_group &&
+        all_individual_members.some((member_id) => {
+            const member = people.get_user_by_id_assert_valid(member_id);
+            return people.is_active_user_or_system_bot(member.user_id) && member.is_bot;
+        });
+    const displayed_subgroups = subgroups.slice(0, MAX_ROWS_IN_POPOVER);
+    const displayed_members =
+        subgroups.length < MAX_ROWS_IN_POPOVER
+            ? members.slice(0, MAX_ROWS_IN_POPOVER - subgroups.length)
+            : [];
+    const display_all_subgroups_and_members =
+        subgroups.length + members.length <= MAX_ROWS_IN_POPOVER;
+    const args = {
+        group_name: user_groups.get_display_group_name(group.name),
+        group_description: group.description,
+        group_edit_url: hash_util.group_edit_url(group, "general"),
+        is_guest: current_user.is_guest,
+        is_system_group: group.is_system_group,
+        deactivated: group.deactivated,
+        members_count: all_individual_members.length,
+        group_members_url: hash_util.group_edit_url(group, "members"),
+        display_all_subgroups_and_members,
+        has_bots,
+        user_can_access_all_other_users: settings_data.user_can_access_all_other_users(),
+        displayed_subgroups,
+        displayed_members,
+    };
+    return render_user_group_info_popover(args);
 }
 
 // element is the target element to pop off of;
@@ -96,43 +136,7 @@ export function toggle_user_group_info_popover(
                     message_lists.current.select_id(message_id);
                 }
                 user_group_popover_instance = instance;
-                const subgroups = user_groups.convert_name_to_display_name_for_groups(
-                    user_groups
-                        .get_direct_subgroups_of_group(group)
-                        .toSorted(user_group_components.sort_group_member_name),
-                );
-                const members = sort_group_members(fetch_group_members([...group.members]));
-                const all_individual_members = [...user_groups.get_recursive_group_members(group)];
-                const has_bots =
-                    group.is_system_group &&
-                    all_individual_members.some((member_id) => {
-                        const member = people.get_user_by_id_assert_valid(member_id);
-                        return people.is_active_user_or_system_bot(member.user_id) && member.is_bot;
-                    });
-                const displayed_subgroups = subgroups.slice(0, MAX_ROWS_IN_POPOVER);
-                const displayed_members =
-                    subgroups.length < MAX_ROWS_IN_POPOVER
-                        ? members.slice(0, MAX_ROWS_IN_POPOVER - subgroups.length)
-                        : [];
-                const display_all_subgroups_and_members =
-                    subgroups.length + members.length <= MAX_ROWS_IN_POPOVER;
-                const args = {
-                    group_name: user_groups.get_display_group_name(group.name),
-                    group_description: group.description,
-                    group_edit_url: hash_util.group_edit_url(group, "general"),
-                    is_guest: current_user.is_guest,
-                    is_system_group: group.is_system_group,
-                    deactivated: group.deactivated,
-                    members_count: all_individual_members.length,
-                    group_members_url: hash_util.group_edit_url(group, "members"),
-                    display_all_subgroups_and_members,
-                    has_bots,
-                    user_can_access_all_other_users:
-                        settings_data.user_can_access_all_other_users(),
-                    displayed_subgroups,
-                    displayed_members,
-                };
-                instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
+                instance.setContent(ui_util.parse_html(get_user_group_info_popover_html(group)));
             },
             onHidden() {
                 hide();
