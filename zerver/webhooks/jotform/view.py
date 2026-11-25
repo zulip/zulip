@@ -1,6 +1,7 @@
 # Webhooks for external integrations.
 
 import json
+import re
 from typing import Any
 from urllib.parse import unquote
 
@@ -26,7 +27,9 @@ def format_uploaded_file_links(file_question_value: str, file_url_mappings: dict
         potential_file_name = " ".join(current_file_name_words)
         if potential_file_name in file_url_mappings:
             file_url = file_url_mappings.get(potential_file_name)
-            url_markdown_list.append(f"[{potential_file_name}]({file_url})")
+            # Zulip Markdown cannot escape brackets inside link text.
+            link_text = re.sub(r"\[|\]", "", potential_file_name).strip()
+            url_markdown_list.append(f"[{link_text}]({file_url})")
             current_file_name_words = []
 
     return ", ".join(url_markdown_list)
