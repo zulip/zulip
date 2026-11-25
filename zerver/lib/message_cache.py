@@ -27,6 +27,17 @@ class RawReactionRow(TypedDict):
     user_profile_id: int
 
 
+class SenderInfoRow(TypedDict):
+    full_name: str
+    delivery_email: str
+    email: str
+    realm__string_id: str
+    avatar_source: str
+    avatar_version: int
+    is_mirror_dummy: bool
+    email_address_visibility: int
+
+
 def sew_messages_and_reactions(
     messages: list[dict[str, Any]], reactions: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -518,8 +529,12 @@ class MessageDict:
 
         rows = query_for_ids(query, sender_ids, "zerver_userprofile.id")
 
-        sender_dict = {row["id"]: row for row in rows}
+        MessageDict.hydrate_sender_info(objs, {row["id"]: row for row in rows})
 
+    @staticmethod
+    def hydrate_sender_info(
+        objs: list[dict[str, Any]], sender_dict: Mapping[int, SenderInfoRow]
+    ) -> None:
         for obj in objs:
             sender_id = obj["sender_id"]
             user_row = sender_dict[sender_id]
