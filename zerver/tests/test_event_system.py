@@ -1573,6 +1573,7 @@ class FetchQueriesTest(ZulipTestCase):
             giphy=0,
             klipy=0,
             tenor=0,
+            long_term_idle=0,
             message=1,
             muted_topics=1,
             muted_users=1,

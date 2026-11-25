@@ -854,12 +854,32 @@ $(() => {
         window.history.replaceState(window.history.state, "", url);
     }
 
+    function show_long_term_idle_away_time(days) {
+        if (days === null) {
+            return;
+        }
+        $("#app-loading-long-term-idle")
+            .find(".app-loading-long-term-idle-lead")
+            .text(
+                i18n.$t(
+                    {
+                        defaultMessage:
+                            "You've been away for {days, plural, one {# day} other {# days}}!",
+                    },
+                    {days},
+                ),
+            )
+            .removeAttr("hidden");
+    }
+
     if (page_params.no_event_queue) {
-        // For spectators and client-triggered reloads, fetch
-        // state_data via the API rather than reading it from the
-        // (potentially very large) HTML response. For reloads, this
-        // avoids partial-transfer failures that leave users stuck on
-        // the loading screen. See #36094.
+        // For spectators, client-triggered reloads, and returning
+        // long-term-idle users, fetch state_data via the API rather
+        // than reading it from the (potentially very large) HTML
+        // response. For reloads, this avoids partial-transfer failures
+        // that leave users stuck on the loading screen. See #36094.
+        // For long-term-idle users, this lets us explain the wait while
+        // the server readies their account.
         let data;
         if (page_params.is_spectator) {
             data = {
@@ -877,10 +897,10 @@ $(() => {
                 client_gravatar: false,
             };
         } else {
-            // Logged-in reload: request the same parameters the
-            // server-side do_events_register call uses for the initial
-            // page load. Keep these in sync with the call in
-            // zerver/lib/home.py.
+            // Logged-in reload or returning long-term-idle user: request
+            // the same parameters the server-side do_events_register call
+            // uses for the initial page load. Keep these in sync with the
+            // call in zerver/lib/home.py.
             data = {
                 apply_markdown: true,
                 client_gravatar: true,
@@ -901,7 +921,15 @@ $(() => {
                     simplified_presence_events: true,
                     individual_emoji_changes: true,
                 }),
+                defer_long_term_idle_reactivation: page_params.is_long_term_idle,
             };
+        }
+        if (page_params.is_long_term_idle) {
+            // Start the wait with feedback, rather than a bare spinner, since
+            // this register is the first step of a potentially long wait.
+            // Reloading would only restart that wait, so drop the usual hint.
+            $("#app-loading-long-term-idle").removeAttr("hidden");
+            $("#app-loading-bottom-content").hide();
         }
         let register_failures = 0;
         function fetch_state_data() {
@@ -909,6 +937,12 @@ $(() => {
                 url: "/json/register",
                 data,
                 success(response_data) {
+                    register_failures = 0;
+                    if (response_data.long_term_idle) {
+                        show_long_term_idle_away_time(response_data.long_term_idle_days);
+                        wait_for_reactivation_and_register(response_data);
+                        return;
+                    }
                     const state_data = state_data_schema.parse(response_data);
                     initialize_everything(state_data);
                     if (page_params.show_try_zulip_modal) {
@@ -930,6 +964,72 @@ $(() => {
                     loading_error.show_loading_error();
                 },
             });
+        }
+
+        function wait_for_reactivation_and_register(reactivating_data) {
+            const queue_id = reactivating_data.queue_id;
+            let last_event_id = reactivating_data.last_event_id;
+            let failures = 0;
+            // By default the backfill shares the deferred_work queue with
+            // realm exports, which can take many minutes, and a failed
+            // backfill sends no event, so give up waiting eventually.
+            const register_again_time = Date.now() + 2 * 60 * 1000;
+
+            function stop_waiting_and_register({discard_queue}) {
+                // Only the first register waits on a queue; if the account
+                // still isn't ready, this register does the backfill itself.
+                data.defer_long_term_idle_reactivation = false;
+                if (discard_queue) {
+                    channel.del({url: "/json/events", data: {queue_id}});
+                }
+                fetch_state_data();
+            }
+
+            function poll() {
+                if (Date.now() > register_again_time) {
+                    stop_waiting_and_register({discard_queue: true});
+                    return;
+                }
+                channel.get({
+                    url: "/json/events",
+                    data: {queue_id, last_event_id},
+                    // Bound a stalled connection; the server's heartbeats end
+                    // an idle long-poll well inside this.
+                    timeout: 120 * 1000,
+                    success(events_data) {
+                        failures = 0;
+                        for (const event of events_data.events) {
+                            last_event_id = Math.max(last_event_id, event.id);
+                            if (event.type === "long_term_idle") {
+                                stop_waiting_and_register({discard_queue: true});
+                                return;
+                            }
+                        }
+                        poll();
+                    },
+                    error(xhr) {
+                        const queue_expired =
+                            xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID";
+                        if (queue_expired) {
+                            stop_waiting_and_register({discard_queue: false});
+                            return;
+                        }
+                        failures += 1;
+                        if (failures >= 5) {
+                            stop_waiting_and_register({discard_queue: false});
+                            return;
+                        }
+                        const retry_delay_secs = get_retry_backoff_seconds(
+                            xhr,
+                            failures,
+                            false,
+                            true,
+                        );
+                        setTimeout(poll, retry_delay_secs * 1000);
+                    },
+                });
+            }
+            poll();
         }
         fetch_state_data();
     } else {
