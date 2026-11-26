@@ -1,12 +1,17 @@
-from datetime import timedelta
-from typing import Any
+from collections import defaultdict
+from collections.abc import Iterable
+from datetime import datetime, timedelta
+from typing import Any, NamedTuple
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Exists, OuterRef, QuerySet
+from django.db import transaction
+from django.db.models import Exists, F, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from analytics.models import RealmCount
+from zerver.lib.cache import cache_delete_many, get_realm_used_upload_space_cache_key
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.streams import is_user_in_groups_granting_content_access
 from zerver.lib.upload import delete_message_attachment
@@ -51,7 +56,58 @@ def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None
             _("An error occurred while deleting the attachment. Please try again later.")
         )
     ImageAttachment.objects.filter(path_id=attachment.path_id).delete()
-    attachment.delete()
+    _num_deleted, deleted_by_model = attachment.delete()
+
+    # A concurrent request may have already deleted this attachment,
+    # and adjusted the upload space snapshot for it.
+    if deleted_by_model.get(Attachment._meta.label):
+        adjust_upload_space_snapshots(
+            [AttachmentSpaceUsage(attachment.realm_id, attachment.create_time, attachment.size)],
+            removed=True,
+        )
+
+
+class AttachmentSpaceUsage(NamedTuple):
+    realm_id: int
+    create_time: datetime
+    size: int
+
+
+def adjust_upload_space_snapshots(
+    attachments: Iterable[AttachmentSpaceUsage], *, removed: bool
+) -> None:
+    """Realm.currently_used_upload_space_bytes adds the sizes of
+    attachments created since a realm's latest daily upload space
+    snapshot to that snapshot's value. Removing (or restoring) an
+    attachment created before the snapshot doesn't change that sum, so
+    we adjust the snapshot itself, rather than leaving the realm's
+    usage wrong until the next snapshot is computed."""
+    sizes_by_realm: dict[int, list[tuple[datetime, int]]] = defaultdict(list)
+    for attachment in attachments:
+        sizes_by_realm[attachment.realm_id].append((attachment.create_time, attachment.size))
+
+    for realm_id, sizes in sizes_by_realm.items():
+        snapshot = (
+            RealmCount.objects.filter(
+                realm_id=realm_id, property="upload_quota_used_bytes::day", subgroup=None
+            )
+            .order_by("-end_time")
+            .values_list("id", "end_time")
+            .first()
+        )
+        if snapshot is not None:
+            snapshot_id, snapshot_end_time = snapshot
+            size_in_snapshot = sum(
+                size for create_time, size in sizes if create_time < snapshot_end_time
+            )
+            if size_in_snapshot > 0:
+                change = -size_in_snapshot if removed else size_in_snapshot
+                RealmCount.objects.filter(id=snapshot_id).update(value=F("value") + change)
+
+    # Flush after commit, so that a concurrent request can't recompute
+    # the used space without these changes and cache that value.
+    cache_keys = [get_realm_used_upload_space_cache_key(realm_id) for realm_id in sizes_by_realm]
+    transaction.on_commit(lambda: cache_delete_many(cache_keys))
 
 
 def validate_attachment_request_for_spectator_access(
