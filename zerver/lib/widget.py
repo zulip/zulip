@@ -121,7 +121,16 @@ def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
             content=json.dumps(content),
         )
         submessage.save()
-        send_request.submessages = SubMessage.get_raw_db_rows([message_id])
+        # The same fields as SubMessage.get_raw_db_rows.
+        send_request.submessages = [
+            {
+                "id": submessage.id,
+                "message_id": submessage.message_id,
+                "sender_id": submessage.sender_id,
+                "msg_type": submessage.msg_type,
+                "content": submessage.content,
+            }
+        ]
 
 
 def get_widget_type(*, message_id: int) -> str | None:
