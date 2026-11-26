@@ -57,6 +57,19 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         url = upload_message_attachment("evil.INFO", "text/plain", b"zulip!", user_profile)[0]
         self.assertTrue(url.endswith("/evil.INFO-file"))
 
+    def test_upload_message_attachment_long_file_name(self) -> None:
+        # Long names are truncated to 234 bytes, leaving room for the
+        # "-file" suffix and for the lock files tusd creates next to
+        # uploads.
+        user_profile = self.example_user("hamlet")
+        file_name = "a" * 300 + ".txt"
+        url = upload_message_attachment(file_name, "text/plain", b"zulip!", user_profile)[0]
+        self.assertEqual(url.rsplit("/", 1)[1], "a" * 230 + ".txt")
+
+        file_name = "a" * 300 + ".info"
+        url = upload_message_attachment(file_name, "text/plain", b"zulip!", user_profile)[0]
+        self.assertEqual(url.rsplit("/", 1)[1], "a" * 229 + ".info-file")
+
     def test_save_attachment_contents(self) -> None:
         user_profile = self.example_user("hamlet")
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
