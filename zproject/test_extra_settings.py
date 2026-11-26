@@ -211,6 +211,8 @@ BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
 JITSI_SERVER_URL = "https://jitsi.example.com"
+JITSI_SERVER_APP_ID = "zulip_test"
+JITSI_SERVER_APP_SECRET = "test-jitsi-secret-padded-to-32-bytes!!"
 
 CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
 CONSTRUCTOR_GROUPS_ACCESS_KEY = "test-access-key"

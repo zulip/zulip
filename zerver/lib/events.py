@@ -94,6 +94,7 @@ from zerver.lib.users import (
     max_message_id_for_user,
 )
 from zerver.lib.utils import optional_bytes_to_mib
+from zerver.lib.video_calls import get_effective_jitsi_server_url, server_jitsi_jwt_configured
 from zerver.models import (
     ChannelFolder,
     Client,
@@ -573,11 +574,8 @@ def fetch_initial_state_data(
             settings.JITSI_SERVER_URL.rstrip("/") if settings.JITSI_SERVER_URL is not None else None
         )
         state["server_jitsi_server_url"] = server_default_jitsi_server_url
-        state["jitsi_server_url"] = (
-            realm.jitsi_server_url
-            if realm.jitsi_server_url is not None
-            else server_default_jitsi_server_url
-        )
+        state["server_jitsi_jwt_configured"] = server_jitsi_jwt_configured()
+        state["jitsi_server_url"] = get_effective_jitsi_server_url(realm)
 
         state["server_google_meet_app_internal"] = settings.VIDEO_GOOGLE_MEET_AUDIENCE_INTERNAL
 
