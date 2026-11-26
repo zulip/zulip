@@ -110,6 +110,28 @@ def adjust_upload_space_snapshots(
     transaction.on_commit(lambda: cache_delete_many(cache_keys))
 
 
+def delete_attachments_and_adjust_upload_space(attachments: QuerySet[Attachment]) -> int:
+    with transaction.atomic(savepoint=False):
+        # Lock the rows, so that we only adjust the upload space
+        # snapshots for attachments that this transaction deletes.
+        attachment_rows = list(
+            attachments.select_for_update(of=("self",), no_key=False)
+            .order_by("id")
+            .values_list("id", "realm_id", "create_time", "size")
+        )
+        num_deleted, _deleted_by_model = Attachment.objects.filter(
+            id__in=[row[0] for row in attachment_rows]
+        ).delete()
+        adjust_upload_space_snapshots(
+            [
+                AttachmentSpaceUsage(realm_id, create_time, size)
+                for _attachment_id, realm_id, create_time, size in attachment_rows
+            ],
+            removed=True,
+        )
+    return num_deleted
+
+
 def validate_attachment_request_for_spectator_access(
     realm: Realm, attachment: Attachment
 ) -> bool | None:
