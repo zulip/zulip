@@ -7,6 +7,7 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
+import re
 from typing import TypedDict
 
 from django.http import HttpRequest, HttpResponse
@@ -273,11 +274,17 @@ def generate_content(data: EventType) -> str:
 def get_display_user(message: WildValue) -> str:
     owner_name = message["by"]["full_name"].tame(check_string)
     owner_link = message["by"]["permalink"].tame(check_string)
-    return f"[{owner_name}]({owner_link})"
+    # Zulip Markdown cannot escape brackets inside link text.
+    link_text = re.sub(r"\[|\]", "", owner_name).strip()
+    return f"[{link_text}]({owner_link})"
 
 
 def format_subject(subject_text: str, permalink: str | None) -> str:
-    return f"[{subject_text}]({permalink})" if permalink else f"**{subject_text}**"
+    if permalink is None:
+        return f"**{subject_text}**"
+    # Zulip Markdown cannot escape brackets inside link text.
+    link_text = re.sub(r"\[|\]", "", subject_text).strip()
+    return f"[{link_text}]({permalink})"
 
 
 def get_subject(message: WildValue, data_field: str | None = None) -> str:

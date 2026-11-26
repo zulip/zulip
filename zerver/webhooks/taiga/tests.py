@@ -1,3 +1,4 @@
+import orjson
 from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -184,6 +185,28 @@ class TaigaHookTests(WebhookTestCase):
     def test_taiga_issue_created_link(self) -> None:
         message = "[Aditya Verma](https://tree.taiga.io/profile/orientor) created issue [Issues](https://tree.taiga.io/project/orientor-sd/issue/49)."
         self.check_webhook("issue_created_link", self.TOPIC_NAME, message)
+
+    def test_taiga_issue_created_link_with_bracket_in_subject(self) -> None:
+        payload = orjson.loads(self.get_body("issue_created_link"))
+        payload["data"]["subject"] = "Extra ]"
+        message = "[Aditya Verma](https://tree.taiga.io/profile/orientor) created issue [Extra](https://tree.taiga.io/project/orientor-sd/issue/49)."
+        self.check_webhook(
+            "issue_created_link",
+            self.TOPIC_NAME,
+            message,
+            custom_payload=payload,
+        )
+
+    def test_taiga_user_name_with_bracket(self) -> None:
+        payload = orjson.loads(self.get_body("issue_created_link"))
+        payload["by"]["full_name"] = "Aditya [Verma]"
+        message = "[Aditya Verma](https://tree.taiga.io/profile/orientor) created issue [Issues](https://tree.taiga.io/project/orientor-sd/issue/49)."
+        self.check_webhook(
+            "issue_created_link",
+            self.TOPIC_NAME,
+            message,
+            custom_payload=payload,
+        )
 
     def test_taiga_issue_deleted(self) -> None:
         message = (
