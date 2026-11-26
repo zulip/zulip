@@ -92,7 +92,8 @@ class ReactionEmojiTest(ZulipTestCase):
 
     def test_cached_reaction_data(self) -> None:
         """
-        Formatted reactions data is saved in cache.
+        A reaction invalidates the cached message; the next fetch
+        caches it with its formatted reactions data.
         """
         senders = [self.example_user("hamlet"), self.example_user("cordelia")]
         emojis = ["slight_smile", "tada"]
@@ -108,6 +109,10 @@ class ReactionEmojiTest(ZulipTestCase):
             self.assertEqual(200, result.status_code)
 
         key = to_dict_cache_key_id(1)
+        self.assertIsNone(cache_get(key))
+
+        result = self.api_get(senders[0], "/api/v1/messages/1")
+        self.assert_json_success(result)
         message = extract_message_dict(cache_get(key))
 
         expected_reaction_data = [

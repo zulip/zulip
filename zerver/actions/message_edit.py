@@ -52,7 +52,6 @@ from zerver.lib.message import (
     topic_wildcard_mention_allowed,
     truncate_topic,
 )
-from zerver.lib.message_cache import update_message_cache
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
@@ -516,7 +515,6 @@ def do_update_embedded_data(
         message.rendered_content = rendered_content
     message.save(update_fields=update_fields)
 
-    update_message_cache([message])
     event = InternalUpdateMessageEvent(
         user_id=None,
         edit_timestamp=datetime_to_timestamp(timezone_now()),
