@@ -967,6 +967,35 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.assertEqual(attachment.realm, stream.realm)
         self.assertEqual(attachment.is_realm_public, True)
 
+    def test_message_with_attachment_from_email_gateway_bot_updates_used_space(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        self.subscribe(hamlet, "Denmark")
+        stream = get_stream("Denmark", realm)
+        # The email gateway bot is in the system bot realm, so it
+        # uploads attachments to a different realm than its own.
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+        self.assertNotEqual(email_gateway_bot.realm_id, realm.id)
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=email_gateway_bot)
+        used_space = realm.currently_used_upload_space_bytes()
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Test body")
+        incoming_valid_message.add_attachment(
+            b"zulip!", maintype="text", subtype="plain", filename="test.txt"
+        )
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = encode_email_address(stream.name, email_token)
+
+        process_message(incoming_valid_message)
+
+        attachment = Attachment.objects.last()
+        assert attachment is not None
+        self.assertEqual(attachment.owner, email_gateway_bot)
+        self.assertEqual(attachment.realm, realm)
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space + attachment.size)
+
     def test_message_with_attachment_long_body(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
