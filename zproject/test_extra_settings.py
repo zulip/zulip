@@ -210,6 +210,8 @@ VIDEO_GOOGLE_MEET_CLIENT_SECRET = "client_secret"
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+JITSI_SERVER_URL = "https://jitsi.example.com"
+
 CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
 CONSTRUCTOR_GROUPS_ACCESS_KEY = "test-access-key"
 CONSTRUCTOR_GROUPS_SECRET_KEY = "test-secret-key"
