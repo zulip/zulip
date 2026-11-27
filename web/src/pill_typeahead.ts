@@ -36,13 +36,13 @@ export function set_up_user(
     opts: {
         exclude_bots?: boolean;
     },
-): void {
+): Typeahead<UserPillData> {
     const exclude_bots = opts.exclude_bots;
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $input,
         type: "contenteditable",
     };
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
@@ -79,13 +79,13 @@ export function set_up_stream(
         hide_on_empty_after_backspace?: boolean;
         invite_streams?: boolean;
     },
-): void {
+): Typeahead<StreamPillData> {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $input,
         type: "contenteditable",
     };
     opts.hide_on_empty_after_backspace ??= false;
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         helpOnEmptyStrings: () => opts.help_on_empty_strings ?? false,
         hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
@@ -130,12 +130,12 @@ export function set_up_user_group(
     opts: {
         user_group_source: () => UserGroup[];
     },
-): void {
+): Typeahead<UserGroupPillData> {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $input,
         type: "contenteditable",
     };
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         source(_query: string): UserGroupPillData[] {
             return opts
@@ -170,12 +170,12 @@ export function set_up_group_setting_typeahead(
         setting_type: "realm" | "stream" | "group";
         group?: UserGroup | undefined;
     },
-): void {
+): Typeahead<GroupSettingTypeaheadItem> {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $input,
         type: "contenteditable",
     };
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         source(_query: string): GroupSettingTypeaheadItem[] {
             return [
@@ -255,10 +255,10 @@ export function set_up_combined(
         exclude_bots?: boolean;
         for_stream_subscribers: boolean;
     },
-): void {
+): Typeahead<TypeaheadItem> | undefined {
     if (!opts.user && !opts.user_group && !opts.stream) {
         blueslip.error("Unspecified possible item types");
-        return;
+        return undefined;
     }
     const include_streams = (query: string): boolean =>
         opts.stream !== undefined && query.trimStart().startsWith("#");
@@ -270,7 +270,7 @@ export function set_up_combined(
         $element: $input,
         type: "contenteditable",
     };
-    new Typeahead(bootstrap_typeahead_input, {
+    return new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
         helpOnEmptyStrings: () => true,
         hideOnEmptyAfterBackspace: true,
