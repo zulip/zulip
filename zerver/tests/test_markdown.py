@@ -1323,6 +1323,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
 
             self.assertFalse(url_embed_preview_enabled(message, no_previews=True))
 
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_dropbox(self) -> None:
         # Image files are inlined directly, with no network request, so
         # they render on the initial pass. The inlined image points at
@@ -1339,6 +1340,9 @@ class MarkdownEmbedsTest(ZulipTestCase):
         # fetched asynchronously by the embed_links worker, so the initial
         # render only registers the URL for preview, without a network
         # request or an embed.
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", True, acting_user=None
+        )
         folder_url = "https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&st=dz5p1ytw"  # codespell:ignore fo
         escaped_url = folder_url.replace("&", "&amp;")
         rendered = markdown_convert(folder_url, message_realm=get_realm("zulip"))
@@ -1361,6 +1365,17 @@ class MarkdownEmbedsTest(ZulipTestCase):
             rendered.rendered_content,
             """<p><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw">https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/a301902b9942efb85cfe2a6f4bb07d76ba7b86de/68747470733a2f2f7777772e64726f70626f782e636f6d2f7374617469632f6d6574617365727665722f7374617469632f696d616765732f6f70656e67726170682f6f70656e67726170682d636f6e74656e742d69636f6e2d666f6c6465722d64726f70626f782d6c616e6473636170652e706e67&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",  # codespell:ignore fo
         )
+
+        # Like other website previews, these aren't registered for
+        # messages sent by bots or when website previews are disabled.
+        rendered = markdown_convert(folder_url, message_realm=get_realm("zulip"), sent_by_bot=True)
+        self.assertEqual(rendered.links_for_preview, set())
+
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", False, acting_user=None
+        )
+        rendered = markdown_convert(folder_url, message_realm=get_realm("zulip"))
+        self.assertEqual(rendered.links_for_preview, set())
 
     def test_inline_dropbox_video(self) -> None:
         # Video files are inlined directly, with no network request. As
@@ -1387,10 +1402,14 @@ class MarkdownEmbedsTest(ZulipTestCase):
             "</video></a></div>",
         )
 
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_dropbox_preview(self) -> None:
         # Photo album (/sc/) links are previewed as folders via their
         # OpenGraph image, fetched asynchronously by the embed_links
         # worker. The initial render only registers the URL for preview.
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", True, acting_user=None
+        )
         url = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
         rendered = markdown_convert(url, message_realm=get_realm("zulip"))
         self.assertEqual(
@@ -1436,11 +1455,15 @@ class MarkdownEmbedsTest(ZulipTestCase):
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_dropbox_file_deferred_preview(self) -> None:
         # A non-image/non-video Dropbox file is previewed via its
         # OpenGraph image. Rendering must not perform the fetch itself
         # (which would risk do_convert's 5-second timeout); it registers
         # the URL so the embed_links worker can fetch it asynchronously.
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", True, acting_user=None
+        )
         url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
         rendered = markdown_convert(url, message_realm=get_realm("zulip"))
         self.assertEqual(
@@ -1472,6 +1495,18 @@ class MarkdownEmbedsTest(ZulipTestCase):
                 f'<p><a href="{url}">{url}</a></p>',
             )
 
+        # Like other website previews, these aren't registered for
+        # messages sent by bots or when website previews are disabled.
+        rendered = markdown_convert(url, message_realm=get_realm("zulip"), sent_by_bot=True)
+        self.assertEqual(rendered.links_for_preview, set())
+
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", False, acting_user=None
+        )
+        rendered = markdown_convert(url, message_realm=get_realm("zulip"))
+        self.assertEqual(rendered.links_for_preview, set())
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_inline_dropbox_no_previews(self) -> None:
         # When previews are disabled (e.g., for channel descriptions),
         # Dropbox links must not be registered for preview, since the
@@ -1479,6 +1514,9 @@ class MarkdownEmbedsTest(ZulipTestCase):
         # context where previews are meant to be suppressed. Use a
         # non-image/non-video file link, which is the case that would
         # otherwise request a preview.
+        do_set_realm_property(
+            get_realm("zulip"), "inline_url_embed_preview", True, acting_user=None
+        )
         url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
         rendered = markdown_convert(url, message_realm=get_realm("zulip"), no_previews=True)
         self.assertEqual(rendered.links_for_preview, set())
