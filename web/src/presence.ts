@@ -67,8 +67,9 @@ const BIG_REALM_COUNT = 250;
 export function get_status(user_id: number): PresenceStatus["status"] {
     if (people.is_my_user_id(user_id)) {
         if (user_settings.presence_enabled) {
-            // if the current user is sharing presence, they always see themselves as online.
-            return "active";
+            // if the current user is sharing presence, they see themselves as idle if
+            // their presence data says idle, and active otherwise.
+            return presence_info.get(user_id)?.status === "idle" ? "idle" : "active";
         }
         // if the current user is not sharing presence, they always see themselves as offline.
         return "offline";
@@ -204,6 +205,17 @@ export function update_info_from_event(
     const user = people.maybe_get_user_by_id(user_id, ignore_missing);
     const status = status_from_raw(raw, user);
     presence_info.set(user_id, status);
+}
+
+export function set_current_user_active(): void {
+    const now = Date.now() / 1000;
+    const raw: RawPresence = {
+        server_timestamp: now,
+        active_timestamp: now,
+    };
+    const user_id = people.my_current_user_id();
+    raw_info.set(user_id, raw);
+    presence_info.set(user_id, status_from_raw(raw, people.maybe_get_user_by_id(user_id)));
 }
 
 export function set_info(

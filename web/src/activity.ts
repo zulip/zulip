@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as presence from "./presence.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -113,7 +114,10 @@ export function compute_active_status(): ActivityState {
     return "idle";
 }
 
-export let send_presence_to_server = (redraw?: () => void): void => {
+export let send_presence_to_server = (
+    redraw?: () => void,
+    redraw_user?: (user_id: number) => void,
+): void => {
     // Zulip has 2 data feeds coming from the server to the client:
     // The server_events data, and this presence feed.  Data from
     // server_events is nicely serialized, but if we've been offline
@@ -169,6 +173,9 @@ export let send_presence_to_server = (redraw?: () => void): void => {
                     data.presence_last_update_id,
                 );
                 redraw();
+            } else if (redraw_user) {
+                presence.set_current_user_active();
+                redraw_user(people.my_current_user_id());
             }
         },
     });
@@ -178,24 +185,23 @@ export function rewire_send_presence_to_server(value: typeof send_presence_to_se
     send_presence_to_server = value;
 }
 
-export function mark_client_active(): void {
+export function mark_client_active(redraw_user: (user_id: number) => void): void {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
-        send_presence_to_server();
+        send_presence_to_server(undefined, redraw_user);
     }
     mark_client_idle_later();
 }
 
-export function initialize(): void {
+export function initialize(opts: {redraw_user: (user_id: number) => void}): void {
     $(document).on("mousemove", () => {
         set_new_user_input(true);
     });
 
-    $(window).on(
-        "focus keydown mousedown mousemove touchmove touchstart wheel",
-        mark_client_active,
-    );
+    $(window).on("focus keydown mousedown mousemove touchmove touchstart wheel", () => {
+        mark_client_active(opts.redraw_user);
+    });
     if (client_is_active) {
         mark_client_idle_later();
     }
