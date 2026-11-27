@@ -11,6 +11,20 @@ from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
+ALERTMANAGER_SEVERITY_EMOJI = {
+    "critical": ":alert:",
+    "emergency": ":alert:",
+    "fatal": ":alert:",
+    "error": ":alert:",
+    "warning": ":warning:",
+    "warn": ":warning:",
+    "major": ":warning:",
+    "info": ":info:",
+    "notice": ":info:",
+    "low": ":info:",
+    "debug": ":info:",
+}
+
 
 @webhook_view("Alertmanager")
 @typed_endpoint
@@ -22,7 +36,7 @@ def api_alertmanager_webhook(
     name_field: Annotated[str, ApiParamConfig("name")] = "instance",
     desc_field: Annotated[str, ApiParamConfig("desc")] = "alertname",
 ) -> HttpResponse:
-    topics: dict[str, dict[str, list[str]]] = {}
+    topics: dict[str, dict[str, list[tuple[str, str]]]] = {}
 
     for alert in payload["alerts"]:
         labels = alert.get("labels", {})
@@ -38,27 +52,33 @@ def api_alertmanager_webhook(
             body = f"{desc} ([source]({url}))"
         else:
             body = desc
+
+        status_str = alert["status"].tame(check_string)
+        if status_str == "resolved":
+            emoji = ":squared_ok:"
+        else:
+            severity = ""
+            if "severity" in labels:
+                severity = labels["severity"].tame(check_string).lower()
+            emoji = ALERTMANAGER_SEVERITY_EMOJI.get(severity, ":alert:")
+
         if name not in topics:
             topics[name] = {"firing": [], "resolved": []}
-        topics[name][alert["status"].tame(check_string)].append(body)
+        topics[name][status_str].append((emoji, body))
 
     for topic_name, statuses in topics.items():
         for status, messages in statuses.items():
             if len(messages) == 0:
                 continue
 
-            if status == "firing":
-                icon = ":alert:"
-                title = "FIRING"
-            else:
-                title = "Resolved"
-                icon = ":squared_ok:"
+            title = "FIRING" if status == "firing" else "Resolved"
+            emoji = messages[0][0]
 
             if len(messages) == 1:
-                body = f"{icon} **{title}** {messages[0]}"
+                body = f"{emoji} **{title}** {messages[0][1]}".strip()
             else:
-                message_list = "\n".join(f"* {m}" for m in messages)
-                body = f"{icon} **{title}**\n{message_list}"
+                message_list = "\n".join(f"* {msg_body}" for _, msg_body in messages)
+                body = f"{emoji} **{title}**\n{message_list}".strip()
 
             check_send_webhook_message(request, user_profile, topic_name, body)
 
