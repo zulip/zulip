@@ -574,6 +574,211 @@
     }
 }
 
+.sender-block {
+    /* A run of consecutive messages from the same sender within a recipient
+       row. Wrapped at render time by `wrap_recipient_row_into_sender_blocks`.
+       The first message's `.message-avatar` element is moved out of its
+       grid cell to be a direct child of this wrapper, so it can be
+       `position: sticky` and follow the user's scroll across the whole
+       run, then release once the next sender's block begins. */
+    position: relative;
+    /* Keep the margin of the sticky avatar inside the block, so that
+       the block starts at the top of its first message. */
+    display: flow-root;
+
+    > .message-avatar {
+        position: sticky;
+        /* Stick below the navbar plus the sticky recipient header. The
+           recipient header height is dynamic, so this is an approximation:
+           ~28px content + ~10px header-padding-bottom + borders, plus a
+           few pixels of breathing room so the avatar's top doesn't tuck
+           under the header's bottom border. */
+        top: calc(var(--navbar-fixed-height) + 50px);
+        /* Below the recipient header (z-index: 4) but above message content. */
+        z-index: 2;
+
+        /* Match the avatar column placement inside `.messagebox-content`:
+           2px unread marker + 4px to the start of `.messagebox-content` +
+           10px `.messagebox-content` padding from the row's left edge. */
+        margin-left: 16px;
+        margin-top: var(--message-box-vertical-margin);
+        width: var(--message-box-avatar-column-width);
+        height: var(--message-box-avatar-height);
+
+        /* The sticky avatar is kept inside the block including its
+           margins, so this is the space left below the avatar when the
+           end of the block pushes it out of view. */
+        margin-bottom: var(--message-box-vertical-margin);
+
+        .inline_profile_picture {
+            /* A 4px surround in the message background color, drawn as
+               a shadow so that it does not move the avatar. */
+            background-color: var(--color-background-stream-message-content);
+            box-shadow: 0 0 0 4px var(--color-background-stream-message-content);
+        }
+    }
+
+    /* Cancel the avatar's vertical footprint so the first `.message_row`
+       in this block starts at the top of the wrapper and the empty
+       avatar grid cell inside it sits directly behind the avatar. */
+    > .message-avatar ~ .messagebox-includes-sender {
+        margin-top: calc(
+            -1 *
+                (
+                    var(--message-box-avatar-height) + 2 *
+                        var(--message-box-vertical-margin)
+                )
+        );
+    }
+
+    > .sticky-sender-rail {
+        /* Spans the whole block, so that the sticky element inside is
+           pushed out by the end of the block. */
+        position: absolute;
+        inset: 0;
+        /* Below the recipient header (z-index: 4) but above message content. */
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .sticky-sender {
+        position: sticky;
+        /* Stick below the navbar plus the sticky recipient header. The
+           recipient header height is dynamic, so this is an approximation:
+           ~28px content + ~10px header-padding-bottom + borders, plus a
+           few pixels of breathing room. */
+        top: calc(var(--navbar-fixed-height) + 50px);
+        display: flex;
+        /* Match the sender name placement inside `.messagebox-content`:
+           2px unread marker + 4px to the start of `.messagebox-content` +
+           10px `.messagebox-content` padding from the row's left edge,
+           plus the avatar column. */
+        margin-left: calc(16px + var(--message-box-avatar-column-width));
+    }
+
+    .sticky-sender-name {
+        /* The text is positioned to exactly cover the sender name of
+           the first message in the block. */
+        position: relative;
+        isolation: isolate;
+        align-self: flex-start;
+        margin-left: -0.5em;
+        padding: 0 0.5em;
+        max-width: 60%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 700;
+        line-height: var(--message-box-sender-line-height);
+        color: var(--color-text-sender-name);
+        visibility: hidden;
+
+        /* Like the scroll to bottom button, a brand button on top of
+           a semi-transparent underlay with the background color of
+           messages. */
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0.3em 0;
+            z-index: -1;
+            border-radius: 2em;
+        }
+
+        &::before {
+            background-color: color-mix(
+                in srgb,
+                var(--color-background-stream-message-content) 70%,
+                transparent
+            );
+            backdrop-filter: blur(40px);
+        }
+
+        &::after {
+            background-color: var(
+                --color-background-brand-subtle-action-button
+            );
+            box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button)
+                inset;
+        }
+    }
+
+    &.sender-block-me-message .sticky-sender-name {
+        margin-top: calc(var(--message-box-vertical-margin) + 0.56em);
+        line-height: 1.4;
+
+        &::before,
+        &::after {
+            inset: -0.15em 0;
+        }
+    }
+
+    /* When both the avatar and the name are sticky, a small version of
+       the avatar is displayed inside the button, before the name. */
+    &.sender-block-sticky-avatar {
+        > .sticky-sender-rail {
+            /* Push the button out of view at the same time as the
+               avatar, which takes up more of the end of the block. */
+            bottom: calc(
+                2 * var(--message-box-vertical-margin) +
+                    var(--message-box-avatar-height) -
+                    var(--message-box-sender-line-height)
+            );
+        }
+
+        > .message-avatar:has(+ .sticky-sender-rail) {
+            /* Stick at the same distance below the sticky sender name
+               as in the first message of the block. */
+            top: calc(
+                var(--navbar-fixed-height) + 50px +
+                    var(--message-box-vertical-margin)
+            );
+            /* Above the button in the rail. */
+            z-index: 3;
+
+            .inline_profile_picture {
+                transform-origin: top left;
+                transition: transform 0.1s ease-out;
+            }
+        }
+
+        .sticky-sender-name {
+            /* 0.3em before the avatar, the avatar at half its size, and
+               0.4em between the avatar and the name. */
+            margin-left: calc(-0.7em - var(--message-box-avatar-height) / 2);
+            padding-left: calc(0.7em + var(--message-box-avatar-height) / 2);
+        }
+
+        &.sender-name-stuck > .message-avatar .inline_profile_picture {
+            /* Move the avatar next to the name, centered on the line
+               of the name, at half its size. */
+            transform: translate(
+                    calc(
+                        var(--message-box-avatar-column-width) - 0.4em -
+                            var(--message-box-avatar-height) / 2
+                    ),
+                    calc(
+                        var(--message-box-sender-line-height) / 2 -
+                            var(--message-box-avatar-height) / 4 -
+                            var(--message-box-vertical-margin)
+                    )
+                )
+                scale(0.5);
+            box-shadow: none;
+        }
+    }
+
+    &.sender-name-stuck {
+        .sticky-sender-name {
+            visibility: visible;
+        }
+
+        .sticky-sender-rail + .message_row .sender_name {
+            visibility: hidden;
+        }
+    }
+}
+
 .message_controls {
     grid-area: controls;
     /* Let the controls occupy the entire height
