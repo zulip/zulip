@@ -4310,3 +4310,312 @@ class TestHtmlToMarkdown(ZulipTestCase):
             convert_html_to_markdown(html),
             "Outer layout\n\nInner layout\n\n| Name |\n| --- |\n| Alice |",
         )
+
+    def test_table_with_header_row_and_nested_table(self) -> None:
+        # A table with a header row holds data, even when one of its cells
+        # contains another table. The nested table is converted as blocks
+        # despite having a header row of its own.
+        nested_table = (
+            "<table>"
+            "<tr><th>Region</th><th>Impact</th></tr>"
+            "<tr><td>us-east-1</td><td>$5</td></tr>"
+            "</table>"
+        )
+        # The nested table's cells are joined with two spaces.
+        expected_markdown = (
+            "| Service | Root causes |\n| --- | --- |\n| Compute | Region  Impact  us-east-1  $5 |"
+        )
+        body_row = f"<tr><td>Compute</td><td>{nested_table}</td></tr>"
+        th_row = "<tr><th>Service</th><th>Root causes</th></tr>"
+        # Cells in <thead> are column headers even when they are <td>.
+        td_row = "<tr><td>Service</td><td>Root causes</td></tr>"
+        for html in [
+            f"<table>{th_row}{body_row}</table>",
+            f"<table><tbody>{th_row}<!-- comment -->{body_row}</tbody></table>",
+            f"<table><thead>{th_row}</thead><tbody>{body_row}</tbody></table>",
+            f"<table><thead>{td_row}</thead><tbody>{body_row}</tbody></table>",
+            f"<table><thead>{th_row}</thead>{body_row}</table>",
+            f"<table><colgroup><col><col></colgroup><thead>{th_row}</thead>{body_row}</table>",
+        ]:
+            self.assertEqual(convert_html_to_markdown(html), expected_markdown)
+
+        # A second <tbody>, and a row as wide as a header row with a colspan.
+        html = (
+            "<table>"
+            '<thead><tr><th>Service</th><th colspan="2">Root causes</th></tr></thead>'
+            f"<tbody>{body_row}</tbody>"
+            "<tbody><tr><td>Storage</td><td>None</td><td>$0</td></tr></tbody>"
+            "</table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "| Service | Root causes | |\n| --- | --- | --- |\n"
+            "| Compute | Region  Impact  us-east-1  $5 |\n"
+            "| Storage | None | $0 |",
+        )
+
+    def test_table_with_header_row_and_malformed_nested_table(self) -> None:
+        # Rows without cells in a nested table don't matter, as the nested
+        # table is converted as blocks.
+        html = (
+            "<table>"
+            "<tr><th>Service</th><th>Root causes</th></tr>"
+            "<tr><td>Compute</td><td>"
+            "<table><tr><p>Region: us-east-1</p><p>Impact: $5</p></tr></table>"
+            "</td></tr>"
+            "</table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "| Service | Root causes |\n| --- | --- |\n| Compute | Region: us-east-1  Impact: $5 |",
+        )
+
+        # The markup of an AWS cost anomaly email: header cells that are
+        # <td> in a <thead>, a body row without a <tbody>, and a nested
+        # table whose rows hold <div>s with a <br> between the rows.
+        html = (
+            "<table>"
+            "<thead><tr><td>Service</td><td>Root causes</td></tr></thead>"
+            "<tr><td>Compute</td><td>"
+            "<table>"
+            "<tr><div>Region: us-east-1</div><div>Impact: $5</div></tr>"
+            "<br/>"
+            "<tr><div>Region: us-west-2</div><div>Impact: $3</div></tr>"
+            "</table>"
+            "</td></tr>"
+            "</table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "| Service | Root causes |\n| --- | --- |\n"
+            "| Compute | Region: us-east-1  Impact: $5   Region: us-west-2  Impact: $3 |",
+        )
+
+    def test_table_with_header_row_inside_layout_table(self) -> None:
+        # Only the outermost table is layout. The table with a header row
+        # stays a Markdown table, and the table in its cell is converted
+        # as blocks.
+        html = (
+            "<table><tr><td>"
+            "Outer layout"
+            "<table>"
+            "<tr><th>Name</th><th>Teams</th></tr>"
+            "<tr><td>Alice</td><td><table><tr><td>Design</td></tr></table></td></tr>"
+            "</table>"
+            "</td></tr></table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "Outer layout\n\n| Name | Teams |\n| --- | --- |\n| Alice | Design |",
+        )
+
+    def test_layout_table_with_th_that_is_not_a_header_row(self) -> None:
+        # A table containing another table is still layout when its <th>
+        # cells aren't a row of column headers that can become the header
+        # row of a Markdown table.
+        nested_table = (
+            "<table>"
+            "<tr><th>Name</th><th>Role</th></tr>"
+            "<tr><td>Alice</td><td>Admin</td></tr>"
+            "</table>"
+        )
+        nested_markdown = "| Name | Role |\n| --- | --- |\n| Alice | Admin |"
+        for html, markdown in [
+            # A single header cell.
+            (
+                f"<table><tr><th>Newsletter</th></tr><tr><td>{nested_table}</td></tr></table>",
+                f"Newsletter\n\n{nested_markdown}",
+            ),
+            # A first row mixing <th> and <td>.
+            (
+                (
+                    "<table>"
+                    "<tr><th>Logo</th><td>Tagline</td></tr>"
+                    f"<tr><td>{nested_table}</td></tr>"
+                    "</table>"
+                ),
+                f"Logo\n\nTagline\n\n{nested_markdown}",
+            ),
+            # A header cell wrapping a table.
+            (
+                f"<table><tr><th>Left column</th><th>{nested_table}</th></tr></table>",
+                f"Left column\n\n{nested_markdown}",
+            ),
+            # No row of its own; the only <tr> belongs to the nested table.
+            (f"<table><td>{nested_table}</td></table>", nested_markdown),
+            # Header cells in a later row.
+            (
+                (
+                    "<table>"
+                    f"<tr><td>Intro</td><td>{nested_table}</td></tr>"
+                    "<tr><th>Left</th><th>Right</th></tr>"
+                    "</table>"
+                ),
+                f"Intro\n\n{nested_markdown}\n\nLeft\n\nRight",
+            ),
+            # Header cells after a <caption>, and <td> cells in a <thead>
+            # of several rows.
+            (
+                (
+                    "<table>"
+                    "<caption>Costs</caption>"
+                    "<tr><th>Left</th><th>Right</th></tr>"
+                    f"<tr><td>{nested_table}</td></tr>"
+                    "</table>"
+                ),
+                f"Costs\n\nLeft\n\nRight\n\n{nested_markdown}",
+            ),
+            (
+                (
+                    "<table>"
+                    "<thead><tr><td>Left</td><td>Right</td></tr><tr><td>More</td></tr></thead>"
+                    f"<tbody><tr><td>{nested_table}</td></tr></tbody>"
+                    "</table>"
+                ),
+                f"Left\n\nRight\n\nMore\n\n{nested_markdown}",
+            ),
+        ]:
+            self.assertEqual(convert_html_to_markdown(html), markdown)
+
+    def test_layout_table_with_header_row_that_cannot_convert(self) -> None:
+        # A table containing another table is still layout when it has a
+        # header row but can't become a valid Markdown table that keeps
+        # all of its content.
+        nested_table = "<table><tr><td>Nested</td></tr></table>"
+        nested_markdown = "|  |\n| --- |\n| Nested |"
+        header_row = "<tr><th>Left</th><th>Right</th></tr>"
+        body_row = f"<tr><td>{nested_table}</td><td>Body</td></tr>"
+        blocks = f"Left\n\nRight\n\n{nested_markdown}\n\nBody"
+        for html, markdown in [
+            # A later section that markdownify gives a header of its own:
+            # a <tfoot>, a <tbody> starting with a row of <th>, and a
+            # <tbody> when the header row isn't in a <thead>.
+            (
+                (
+                    "<table>"
+                    f"<thead>{header_row}</thead>"
+                    f"<tbody>{body_row}</tbody>"
+                    "<tfoot><tr><td>Total</td><td>5</td></tr></tfoot>"
+                    "</table>"
+                ),
+                f"{blocks}\n\nTotal\n\n5",
+            ),
+            (
+                (
+                    "<table>"
+                    f"<thead>{header_row}</thead>"
+                    f"<tbody><tr><th>Group</th></tr>{body_row}</tbody>"
+                    "</table>"
+                ),
+                f"Left\n\nRight\n\nGroup\n\n{nested_markdown}\n\nBody",
+            ),
+            (f"<table>{header_row}<tbody>{body_row}</tbody></table>", blocks),
+            # A row with more columns than the header row, whose extra
+            # cells Zulip's Markdown would drop.
+            (
+                f"<table>{header_row}<tr><td>{nested_table}</td><td>Body</td><td>Third</td></tr></table>",
+                f"{blocks}\n\nThird",
+            ),
+            (
+                f'<table>{header_row}<tr><td>{nested_table}</td><td colspan="2">Body</td></tr></table>',
+                blocks,
+            ),
+            # A colspan that isn't a number, or has more than four digits.
+            (
+                f'<table>{header_row}<tr><td>{nested_table}</td><td colspan="x">Body</td></tr></table>',
+                blocks,
+            ),
+            (
+                f'<table>{header_row}<tr><td>{nested_table}</td><td colspan="{"1" * 5000}">Body</td></tr></table>',
+                blocks,
+            ),
+            (
+                f'<table><tr><th>Left</th><th colspan="x">Right</th></tr>{body_row}</table>',
+                blocks,
+            ),
+            # An empty section before the header row.
+            (f"<table><tbody></tbody>{header_row}{body_row}</table>", blocks),
+            # A second <thead>.
+            (
+                (
+                    f"<table><thead>{header_row}</thead><tbody>{body_row}</tbody>"
+                    "<thead><tr><td>Again</td></tr></thead></table>"
+                ),
+                f"{blocks}\n\nAgain",
+            ),
+            # A row without cells.
+            (f"<table>{header_row}{body_row}<tr></tr></table>", blocks),
+            # Content outside the cells: in a row, in a section, and
+            # between rows.
+            (
+                f"<table>{header_row}<tr><td>{nested_table}</td><td>Body</td><p>Stray</p></tr></table>",
+                f"{blocks}\n\nStray",
+            ),
+            (
+                f"<table><tbody>{header_row}<p>Stray</p>{body_row}</tbody></table>",
+                f"Left\n\nRight\n\nStray\n\n{nested_markdown}\n\nBody",
+            ),
+            (
+                f"<table>{header_row}Stray{body_row}</table>",
+                f"Left\n\nRight\n\nStray\n\n{nested_markdown}\n\nBody",
+            ),
+            # A row inside a cell.
+            (
+                f"<table>{header_row}<tr><td>{nested_table}</td><td>Body<br><tr><td>Inner</td></tr></td></tr></table>",
+                f"{blocks}  \n\nInner",
+            ),
+            # A section inside a cell.
+            (
+                (
+                    f"<table><thead>{header_row}</thead><tbody><tr><td>{nested_table}</td>"
+                    "<td>Body<tbody><tr><td>Inner</td></tr></tbody></td></tr></tbody></table>"
+                ),
+                f"{blocks}\n\nInner",
+            ),
+            # A cell inside a cell.
+            (
+                f"<table>{header_row}<tr><td>{nested_table}</td><td>Body<td>Inner</td></td></tr></table>",
+                f"{blocks}\n\nInner",
+            ),
+            # Text with a pipe, which would split a cell in two.
+            (
+                f"<table>{header_row}<tr><td>{nested_table}</td><td>Body | more</td></tr></table>",
+                f"{blocks} | more",
+            ),
+            # A <colgroup> after the header row.
+            (
+                f"<table><thead>{header_row}</thead><colgroup><col><col></colgroup>{body_row}</table>",
+                blocks,
+            ),
+            # A <caption>, and a <colgroup> holding text.
+            (
+                f"<table><caption>Costs</caption><thead>{header_row}</thead>{body_row}</table>",
+                f"Costs\n\n{blocks}",
+            ),
+            (
+                f"<table><colgroup>Stray</colgroup><thead>{header_row}</thead>{body_row}</table>",
+                f"Stray\n\n{blocks}",
+            ),
+            # An image with a pipe in its alt text.
+            (
+                f'<table>{header_row}<tr><td>{nested_table}</td><td><img alt="a|b" src="https://example.com/i.png"></td></tr></table>',
+                f"Left\n\nRight\n\n{nested_markdown}\n\n[a|b](https://example.com/i.png)",
+            ),
+            # A link with a pipe in its URL.
+            (
+                f'<table>{header_row}<tr><td>{nested_table}</td><td><a href="https://example.com/a|b">Body</a></td></tr></table>',
+                f"Left\n\nRight\n\n{nested_markdown}\n\n[Body](https://example.com/a|b)",
+            ),
+            # A table inside a cell that has no table around it, which
+            # markdownify puts on one line.
+            (
+                f"<td><table>{header_row}{body_row}</table></td>",
+                "Left  Right  |  | | --- | | Nested |  Body |",
+            ),
+            # A table inside a link.
+            (
+                f'<a href="https://example.com"><table>{header_row}{body_row}</table></a>',
+                f"[Left\n\nRight\n\n{nested_markdown}\n\nBody](https://example.com)",
+            ),
+        ]:
+            self.assertEqual(convert_html_to_markdown(html), markdown)
