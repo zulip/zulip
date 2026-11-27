@@ -2,8 +2,8 @@
 title: Verify your message was successfully sent
 ---
 
-import RefreshIcon from "~icons/fa/refresh";
-import TimesCircleIcon from "~icons/fa/times-circle";
+import CircleXIcon from "~icons/zulip-icon/circle-x";
+import RefreshCwIcon from "~icons/zulip-icon/refresh-cw";
 
 When you send a message, it first goes to a Zulip server, and then the Zulip
 server sends it out to all the recipients.
@@ -25,14 +25,16 @@ your computer from the internet, and sending a message.
 By default, Zulip will try to resend the message when it is re-connected to
 the internet.
 
-If Zulip gives up (or if the Zulip server returns an error), it will
-add two **red icons** (<RefreshIcon /> <TimesCircleIcon />) to the right side of
-the message. If you don't see the red icons, there is no need to resend.
+If Zulip gives up (or if the Zulip server returns an error), it will display the
+**Retry** (<RefreshCwIcon />) and **Dismiss failed message** (<CircleXIcon />)
+buttons on the right side of the message. If you don't see these buttons, there
+is no need to resend.
 
-If you do see the red icons, you can either
+If you see these buttons, you can:
 
-* Click **resend** (<RefreshIcon />)
-  to attempt a resend.
-* Click **cancel** (<TimesCircleIcon />)
-  to delete the message.
-* Reload the page to cancel all the messages with red icons.
+* Click the **Retry** (<RefreshCwIcon />) button to attempt to resend the
+  message.
+* Click the **Dismiss failed message** (<CircleXIcon />) button to remove the
+  failed message from the feed. The message content remains saved in your
+  [drafts](/help/view-and-edit-your-message-drafts).
+* Reload the page to dismiss all failed messages.
