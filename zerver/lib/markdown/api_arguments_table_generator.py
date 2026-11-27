@@ -138,8 +138,19 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         return ONEOF_DETAILS_TEMPLATE.format(values=content)
 
     def render_parameters(self, parameters: Sequence[Parameter]) -> list[str]:
+        lines = []
         parameters = sorted(parameters, key=lambda parameter: parameter.deprecated)
-        return [self.render_parameter(parameter) for parameter in parameters]
+        for parameter in parameters:
+            if parameter.kind == "body":
+                # Document the body's fields as arguments, rather than one
+                # argument for typed_endpoint's internal "request" name.
+                lines.append("<p>A JSON object with the following name/value pairs:</p>")
+                lines.extend(
+                    self.render_parameter(field) for field in get_json_body_fields(parameter)
+                )
+            else:
+                lines.append(self.render_parameter(parameter))
+        return lines
 
     def render_parameter(self, parameter: Parameter) -> str:
         md_engine = markdown.Markdown(extensions=[])
@@ -310,3 +321,22 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
         if schema.get("nullable", False):
             data_type += " | null"
     return data_type
+
+
+def get_json_body_fields(parameter: Parameter) -> list[Parameter]:
+    schema = parameter.value_schema
+    assert isinstance(parameter.example, dict)
+    required = schema.get("required", [])
+    return [
+        Parameter(
+            kind="body",
+            name=key,
+            description=field_schema["description"],
+            json_encoded=True,
+            value_schema=field_schema,
+            example=parameter.example.get(key, field_schema.get("example")),
+            required=key in required,
+            deprecated=field_schema.get("deprecated", False),
+        )
+        for key, field_schema in schema["properties"].items()
+    ]

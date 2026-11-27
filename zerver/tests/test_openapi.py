@@ -3,12 +3,14 @@ from collections.abc import Callable, Mapping
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import markdown
 import yaml
 from django.http import HttpResponse
 from django.urls import URLPattern
 from django.utils import regex_helper
 from pydantic import TypeAdapter
 
+from zerver.lib.markdown import api_arguments_table_generator
 from zerver.lib.request import arguments_map
 from zerver.lib.rest import rest_dispatch
 from zerver.lib.test_classes import ZulipTestCase
@@ -745,10 +747,16 @@ class TestCurlExampleGeneration(ZulipTestCase):
                                     "type": "object",
                                     "description": "The JSON request body.",
                                     "properties": {
-                                        "name": {"type": "string"},
-                                        "age": {"type": "integer"},
+                                        "name": {
+                                            "type": "string",
+                                            "description": "The name.",
+                                        },
+                                        "age": {
+                                            "type": "integer",
+                                            "description": "The age.",
+                                        },
                                     },
-                                    "required": ["name", "age"],
+                                    "required": ["name"],
                                 },
                                 "example": {
                                     "name": "Zulip",
@@ -933,6 +941,44 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "```",
         ]
         self.assertEqual(generated_curl_example, expected_curl_example)
+
+
+class APIArgumentsTableTest(ZulipTestCase):
+    @patch("zerver.openapi.openapi.OpenAPISpec.openapi")
+    def test_render_json_body(self, spec_mock: MagicMock) -> None:
+        spec_mock.return_value = TestCurlExampleGeneration.spec_mock_using_json_body
+        md_engine = markdown.Markdown(extensions=[api_arguments_table_generator.makeExtension()])
+        rendered = md_engine.convert("{generate_api_arguments_table|zulip.yaml|/endpoint:post}")
+        self.assertEqual(
+            rendered,
+            "<p>A JSON object with the following name/value pairs:</p>\n"
+            '<div class="api-argument" id="parameter-name">\n'
+            '    <p class="api-argument-name"><strong>name</strong>'
+            ' <span class="api-field-type">string</span>'
+            ' <span class="api-argument-required">required</span> '
+            ' <a href="#parameter-name" class="api-argument-hover-link">'
+            '<i class="fa fa-chain"></i></a></p>\n'
+            '    <div class="api-example">\n'
+            '        <span class="api-argument-example-label">Example</span>:'
+            " <code>&quot;Zulip&quot;</code>\n"
+            "    </div>\n"
+            '    <div class="api-description"><p>The name.</p></div>\n'
+            "    <hr>\n"
+            "</div>\n"
+            '<div class="api-argument" id="parameter-age">\n'
+            '    <p class="api-argument-name"><strong>age</strong>'
+            ' <span class="api-field-type">integer</span>'
+            ' <span class="api-argument-optional">optional</span> '
+            ' <a href="#parameter-age" class="api-argument-hover-link">'
+            '<i class="fa fa-chain"></i></a></p>\n'
+            '    <div class="api-example">\n'
+            '        <span class="api-argument-example-label">Example</span>:'
+            " <code>10</code>\n"
+            "    </div>\n"
+            '    <div class="api-description"><p>The age.</p></div>\n'
+            "    <hr>\n"
+            "</div>",
+        )
 
 
 class OpenAPIAttributesTest(ZulipTestCase):
