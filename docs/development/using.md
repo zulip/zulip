@@ -96,7 +96,7 @@ server][mobile-dev-server-guide].
 
 [rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: authentication.md
-[django-runserver]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#runserver
+[django-runserver]: https://docs.djangoproject.com/en/5.2/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
 [mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md
