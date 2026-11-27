@@ -31,6 +31,7 @@ from zerver.lib.event_types import (
     UserSettingsUpdateEvent,
 )
 from zerver.lib.i18n import get_language_name
+from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
@@ -391,7 +392,9 @@ def do_change_avatar_fields(
     skip_notify: bool = False,
     *,
     acting_user: UserProfile | None,
+    notify_user: bool,
 ) -> None:
+    old_url = avatar_url(user_profile, medium=True)
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
@@ -408,19 +411,38 @@ def do_change_avatar_fields(
     if not skip_notify:
         notify_avatar_url_change(user_profile)
 
+    if notify_user:
+        new_url = avatar_url(user_profile, medium=True)
+        assert old_url is not None
+        assert new_url is not None
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="profile picture",
+                old_value=get_markdown_link_for_url("View", old_url),
+                new_value=get_markdown_link_for_url("View", new_url),
+            )
+        ]
+        send_user_profile_update_notification(user_profile, acting_user, changes)
+
 
 def do_scrub_avatar_images(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
     # Note: while scrubbing, no need to generate and upload
     # avatar when default_avatar_source is jdenticon.
     do_change_avatar_fields(
-        user, user.realm.default_avatar_source, skip_notify=True, acting_user=acting_user
+        user,
+        user.realm.default_avatar_source,
+        skip_notify=True,
+        acting_user=acting_user,
+        notify_user=False,
     )
     for version in range(1, old_version + 1):
         delete_avatar_image(user, version)
 
 
-def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
+def set_avatar_to_default(
+    user_profile: UserProfile, *, acting_user: UserProfile | None, notify_user: bool
+) -> None:
     default_avatar_source = user_profile.realm.default_avatar_source
 
     if user_profile.avatar_source == default_avatar_source:  # nocoverage
@@ -430,7 +452,9 @@ def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile
         generate_and_upload_jdenticon_avatar(
             user_profile, realm_uuid=str(user_profile.realm.uuid), future=True
         )
-    do_change_avatar_fields(user_profile, default_avatar_source, acting_user=acting_user)
+    do_change_avatar_fields(
+        user_profile, default_avatar_source, acting_user=acting_user, notify_user=notify_user
+    )
 
 
 def update_scheduled_email_notifications_time(
