@@ -28,7 +28,11 @@ fixture_to_headers = get_custom_http_headers_from_filename("HTTP_X_PATREON_EVENT
 def get_members_create_body(payload: WildValue) -> str | None:
     last_charge_status = get_last_charge_status(payload)
     patron_status = get_patron_status(payload)
-    # null values indicate the member has never pledged
+    pledge_amount = get_pledge_amount(payload)
+    # A new patron who already has an active pledge joined.
+    if last_charge_status in ("Paid", None) and pledge_amount > 0:
+        return get_members_pledge_create_body(payload)
+    # null values indicate the member joined without pledging
     if last_charge_status is None and patron_status is None:
         template = "{user_name} has joined as a member!"
         return template.format(
