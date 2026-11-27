@@ -5,7 +5,9 @@ title: Restrict wildcard mentions
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 <AdminOnly />
 
@@ -19,6 +21,14 @@ participants.
 This permission can be granted to any combination of [roles](/help/user-roles),
 [groups](/help/user-groups), and individual [users](/help/introduction-to-users).
 
+The organization-level setting applies across all channels. Channel
+administrators can additionally grant this permission to specific users or
+groups for an individual channel. A user permitted by either the
+organization-level or channel-level setting can use wildcard mentions in that
+channel.
+
+## Restrict wildcard mentions organization-wide
+
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-permissions" />
 
@@ -27,6 +37,23 @@ This permission can be granted to any combination of [roles](/help/user-roles),
 
   <SaveChanges />
 </FlattenedSteps>
+
+## Allow additional users to use wildcard mentions in a channel
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPermissions />
+
+  1. Under **Messaging permissions**, configure **Who can notify a large number
+     of users with a wildcard mention**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
 
 ## Related articles
 
