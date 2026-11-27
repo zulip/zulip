@@ -483,7 +483,8 @@ can be found at `static/images/integrations/logos/helloworld.svg`.
 The lozenge is generated automatically once the integration is added to
 `INCOMING_WEBHOOK_INTEGRATIONS` in `zerver/lib/integrations.py`, which
 supports some customization via options to the `IncomingWebhookIntegration`
-class.
+class. Integrations without a `doc.md` (see below) are left out of the
+grid.
 
 Second, is the detailed documentation content for the integration, which
 is in a file named `doc.md` in the integration's directory. The Zulip
