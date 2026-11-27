@@ -14,6 +14,7 @@ import {ListCursor} from "./list_cursor.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import * as resolved_topics_jump_button from "./resolved_topics_jump_button.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -25,6 +26,7 @@ import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.t
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 import * as vdom from "./vdom.ts";
 
 /* Track all active widgets with a Map by stream_id. We have at max
@@ -44,9 +46,15 @@ let previous_search_term = "";
 
 let topic_list_cursor: ListCursor<JQuery>;
 
+const ZOOMED_IN_SCROLL_CONTAINER_SELECTOR = "#more-topics-modal .topic-list-scroll-container";
+
+function get_zoomed_in_scroll_container(): JQuery {
+    return $(ZOOMED_IN_SCROLL_CONTAINER_SELECTOR);
+}
+
 function get_topic_items(): JQuery {
     return scroll_util
-        .get_content_element($("#more-topics-modal .topic-list-scroll-container"))
+        .get_content_element(get_zoomed_in_scroll_container())
         .find("li.topic-list-item");
 }
 
@@ -54,7 +62,8 @@ function initialize_topic_list_cursor(): void {
     topic_list_cursor = new ListCursor({
         highlight_class: "highlighted_row",
         list: {
-            scroll_container_selector: "#more-topics-modal .topic-list-scroll-container",
+            scroll_container_selector: ZOOMED_IN_SCROLL_CONTAINER_SELECTOR,
+            bottom_overlay_height: resolved_topics_jump_button.get_height,
             find_li(opts) {
                 return opts.key;
             },
@@ -133,11 +142,22 @@ export function clear_zoomed(): void {
     zoomed_in_widget?.remove();
 }
 
+// Resets the zoomed-in state, returning the stream_id of the widget
+// that was zoomed in, if any.
+function leave_zoomed_state(): number | undefined {
+    const stream_id = zoomed_in_widget?.my_stream_id;
+    zoomed = false;
+    zoomed_in_widget = undefined;
+    topic_list_cursor.clear();
+    ui_util.enable_left_sidebar_search();
+    resolved_topics_jump_button.handle_zoom_out();
+    return stream_id;
+}
+
 export function close(): void {
     clear();
     if (zoomed) {
-        zoomed = false;
-        ui_util.enable_left_sidebar_search();
+        leave_zoomed_state();
     }
 }
 
@@ -146,16 +166,11 @@ export function zoom_out(): void {
         return;
     }
 
-    zoomed = false;
-    topic_list_cursor.clear();
-    ui_util.enable_left_sidebar_search();
-
-    const stream_id = zoomed_in_widget?.my_stream_id;
+    const stream_id = leave_zoomed_state();
     if (stream_id === undefined) {
         blueslip.error("Expected a topic list to zoom out.");
         return;
     }
-    zoomed_in_widget = undefined;
 
     const widget = active_widgets.get(stream_id);
     assert(widget !== undefined);
@@ -363,6 +378,11 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
+            {
+                resolved_topics_last: stream_data.should_list_resolved_topics_last(
+                    this.my_stream_id,
+                ),
+            },
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -471,9 +491,26 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 
     override build(spinner = false): void {
         const formatter = keyed_topic_li;
+        const active_topic_was_visible = this.for_modal && is_zoomed_in_active_topic_visible();
 
         super.build(spinner, formatter);
+
+        if (this.for_modal) {
+            resolved_topics_jump_button.update_for_rebuilt_topic_list(
+                zoomed_in_channel_lists_resolved_topics_last(),
+            );
+        }
+        if (active_topic_was_visible) {
+            keep_zoomed_in_active_topic_visible();
+        }
     }
+}
+
+function zoomed_in_channel_lists_resolved_topics_last(): boolean {
+    const stream_id = zoomed_in_widget?.my_stream_id;
+    return (
+        zoomed && stream_id !== undefined && stream_data.should_list_resolved_topics_last(stream_id)
+    );
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
@@ -560,9 +597,43 @@ export function rebuild_left_sidebar(
     active_widgets.set(stream_id, widget);
 }
 
+function get_zoomed_in_active_topic_row(): JQuery {
+    return get_zoomed_in_scroll_container().find(".topic-list-item.active-sub-filter");
+}
+
+function is_zoomed_in_active_topic_visible(): boolean {
+    const $selected_topic = get_zoomed_in_active_topic_row();
+    if ($selected_topic.length === 0) {
+        return false;
+    }
+    const $scroll_container = get_zoomed_in_scroll_container();
+    const container_rect = util.the($scroll_container).getBoundingClientRect();
+    const row_rect = util.the($selected_topic).getBoundingClientRect();
+    return (
+        row_rect.top >= container_rect.top &&
+        row_rect.bottom <= container_rect.bottom - resolved_topics_jump_button.get_height()
+    );
+}
+
+// Does nothing when the active topic is not in the list, e.g.
+// because a topic filter excludes it.
+export function keep_zoomed_in_active_topic_visible(): void {
+    const $selected_topic = get_zoomed_in_active_topic_row();
+    if ($selected_topic.length === 0) {
+        return;
+    }
+    const $scroll_container = get_zoomed_in_scroll_container();
+    scroll_util.scroll_element_into_container(
+        $selected_topic,
+        $scroll_container,
+        0,
+        resolved_topics_jump_button.get_height(),
+    );
+}
+
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const $scroll_container = zoomed
-        ? $("#more-topics-modal .topic-list-scroll-container")
+        ? get_zoomed_in_scroll_container()
         : $("#left_sidebar_scroll_container");
     const $selected_topic = $scroll_container.find(".topic-list-item.active-sub-filter");
     if ($selected_topic.length === 0) {
@@ -571,7 +642,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
         return;
     }
     if (zoomed) {
-        scroll_util.scroll_element_into_container($selected_topic, $scroll_container, 0);
+        keep_zoomed_in_active_topic_visible();
     } else {
         const direct_message_header_height =
             $("#direct-messages-section-header").outerHeight(true) ?? 0;
@@ -615,6 +686,8 @@ export function zoom_in($stream_li: JQuery, stream_id: number): void {
     const spinner = true;
     zoomed_in_widget.build(spinner);
     reset_topic_list_cursor({show_highlight: false});
+
+    resolved_topics_jump_button.handle_zoom_in();
 
     function on_success(): void {
         if (!active_widgets.has(stream_id)) {
@@ -835,6 +908,11 @@ export function initialize({
     $("#more-topics-modal").on("click", ".topic-box", on_topic_box_click);
     $("#stream_filters").on("click", ".topic-box", on_topic_box_click);
 
+    resolved_topics_jump_button.initialize({
+        get_scroll_container: get_zoomed_in_scroll_container,
+        get_topic_items,
+    });
+
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
         assert(stream_id !== undefined);
@@ -847,6 +925,10 @@ export function initialize({
         const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
         if (search_term === "") {
             requestAnimationFrame(() => {
+                if (!zoomed) {
+                    // The topic list was closed before this frame.
+                    return;
+                }
                 zoomed_in_widget!.build();
                 // Restore previous scroll position.
                 left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
@@ -871,6 +953,10 @@ export function initialize({
                 pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
             }
             requestAnimationFrame(() => {
+                if (!zoomed) {
+                    // The topic list was closed before this frame.
+                    return;
+                }
                 zoomed_in_widget!.build();
                 // Always scroll to top when there is a search term present.
                 left_sidebar_scroll_container.scrollTop(0);

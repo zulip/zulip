@@ -567,6 +567,18 @@ export function is_muted(stream_id: number): boolean {
     return sub.is_muted;
 }
 
+export function should_list_resolved_topics_last(stream_id: number): boolean {
+    const sub = sub_store.get(stream_id);
+    if (sub === undefined) {
+        return false;
+    }
+    let order = sub.web_left_sidebar_topics_order;
+    if (order === settings_config.web_left_sidebar_topics_order_inherit) {
+        order = user_settings.web_left_sidebar_topics_order;
+    }
+    return order === settings_config.web_left_sidebar_topics_order_values.unresolved_first.code;
+}
+
 export function is_new_stream_announcements_stream_muted(): boolean {
     return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
