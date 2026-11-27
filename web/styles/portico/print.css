@@ -1,0 +1,56 @@
+@media print {
+    html,
+    body {
+        height: auto !important;
+    }
+
+    /* Print styles for policies. */
+    .portico-container:has(.terms-page) {
+        display: block !important;
+        height: auto !important;
+
+        .app {
+            width: auto !important;
+
+            &.help {
+                display: block;
+            }
+        }
+
+        .app-main {
+            position: static;
+        }
+
+        /* Hide unnecessary blocks. */
+        .portico-header,
+        .sidebar,
+        .hamburger {
+            display: none;
+        }
+
+        .markdown {
+            height: auto !important;
+            width: auto !important;
+        }
+
+        /* Allow printers to set the margins. */
+        .content {
+            margin: 0 !important;
+            padding: 0 !important;
+
+            & tr {
+                break-inside: avoid;
+            }
+
+            /* Print links in the same color as text, with any
+               likely full URL values in parentheses. */
+            & a {
+                color: inherit;
+
+                &[href^="http"]::after {
+                    content: " (" attr(href) ")";
+                }
+            }
+        }
+    }
+}
