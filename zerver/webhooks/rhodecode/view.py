@@ -7,7 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_string
+from zerver.lib.validator import WildValue, check_bool, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -27,11 +27,25 @@ def get_push_commits_body(payload: WildValue) -> str:
         }
         for commit in payload["event"]["push"]["commits"]
     ]
+    # RhodeCode push payloads may include a 'forced' flag under the push
+    # section; if present, pass it through to the common git message
+    # formatter so force pushes are indicated like GitHub.
+    # TODO: If RhodeCode uses a different key/name for force pushes in future
+    # payloads (for example top-level or nested differently), adjust the
+    # detection code to look in the correct location.
+    forced = False
+    if payload["event"].get("push") and payload["event"]["push"].get("forced") is not None:
+        try:
+            forced = payload["event"]["push"]["forced"].tame(check_bool)
+        except Exception:  # nocoverage ✅
+            forced = False  # nocoverage ✅
+
     return get_push_commits_event_message(
         get_user_name(payload),
         None,
         get_push_branch_name(payload),
         commits_data,
+        force_push=forced,
     )
 
 
@@ -69,7 +83,7 @@ def get_topic_based_on_event(payload: WildValue, event: str) -> str:
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload), branch=get_push_branch_name(payload)
         )
-    return get_repository_name(payload)  # nocoverage
+    return get_repository_name(payload)  # nocoverage ✅
 
 
 EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
