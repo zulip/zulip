@@ -68,6 +68,8 @@ type Part =
           is_empty_string_topic?: boolean;
       };
 
+// Keep this list in sync with `supported_channels_operands` in
+// `zerver/lib/narrow_helpers.py`.
 const channels_operands = new Set(["archived", "public", "web-public"]);
 
 function message_in_home(message: Message): boolean {
@@ -652,6 +654,8 @@ export class Filter {
     }
 
     static is_valid_canonical_term(term: NarrowCanonicalTerm): boolean {
+        // Keep the `has`, `in` and `is` operand lists in sync with the
+        // `supported_*_operands` lists in `zerver/lib/narrow_helpers.py`.
         switch (term.operator) {
             case "has":
                 return ["image", "link", "attachment", "reaction"].includes(term.operand);
