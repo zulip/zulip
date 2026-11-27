@@ -330,3 +330,38 @@ run_test("update_preview_embeds", ({override}) => {
 
     message_edit.currently_editing_messages.clear();
 });
+
+run_test("timer_text", () => {
+    const timer_text = message_edit.timer_text;
+    const minute = 60;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+
+    assert.equal(timer_text(7), "translated: 7 sec to edit");
+    assert.equal(timer_text(59), "translated: 55 sec to edit");
+    assert.equal(timer_text(minute), "translated: 1 min to edit");
+    assert.equal(timer_text(hour - 1), "translated: 59 min to edit");
+    assert.equal(timer_text(hour), "translated: 1 hr to edit");
+    assert.equal(timer_text(day - 1), "translated: 23 hr to edit");
+    assert.equal(timer_text(day), "translated: 1 day to edit");
+    assert.equal(timer_text(7 * day - 1), "translated: 6 days to edit");
+});
+
+run_test("get_edit_time_limit_tooltip", () => {
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(90 * 60),
+        "translated: This organization is configured to restrict editing of message content to 90 minutes after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 1 hour after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(24 * 60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 1 day after it is sent.",
+    );
+    assert.equal(
+        message_edit.get_edit_time_limit_tooltip(7 * 24 * 60 * 60),
+        "translated: This organization is configured to restrict editing of message content to 7 days after it is sent.",
+    );
+});
