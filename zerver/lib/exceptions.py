@@ -169,6 +169,8 @@ class UnauthorizedError(JsonableError):
             self.www_authenticate = 'Basic realm="zulip"'
         elif www_authenticate == "session":
             self.www_authenticate = 'Session realm="zulip"'
+        elif www_authenticate == "bearer":
+            self.www_authenticate = 'Bearer realm="zulip"'
         else:
             raise AssertionError("Invalid www_authenticate value!")
 
