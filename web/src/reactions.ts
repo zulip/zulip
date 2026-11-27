@@ -401,10 +401,15 @@ export function get_reaction_sections(message_id: number): JQuery {
     return $rows.find(".message_reactions");
 }
 
-export let find_reaction = (message_id: number, local_id: string): JQuery => {
-    const $reaction_section = get_reaction_sections(message_id);
+function find_reaction_in_rows($rows: JQuery, local_id: string): JQuery {
+    const $reaction_section = $rows.find(".message_reactions");
     const $reaction = $reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
     return $reaction;
+}
+
+export let find_reaction = (message_id: number, local_id: string): JQuery => {
+    const $rows = message_lists.all_rendered_row_for_message_id(message_id);
+    return find_reaction_in_rows($rows, local_id);
 };
 
 export function rewire_find_reaction(value: typeof find_reaction): void {
