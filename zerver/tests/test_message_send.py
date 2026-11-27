@@ -42,6 +42,7 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
@@ -79,6 +80,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
@@ -2129,6 +2131,75 @@ class StreamMessagesTest(ZulipTestCase):
                 skip_capture_on_commit_callbacks=True,
             )
         self.assertNotIn("realm_guest_user_ids", events[0]["event"])
+
+    def test_dm_mention_disabled_user_ids_in_message_event(self) -> None:
+        """
+        Message events list the users with DM and mention notifications
+        disabled only if the message could notify them, so that events
+        for messages to large channels stay small.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        stream_name = "Test stream"
+        for user in [hamlet, cordelia, othello]:
+            self.subscribe(user, stream_name)
+        for user in [cordelia, othello]:
+            do_change_user_setting(
+                user, "enable_offline_email_notifications", False, acting_user=None
+            )
+            do_change_user_setting(
+                user, "enable_offline_push_notifications", False, acting_user=None
+            )
+
+        def get_dm_mention_disabled_user_ids(content: str) -> set[int]:
+            with self.capture_send_event_calls(expected_num_events=1) as events:
+                self.send_stream_message(
+                    hamlet, stream_name, content=content, skip_capture_on_commit_callbacks=True
+                )
+            event = events[0]["event"]
+            # Cordelia and Othello disabled both kinds of notifications.
+            self.assertCountEqual(
+                event["dm_mention_push_disabled_user_ids"],
+                event["dm_mention_email_disabled_user_ids"],
+            )
+            return set(event["dm_mention_email_disabled_user_ids"])
+
+        # Without a mention, the message can't notify anyone.
+        self.assertEqual(get_dm_mention_disabled_user_ids("hi"), set())
+        # A group mention can notify only the group's members, and
+        # Othello isn't in hamletcharacters.
+        self.assertEqual(get_dm_mention_disabled_user_ids("@*hamletcharacters*"), {cordelia.id})
+        # A channel wildcard mention can notify every subscriber.
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**all**"), {cordelia.id, othello.id})
+        # A topic wildcard mention can notify only the topic's
+        # participants. Cordelia becomes one by sending a message to the
+        # topic, but Othello hasn't yet.
+        self.send_stream_message(cordelia, stream_name)
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**topic**"), {cordelia.id})
+        # Users who turn off wildcard mention notifications get them
+        # only in topics they follow.
+        self.send_stream_message(othello, stream_name)
+        do_change_user_setting(othello, "wildcard_mentions_notify", False, acting_user=None)
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**all**"), {cordelia.id})
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**topic**"), {cordelia.id})
+        do_set_user_topic_visibility_policy(
+            othello,
+            get_stream(stream_name, othello.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**all**"), {cordelia.id, othello.id})
+        self.assertEqual(get_dm_mention_disabled_user_ids("@**topic**"), {cordelia.id, othello.id})
+
+        # A direct message can notify all its recipients.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_group_direct_message(
+                hamlet, [cordelia, othello], skip_capture_on_commit_callbacks=True
+            )
+        self.assertCountEqual(
+            events[0]["event"]["dm_mention_email_disabled_user_ids"], [cordelia.id, othello.id]
+        )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:

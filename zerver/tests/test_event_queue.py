@@ -196,6 +196,13 @@ class MissedMessageHookTest(ZulipTestCase):
                 self.user_profile, sub, stream, property_name, value, acting_user=None
             )
 
+    def make_user_imported_stub(self) -> None:
+        self.user_profile.is_imported_stub = True
+        self.user_profile.save(update_fields=["is_imported_stub"])
+        # Imported stubs have no push devices, since the mobile apps
+        # register them, and logging in on an app clears is_imported_stub.
+        Device.objects.filter(user=self.user_profile).delete()
+
     @override
     def setUp(self) -> None:
         super().setUp()
@@ -1230,6 +1237,81 @@ class MissedMessageHookTest(ZulipTestCase):
             )
         self.destroy_event_queue(hambot, self.client_descriptor.event_queue.id)
         self.client_descriptor = hamlet_client_descriptor
+
+    def test_imported_stub_direct_message(self) -> None:
+        self.make_user_imported_stub()
+        msg_id = self.send_personal_message(self.iago, self.user_profile)
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                dm_email_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
+    def test_imported_stub_stream_wildcard_mention(self) -> None:
+        self.make_user_imported_stub()
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                stream_wildcard_mention_email_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
+    def test_imported_stub_stream_email_notify(self) -> None:
+        self.make_user_imported_stub()
+        do_change_user_setting(
+            self.user_profile, "enable_stream_email_notifications", True, acting_user=None
+        )
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="what's up everyone?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                stream_email_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
+    def test_imported_stub_followed_topic_email_notify(self) -> None:
+        self.make_user_imported_stub()
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
 
     # Internal direct messages
     def test_disable_external_notifications(self) -> None:
