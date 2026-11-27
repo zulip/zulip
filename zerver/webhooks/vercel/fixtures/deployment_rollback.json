@@ -1,0 +1,28 @@
+{
+  "id": "CBwHkw-flMisns8UvJb9T",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "fromDeploymentId": "dpl_EZAx66repwwATmJz4AKGrExy5Ei8",
+    "fromDeploymentUrl": "portfolio-site-fl90irs3v-ki3anis-projects.vercel.app",
+    "toDeploymentId": "dpl_Eqi1urNzj96oPnm566XPZjGFaL9E",
+    "toDeploymentUrl": "portfolio-site-6lry5z3zz-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793128428658,
+  "type": "deployment.rollback"
+}

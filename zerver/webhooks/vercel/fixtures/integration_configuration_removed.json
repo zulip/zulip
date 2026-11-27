@@ -1,0 +1,28 @@
+{
+  "id": "_cRHFxtx5RRn4b8lPoFks",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "installationIds": [
+      "icfg_eWxDuM6Z6eS8EbfCqcfogZ8I"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_eWxDuM6Z6eS8EbfCqcfogZ8I"
+      }
+    ],
+    "configuration": {
+      "id": "icfg_eWxDuM6Z6eS8EbfCqcfogZ8I",
+      "projectSelection": "selected",
+      "projects": [
+        "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+      ]
+    }
+  },
+  "createdAt": 1793124153504,
+  "type": "integration-configuration.removed"
+}
