@@ -8,6 +8,7 @@ import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_u
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
 import render_user_card_popover_for_deleted_user from "../templates/popovers/user_card/user_card_popover_for_deleted_user.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
+import render_user_display_only_pill from "../templates/user_display_only_pill.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
@@ -406,6 +407,29 @@ function get_user_card_popover_data(
     return args;
 }
 
+export function handle_users_fetched(user_ids: number[]): void {
+    for (const pill of $(".user-card-popover-bot-owner-field .pill-loading-shimmer")) {
+        const $pill = $(pill);
+        const bot_owner_id = elem_to_user_id($pill);
+        if (!user_ids.includes(bot_owner_id)) {
+            continue;
+        }
+        const bot_owner = people.get_by_user_id(bot_owner_id);
+        const $bot_owner_field = $pill.closest(".user-card-popover-bot-owner-field");
+        $bot_owner_field.find(".bot_owner").attr("data-tippy-content", bot_owner.full_name);
+        $pill.closest(".pill-container").replaceWith(
+            $(
+                render_user_display_only_pill({
+                    display_value: bot_owner.full_name,
+                    user_id: bot_owner.user_id,
+                    img_src: bot_owner.avatar_url,
+                    is_active: true,
+                }),
+            ),
+        );
+    }
+}
+
 function show_user_card_popover(
     user: User,
     $popover_element: JQuery,
@@ -417,6 +441,12 @@ function show_user_card_popover(
     show_as_overlay = false,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
+    // A placeholder user has no data worth showing yet, and updating an
+    // open card when their data arrives would be a lot of work. So we
+    // don't open the card for them.
+    if (user.is_placeholder_user) {
+        return;
+    }
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
@@ -696,6 +726,12 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
         return;
     }
 
+    // show_user_card_popover doesn't open a card for placeholder users,
+    // so we mustn't record one as open.
+    if (user.is_placeholder_user) {
+        return;
+    }
+
     show_user_card_popover(
         user,
         $target,
@@ -891,8 +927,12 @@ function register_click_handlers(): void {
             const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id")!, 10);
             const user = people.get_by_user_id(user_id);
             if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
-                hide_all_user_card_popovers();
-                toggle_user_card_popover_for_bot_owner(this, user);
+                // A placeholder owner has no card to open, so the
+                // bot's card stays open.
+                if (!user.is_placeholder_user) {
+                    hide_all_user_card_popovers();
+                    toggle_user_card_popover_for_bot_owner(this, user);
+                }
             } else {
                 toggle_user_card_popover(this, user);
             }

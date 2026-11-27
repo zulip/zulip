@@ -116,6 +116,11 @@ run_test("basics", () => {
     mld.add_messages(msgs_with_sender_ids, true);
     assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
     assert.deepEqual(mld.get_messages_involving_user(6), msgs_involving_6);
+    assert.deepEqual(
+        mld.get_messages_involving_users(new Set([6, 4])).map((msg) => msg.id),
+        [3, 2, 4, 6, 7],
+    );
+    assert.deepEqual(mld.get_messages_involving_users(new Set([99])), []);
 
     mld.clear();
     assert_contents(mld, []);

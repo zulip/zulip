@@ -91,6 +91,17 @@ export function redraw_user(user_id: number): void {
     buddy_list_presence.update_indicators();
 }
 
+export function handle_users_fetched(user_ids: number[]): void {
+    const buddy_list_user_ids = new Set(buddy_list.all_user_ids);
+    const filter_text = get_filter_text();
+    buddy_list.insert_or_move(
+        // A filtered buddy list leaves out placeholder users, so the
+        // fetched users who match the filter are not in it yet.
+        filter_text ? user_ids : user_ids.filter((user_id) => buddy_list_user_ids.has(user_id)),
+        filter_text,
+    );
+}
+
 export function rerender_user_sidebar_participants(): void {
     if (!narrow_state.stream_id() || narrow_state.topic() === undefined) {
         return;

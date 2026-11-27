@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
+import render_creator_details from "../templates/creator_details.hbs";
 import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
@@ -26,6 +27,7 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as overlays from "./overlays.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
@@ -284,6 +286,20 @@ export function update_stream_description(sub: StreamSubscription): void {
         use_view_only_styling: true,
     });
     $edit_container.find(".stream-description").html(html);
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+    const sub = sub_store.get(stream_settings_components.get_active_data().id);
+    if (sub === undefined || sub.creator_id === null || !user_ids.includes(sub.creator_id)) {
+        return;
+    }
+    const $edit_container = stream_settings_containers.get_edit_container(sub);
+    $edit_container
+        .find(".creator_details")
+        .html(render_creator_details(stream_settings_data.get_sub_for_settings(sub)));
 }
 
 function show_subscription_settings(sub: SettingsSubscription): void {

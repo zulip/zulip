@@ -460,6 +460,12 @@
         width: var(--recent-view-participant-item-width);
         cursor: pointer;
 
+        /* Clicking the avatar of a placeholder user doesn't
+           open their user card. */
+        &.is-placeholder-user {
+            cursor: default;
+        }
+
         /* Can't use last-child due to tippy element being appended */
         &:last-of-type {
             /* Remove right padding of last item to align with header text. */

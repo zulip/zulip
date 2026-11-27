@@ -84,6 +84,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     }
 
     let opts;
+    let is_same_suggestion;
     override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
         opts = opts_;
         assert.equal(input_element.$element[0], $search_query_box[0]);
@@ -99,6 +100,9 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             },
             lookup() {
                 typeahead_forced_open = true;
+            },
+            lookup_keeping_active_item(is_same_item) {
+                is_same_suggestion = is_same_item;
             },
             hide() {
                 this.shown = false;
@@ -418,6 +422,12 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     search_enter();
     assert.deepEqual(narrowed_terms, terms);
     search_typeahead.shown = false;
+
+    // Suggestions are strings, so the highlighted one is found again
+    // by comparing them.
+    search.handle_users_fetched();
+    assert.ok(is_same_suggestion("sender:5", "sender:5"));
+    assert.ok(!is_same_suggestion("sender:5", "sender:6"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {

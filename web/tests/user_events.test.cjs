@@ -28,11 +28,13 @@ const settings_preferences = mock_esm("../src/settings_preferences", {
 });
 const settings_bots = mock_esm("../src/settings_bots", {
     redraw_your_bots_list() {},
+    handle_users_fetched() {},
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
     hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
+    handle_users_fetched() {},
 });
 mock_esm("../src/settings_users", {
     update_user_data() {},
@@ -42,6 +44,22 @@ mock_esm("../src/settings_users", {
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
+    handle_users_fetched() {},
+});
+mock_esm("../src/user_group_popover", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/message_edit_history", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/message_report", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/stream_popover", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/user_card_popover", {
+    handle_users_fetched() {},
 });
 
 const buddy_list = mock_esm("../src/buddy_list", {
@@ -53,8 +71,12 @@ const buddy_list = mock_esm("../src/buddy_list", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     update_user_pill_active_status() {},
 });
-mock_esm("../src/compose_recipient", {
+const compose_recipient = mock_esm("../src/compose_recipient", {
+    update_compose_area_placeholder_text() {},
     update_user_name_in_compose() {},
+});
+const rendered_markdown = mock_esm("../src/rendered_markdown", {
+    update_placeholder_user_mentions() {},
 });
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
@@ -69,6 +91,7 @@ buddy_list.buddy_list = buddy_data;
 mock_esm("../src/activity_ui", {
     redraw() {},
     get_filter_text: () => "",
+    handle_users_fetched() {},
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
@@ -88,6 +111,75 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 });
 mock_esm("../src/settings_streams", {
     rerender_default_streams_for_role_change() {},
+});
+mock_esm("../src/inbox_ui", {
+    update() {},
+});
+mock_esm("../src/scheduled_messages_overlay_ui", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/reactions", {
+    update_user_full_name() {},
+    update_user_full_names() {},
+});
+mock_esm("../src/read_receipts", {
+    handle_users_fetched() {},
+});
+const submessage = mock_esm("../src/submessage", {
+    rerender_widgets_in_current_list() {},
+});
+mock_esm("../src/drafts_overlay_ui", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/search", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/composebox_typeahead", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/stream_edit_subscribers", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/user_group_edit_members", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/settings_invites", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/settings_components", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/custom_profile_fields_ui", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/settings_emoji", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/settings_muted_users", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/stream_create_subscribers", {
+    handle_users_fetched() {},
+});
+mock_esm("../src/user_group_create_members", {
+    handle_users_fetched() {},
+});
+const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
+    update_reply_button() {},
+});
+const narrow_banner = mock_esm("../src/narrow_banner", {
+    handle_users_fetched() {},
+});
+const narrow_title = mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
+});
+const typing_events = mock_esm("../src/typing_events", {
+    render_notifications_for_narrow() {},
+});
+mock_esm("../src/narrow_state", {
+    filter: () => message_lists.current?.data.filter,
+    is_message_feed_visible: () => message_lists.current !== undefined,
+    pm_ids_set: (filter) => new Set(filter?.terms_with_operator("dm")[0]?.operand),
 });
 
 const bot_data = zrequire("bot_data");
@@ -482,4 +574,96 @@ run_test("update_person rerenders the user's recent view rows", ({override}) => 
 
     user_events.update_person({user_id: marie.user_id, timezone: "UTC"});
     assert.equal(users_at_rerender.length, changes_recent_view_shows.length);
+});
+
+run_test("initialize registers users_fetched callback", ({override}) => {
+    initialize();
+
+    let pm_list_updated = false;
+    let updated_users;
+
+    override(pm_list, "update_private_messages", () => {
+        pm_list_updated = true;
+    });
+    override(message_live_update, "update_full_names_and_avatars", (users) => {
+        updated_users = users;
+    });
+    override(compose_pm_pill, "update_placeholder_user_pills", noop);
+    let placeholder_mention_user_ids;
+    override(rendered_markdown, "update_placeholder_user_mentions", (user_ids) => {
+        placeholder_mention_user_ids = user_ids;
+    });
+    let widgets_rerendered = false;
+    override(submessage, "rerender_widgets_in_current_list", () => {
+        widgets_rerendered = true;
+    });
+    let compose_placeholder_text_updated = false;
+    override(compose_recipient, "update_compose_area_placeholder_text", () => {
+        compose_placeholder_text_updated = true;
+    });
+    let reply_button_updated = false;
+    override(compose_closed_ui, "update_reply_button", () => {
+        reply_button_updated = true;
+    });
+    let narrow_title_filter;
+    override(narrow_title, "update_narrow_title", (filter) => {
+        narrow_title_filter = filter;
+    });
+    let narrow_banner_user_ids;
+    override(narrow_banner, "handle_users_fetched", (user_ids) => {
+        narrow_banner_user_ids = user_ids;
+    });
+
+    let typing_notifications_rendered = false;
+    override(typing_events, "render_notifications_for_narrow", () => {
+        typing_notifications_rendered = true;
+    });
+
+    const isaac = make_user({
+        email: "isaac@example.com",
+        user_id: 32,
+        full_name: "Isaac Newton",
+        avatar_url: "isaac-avatar-url",
+    });
+    people.add_active_user(isaac);
+    people.add_valid_user_id(isaac.user_id);
+
+    // Narrow to a DM with the fetched user so the callback refreshes the
+    // reply button and titles. Hide the header, as when the search bar
+    // is open, so that only its title text gets updated.
+    $("#message_view_header").addClass("hidden");
+    const $navbar_title = $("#message_view_header .message-header-navbar-title");
+    $navbar_title.text("");
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+
+    user_events.initialize();
+    people.notify_users_fetched([isaac.user_id]);
+
+    assert.ok(pm_list_updated);
+    assert.deepEqual(placeholder_mention_user_ids, [isaac.user_id]);
+    assert.ok(widgets_rerendered);
+    assert.ok(compose_placeholder_text_updated);
+    assert.ok(reply_button_updated);
+    assert.equal(narrow_title_filter, message_lists.current.data.filter);
+    assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
+    assert.ok(typing_notifications_rendered);
+    assert.equal($navbar_title.text(), "Isaac Newton");
+    assert.deepEqual(updated_users, [people.get_by_user_id(isaac.user_id)]);
+
+    // The loading shimmers stop moving while requests for users fail.
+    people.notify_users_fetch_failing(true);
+    assert.ok($("body").hasClass("users-fetch-failing"));
+    people.notify_users_fetch_failing(false);
+    assert.ok(!$("body").hasClass("users-fetch-failing"));
+
+    // A DM title keeps its loading shimmer while any recipient is
+    // still a placeholder.
+    const placeholder = people.add_placeholder_user(33);
+    people.add_valid_user_id(placeholder.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [isaac.user_id, placeholder.user_id]}]),
+    );
+    $navbar_title.text("");
+    people.notify_users_fetched([isaac.user_id]);
+    assert.equal($navbar_title.text(), "");
 });

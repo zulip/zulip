@@ -465,6 +465,10 @@ export function compute_placeholder_text(opts: ComposePlaceholderOptions): strin
             return $t({defaultMessage: "Write yourself a note"});
         }
         const users = people.get_users_from_ids(user_ids);
+        // A recipient whose data hasn't loaded yet has no name to show.
+        if (users.some((user) => user.is_placeholder_user)) {
+            return DEFAULT_COMPOSE_PLACEHOLDER;
+        }
         const recipient_parts = users.map((user) => {
             if (people.should_add_guest_user_indicator(user.user_id)) {
                 return $t({defaultMessage: "{name} (guest)"}, {name: user.full_name});

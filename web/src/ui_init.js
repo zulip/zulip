@@ -169,6 +169,7 @@ import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as upload from "./upload.ts";
 import * as user_card_popover from "./user_card_popover.ts";
+import * as user_events from "./user_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
@@ -255,6 +256,10 @@ export function initialize_kitchen_sink_stuff() {
     //      for lots of miscellaneous setup.  Almost all of
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.ts.
+
+    if (SHIMMER_DURATION !== null) {
+        document.documentElement.style.setProperty("--shimmer-duration", SHIMMER_DURATION + "s");
+    }
 
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         if (!narrow_state.is_message_feed_visible()) {
@@ -431,7 +436,7 @@ function initialize_unread_ui() {
     unread_ui.initialize({mark_narrow_as_read: unread_ops.mark_narrow_as_read});
 }
 
-export async function initialize_everything(state_data) {
+export function initialize_everything(state_data) {
     /*
         When we initialize our various modules, a lot
         of them will consume data from the server
@@ -519,7 +524,7 @@ export async function initialize_everything(state_data) {
     // has permission to access all other users.
     user_groups.initialize(state_data.user_groups);
 
-    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
+    people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
     // Must happen after people.initialize(). And also before
@@ -769,6 +774,7 @@ export async function initialize_everything(state_data) {
     playground_links_popover.initialize();
     personal_menu_popover.initialize();
     pm_list.initialize();
+    user_events.initialize();
     topic_list.initialize({
         on_topic_click(stream_id, topic) {
             const sub = sub_store.get(stream_id);

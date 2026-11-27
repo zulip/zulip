@@ -219,6 +219,8 @@ export type BuddyUserInfo = {
     };
     should_add_guest_user_indicator: boolean;
     is_unsubscribed_participant: boolean;
+    is_placeholder_user: boolean;
+    loading_shimmer_width_class?: string;
     faded?: boolean;
 };
 
@@ -250,6 +252,7 @@ export function info_for(
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const status_text = user_status.get_status_text(user_id);
+    const is_placeholder_user = people.is_placeholder_user(user_id);
     const user_list_style_value = user_settings.user_list_style;
     const user_list_style = {
         COMPACT: user_list_style_value === 1,
@@ -274,6 +277,10 @@ export function info_for(
             user_id,
             conversation_participants,
         ),
+        is_placeholder_user,
+        ...(is_placeholder_user && {
+            loading_shimmer_width_class: people.get_loading_shimmer_width_class(user_id),
+        }),
     };
 }
 
@@ -326,6 +333,16 @@ export function get_title_data(
         }
 
         // Bot does not have an owner.
+        return {
+            first_line: person.full_name,
+            second_line: "",
+            third_line: "",
+        };
+    }
+
+    // We don't describe a placeholder user as idle or offline while
+    // their name is still loading.
+    if (person.is_placeholder_user) {
         return {
             first_line: person.full_name,
             second_line: "",
@@ -473,7 +490,11 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     }
 
     // If a query is present in "Filter users", we return matches.
-    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
+    // The name and email of a placeholder user are not known yet, so
+    // they can't match.
+    const persons = user_ids
+        .map((user_id) => people.get_by_user_id(user_id))
+        .filter((person) => !person.is_placeholder_user);
     return [...people.filter_people_by_search_terms(persons, user_filter_text)];
 }
 

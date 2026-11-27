@@ -280,6 +280,16 @@ test("title_data", ({override}) => {
         expected_data,
     );
 
+    // Placeholder users show only their placeholder name.
+    people.add_active_user({...old_user, full_name: "Loading…", is_placeholder_user: true});
+    expected_data = {
+        first_line: "Loading…",
+        second_line: "",
+        third_line: "",
+    };
+    assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group, true), expected_data);
+    people.add_active_user(old_user);
+
     // Deactivated users.
     people.deactivate(selma);
     expected_data = {
@@ -353,6 +363,24 @@ test("muted users excluded from search", () => {
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
     assert.deepEqual(user_ids, [selma.user_id]);
     assert.ok(buddy_data.matches_filter("selm", selma.user_id));
+});
+
+test("placeholder users excluded from search", () => {
+    people.add_active_user({...selma, full_name: "Loading…", is_placeholder_user: true});
+    set_presence(selma.user_id, "active");
+
+    // An unfiltered list shows placeholder users.
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+    assert.ok(user_ids.includes(selma.user_id));
+
+    // Their name and email are not known, so no filter matches them.
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("loa");
+    assert.deepEqual(user_ids, []);
+    assert.ok(!buddy_data.matches_filter("loa", selma.user_id));
+
+    people.add_active_user(selma);
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    assert.deepEqual(user_ids, [selma.user_id]);
 });
 
 test("bulk_data_hacks", ({override_rewire}) => {
@@ -747,6 +775,7 @@ test("get_items_for_users", ({override}) => {
             user_list_style,
             should_add_guest_user_indicator: false,
             is_unsubscribed_participant: false,
+            is_placeholder_user: false,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -762,6 +791,7 @@ test("get_items_for_users", ({override}) => {
             user_list_style,
             should_add_guest_user_indicator: false,
             is_unsubscribed_participant: true,
+            is_placeholder_user: false,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -777,8 +807,16 @@ test("get_items_for_users", ({override}) => {
             user_list_style,
             should_add_guest_user_indicator: false,
             is_unsubscribed_participant: false,
+            is_placeholder_user: false,
         },
     ]);
+
+    // Only a placeholder user's item has a width for its loading shimmer.
+    people.add_active_user({...fred, is_placeholder_user: true});
+    const [placeholder_item] = buddy_data.get_items_for_users([fred.user_id]);
+    assert.ok(placeholder_item.is_placeholder_user);
+    assert.equal(placeholder_item.loading_shimmer_width_class, "loading-shimmer-width-3");
+    people.add_active_user(fred);
 });
 
 test("unknown user id in presence", () => {

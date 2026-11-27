@@ -86,7 +86,9 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
     const sent_by_me = people.is_my_user_id(message_with_booleans.message.sender_id);
 
     const sender = people.maybe_get_user_by_id(message_with_booleans.message.sender_id);
-    if (sender) {
+    // The data of a placeholder user has not arrived yet, so for them
+    // we keep the name and email the server sent with the message.
+    if (sender && !sender.is_placeholder_user) {
         message_with_booleans.message.sender_full_name = sender.full_name;
         message_with_booleans.message.sender_email = sender.email;
     }
@@ -190,7 +192,10 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
                 reply_to: util.normalize_recipients(
                     message_store.get_pm_emails(message_with_booleans.message),
                 ),
-                display_reply_to: message_store.get_pm_full_names(pm_with_user_ids),
+                display_reply_to: message_store.get_dm_full_names(
+                    message_with_booleans.message,
+                    pm_with_user_ids,
+                ),
                 pm_with_url,
                 to_user_ids,
                 clean_reactions,

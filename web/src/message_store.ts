@@ -9,6 +9,7 @@ import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
 import * as util from "./util.ts";
@@ -270,6 +271,25 @@ export function set_messages_for_tests(messages: ProcessedMessage[]): void {
     }
 }
 
+// A message from the server carries the name and email of each of
+// its DM recipients, which we need while a recipient is a placeholder
+// user. A locally echoed message is built from our own user data, so
+// it has nothing better for them.
+function get_dm_recipient_from_message(
+    message: Message | MessageWithBooleans | LocalMessageWithBooleans,
+    user_id: number,
+): DisplayRecipientUser | undefined {
+    if ("local_id" in message && message.local_id !== undefined) {
+        return undefined;
+    }
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
+    assert(message.display_recipient !== undefined);
+    return message.display_recipient.find((recipient) => recipient.id === user_id);
+}
+
 export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
 ): string {
@@ -279,6 +299,9 @@ export function get_pm_emails(
         if (!person) {
             blueslip.error("Unknown user id", {user_id});
             return "?";
+        }
+        if (person.is_placeholder_user) {
+            return get_dm_recipient_from_message(message, user_id)?.email ?? person.email;
         }
         return person.email;
     });
@@ -290,6 +313,28 @@ export function get_pm_emails(
 export function get_pm_full_names(user_ids: number[]): string {
     user_ids = people.sorted_other_user_ids(user_ids);
     const sorted_names = people.get_display_full_names(user_ids);
+    sorted_names.sort(util.make_strcmp());
+
+    return sorted_names.join(", ");
+}
+
+// Like get_pm_full_names, for the DM recipients of a message. A
+// recipient whose name is still loading gets the name the server
+// sent with the message.
+export function get_dm_full_names(
+    message: Message | MessageWithBooleans | LocalMessageWithBooleans,
+    user_ids: number[],
+): string {
+    user_ids = people.sorted_other_user_ids(user_ids);
+    const sorted_names = user_ids.map((user_id) => {
+        if (people.is_display_full_name_loading(user_id)) {
+            const recipient = get_dm_recipient_from_message(message, user_id);
+            if (recipient !== undefined) {
+                return recipient.full_name;
+            }
+        }
+        return people.get_display_full_name(user_id);
+    });
     sorted_names.sort(util.make_strcmp());
 
     return sorted_names.join(", ");
@@ -400,6 +445,32 @@ export function update_small_avatar_url(user_id: number, new_url: string | null)
         const message = message_data.message;
         if (message.sender_id && message.sender_id === user_id) {
             message.small_avatar_url = new_url;
+        }
+    }
+}
+
+// A message copies these fields from its sender and its DM recipients
+// when it is first processed.
+export function update_user_fields(users: User[]): void {
+    const users_by_id = new Map(users.map((user) => [user.user_id, user]));
+    for (const message_data of stored_messages.values()) {
+        const message = message_data.message;
+        const sender = users_by_id.get(message.sender_id);
+        if (sender !== undefined) {
+            message.sender_full_name = sender.full_name;
+            message.sender_email = sender.email;
+            message.small_avatar_url = sender.avatar_url ?? null;
+        }
+        if (message.type === "stream") {
+            if (sender !== undefined) {
+                message.reply_to = sender.email;
+            }
+            continue;
+        }
+        const pm_with_user_ids = people.pm_with_user_ids(message);
+        if (pm_with_user_ids?.some((user_id) => users_by_id.has(user_id))) {
+            message.reply_to = util.normalize_recipients(get_pm_emails(message));
+            message.display_reply_to = get_dm_full_names(message, pm_with_user_ids);
         }
     }
 }

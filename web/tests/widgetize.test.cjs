@@ -279,4 +279,9 @@ test("activate", ({override}) => {
 
     assert.ok(!is_event_handled);
     assert.ok(!is_widget_rendered);
+
+    // Test rerender for nonexistent widget
+    widgetize.rerender(nonexistent_event);
+
+    assert.ok(!is_widget_rendered);
 });

@@ -732,7 +732,7 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
     const other_senders_count = Math.max(0, all_senders.length - max_avatars);
     // Collect extra sender fullname for tooltip
     const displayed_other_names = people.get_display_full_names(
-        displayed_other_senders.toReversed(),
+        people.merge_loading_user_ids(displayed_other_senders.toReversed()),
     );
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
         // We display only 10 extra senders in tooltips,
@@ -871,14 +871,17 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const sorted_pm_users = last_msg.display_recipient
+        const pm_user_ids = last_msg.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
                     !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
             )
-            .map((user: DisplayRecipientUser) => ({
-                name: people.get_display_full_name(user.id),
-                status_emoji_info: user_status.get_status_emoji(user.id),
+            .map((recipient: DisplayRecipientUser) => recipient.id);
+        const sorted_pm_users = pm_user_ids
+            .map((user_id) => ({
+                name: people.get_display_full_name(user_id),
+                status_emoji_info: user_status.get_status_emoji(user_id),
+                is_full_name_loading: people.is_display_full_name_loading(user_id),
             }))
             .toSorted((a, b) => util.strcmp(a.name, b.name));
 
@@ -886,7 +889,9 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             users: sorted_pm_users,
         });
 
-        const sorted_pm_usernames_only = Array.from(sorted_pm_users, (user) => user.name);
+        const sorted_pm_usernames_only = people
+            .get_display_full_names(people.merge_loading_user_ids(pm_user_ids))
+            .toSorted(util.strcmp);
 
         const pm_users_as_plain = util.format_array_as_list_with_conjunction(
             sorted_pm_usernames_only,

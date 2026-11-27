@@ -393,6 +393,13 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 }
 
+export function handle_users_fetched(): void {
+    if (search_pill_widget !== null) {
+        search_pill.update_placeholder_user_pills(search_pill_widget);
+    }
+    search_typeahead.lookup_keeping_active_item((item, active_item) => item === active_item);
+}
+
 export function initiate_search(): void {
     open_search_bar_and_close_narrow_description(true);
     focus_search_input_at_end();

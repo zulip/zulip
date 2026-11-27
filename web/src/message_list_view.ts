@@ -76,6 +76,7 @@ export type MessageContainer = {
     sender_is_guest: boolean;
     sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
+    sender_is_placeholder_user: boolean;
     small_avatar_url: string;
     status_emoji_info: UserStatusEmojiInfo | undefined;
     status_message: string | false;
@@ -295,6 +296,7 @@ function get_topic_edit_properties(message: Message): {
 type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
+    is_full_name_loading: boolean;
 };
 function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
     const user_ids = people.pm_with_user_ids(message);
@@ -311,6 +313,7 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
             full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
             is_bot,
+            is_full_name_loading: people.is_display_full_name_loading(user_id),
         };
     });
 
@@ -475,7 +478,9 @@ export function populate_group_from_message(
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
         is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
-        display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
+        display_reply_to_for_tooltip: message_store.get_pm_full_names(
+            people.merge_loading_user_ids(user_ids),
+        ),
         always_display_date,
     };
 }
@@ -601,6 +606,7 @@ export class MessageListView {
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         status_emoji_info: UserStatusEmojiInfo | undefined;
+        sender_is_placeholder_user: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
@@ -686,6 +692,7 @@ export class MessageListView {
             message.sender_id,
         );
         const status_emoji_info = user_status.get_status_emoji(message.sender_id);
+        const sender_is_placeholder_user = people.is_placeholder_user(message.sender_id);
 
         const small_avatar_url = is_hidden
             ? people.get_muted_user_avatar_url()
@@ -705,6 +712,7 @@ export class MessageListView {
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             status_emoji_info,
+            sender_is_placeholder_user,
             is_hidden,
             mention_classname,
             include_sender,
@@ -2007,6 +2015,85 @@ export class MessageListView {
             maybe_restore_focus_to_message_edit_form();
         }
         autosize.update(this.$list.find(".message_edit_content"));
+    }
+
+    _rerender_sender(message_container: MessageContainer, $row: JQuery): void {
+        const message = message_container.msg;
+        const is_revealed =
+            muted_users.is_user_muted(message.sender_id) && !message_container.is_hidden;
+        Object.assign(
+            message_container,
+            this.get_calculated_message_container_variables(
+                message,
+                message_container.include_sender,
+                is_revealed,
+            ),
+        );
+        if (!message_container.include_sender) {
+            return;
+        }
+
+        const $rendered_msg = $(this._get_message_template(message_container));
+        $row.find(".message-avatar").replaceWith($rendered_msg.find(".message-avatar"));
+        const $message_sender = $row.find(".message_sender");
+        const $new_message_sender = $rendered_msg.find(".message_sender");
+        const $status_message = $message_sender.children(".status-message");
+        if ($status_message.length === 0) {
+            $message_sender.replaceWith($new_message_sender);
+            return;
+        }
+        // The content of a "/me" message is inside .message_sender,
+        // after the sender. We replace only what is before it.
+        const $nodes = $message_sender.contents();
+        $nodes.slice(0, $nodes.index($status_message)).remove();
+        const $new_nodes = $new_message_sender.contents();
+        $status_message.before(
+            $new_nodes.slice(0, $new_nodes.index($new_message_sender.children(".status-message"))),
+        );
+    }
+
+    rerender_senders_and_dm_recipient_bars(messages: Message[]): void {
+        // Unlike rerender_messages, this leaves the content of each
+        // row alone. It is used when the data of many users arrives
+        // without any action by the current user, and a rerendered
+        // row would lose a text selection or the text typed in a
+        // widget of the message.
+        message_list_tooltips.destroy_all_message_list_tooltips();
+
+        const dm_group_ids = new Set<string>();
+        for (const message of messages) {
+            const message_container = this.message_containers.get(message.id);
+            // We may not have the message_container if the stream or topic was muted
+            if (message_container === undefined) {
+                continue;
+            }
+            const $row = this.get_row(message.id);
+            if ($row.length === 0) {
+                continue;
+            }
+            this._rerender_sender(message_container, $row);
+            if (message.type !== "private") {
+                continue;
+            }
+            const message_group_id = rows.get_message_recipient_row($row).attr("id");
+            if (message_group_id !== undefined) {
+                dm_group_ids.add(message_group_id);
+            }
+        }
+
+        const message_groups_by_id = new Map(
+            this._message_groups.map((group) => [group.message_group_id, group]),
+        );
+        for (const message_group_id of dm_group_ids) {
+            const group = message_groups_by_id.get(message_group_id);
+            if (group !== undefined) {
+                this._rerender_header(group);
+            }
+        }
+
+        if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
+            this.update_sticky_recipient_headers();
+        }
     }
 
     append(

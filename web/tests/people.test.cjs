@@ -539,6 +539,21 @@ run_test("get_recipients", () => {
 
     muted_users.add_muted_user(304);
     assert.deepEqual(people.get_recipients("304,32"), ["Isaac Newton", "translated: Muted user"]);
+
+    // Placeholder users share one name.
+    for (const user_id of [42, 43]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+    assert.deepEqual(people.get_recipients("42,43"), ["Loading…"]);
+    assert.deepEqual(people.get_recipients("32,42,43"), ["Isaac Newton", "Loading…"]);
+    assert.equal(people.format_recipients("32,42,43", "long"), "Isaac Newton and Loading…");
 });
 
 run_test("get_full_name", () => {
@@ -553,6 +568,21 @@ run_test("get_full_names_for_poll_option", () => {
     people.add_active_user(isaac);
     const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
     assert.equal(names, "Me Myself, Isaac Newton");
+
+    for (const user_id of [42, 43]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+    assert.equal(
+        people.get_full_names_for_poll_option([42, isaac.user_id, 43]),
+        "Loading…, Isaac Newton",
+    );
 });
 
 run_test("get_display_full_names", ({override}) => {
@@ -755,6 +785,80 @@ run_test("get_by_user_id", () => {
     assert.equal(person.user_id, 42);
 });
 
+run_test("is_placeholder_user", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_placeholder_user(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_placeholder_user(42));
+
+    // Missing users are not placeholders.
+    assert.ok(!people.is_placeholder_user(43));
+});
+
+run_test("is_display_full_name_loading", () => {
+    initialize();
+    const person = make_user({
+        email: "mary@example.com",
+        user_id: 42,
+        full_name: "Mary",
+    });
+    people.add_active_user(person);
+    assert.ok(!people.is_display_full_name_loading(42));
+
+    people.add_active_user({...person, is_placeholder_user: true});
+    assert.ok(people.is_display_full_name_loading(42));
+
+    muted_users.add_muted_user(42);
+    assert.ok(!people.is_display_full_name_loading(42));
+});
+
+run_test("get_loading_shimmer_width_class", () => {
+    assert.equal(people.get_loading_shimmer_width_class(40), "loading-shimmer-width-0");
+    assert.equal(people.get_loading_shimmer_width_class(42), "loading-shimmer-width-2");
+    assert.equal(people.get_loading_shimmer_width_class(44), "loading-shimmer-width-4");
+    assert.equal(people.get_loading_shimmer_width_class(45), "loading-shimmer-width-0");
+});
+
+run_test("merge_loading_user_ids", () => {
+    initialize();
+    people.add_active_user(isaac);
+    const loading_user_ids = [42, 43, 44];
+    for (const user_id of loading_user_ids) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+
+    assert.deepEqual(people.merge_loading_user_ids([42, 43]), [42]);
+    assert.deepEqual(people.merge_loading_user_ids([43, isaac.user_id, 42]), [43, isaac.user_id]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, 42, 43, 44]), [
+        isaac.user_id,
+        42,
+    ]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, 42]), [isaac.user_id, 42]);
+    assert.deepEqual(people.merge_loading_user_ids([isaac.user_id, me.user_id]), [
+        isaac.user_id,
+        me.user_id,
+    ]);
+
+    // A muted user is shown as "Muted user", so they keep their own entry.
+    muted_users.add_muted_user(43);
+    assert.deepEqual(people.merge_loading_user_ids([42, 43, 44]), [42, 43]);
+    muted_users.remove_muted_user(43);
+});
+
 run_test("set_custom_profile_field_data", () => {
     initialize();
     const person = people.get_by_email(me.email);
@@ -923,6 +1027,14 @@ run_test("dm_matches_search_string", () => {
     assert.ok(result);
     result = people.dm_matches_search_string([plain_noah], "ëm");
     assert.ok(!result);
+
+    // A placeholder user can't match a search, but the loaded users
+    // of the same conversation can.
+    const placeholder = people.add_placeholder_user(9101);
+    assert.ok(people.dm_matches_search_string([placeholder], ""));
+    assert.ok(!people.dm_matches_search_string([placeholder], "loa"));
+    assert.ok(!people.dm_matches_search_string([placeholder], "9101"));
+    assert.ok(people.dm_matches_search_string([placeholder, ashton], "ash"));
 });
 
 run_test("filter_other_guest_ids", ({override}) => {
@@ -977,14 +1089,26 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
-    assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
+    assert.equal(people.dm_user_ids_string_to_slug("401,402"), "401,402-group");
+    assert.equal(people.dm_user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
     assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
     // An empty list has no IDs to write.
     assert.equal(people.user_ids_to_slug([]), "");
     assert.equal(people.user_ids_to_slug([9999]), "9999");
     assert.equal(people.user_ids_to_slug([401, 9999]), "401,9999-group");
+
+    assert.equal(people.dm_user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.dm_user_ids_to_slug([402]), "402-whatever-402");
+    assert.equal(people.dm_user_ids_to_slug([]), "");
+    assert.equal(people.dm_user_ids_to_slug([9999]), "9999");
+
+    // The name of a placeholder user isn't known yet.
+    people.add_active_user({...emp402, is_placeholder_user: true}, source);
+    assert.equal(people.dm_user_ids_to_slug([402]), "402-dm");
+    assert.equal(people.dm_user_ids_string_to_slug("402"), "402-dm");
+    assert.equal(people.dm_user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
 });
 
 run_test("user_ids_to_full_names_string", () => {
@@ -1089,6 +1213,11 @@ run_test("message_methods", () => {
     assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
     assert.equal(people.small_avatar_url(message), "legacy.png");
+
+    // The name of a placeholder user isn't known yet.
+    people.add_active_user({...maria, is_placeholder_user: true}, "server_events");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/302-dm");
+    people.add_active_user(maria, "server_events");
 
     message = {
         avatar_url: undefined,
@@ -1224,6 +1353,13 @@ run_test("get_people_for_search_bar", ({override}) => {
     // in message_user_ids, we will get a small result and not
     // search all people.
     assert.equal(small_results.length, 6);
+
+    // Placeholder users are never returned.
+    for (const user_id of user_ids) {
+        people.add_active_user({...people.get_by_user_id(user_id), is_placeholder_user: true});
+    }
+    const results_without_placeholders = people.get_people_for_search_bar("Jones");
+    assert.equal(results_without_placeholders.length, 14);
 });
 
 run_test("updates", () => {
@@ -1608,6 +1744,64 @@ run_test("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
+run_test("add_placeholder_user", ({override}) => {
+    initialize();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+
+    const placeholder_user_id = 98;
+    const user = people.add_placeholder_user(placeholder_user_id);
+    assert.equal(user.full_name, "translated: Loading…");
+    assert.equal(user.user_id, placeholder_user_id);
+    assert.equal(user.email, "user98@zulipdev.com");
+    assert.ok(user.is_missing_server_data);
+    assert.ok(user.is_placeholder_user);
+
+    // Placeholder user should be retrievable via get_by_user_id.
+    const retrieved = people.get_by_user_id(placeholder_user_id);
+    assert.equal(retrieved.user_id, placeholder_user_id);
+    assert.equal(retrieved.full_name, "translated: Loading…");
+
+    // Placeholder users are treated as active until their real data
+    // arrives, so that we don't render them as deactivated in the UI.
+    assert.equal(people.is_person_active(placeholder_user_id), true);
+});
+
+run_test("user fetch for placeholder users", async ({override}) => {
+    initialize();
+    people.init();
+    override(realm, "realm_bot_domain", "zulipdev.com");
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    const accessible_user_id = 201;
+    const inaccessible_user_id = 202;
+    for (const user_id of [accessible_user_id, inaccessible_user_id]) {
+        people.add_valid_user_id(user_id);
+        people.add_placeholder_user(user_id);
+    }
+
+    const requested_batches = [];
+    override(channel, "get", ({data, success}) => {
+        requested_batches.push(JSON.parse(data.user_ids));
+        success({
+            members: [make_fetched_user(accessible_user_id)],
+            result: "success",
+            msg: "",
+        });
+    });
+
+    // Placeholders count as not yet fetched.
+    await people.get_or_fetch_users_from_ids([accessible_user_id, inaccessible_user_id]);
+    assert.deepEqual(requested_batches, [[accessible_user_id, inaccessible_user_id]]);
+    const accessible_user = people.get_by_user_id(accessible_user_id);
+    assert.equal(accessible_user.full_name, "User 201");
+    assert.ok(!accessible_user.is_placeholder_user);
+
+    // Placeholders the server leaves out become inaccessible users.
+    const inaccessible_user = people.get_by_user_id(inaccessible_user_id);
+    assert.ok(inaccessible_user.is_inaccessible_user);
+    assert.ok(!inaccessible_user.is_placeholder_user);
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);
@@ -1815,7 +2009,15 @@ run_test("user fetch during initialize", async ({override}) => {
         const promise = people.fetch_users_from_ids_internal([15]);
         assert.ok(promise instanceof Promise);
     };
-    await people.initialize(my_user_id, params, user_group_params);
+    people.initialize(my_user_id, params, user_group_params);
+
+    // After initialize, missing users are placeholders while the
+    // background fetch is in flight.
+    assert.equal(people.get_by_user_id(15).is_placeholder_user, true);
+    assert.equal(people.get_by_user_id(16).is_placeholder_user, true);
+
+    // Wait for the background fetch to complete.
+    await people.get_or_fetch_users_from_ids([15, 16]);
     await promise_for_user_already_in_transit;
     assert.equal(user_GET_request_calls, 1);
 
@@ -1897,7 +2099,11 @@ run_test("user fetch batches a large request", async ({override}) => {
         const batch = JSON.parse(data.user_ids);
         // Users from the earlier batches are already known by the time we
         // request this one, rather than only once every batch has arrived.
-        assert.ok(requested_batches.flat().every((user_id) => people.is_known_user_id(user_id)));
+        assert.ok(
+            requested_batches
+                .flat()
+                .every((user_id) => !people.get_by_user_id(user_id).is_placeholder_user),
+        );
         requested_batches.push(batch);
         success({
             members: batch.map((user_id) => make_fetched_user(user_id)),
@@ -1906,7 +2112,8 @@ run_test("user fetch batches a large request", async ({override}) => {
         });
     });
 
-    await people.initialize(my_user_id, people_params, user_group_params);
+    people.initialize(my_user_id, people_params, user_group_params);
+    await people.get_or_fetch_users_from_ids(user_ids_to_fetch);
 
     assert.deepEqual(
         requested_batches.map((batch) => batch.length),
@@ -1964,7 +2171,13 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
         2,
     );
 
-    await people.initialize(my_user_id, people_params, user_group_params);
+    const fetch_failing_notifications = [];
+    people.set_users_fetch_failing_callback((is_failing) => {
+        fetch_failing_notifications.push(is_failing);
+    });
+    people.initialize(my_user_id, people_params, user_group_params);
+    await people.get_or_fetch_users_from_ids(inaccessible_user_ids);
+    assert.deepEqual(fetch_failing_notifications, [true, false, true, false]);
 
     // Only the failed batches are requested twice; the rest are not refetched.
     assert.deepEqual(
@@ -1987,6 +2200,69 @@ run_test("user fetch resumes after a failed batch", async ({override, override_r
         assert.ok(people.get_by_user_id(user_id).is_inaccessible_user);
     }
 });
+
+run_test(
+    "user fetch failing state ends when an overlapping fetch succeeds",
+    async ({override, override_rewire}) => {
+        initialize();
+        people.init();
+        override(settings_data, "user_can_access_all_other_users", () => false);
+        people.add_valid_user_id(71);
+        people.add_valid_user_id(72);
+
+        const fetch_failing_notifications = [];
+        people.set_users_fetch_failing_callback((is_failing) => {
+            fetch_failing_notifications.push(is_failing);
+        });
+
+        const requested_batches = [];
+        override(channel, "get", ({data, success, error}) => {
+            requested_batches.push(JSON.parse(data.user_ids));
+            if (requested_batches.length === 1) {
+                error({responseJSON: {msg: "test error"}});
+                return;
+            }
+            success({members: [], result: "success", msg: ""});
+        });
+        override_rewire(retry_backoff, "get_retry_backoff_seconds", () => 0);
+        blueslip.expect(
+            "warn",
+            "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        );
+
+        // Timers are run by hand, so that the second fetch can succeed
+        // while the first one is still waiting to retry.
+        const pending_timers = [];
+        override(global, "setTimeout", (func) => {
+            pending_timers.push(func);
+        });
+        const run_next_timer = async () => {
+            pending_timers.shift()();
+            // Let the fetch run until it waits for its next timer.
+            for (let i = 0; i < 20; i += 1) {
+                await Promise.resolve();
+            }
+        };
+
+        const first_fetch = people.get_or_fetch_users_from_ids([71]);
+        await run_next_timer();
+        assert.deepEqual(requested_batches, [[71]]);
+        assert.deepEqual(fetch_failing_notifications, [true]);
+
+        const second_fetch = people.get_or_fetch_users_from_ids([72]);
+        // The retry of the first fetch is ahead of the start of the second.
+        pending_timers.reverse();
+        await run_next_timer();
+        assert.deepEqual(requested_batches, [[71], [72]]);
+        assert.deepEqual(fetch_failing_notifications, [true, false]);
+
+        await run_next_timer();
+        await first_fetch;
+        await second_fetch;
+        assert.deepEqual(requested_batches, [[71], [72], [71]]);
+        assert.deepEqual(fetch_failing_notifications, [true, false]);
+    },
+);
 
 run_test("user fetch corner case", async ({override, override_rewire}) => {
     // We test here for the following sequence of fetches:
@@ -2134,6 +2410,66 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
     assert.equal(inaccessible_user.user_id, 1);
     assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("fetch_placeholder_user_now", async ({override}) => {
+    initialize();
+
+    // Set up two placeholders to exercise the active and non-active branches.
+    people.add_valid_user_id(61);
+    people.add_valid_user_id(62);
+    people.add_placeholder_user(61);
+    people.add_placeholder_user(62);
+
+    const fetched_notifications = [];
+    people.set_users_fetched_callback((user_ids) => {
+        fetched_notifications.push([...user_ids]);
+    });
+
+    override(channel, "get", ({url, data, success}) => {
+        assert.equal(url, "/json/users");
+        const requested_user_id = JSON.parse(data.user_ids)[0];
+        if (requested_user_id === 61) {
+            success({
+                members: [make_fetched_user(61)],
+                result: "success",
+                msg: "",
+            });
+        } else {
+            success({
+                members: [{...make_fetched_user(62), is_active: false}],
+                result: "success",
+                msg: "",
+            });
+        }
+    });
+
+    // A successful fetch ends the failing state of requests for users.
+    const fetch_failing_notifications = [];
+    people.set_users_fetch_failing_callback((is_failing) => {
+        fetch_failing_notifications.push(is_failing);
+    });
+    people.notify_users_fetch_failing(true);
+
+    await people.fetch_placeholder_user_now(61);
+    assert.equal(people.get_by_user_id(61).full_name, "User 61");
+    assert.deepEqual(fetched_notifications, [[61]]);
+    assert.deepEqual(fetch_failing_notifications, [true, false]);
+
+    await people.fetch_placeholder_user_now(62);
+    assert.equal(people.get_by_user_id(62).full_name, "User 62");
+    assert.ok(people.get_non_active_realm_users().some((u) => u.user_id === 62));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
+
+    // A failed request rejects, and the user stays a placeholder.
+    people.add_valid_user_id(63);
+    people.add_placeholder_user(63);
+    override(channel, "get", ({error}) => {
+        error({responseJSON: {msg: "Simulated failure"}});
+    });
+    await assert.rejects(people.fetch_placeholder_user_now(63), {message: "Simulated failure"});
+    assert.ok(people.is_placeholder_user(63));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
 });
 
 run_test("get_by_user_id", () => {

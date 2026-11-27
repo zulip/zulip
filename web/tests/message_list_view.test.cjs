@@ -28,6 +28,7 @@ mock_esm("../src/people", {
     small_avatar_url: () => "fake/small/avatar/url",
     get_muted_user_avatar_url: () => "fake/muted_user/avatar/url",
     maybe_get_user_by_id: noop,
+    is_placeholder_user: () => false,
 });
 
 const {Filter} = zrequire("../src/filter");
@@ -354,6 +355,54 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
 
     // One header rerender per distinct bar; the rowless message is skipped.
     assert.deepEqual(rerendered_group_ids, ["group-A", "group-B"]);
+});
+
+test("rerender_senders_and_dm_recipient_bars", () => {
+    const view = new MessageListView({id: 1}, true, true);
+
+    const dm1 = {msg: {id: 1, type: "private", to_user_ids: "5"}};
+    const dm2 = {msg: {id: 2, type: "private", to_user_ids: "5"}};
+    const stream_msg = {msg: {id: 3, type: "stream"}};
+    // dm4 has a container but no rendered row.
+    const dm4 = {msg: {id: 4, type: "private", to_user_ids: "5"}};
+    view.message_containers = new Map([
+        [1, dm1],
+        [2, dm2],
+        [3, stream_msg],
+        [4, dm4],
+    ]);
+
+    const group_id_by_msg_id = {1: "group-A", 2: "group-A", 3: "group-B"};
+    view.get_row = (id) => {
+        const group_id = group_id_by_msg_id[id];
+        if (group_id === undefined) {
+            return {length: 0};
+        }
+        return {length: 1, parent: () => ({expectOne: () => ({attr: () => group_id})})};
+    };
+    view._message_groups = [{message_group_id: "group-A"}, {message_group_id: "group-B"}];
+
+    const rerendered_sender_ids = [];
+    view._rerender_sender = (message_container) => {
+        rerendered_sender_ids.push(message_container.msg.id);
+    };
+    const rerendered_group_ids = [];
+    view._rerender_header = (group) => {
+        rerendered_group_ids.push(group.message_group_id);
+    };
+
+    // The message with id 5 has no container.
+    view.rerender_senders_and_dm_recipient_bars([
+        dm1.msg,
+        dm2.msg,
+        stream_msg.msg,
+        dm4.msg,
+        {id: 5},
+    ]);
+
+    assert.deepEqual(rerendered_sender_ids, [1, 2, 3]);
+    // Only the recipient bars of direct messages name users.
+    assert.deepEqual(rerendered_group_ids, ["group-A"]);
 });
 
 test("muted_message_vars", () => {

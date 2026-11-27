@@ -28,6 +28,8 @@ export type RecipientLabel = {
     topic_display_name?: string;
     is_dm_with_self?: boolean;
     user_ids?: number[];
+    has_loading_full_name?: boolean;
+    recipient_users?: {name: string; is_full_name_loading: boolean}[];
 };
 
 export function get_channel_recipient_label(
@@ -56,10 +58,20 @@ export function get_direct_message_recipient_label(user_ids: number[]): Recipien
     } else {
         label_text = message_store.get_pm_full_names(user_ids);
     }
+    const has_loading_full_name = user_ids.some((id) => people.is_display_full_name_loading(id));
+    const recipient_users = people
+        .sorted_other_user_ids(user_ids)
+        .map((id) => ({
+            name: people.get_display_full_name(id),
+            is_full_name_loading: people.is_display_full_name_loading(id),
+        }))
+        .toSorted((a, b) => util.strcmp(a.name, b.name));
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
         user_ids,
+        has_loading_full_name,
+        recipient_users,
     };
     return recipient_label;
 }
@@ -240,6 +252,8 @@ export function update_reply_button_with_recipient_context(
             stream: recipient_label.stream,
             topic_display_name: recipient_label.topic_display_name,
             is_dm_with_self: recipient_label.is_dm_with_self,
+            has_loading_full_name: recipient_label.has_loading_full_name,
+            recipient_users: recipient_label.recipient_users,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });

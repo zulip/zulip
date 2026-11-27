@@ -128,6 +128,19 @@ export function render_widget_rows_in_list(list: MessageList | undefined): void 
     }
 }
 
+// For when what the widgets show changes without a widget event,
+// like when the voters of a poll get their names. Each widget is
+// redrawn in place, so anything being typed in it is kept.
+export function rerender_widgets_in_current_list(): void {
+    for (const message_id of widgetize.get_message_ids()) {
+        const message = message_store.get(message_id);
+        if (message === undefined) {
+            continue;
+        }
+        widgetize.rerender({message, post_to_server: make_server_callback(message_id)});
+    }
+}
+
 export function process_submessages(message: Message): void {
     // This happens in our rendering path, so we try to limit any
     // damage that may be triggered by one rogue message.

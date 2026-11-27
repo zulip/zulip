@@ -99,6 +99,28 @@ export function render(in_opts: {
     });
 }
 
+export function rerender(in_opts: {post_to_server: PostToServerFunction; message: Message}): void {
+    const {message, post_to_server} = in_opts;
+    const generic_widget = generic_widget_map.get(message.id);
+    const $message_row = message_lists.current?.get_row(message.id);
+
+    // It is common for submessage events to arrive on
+    // messages that we don't yet have in view. We
+    // just ignore them completely here.
+    if (!generic_widget || !$message_row || $message_row.length === 0) {
+        return;
+    }
+
+    const $widget_elem = $message_row.find(".widget-content");
+    render_widget_instance({
+        post_to_server,
+        $widget_elem,
+        message,
+        widget_data: generic_widget.get_widget_data(),
+        rerender: true,
+    });
+}
+
 export function handle_event(
     widget_event: Event & {
         post_to_server: PostToServerFunction;
@@ -106,7 +128,6 @@ export function handle_event(
     },
 ): void {
     const generic_widget = generic_widget_map.get(widget_event.message.id);
-    const $message_row = message_lists.current?.get_row(widget_event.message.id);
     if (!generic_widget) {
         return;
     }
@@ -115,17 +136,5 @@ export function handle_event(
 
     generic_widget.handle_inbound_events(events);
 
-    // It is common for submessage events to arrive on
-    // messages that we don't yet have in view. We
-    // just ignore them completely here.
-    if ($message_row && $message_row.length > 0) {
-        const $widget_elem = $message_row.find(".widget-content");
-        render_widget_instance({
-            post_to_server: widget_event.post_to_server,
-            $widget_elem,
-            message: widget_event.message,
-            widget_data: generic_widget.get_widget_data(),
-            rerender: true,
-        });
-    }
+    rerender(widget_event);
 }

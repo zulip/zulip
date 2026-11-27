@@ -203,6 +203,12 @@
                we put it on .user-profile-picture-container instead,
                so that user circles occupy the corner of the image. */
             margin-right: 0;
+
+            /* Clicking the avatar of a placeholder user doesn't
+               open their user card. */
+            &.is-placeholder-user {
+                cursor: default;
+            }
         }
 
         .user-circle {

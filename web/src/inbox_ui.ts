@@ -483,6 +483,7 @@ function format_dm(
             .map((recipient_id) => ({
                 name: people.get_display_full_name(recipient_id),
                 status_emoji_info: user_status.get_status_emoji(recipient_id),
+                is_full_name_loading: people.is_display_full_name_loading(recipient_id),
             }))
             .toSorted((a, b) => util.strcmp(a.name, b.name)),
     });
@@ -1368,8 +1369,12 @@ function row_in_search_results(keyword: string, text: string): boolean {
 }
 
 function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
-    const recipients_string = people.get_recipients(dm_key);
-    const text = recipients_string.join(",").toLowerCase();
+    // The names of placeholder users are not known yet, so they
+    // can't match.
+    const loaded_user_ids = people
+        .user_ids_string_to_ids_array(dm_key)
+        .filter((user_id) => !people.is_display_full_name_loading(user_id));
+    const text = people.get_display_full_names(loaded_user_ids).join(",").toLowerCase();
 
     if (!row_in_search_results(search_keyword, text)) {
         return true;

@@ -58,11 +58,11 @@
             {{/unless}}
             {{#each senders}}
                 {{#if this.is_muted}}
-                <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}" data-user-id="{{this.user_id}}">
+                <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip{{#if this.is_placeholder_user}} is-placeholder-user{{/if}}" data-tippy-content="{{t 'Muted user'}}" data-user-id="{{this.user_id}}">
                     <span><i class="zulip-icon zulip-icon-user recent_view_participant_overflow"></i></span>
                 </li>
                 {{else}}
-                <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{this.full_name}}" data-user-id="{{this.user_id}}">
+                <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip{{#if this.is_placeholder_user}} is-placeholder-user{{/if}}" data-tippy-content="{{this.full_name}}" data-user-id="{{this.user_id}}">
                     <img src="{{this.avatar_url_small}}" class="recent_view_participant_avatar" />
                 </li>
                 {{/if}}

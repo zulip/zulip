@@ -439,6 +439,18 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(syntax_to_insert, "@**Bob Roberts**");
 
+    // The mention of a placeholder sender always has their ID.
+    people.add_active_user(
+        make_user({
+            user_id: 40,
+            email: "user40@example.com",
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
+    reply_with_mention(opts);
+    assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
+
     // Test for extended mention syntax
     const bob_1 = {
         user_id: 30,

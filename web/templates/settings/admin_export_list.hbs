@@ -1,7 +1,7 @@
 {{#with realm_export}}
 <tr class="export_row" id="export_{{id}}" data-export-id="{{id}}">
     <td>
-        <span class="acting_user">{{acting_user}}</span>
+        <span class="acting_user">{{#if acting_user_is_placeholder_user}}<span class="loading-shimmer"></span>{{else}}{{acting_user}}{{/if}}</span>
     </td>
     <td>
         <span>{{export_type_description}}</span>

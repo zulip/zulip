@@ -239,6 +239,16 @@ export function initialize(): void {
         },
     });
 
+    // The pill of a placeholder user is replaced when their data
+    // arrives, which can happen while its tooltip is open.
+    tippy.delegate("body", {
+        target: ".view_user_profile.pill-loading-shimmer",
+        trigger: "mouseenter",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        plugins: [hide_on_reference_removal_plugin],
+    });
+
     tippy.delegate("body", {
         target: ".toggle-subscription-tooltip",
         trigger: "mouseenter",

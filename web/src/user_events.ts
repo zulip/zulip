@@ -10,21 +10,39 @@ import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import * as inbox_ui from "./inbox_ui.ts";
+import * as message_edit_history from "./message_edit_history.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_report from "./message_report.ts";
 import * as message_view_header from "./message_view_header.ts";
+import * as narrow_banner from "./narrow_banner.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as search from "./search.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
+import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_emoji from "./settings_emoji.ts";
 import * as settings_exports from "./settings_exports.ts";
+import * as settings_invites from "./settings_invites.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
+import * as settings_muted_users from "./settings_muted_users.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -33,8 +51,18 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_streams from "./settings_streams.ts";
 import * as settings_users from "./settings_users.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_create_subscribers from "./stream_create_subscribers.ts";
+import * as stream_edit from "./stream_edit.ts";
+import * as stream_edit_subscribers from "./stream_edit_subscribers.ts";
 import * as stream_events from "./stream_events.ts";
+import * as stream_popover from "./stream_popover.ts";
+import * as submessage from "./submessage.ts";
+import * as typing_events from "./typing_events.ts";
+import * as user_card_popover from "./user_card_popover.ts";
+import * as user_group_create_members from "./user_group_create_members.ts";
 import * as user_group_edit from "./user_group_edit.ts";
+import * as user_group_edit_members from "./user_group_edit_members.ts";
+import * as user_group_popover from "./user_group_popover.ts";
 import * as user_profile from "./user_profile.ts";
 
 export const user_update_schema = z.intersection(
@@ -312,3 +340,59 @@ export const update_person = function update(event: UserUpdate): void {
         settings_panel_menu.update_imported_users_tab(true, true);
     }
 };
+
+function refresh_ui_after_users_fetched(user_ids: number[]): void {
+    pm_list.update_private_messages();
+    message_view_header.handle_users_fetched(user_ids);
+    message_live_update.update_full_names_and_avatars(
+        user_ids.map((user_id) => people.get_by_user_id(user_id)),
+    );
+    reactions.update_user_full_names(new Set(user_ids));
+    compose_pm_pill.update_placeholder_user_pills();
+    rendered_markdown.update_placeholder_user_mentions(user_ids);
+    submessage.rerender_widgets_in_current_list();
+    compose_recipient.update_compose_area_placeholder_text();
+    activity_ui.handle_users_fetched(user_ids);
+    inbox_ui.update();
+    for (const user_id of user_ids) {
+        recent_view_ui.rerender_conversations_with_user(user_id);
+    }
+    scheduled_messages_overlay_ui.handle_users_fetched();
+    settings_panel_menu.handle_users_fetched();
+    read_receipts.handle_users_fetched(user_ids);
+    drafts_overlay_ui.handle_users_fetched();
+    search.handle_users_fetched();
+    composebox_typeahead.handle_users_fetched();
+    stream_edit_subscribers.handle_users_fetched(user_ids);
+    user_group_edit_members.handle_users_fetched(user_ids);
+    settings_invites.handle_users_fetched(user_ids);
+    settings_bots.handle_users_fetched(user_ids);
+    settings_emoji.handle_users_fetched(user_ids);
+    settings_muted_users.handle_users_fetched(user_ids);
+    settings_exports.handle_users_fetched(user_ids);
+    stream_create_subscribers.handle_users_fetched(user_ids);
+    user_group_create_members.handle_users_fetched(user_ids);
+    stream_edit.handle_users_fetched(user_ids);
+    user_group_edit.handle_users_fetched(user_ids);
+    user_profile.handle_users_fetched(user_ids);
+    settings_components.handle_users_fetched();
+    custom_profile_fields_ui.handle_users_fetched();
+    user_group_popover.handle_users_fetched();
+    message_edit_history.handle_users_fetched(user_ids);
+    message_report.handle_users_fetched(user_ids);
+    stream_popover.handle_users_fetched(user_ids);
+    user_card_popover.handle_users_fetched(user_ids);
+    if (narrow_state.is_message_feed_visible()) {
+        compose_closed_ui.update_reply_button();
+        narrow_title.update_narrow_title(narrow_state.filter());
+        narrow_banner.handle_users_fetched(user_ids);
+        typing_events.render_notifications_for_narrow();
+    }
+}
+
+export function initialize(): void {
+    people.set_users_fetch_failing_callback((is_failing) => {
+        $("body").toggleClass("users-fetch-failing", is_failing);
+    });
+    people.set_users_fetched_callback(refresh_ui_after_users_fetched);
+}

@@ -652,6 +652,14 @@ export class MessageListData {
         );
     }
 
+    get_messages_involving_users(user_ids: Set<number>): Message[] {
+        return this._items.filter(
+            (msg) =>
+                user_ids.has(msg.sender_id) ||
+                people.pm_with_user_ids(msg)?.some((user_id) => user_ids.has(user_id)) === true,
+        );
+    }
+
     get_last_message_sent_by_me(): Message | undefined {
         const msg_index = this._items.findLastIndex(
             (msg) => msg.sender_id === current_user.user_id,

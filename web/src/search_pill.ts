@@ -39,6 +39,7 @@ export type SearchUserPillContext = {
         status_emoji_info: UserStatusEmojiInfo | undefined;
         should_add_guest_user_indicator: boolean;
         deactivated: boolean;
+        is_placeholder_user: boolean;
     }[];
 };
 
@@ -445,6 +446,7 @@ function search_user_pill_data(
             status_emoji_info: user_status.get_status_emoji(user.user_id),
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
             deactivated: !people.is_person_active(user.user_id) && !user.is_inaccessible_user,
+            is_placeholder_user: user.is_placeholder_user ?? false,
         })),
     };
 }
@@ -458,6 +460,25 @@ function append_user_pill(
     const pill_data = search_user_pill_data(users, operator, negated);
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
+}
+
+export function update_placeholder_user_pills(pill_widget: SearchPillWidget): void {
+    // We update each user pill in place, rather than rebuilding the
+    // search bar, so that text the user has typed but not yet turned
+    // into a pill is kept.
+    for (const item of pill_widget.items()) {
+        if (item.type !== "search_user") {
+            continue;
+        }
+        if (item.users.every((user) => !user.is_placeholder_user)) {
+            continue;
+        }
+        const pill = pill_widget.getPillByPredicate((pill_item) => pill_item === item);
+        assert(pill !== undefined);
+        const users = item.users.map((user) => people.get_by_user_id(user.user_id));
+        const pill_data = search_user_pill_data(users, item.operator, item.negated);
+        pill_widget.updatePill(pill.$element[0]!, pill_data);
+    }
 }
 
 export function set_search_bar_contents(

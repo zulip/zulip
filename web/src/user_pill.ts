@@ -28,6 +28,7 @@ export type UserPill = {
     status_emoji_info?: user_status.UserStatusEmojiInfo | undefined;
     should_add_guest_user_indicator?: boolean;
     is_bot?: boolean;
+    is_placeholder_user?: boolean;
 };
 
 export type UserPillWidget = InputPillContainer<UserPill>;
@@ -66,6 +67,7 @@ export function create_item_from_user_id(
         status_emoji_info,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         is_bot: user.is_bot,
+        is_placeholder_user: user.is_placeholder_user ?? false,
     };
 
     // We pass deactivated true for a deactivated user
@@ -95,6 +97,7 @@ export function create_pill_data(person: User): UserPill {
         status_emoji_info: user_status.get_status_emoji(person.user_id),
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
         is_bot: person.is_bot,
+        is_placeholder_user: person.is_placeholder_user ?? false,
         deactivated: !people.is_person_active(person.user_id) && !person.is_inaccessible_user,
     };
 }
@@ -139,6 +142,8 @@ export function typeahead_source(
     setting_type?: "realm" | "stream" | "group",
 ): UserPillData[] {
     let users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
+    // Exclude placeholder users, whose names haven't loaded yet.
+    users = users.filter((user) => !user.is_placeholder_user);
     if (setting_name !== undefined) {
         assert(setting_type !== undefined);
         const group_setting_config = group_permission_settings.get_group_permission_setting_config(
@@ -196,6 +201,28 @@ export function update_pill_full_name(
     pill_widget.updatePill(pill.$element[0]!, {...pill.item, full_name});
 }
 
+export function update_placeholder_user_pills(
+    pill_widget: UserPillWidget | CombinedPillContainer | GroupSettingPillContainer,
+): void {
+    for (const item of pill_widget.items()) {
+        if (item.type !== "user" || !item.is_placeholder_user) {
+            continue;
+        }
+        const user = people.maybe_get_user_by_id(item.user_id, true);
+        if (user === undefined || user.is_placeholder_user) {
+            continue;
+        }
+        const pill = pill_widget.getPillByPredicate(
+            (pill_item: CombinedPill) =>
+                pill_item.type === "user" && pill_item.user_id === item.user_id,
+        );
+        assert(pill !== undefined);
+        // updatePill doesn't run the widget's create and remove
+        // callbacks, so this isn't treated as an edit by the user.
+        pill_widget.updatePill(pill.$element[0]!, create_pill_data(user));
+    }
+}
+
 export function generate_pill_html(item: UserPill, show_user_status_emoji = false): string {
     let status_emoji_info;
     let has_status;
@@ -215,6 +242,7 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
         has_status,
         status_emoji_info,
         is_bot: item.is_bot,
+        is_placeholder_user: item.is_placeholder_user,
     });
 }
 

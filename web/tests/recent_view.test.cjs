@@ -808,8 +808,8 @@ test("test_filter_pm", ({mock_template}) => {
     };
 
     const expected_users_with_icons = [
-        {name: "Spike Spiegel", status_emoji_info: undefined},
-        {name: "translated: Muted user", status_emoji_info: undefined},
+        {name: "Spike Spiegel", status_emoji_info: undefined, is_full_name_loading: false},
+        {name: "translated: Muted user", status_emoji_info: undefined, is_full_name_loading: false},
     ];
 
     mock_template("recent_view_table.hbs", false, (data) => {
@@ -822,7 +822,8 @@ test("test_filter_pm", ({mock_template}) => {
         return "<users_with_status_icons stub>";
     });
 
-    mock_template("recent_view_row.hbs", true, (_data, html) => {
+    mock_template("recent_view_row.hbs", true, (data, html) => {
+        assert.equal(data.pm_users_as_plain, "Spike Spiegel and translated: Muted user");
         assert.ok(html.startsWith('<tr id="recent_conversation'));
         return "<recent-view-row-stub>";
     });
@@ -842,6 +843,58 @@ test("test_filter_pm", ({mock_template}) => {
     assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 15}), false);
     assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 16}), true);
     assert.deepEqual(rt.filters_should_hide_row({type: "private", last_msg_id: 17}), false);
+});
+
+test("test_dm_row_with_placeholder_users", ({mock_template}) => {
+    const placeholder_user_ids = [201, 202, 203, 204, 205, 206];
+    for (const user_id of placeholder_user_ids) {
+        people.add_active_user({
+            email: `placeholder${user_id}@zulip.com`,
+            user_id,
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        });
+    }
+    const message = {
+        id: 9001,
+        sender_id: sender1,
+        to_user_ids: placeholder_user_ids.join(","),
+        type: "private",
+        display_recipient: [{id: 1}, ...placeholder_user_ids.map((id) => ({id}))],
+        pm_with_url: test_url(),
+    };
+    message_store.set_messages_for_tests([{message}]);
+
+    mock_template("recent_view_table.hbs", false, () => "<recent-view-table-stub>");
+    mock_template("users_with_status_icons.hbs", false, (data) => {
+        assert.equal(data.users.length, placeholder_user_ids.length);
+        assert.ok(data.users.every((user) => user.is_full_name_loading));
+        return "<users_with_status_icons stub>";
+    });
+
+    let rendered_row = false;
+    mock_template("recent_view_row.hbs", false, (data) => {
+        // Each placeholder user has a shimmer, but the text that lists
+        // them shows their name once.
+        assert.equal(data.pm_users_as_plain, "Loading…");
+        assert.equal(data.other_senders_count, 2);
+        assert.equal(data.other_sender_names_html, "Loading…");
+        rendered_row = true;
+        return "<recent-view-row-stub>";
+    });
+
+    rt.clear_for_tests();
+    rt.set_filters_for_tests();
+    stub_out_filter_buttons();
+    recent_view_util.set_visible(true);
+    rt.set_filter("include_private");
+
+    expected_data_to_replace_in_list_widget = [
+        {last_msg_id: 9001, participated: true, type: "private"},
+    ];
+
+    rt.process_messages([message]);
+    assert.ok(rendered_row);
 });
 
 test("test_filter_participated", ({mock_template}) => {

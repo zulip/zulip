@@ -244,6 +244,27 @@ test("message_booleans_parity", () => {
     });
 });
 
+test("get_pm_full_names with placeholder users", () => {
+    for (const user_id of [201, 202]) {
+        people.add_active_user(
+            make_user({
+                email: `placeholder${user_id}@example.com`,
+                user_id,
+                full_name: "Loading…",
+                is_placeholder_user: true,
+            }),
+        );
+    }
+
+    // Each placeholder user keeps their own entry. A caller that wants
+    // one "Loading…" for all of them merges their IDs first.
+    assert.equal(message_store.get_pm_full_names([me.user_id, 201, 202]), "Loading…, Loading…");
+    assert.equal(
+        message_store.get_pm_full_names([me.user_id, 201, bob.user_id, 202]),
+        "Bob, Loading…, Loading…",
+    );
+});
+
 test("errors", ({disallow_rewire}) => {
     // Test a user that doesn't exist
     let message = {
@@ -399,6 +420,82 @@ test("update_property", () => {
     message_store.update_small_avatar_url(bob.user_id, "bobby_url");
     assert.equal(message1.small_avatar_url, "alice_url");
     assert.equal(message2.small_avatar_url, "bobby_url");
+
+    // The data of a placeholder user has not arrived yet, so a
+    // message keeps the name and email the server sent with it.
+    const zoe = make_user({
+        email: "user106@example.com",
+        user_id: 106,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(zoe);
+    const zoe_from_message = {...zoe, email: "zoe@example.com", full_name: "Zoe"};
+    const dm_message = message_helper.process_new_message({
+        type: "server_message",
+        raw_message: {
+            sender_email: zoe_from_message.email,
+            sender_full_name: zoe_from_message.full_name,
+            sender_id: zoe.user_id,
+            type: "private",
+            display_recipient: convert_recipients([me, alice, zoe_from_message]),
+            flags: [],
+            id: 102,
+            reactions: [],
+            avatar_url: `/avatar/${zoe.user_id}`,
+            submessages: [],
+        },
+    }).message;
+    assert.equal(dm_message.sender_full_name, "Zoe");
+    assert.equal(dm_message.sender_email, "zoe@example.com");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe");
+    assert.equal(dm_message.reply_to, "alice@example.com,zoe@example.com");
+
+    // A locally echoed message is built from our own user data, so
+    // it has no name for a placeholder user.
+    const local_dm_message = message_helper.process_new_message({
+        type: "local_message",
+        raw_message: {
+            sender_email: me.email,
+            sender_full_name: me.full_name,
+            sender_id: me.user_id,
+            type: "private",
+            display_recipient: convert_recipients([me, zoe]),
+            flags: [],
+            id: 103.01,
+            local_id: "103.01",
+            reactions: [],
+            avatar_url: `/avatar/${me.user_id}`,
+            draft_id: 3,
+        },
+    }).message;
+    assert.equal(local_dm_message.display_reply_to, "Loading…");
+    assert.equal(local_dm_message.reply_to, "user106@example.com");
+
+    message_store.update_user_fields([
+        {...bob, full_name: "Robert", email: "robert@example.com", avatar_url: "robert_url"},
+    ]);
+    assert.equal(message1.sender_full_name, alice.full_name);
+    assert.equal(message1.small_avatar_url, "alice_url");
+    assert.equal(message1.reply_to, alice.email);
+    assert.equal(message2.sender_full_name, "Robert");
+    assert.equal(message2.sender_email, "robert@example.com");
+    assert.equal(message2.reply_to, "robert@example.com");
+    assert.equal(message2.small_avatar_url, "robert_url");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe");
+    message_store.update_user_fields([{...bob, full_name: "Robert", avatar_url: undefined}]);
+    assert.equal(message2.small_avatar_url, null);
+
+    // A DM also names its recipients.
+    const fetched_zoe = make_user({email: "zoe.z@example.com", user_id: 106, full_name: "Zoe Z"});
+    people.add_active_user(fetched_zoe);
+    message_store.update_user_fields([fetched_zoe]);
+    assert.equal(dm_message.sender_full_name, "Zoe Z");
+    assert.equal(dm_message.sender_email, "zoe.z@example.com");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe Z");
+    assert.equal(dm_message.reply_to, "alice@example.com,zoe.z@example.com");
+    assert.equal(local_dm_message.display_reply_to, "Zoe Z");
+    assert.equal(local_dm_message.reply_to, "zoe.z@example.com");
 
     assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, devel.name);

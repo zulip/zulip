@@ -277,6 +277,44 @@ run_test("update_user_pill_active_status", ({override_rewire}) => {
     assert.ok(!pill_updated);
 });
 
+run_test("update_placeholder_user_pills", ({override_rewire}) => {
+    // The pill-update logic lives in user_pill.update_placeholder_user_pills
+    // and is tested there; here we verify the wrapper is a no-op without
+    // a widget, and what the pill of an inaccessible user ends up as.
+    override_rewire(compose_pm_pill, "widget", undefined);
+    compose_pm_pill.update_placeholder_user_pills();
+
+    const inaccessible_user = make_user({
+        email: "user43@example.com",
+        user_id: 43,
+        full_name: "Unknown user",
+        is_inaccessible_user: true,
+    });
+    people.add_active_user(inaccessible_user);
+    const pill = {
+        item: {
+            type: "user",
+            user_id: inaccessible_user.user_id,
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        },
+        $element: {0: {}},
+    };
+    let updated_item;
+    const widget = {
+        items: () => [pill.item],
+        getPillByPredicate: (predicate) => (predicate(pill.item) ? pill : undefined),
+        updatePill(_element, new_item) {
+            updated_item = new_item;
+        },
+    };
+    override_rewire(compose_pm_pill, "widget", widget);
+
+    compose_pm_pill.update_placeholder_user_pills();
+    assert.equal(updated_item.user_id, inaccessible_user.user_id);
+    assert.equal(updated_item.full_name, "Unknown user");
+});
+
 run_test("update_user_pill_full_name", ({override_rewire}) => {
     // The pill-update logic lives in user_pill.update_pill_full_name and
     // is tested there; here we just verify the wrapper delegates when

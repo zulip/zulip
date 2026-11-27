@@ -241,6 +241,7 @@ export function process_reaction_click(message_id: number, local_id: string): vo
 }
 
 function generate_title(emoji_name: string, user_ids: number[]): string {
+    user_ids = people.merge_loading_user_ids(user_ids);
     const usernames = people.get_display_full_names(
         user_ids.filter((user_id) => user_id !== current_user.user_id),
     );
@@ -770,6 +771,13 @@ function check_should_display_reactors(
         return false;
     }
 
+    const has_loading_full_name = reaction_counts_and_user_ids.some(({user_ids}) =>
+        user_ids.some((user_id) => people.is_display_full_name_loading(user_id)),
+    );
+    if (has_loading_full_name) {
+        return false;
+    }
+
     let total_reactions = 0;
     for (const {count, user_ids} of reaction_counts_and_user_ids) {
         total_reactions += count ?? user_ids.length;
@@ -805,6 +813,8 @@ export let update_vote_text_on_message = (message: Message): void => {
         assert(message_clean_reaction !== undefined);
         message_clean_reaction.vote_list = vote_list;
         set_reaction_vote_text(reaction_elem, vote_list);
+        // The label names the reacting users too.
+        reaction_elem.attr("aria-label", clean_reaction.label);
     }
 };
 
@@ -814,15 +824,23 @@ export function rewire_update_vote_text_on_message(
     update_vote_text_on_message = value;
 }
 
-export function update_user_full_name(user_id: number): void {
+export function update_user_full_names(user_ids: Set<number>): void {
     // When a user's full name changes, we need to re-render the
     // vote text on any reaction pill that includes that user, since
     // vote text may contain display names.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         for (const message of msg_list.all_messages()) {
-            if (message.clean_reactions.values().some((r) => r.user_ids.includes(user_id))) {
+            if (
+                message.clean_reactions
+                    .values()
+                    .some((r) => r.user_ids.some((user_id) => user_ids.has(user_id)))
+            ) {
                 update_vote_text_on_message(message);
             }
         }
     }
+}
+
+export function update_user_full_name(user_id: number): void {
+    update_user_full_names(new Set([user_id]));
 }

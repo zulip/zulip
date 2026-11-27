@@ -145,6 +145,24 @@ run_test("handle_event", () => {
     assert.deepEqual(message.submessages[0], event);
 });
 
+run_test("rerender_widgets_in_current_list", () => {
+    const message = {id: 42, submessages: []};
+    widgetize.get_message_ids = () => [41, 42];
+    // Message 41 is no longer in the message store.
+    message_store.get = (message_id) => (message_id === 42 ? message : undefined);
+
+    const rerendered = [];
+    widgetize.rerender = (opts) => {
+        rerendered.push(opts);
+    };
+
+    submessage.rerender_widgets_in_current_list();
+
+    assert.equal(rerendered.length, 1);
+    assert.equal(rerendered[0].message, message);
+    assert.equal(typeof rerendered[0].post_to_server, "function");
+});
+
 run_test("is_poll_message", () => {
     // Empty submessages
     assert.equal(submessage.is_poll_message({submessages: []}), false);

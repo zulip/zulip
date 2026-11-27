@@ -14,7 +14,9 @@ import * as emoji from "./emoji.ts";
 import type {ServerEmoji} from "./emoji.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_data from "./settings_data.ts";
@@ -26,6 +28,8 @@ import * as util from "./util.ts";
 const meta = {
     loaded: false,
 };
+
+let emoji_list_widget: ListWidgetType<ServerEmoji>;
 
 function can_delete_emoji(emoji: ServerEmoji): boolean {
     if (current_user.is_admin) {
@@ -111,7 +115,7 @@ export function populate_emoji(): void {
     }
 
     const $emoji_table = $("#admin_emoji_table").expectOne();
-    ListWidget.create<ServerEmoji>($emoji_table, active_emoji_data, {
+    emoji_list_widget = ListWidget.create<ServerEmoji>($emoji_table, active_emoji_data, {
         name: "emoji_list",
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
@@ -154,6 +158,26 @@ export function populate_emoji(): void {
     });
 
     loading.destroy_indicator($("#admin_page_emoji_loading_indicator"));
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!meta.loaded || !overlays.settings_open()) {
+        return;
+    }
+    const fetched_user_ids = new Set(user_ids);
+    const emoji_data = emoji.get_server_realm_emoji_data();
+    let author_fetched = false;
+    for (const realm_emoji of Object.values(emoji_data)) {
+        if (realm_emoji.author_id !== null && fetched_user_ids.has(realm_emoji.author_id)) {
+            realm_emoji.author = people.get_user_by_id_assert_valid(realm_emoji.author_id);
+            author_fetched = true;
+        }
+    }
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of an emoji's author has arrived.
+    if (author_fetched) {
+        emoji_list_widget.hard_redraw();
+    }
 }
 
 export function add_custom_emoji_post_render(): void {

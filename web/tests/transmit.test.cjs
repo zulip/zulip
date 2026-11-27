@@ -180,6 +180,18 @@ run_test("reply_message_stream", ({override}) => {
         content: "@**Alice** hello",
         topic: "lunch",
     });
+
+    // The mention of a placeholder sender always has their ID.
+    people.add_active_user(
+        make_user({
+            user_id: stream_message.sender_id,
+            email: "user123@example.com",
+            full_name: "Loading…",
+            is_placeholder_user: true,
+        }),
+    );
+    transmit.reply_message(stream_message, content);
+    assert.equal(send_message_args.content, "@**Alice|123** hello");
 });
 
 run_test("reply_message_private", ({override}) => {

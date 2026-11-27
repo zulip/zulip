@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
+import render_creator_details from "../templates/creator_details.hbs";
 import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
@@ -40,6 +41,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import type {User} from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
@@ -568,6 +570,29 @@ export function update_group_details(group: UserGroup): void {
         .html(rendered_user_group_description({rendered_description: group.description}));
 }
 
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.groups_open()) {
+        return;
+    }
+    const active_group_id = get_active_data().id;
+    if (active_group_id === undefined) {
+        return;
+    }
+    const group = user_groups.get_user_group_from_id(active_group_id);
+    if (group.creator_id === null || !user_ids.includes(group.creator_id)) {
+        return;
+    }
+    get_edit_container(group.id)
+        .find(".creator_details")
+        .html(
+            render_creator_details({
+                group,
+                group_id: group.id,
+                ...get_creator_details_context(group),
+            }),
+        );
+}
+
 function update_toggler_for_group_setting(group: UserGroup): void {
     if (!group.deactivated) {
         toggler.enable_tab("permissions");
@@ -580,6 +605,28 @@ function update_toggler_for_group_setting(group: UserGroup): void {
         }
         toggler.disable_tab("permissions");
     }
+}
+
+function get_creator_details_context(group: UserGroup): {
+    date_created_string: string | null;
+    creator: (User & {is_active: boolean}) | undefined;
+    is_creator: boolean;
+} {
+    let date_created_string = null;
+    if (group.date_created) {
+        date_created_string = timerender.get_localized_date_or_time_for_format(
+            // We get timestamp in seconds from the API but timerender
+            // needs milliseconds.
+            new Date(group.date_created * 1000),
+            "dayofyear_year",
+        );
+    }
+
+    return {
+        date_created_string,
+        creator: stream_data.maybe_get_creator_details(group.creator_id),
+        is_creator: group.creator_id === current_user.user_id,
+    };
 }
 
 function get_membership_status_context(group: UserGroup): {
@@ -1078,22 +1125,10 @@ export function show_settings_for(group: UserGroup): void {
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
 
-    let date_created_string = null;
-    if (group.date_created) {
-        date_created_string = timerender.get_localized_date_or_time_for_format(
-            // We get timestamp in seconds from the API but timerender
-            // needs milliseconds.
-            new Date(group.date_created * 1000),
-            "dayofyear_year",
-        );
-    }
-
     const html = render_user_group_settings({
         group,
         group_name: user_groups.get_display_group_name(group.name),
-        date_created_string,
-        creator: stream_data.maybe_get_creator_details(group.creator_id),
-        is_creator: group.creator_id === current_user.user_id,
+        ...get_creator_details_context(group),
         ...get_membership_status_context(group),
         all_group_setting_labels: settings_config.all_group_setting_labels,
         group_assigned_realm_permissions,
