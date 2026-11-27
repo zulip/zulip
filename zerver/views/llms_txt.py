@@ -137,8 +137,8 @@ const hashReplacements = new Map([
     [".", ".2E"],
 ]);
 
-// Some browsers zealously URI-decode the contents of
-// window.location.hash.  So we hide our URI-encoding
+// Some browsers zealously URL-decode the contents of
+// window.location.hash.  So we hide our URL-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {{
     return encodeURIComponent(str).replaceAll(
