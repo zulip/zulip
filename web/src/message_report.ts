@@ -25,6 +25,7 @@ import * as stream_data from "./stream_data.ts";
 import {render_submessage} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 
 function register_message_preview_click_handlers(
@@ -69,6 +70,7 @@ function get_message_group_for_message_preview(message: Message): MessageGroup {
 
 function get_message_container_for_preview(message: Message): MessageContainer {
     const computed_variables = {
+        emoji_alt_code: user_settings.emojiset === "text",
         include_sender: true,
         // Message report preview will be automatically collapsed
         is_hidden: false,

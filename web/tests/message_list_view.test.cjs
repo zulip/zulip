@@ -35,6 +35,10 @@ const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 const muted_users = zrequire("muted_users");
+const {initialize_user_settings} = zrequire("user_settings");
+
+const user_settings = {emojiset: "google"};
+initialize_user_settings({user_settings});
 
 let next_timestamp = 1500000000;
 
@@ -502,6 +506,22 @@ test("muted_message_vars", () => {
         // which has a mention, since we don't want to display hidden mentions so visibly.
         assert.equal(result[1].mention_classname, undefined);
     })();
+});
+
+test("emoji_alt_code follows the current emojiset", ({override}) => {
+    const list = new MessageListView({id: 1}, true, true);
+    const message = {sender_id: 10};
+
+    assert.equal(
+        list.get_calculated_message_container_variables(message, true).emoji_alt_code,
+        false,
+    );
+
+    override(user_settings, "emojiset", "text");
+    assert.equal(
+        list.get_calculated_message_container_variables(message, true).emoji_alt_code,
+        true,
+    );
 });
 
 test("merge_message_groups", ({mock_template}) => {
