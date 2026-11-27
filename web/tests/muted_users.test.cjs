@@ -68,6 +68,7 @@ test("get_mutes", () => {
     assert.deepEqual(muted_users.get_muted_users(), []);
     muted_users.add_muted_user(6, 1577836800);
     muted_users.add_muted_user(4, 1577836800);
+    assert.deepEqual(muted_users.get_muted_user_ids(), [6, 4]);
     const all_muted_users = muted_users.get_muted_users();
     all_muted_users.sort((a, b) => a.date_muted - b.date_muted);
 
