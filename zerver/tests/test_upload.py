@@ -38,6 +38,7 @@ from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
+from zerver.lib.storage import static_path
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
@@ -549,6 +550,34 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
         self.assert_in_response("This file does not exist or has been deleted.", response)
+
+    def test_non_existing_file_placeholder_by_file_type(self) -> None:
+        """
+        When a browser requests a missing file as an image (e.g. an
+        <img> preview of a deleted upload), the placeholder image's text
+        should describe the type of file that was deleted.
+        """
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        for filename, placeholder in [
+            ("abc.png", "image-not-exist.png"),
+            ("abc.JPG", "image-not-exist.png"),
+            ("abc.mp4", "video-not-exist.png"),
+            ("abc.mov", "video-not-exist.png"),
+            ("abc.pdf", "file-not-exist.png"),
+            ("abc.mp3", "file-not-exist.png"),
+            ("abc.unknownextension", "file-not-exist.png"),
+            ("no_extension", "file-not-exist.png"),
+        ]:
+            with self.subTest(filename=filename):
+                response = self.client_get(
+                    f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/{filename}",
+                    headers={"Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"},
+                )
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.headers["Content-Type"], "image/png")
+                with open(static_path(f"images/errors/{placeholder}"), "rb") as f:
+                    self.assertEqual(response.getvalue(), f.read())
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
