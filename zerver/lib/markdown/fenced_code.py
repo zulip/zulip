@@ -348,7 +348,10 @@ class QuoteHandler(ZulipBaseHandler):
 
     @override
     def format_text(self, text: str) -> str:
-        return self.processor.format_quote(text)
+        # A block nested at the end of the quote leaves a blank line
+        # after it, which would otherwise become a quoted line that
+        # joins the block's placeholder into a paragraph.
+        return self.processor.format_quote(text.rstrip("\n"))
 
 
 class SpoilerHandler(ZulipBaseHandler):

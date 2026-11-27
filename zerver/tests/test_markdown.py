@@ -113,8 +113,6 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             "",
             "> hi",
             "> bye",
-            "> ",
-            "> ",
             "",
             "",
         ]
@@ -140,8 +138,6 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             "",
             "",
             "> bye",
-            "> ",
-            "> ",
             "",
             "",
         ]
@@ -207,9 +203,6 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             "> hi",
             "> ",
             "> **py:hello()**",
-            "> ",
-            "> ",
-            "> ",
             "",
             "",
         ]

@@ -8,13 +8,14 @@ from zerver.lib.compose_reply import (
     CHANNEL_MESSAGE_QUOTE_CONTEXT,
     DIRECT_MESSAGE_QUOTE_CONTEXT,
     MESSAGE_QUOTE_BODY,
+    truncate_quote_content,
 )
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.event_types import RemindersRemoveEvent
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
-from zerver.lib.markdown.fenced_code import get_unused_fence
+from zerver.lib.markdown.fenced_code import close_unclosed_fences, get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import get_user_mentions_for_display, truncate_content
+from zerver.lib.message import get_user_mentions_for_display
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.topic_link_util import (
     TOPIC_LINK_SYNTAX_FOR_DISPLAY,
@@ -154,12 +155,15 @@ def get_reminder_formatted_content(
     else:
         content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
         content += "\n"
-        fence = get_unused_fence(message.content)
+        quote_content = close_unclosed_fences(
+            message.content, current_user.realm.default_code_block_language
+        )
+        fence = get_unused_fence(quote_content)
         length_without_message_content = len(
             content + MESSAGE_QUOTE_BODY.format(fence=fence, content="")
         )
         max_length = settings.MAX_MESSAGE_LENGTH - length_without_message_content
-        msg_content = truncate_content(message.content, max_length, "\n[message truncated]")
+        msg_content = truncate_quote_content(quote_content, max_length)
         content += MESSAGE_QUOTE_BODY.format(
             fence=fence,
             content=msg_content,

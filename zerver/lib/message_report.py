@@ -134,9 +134,12 @@ def send_message_report(
         f"**{report_reason}**. {description}",
         default_language=realm.default_code_block_language,
     )
-    reported_message_block = wrap_in_spoiler_block(
-        reported_message_content, original_message_string
-    )
+    # Quoting the reported message silences its mentions, which would
+    # otherwise notify users in the moderation request channel.
+    # Fences nested in a spoiler block don't use the realm's default
+    # code block language.
+    quoted_reported_message = wrap_in_quote_block(reported_message_content, default_language=None)
+    reported_message_block = wrap_in_spoiler_block(quoted_reported_message, original_message_string)
     reported_message_preview_block = f"""
 {report_reason_block}
 

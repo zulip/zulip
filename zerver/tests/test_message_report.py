@@ -9,6 +9,7 @@ from typing_extensions import Any, override
 
 from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
 from zerver.actions.streams import do_set_stream_property
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -22,7 +23,8 @@ from zerver.lib.topic_link_util import (
     will_produce_broken_stream_topic_link,
 )
 from zerver.lib.url_encoding import pm_message_url, stream_message_url
-from zerver.models import UserProfile
+from zerver.models import NamedUserGroup, UserMessage, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import Realm, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
@@ -85,22 +87,26 @@ class ReportMessageTest(ZulipTestCase):
         )
 
         message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} at {reported_message_date_sent}."
+        quote_fence = get_unused_fence(reported_message.content)
         expected_message = """
 {message_sent_to}
 ```quote
 **{report_type}**. {description}
 ```
 
-{fence}spoiler Original message at {channel_message_link}
+{spoiler_fence}spoiler Original message at {channel_message_link}
+{quote_fence}quote
 {reported_message}
-{fence}
+{quote_fence}
+{spoiler_fence}
 """.format(
             report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=report_description,
             channel_message_link=channel_message_link,
             message_sent_to=message_sent_to,
             reported_message=reported_message.content,
-            fence=get_unused_fence(reported_message.content),
+            quote_fence=quote_fence,
+            spoiler_fence=get_unused_fence(quote_fence),
         )
 
         self.assertEqual(submitted_report.content, expected_message.strip())
@@ -132,22 +138,26 @@ class ReportMessageTest(ZulipTestCase):
         report_type: str,
         reported_dm_content: str,
     ) -> str:
+        quote_fence = get_unused_fence(reported_dm_content)
         return """
 {message_sent_to}
 ```quote
 **{report_type}**. {description}
 ```
 
-{fence}spoiler [Original message]({direct_message_link})
+{spoiler_fence}spoiler [Original message]({direct_message_link})
+{quote_fence}quote
 {reported_message}
-{fence}
+{quote_fence}
+{spoiler_fence}
 """.format(
             report_type=Realm.REPORT_MESSAGE_REASONS[report_type],
             description=report_description,
             direct_message_link=direct_message_link,
             message_sent_to=message_sent_to,
             reported_message=reported_dm_content,
-            fence=get_unused_fence(reported_dm_content),
+            quote_fence=quote_fence,
+            spoiler_fence=get_unused_fence(quote_fence),
         )
 
     def check_direct_message_report_details(
@@ -317,18 +327,51 @@ class ReportMessageTest(ZulipTestCase):
         assert submitted_report.rendered_content is not None
         self.assertIn(
             "<blockquote>\n<p><strong>Other reason</strong>. Breaking out:</p>\n"
-            '<p><div class="codehilite"><pre><span></span><code>**Not quoted**\n'
-            "</code></pre></div><br>\n</p>\n</blockquote>\n"
+            '<div class="codehilite"><pre><span></span><code>**Not quoted**\n'
+            "</code></pre></div>\n</blockquote>\n"
             '<div class="spoiler-block">',
             submitted_report.rendered_content,
         )
         self.assertTrue(
             submitted_report.rendered_content.endswith(
-                '<div class="spoiler-content" aria-hidden="true">\n<p>Unclosed:</p>\n'
+                '<div class="spoiler-content" aria-hidden="true">\n<blockquote>\n<p>Unclosed:</p>\n'
                 '<div class="codehilite"><pre><span></span><code>**In code block**\n'
-                "</code></pre></div>\n</div></div>"
+                "</code></pre></div>\n</blockquote>\n</div></div>"
             )
         )
+
+    def test_report_silences_mentions(self) -> None:
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        for user in (self.hamlet, cordelia):
+            self.subscribe(user, self.moderation_request_channel.name)
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=self.realm, is_system_group=True
+        )
+        check_add_user_group(
+            self.realm,
+            "support",
+            [cordelia],
+            acting_user=iago,
+            group_settings_map={"can_mention_group": admins_group.usergroup_ptr},
+        )
+        # Notification Bot isn't allowed to mention this group.
+        reported_message_id = self.send_stream_message(
+            iago, "Denmark", content="@**Cordelia, Lear's daughter** @*support* @**all**"
+        )
+
+        result = self.report_message(self.hamlet, reported_message_id, "spam")
+        self.assert_json_success(result)
+        submitted_report = self.get_submitted_moderation_requests().first()
+        assert submitted_report is not None
+        mentioned_user_ids = [
+            user_message.user_profile_id
+            for user_message in UserMessage.objects.filter(message=submitted_report)
+            if user_message.flags.mentioned
+            or user_message.flags.stream_wildcard_mentioned
+            or user_message.flags.group_mentioned
+        ]
+        self.assertEqual(mentioned_user_ids, [])
 
     def test_private_channel_message_report(self) -> None:
         reporting_user = self.example_user("hamlet")
