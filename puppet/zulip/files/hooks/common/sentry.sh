@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
-set -u
+set -euo pipefail
 
 if ! grep -Eq 'SENTRY_DSN|SENTRY_FRONTEND_DSN' /etc/zulip/settings.py; then
     echo "sentry: No DSN configured!  Set SENTRY_DSN or SENTRY_FRONTEND_DSN in /etc/zulip/settings.py"

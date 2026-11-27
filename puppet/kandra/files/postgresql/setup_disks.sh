@@ -1,8 +1,5 @@
 #!/bin/bash
-set -x
-set -e
-
-set -o pipefail
+set -euxo pipefail
 
 LOCALDISK=$(
     nvme list -o json \
