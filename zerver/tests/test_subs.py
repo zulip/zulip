@@ -41,7 +41,7 @@ from zerver.lib.attachments import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
-from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, get_stream_colors, pick_colors
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
@@ -189,6 +189,30 @@ class TestMiscStuff(ZulipTestCase):
             user_color_map,
             {2: "#a6c7e5", 26: "#a6c7e5", 50: "#a6c7e5", 74: "#a6c7e5"},
         )
+
+    def test_get_stream_colors(self) -> None:
+        # Expected values are from get_recipient_bar_color and
+        # get_stream_privacy_icon_color in web/src/stream_color.ts.
+        expected = {
+            "#a6c7e5": ("#e5ecf2", "#3a454e", "#6f9fcb", "#9cbddb"),
+            "#e4523d": ("#fbd6cd", "#53241b", "#c8311c", "#e4523d"),
+            "#fae589": ("#f0ead6", "#4a4327", "#b29d3a", "#cbb85e"),
+            "#76ce90": ("#ddefe1", "#2e4935", "#46ba69", "#73cb8d"),
+            "#4f8de4": ("#d8e0f5", "#253551", "#216cd5", "#4f8de4"),
+            "#ABCDEF": ("#e5ecf3", "#3a454f", "#6d9fd0", "#9bbddf"),
+            "#abc": ("#e7ebef", "#3f4449", "#849cb5", "#aabbcc"),
+            "#abcd": ("#e7ebef", "#3f4449", "#849cb5", "#aabbcc"),
+            # Colors outside the lightness range get corrected.
+            "#000000": ("#c8c8c8", "#171717", "#121212", "#303030"),
+            "#ffffff": ("#ebebeb", "#434343", "#9a9a9a", "#b9b9b9"),
+            "#12345": ("#c8c8c8", "#171717", "#121212", "#303030"),
+        }
+        for color, (bar, bar_dark, icon, icon_dark) in expected.items():
+            stream_colors = get_stream_colors(color)
+            self.assertEqual(stream_colors.recipient_bar_color, bar)
+            self.assertEqual(stream_colors.recipient_bar_color_dark, bar_dark)
+            self.assertEqual(stream_colors.privacy_icon_color, icon)
+            self.assertEqual(stream_colors.privacy_icon_color_dark, icon_dark)
 
     def test_empty_results(self) -> None:
         # These are essentially just tests to ensure line

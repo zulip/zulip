@@ -74,13 +74,17 @@ def get_icu_time_zone(time_zone: str) -> icu.TimeZone:
 
 
 @cache
-def get_date_time_format(language: str, use_twenty_four_hour_time: bool) -> icu.SimpleDateFormat:
-    skeleton = f"yMMMEd{'H' if use_twenty_four_hour_time else 'h'}mz"
+def get_date_time_format(language: str, skeleton: str) -> icu.SimpleDateFormat:
     pattern = get_date_time_pattern_generator(language).getBestPattern(skeleton)
     return icu.SimpleDateFormat(pattern, icu.Locale(language))
 
 
 def format_datetime_to_string(dt: datetime, use_twenty_four_hour_time: bool) -> str:
+    skeleton = f"yMMMEd{'H' if use_twenty_four_hour_time else 'h'}mz"
+    return format_datetime_with_skeleton(dt, skeleton)
+
+
+def format_datetime_with_skeleton(dt: datetime, skeleton: str) -> str:
     assert dt.tzinfo is not None
     time_zone = getattr(dt.tzinfo, "key", None)
     if time_zone is None:
@@ -94,4 +98,4 @@ def format_datetime_to_string(dt: datetime, use_twenty_four_hour_time: bool) -> 
     language = get_language()
     calendar = icu.Calendar.createInstance(get_icu_time_zone(time_zone), icu.Locale(language))
     calendar.setTime(dt)
-    return get_date_time_format(language, use_twenty_four_hour_time).format(calendar)
+    return get_date_time_format(language, skeleton).format(calendar)
