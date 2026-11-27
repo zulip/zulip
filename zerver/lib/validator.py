@@ -429,6 +429,20 @@ def validate_dropdown_field(var_name: str, field_data: str, value: object) -> st
     return s
 
 
+def validate_checkboxes_field(var_name: str, field_data: str, value: object) -> list[str]:
+    """
+    This function is used to validate the list of choices selected by the user
+    against a checkboxes field. This is not used to validate admin data.
+    """
+    choice_keys = check_list(check_string)(var_name, value)
+    field_data_dict = orjson.loads(field_data)
+    for choice_key in choice_keys:
+        if choice_key not in field_data_dict:
+            msg = _("'{value}' is not a valid choice for '{field_name}'.")
+            raise ValidationError(msg.format(value=choice_key, field_name=var_name))
+    return choice_keys
+
+
 def check_widget_content(widget_content: object) -> dict[str, Any]:
     if not isinstance(widget_content, dict):
         raise ValidationError("widget_content is not a dict")

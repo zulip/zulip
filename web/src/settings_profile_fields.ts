@@ -149,6 +149,13 @@ function is_valid_to_use_for_user_matching(field_type: number): boolean {
     return false;
 }
 
+// Dropdown and Checkboxes fields both define their options as a set of
+// admin-configured choices, so they share the same choice-editing UI.
+function is_choice_field(field_type: number): boolean {
+    const field_types = realm.custom_profile_field_types;
+    return field_type === field_types.DROPDOWN.id || field_type === field_types.CHECKBOXES.id;
+}
+
 function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     e.preventDefault();
     e.stopPropagation();
@@ -305,6 +312,7 @@ function update_form_for_field_type_selection(): void {
             $("#profile_field_hint").val(default_hint);
             break;
         }
+        case field_types.CHECKBOXES.id:
         case field_types.DROPDOWN.id: {
             $("#profile_field_choices_row").show();
         }
@@ -453,11 +461,22 @@ function show_modal_for_deleting_options(
     deleted_values: Map<string, string>,
     update_profile_field: () => void,
 ): void {
+    const field_types = realm.custom_profile_field_types;
+    const is_checkboxes_field = field.type === field_types.CHECKBOXES.id;
     const active_user_ids = people.get_active_user_ids();
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value !== undefined && deleted_values.has(field_value.value)) {
+        if (field_value === undefined) {
+            continue;
+        }
+        if (is_checkboxes_field) {
+            const selected_values: unknown = JSON.parse(field_value.value);
+            assert(Array.isArray(selected_values));
+            if (selected_values.some((value: unknown) => deleted_values.has(String(value)))) {
+                users_count_with_deleted_option_selected += 1;
+            }
+        } else if (deleted_values.has(field_value.value)) {
             users_count_with_deleted_option_selected += 1;
         }
     }
@@ -615,7 +634,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
         field_data = JSON.parse(field.field_data);
     }
     let choices: FieldChoice[] = [];
-    if (field.type === field_types.DROPDOWN.id) {
+    if (is_choice_field(field.type)) {
         const custom_profile_field_choices =
             settings_components.custom_profile_field_choices_schema.parse(field_data);
         choices = parse_field_choices_from_field_data(custom_profile_field_choices);
@@ -631,7 +650,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             required: field.required,
             editable_by_user: field.editable_by_user,
             use_for_user_matching: field.use_for_user_matching,
-            is_dropdown_field: field.type === field_types.DROPDOWN.id,
+            is_choice_field: is_choice_field(field.type),
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
             valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(field.type),
@@ -653,7 +672,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
                 .addClass("display_in_profile_summary_tooltip disabled_label");
         }
 
-        if (field.type === field_types.DROPDOWN.id) {
+        if (is_choice_field(field.type)) {
             set_up_custom_profile_field_choices_edit_form($profile_field_form, field);
         }
 
@@ -733,7 +752,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.DROPDOWN.id && data["field_data"] !== undefined) {
+        if (is_choice_field(field.type) && data["field_data"] !== undefined) {
             const new_values = new Set(
                 Object.keys(
                     settings_components.custom_profile_field_choices_schema.parse(

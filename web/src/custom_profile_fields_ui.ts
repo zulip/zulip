@@ -35,6 +35,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         [all_field_types.PARAGRAPH.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
         [all_field_types.DROPDOWN.id, "select"],
+        [all_field_types.CHECKBOXES.id, "checkboxes"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -49,6 +50,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         };
         const editable_by_user = current_user.is_admin || field.editable_by_user;
         const is_dropdown_field = field.type === all_field_types.DROPDOWN.id;
+        const is_checkboxes_field = field.type === all_field_types.CHECKBOXES.id;
         const field_choices = [];
 
         if (is_dropdown_field) {
@@ -60,6 +62,20 @@ export function append_custom_profile_fields(element_id: string, user_id: number
                     value,
                     text,
                     selected: value === field_value.value,
+                };
+            }
+        } else if (is_checkboxes_field) {
+            const field_choice_dict = settings_components.custom_profile_field_choices_schema.parse(
+                JSON.parse(field.field_data),
+            );
+            const selected_values = new Set(
+                field_value.value ? z.array(z.string()).parse(JSON.parse(field_value.value)) : [],
+            );
+            for (const [value, {order, text}] of Object.entries(field_choice_dict)) {
+                field_choices[Number(order)] = {
+                    value,
+                    text,
+                    selected: selected_values.has(value),
                 };
             }
         }
@@ -74,6 +90,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             is_url_field: field.type === all_field_types.URL.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_dropdown_field,
+            is_checkboxes_field,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
             is_empty_required_field: field.required && !field_value.value,
@@ -85,7 +102,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
 
 export type CustomProfileFieldData = {
     id: number;
-    value?: number[] | string;
+    value?: number[] | string[] | string;
 };
 
 function update_custom_profile_field(

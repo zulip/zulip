@@ -549,6 +549,9 @@ def validate_user_custom_profile_field(
     elif field_type == CustomProfileField.DROPDOWN:
         choice_field_validator = CustomProfileField.DROPDOWN_FIELD_VALIDATORS[field_type]
         return choice_field_validator(var_name, field.field_data, value)
+    elif field_type == CustomProfileField.CHECKBOXES:
+        checkboxes_field_validator = CustomProfileField.CHECKBOXES_FIELD_VALIDATORS[field_type]
+        return checkboxes_field_validator(var_name, field.field_data, value)
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
         return user_field_validator(realm_id, value, False)

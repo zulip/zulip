@@ -27,6 +27,7 @@ from zerver.lib.validator import (
     check_long_string,
     check_short_string,
     check_url,
+    validate_checkboxes_field,
     validate_dropdown_field,
 )
 from zerver.models.realms import Realm
@@ -97,12 +98,22 @@ class CustomProfileField(models.Model):
     USER = 6
     EXTERNAL_ACCOUNT = 7
     PRONOUNS = 8
+    CHECKBOXES = 9
 
     # These are the fields whose validators require more than var_name
-    # and value argument. i.e. DROPDOWN require field_data, USER require
-    # realm as argument.
+    # and value argument. i.e. DROPDOWN and CHECKBOXES require field_data,
+    # USER requires realm as argument.
     DROPDOWN_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (DROPDOWN, gettext_lazy("Dropdown"), validate_dropdown_field, str, "DROPDOWN"),
+    ]
+    CHECKBOXES_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
+        (
+            CHECKBOXES,
+            gettext_lazy("Checkboxes"),
+            validate_checkboxes_field,
+            orjson.loads,
+            "CHECKBOXES",
+        ),
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
@@ -110,6 +121,9 @@ class CustomProfileField(models.Model):
 
     DROPDOWN_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
         item[0]: item[2] for item in DROPDOWN_FIELD_TYPE_DATA
+    }
+    CHECKBOXES_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
+        item[0]: item[2] for item in CHECKBOXES_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -132,7 +146,13 @@ class CustomProfileField(models.Model):
     ]
 
     ALL_FIELD_TYPES = sorted(
-        [*FIELD_TYPE_DATA, *DROPDOWN_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
+        [
+            *FIELD_TYPE_DATA,
+            *DROPDOWN_FIELD_TYPE_DATA,
+            *CHECKBOXES_FIELD_TYPE_DATA,
+            *USER_FIELD_TYPE_DATA,
+        ],
+        key=lambda x: x[1],
     )
 
     FIELD_VALIDATORS: dict[int, Validator[ProfileDataElementValue]] = {
@@ -154,8 +174,8 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, PARAGRAPH,
-    # DATE, URL, and USER leave this empty.  Fields of type DROPDOWN store the
-    # choices' descriptions.
+    # DATE, URL, and USER leave this empty.  Fields of type DROPDOWN and
+    # CHECKBOXES store the choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.
     # See https://www.postgresql.org/docs/9.0/static/datatype-character.html

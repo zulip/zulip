@@ -894,6 +894,17 @@ input[type="checkbox"] {
     }
 }
 
+.checkboxes-field-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.357em; /* 5px at 14px em */
+
+    label.checkbox {
+        display: flex;
+        align-items: center;
+    }
+}
+
 .settings-profile-user-field.editable-date-field {
     display: grid;
     grid-template-areas: "datepicker close-button";

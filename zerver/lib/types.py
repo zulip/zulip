@@ -14,11 +14,11 @@ from typing_extensions import NotRequired, TypedDict
 # including many examples
 ResultT = TypeVar("ResultT")
 Validator: TypeAlias = Callable[[str, object], ResultT]
-ExtendedValidator: TypeAlias = Callable[[str, str, object], str]
+ExtendedValidator: TypeAlias = Callable[[str, str, object], str | list[str]]
 RealmUserValidator: TypeAlias = Callable[[int, object, bool], list[int]]
 
 
-ProfileDataElementValue: TypeAlias = str | list[int]
+ProfileDataElementValue: TypeAlias = str | list[int] | list[str]
 
 
 class ProfileDataElementBase(TypedDict, total=False):

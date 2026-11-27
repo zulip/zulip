@@ -84,6 +84,7 @@ def try_add_realm_custom_profile_field(
     custom_profile_field.hint = hint
     if custom_profile_field.field_type in (
         CustomProfileField.DROPDOWN,
+        CustomProfileField.CHECKBOXES,
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
@@ -117,6 +118,46 @@ def remove_custom_profile_field_value_if_required(
     removed_values = old_values - new_values
 
     if not removed_values:
+        return
+
+    if field.field_type == CustomProfileField.CHECKBOXES:
+        # A checkboxes field's value is a JSON-encoded list of selected
+        # choice keys, so a removed choice should only be stripped out of
+        # each user's list, clearing the value entirely only if that was
+        # their last remaining selection.
+        field_values = CustomProfileFieldValue.objects.filter(field=field).select_related(
+            "user_profile"
+        )
+
+        values_to_update = []
+        value_ids_to_delete = []
+
+        for field_value in field_values:
+            selected_values = orjson.loads(field_value.value)
+            remaining_values = [value for value in selected_values if value not in removed_values]
+
+            if len(remaining_values) == len(selected_values):
+                continue
+
+            if remaining_values:
+                field_value.value = orjson.dumps(remaining_values).decode()
+                values_to_update.append(field_value)
+                notify_user_update_custom_profile_data(
+                    field_value.user_profile,
+                    field_id=field.id,
+                    value=field_value.value,
+                    rendered_value=None,
+                )
+            else:
+                value_ids_to_delete.append(field_value.id)
+                notify_user_update_custom_profile_data(
+                    field_value.user_profile, field_id=field.id, value=None, rendered_value=None
+                )
+
+        if values_to_update:
+            CustomProfileFieldValue.objects.bulk_update(values_to_update, ["value"])
+        if value_ids_to_delete:
+            CustomProfileFieldValue.objects.filter(id__in=value_ids_to_delete).delete()
         return
 
     values_to_delete = CustomProfileFieldValue.objects.filter(
@@ -167,11 +208,15 @@ def try_update_realm_custom_profile_field(
 
     if field.field_type in (
         CustomProfileField.DROPDOWN,
+        CustomProfileField.CHECKBOXES,
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.
-        if field_data is not None and field.field_type == CustomProfileField.DROPDOWN:
+        if field_data is not None and field.field_type in (
+            CustomProfileField.DROPDOWN,
+            CustomProfileField.CHECKBOXES,
+        ):
             remove_custom_profile_field_value_if_required(field, field_data)
 
         # If field.field_data is the default empty string, we will set field_data
@@ -334,6 +379,11 @@ def get_custom_profile_field_display_value(field_value: CustomProfileFieldValue)
         field_data_dict = orjson.loads(field_value.field.field_data)
         value_key = field_value.value
         return field_data_dict[value_key]["text"]
+
+    if type == CustomProfileField.CHECKBOXES:
+        field_data_dict = orjson.loads(field_value.field.field_data)
+        selected_values = orjson.loads(field_value.value)
+        return (", ").join(field_data_dict[value_key]["text"] for value_key in selected_values)
 
     if type == CustomProfileField.USER:
         user_ids = orjson.loads(field_value.value)
