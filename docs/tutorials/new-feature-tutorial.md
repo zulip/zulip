@@ -203,7 +203,6 @@ boolean field, `my_fantastic_feature`, to the Realm model in
  class Realm(models.Model):
      # ...
      require_unique_names = models.BooleanField(default=False)
-     name_changes_disabled = models.BooleanField(default=False)
      email_changes_disabled = models.BooleanField(default=False)
      avatar_changes_disabled = models.BooleanField(default=False)
 
@@ -580,7 +579,6 @@ in `zerver/lib/events.py`. This can be done in `web/src/state_data.ts`:
      // ...
      realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
 +    realm_my_fantastic_feature: z.boolean(),
-     realm_name_changes_disabled: z.boolean(),
      // ...
 ```
 
