@@ -1,6 +1,7 @@
 from typing import Literal, cast
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.event_types import BaseEvent, ReactionAddEvent, ReactionRemoveEvent, ReactionType
 from zerver.lib.exceptions import ReactionExistsError
@@ -11,7 +12,6 @@ from zerver.lib.message import (
     should_change_visibility_policy,
     visibility_policy_for_participation,
 )
-from zerver.lib.message_cache import update_message_cache
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.user_message import create_historical_user_messages
 from zerver.models import Message, Reaction, UserProfile
@@ -45,8 +45,8 @@ def notify_reaction_update(
             reaction_type=reaction_type,
         )
 
-    # Update the cached message since new reaction is added.
-    update_message_cache([message])
+    # The cached message includes its reactions.
+    cache_delete(to_dict_cache_key_id(message.id))
 
     user_ids = event_recipient_ids_for_action_on_messages([message.id], message.is_channel_message)
     send_event_on_commit(user_profile.realm, event, list(user_ids))

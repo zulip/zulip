@@ -2341,18 +2341,22 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
         data = b"zulip!"
         upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
-        # Sending the attachment event calls currently_used_upload_space_bytes,
-        # which updates the cache.
-        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
+        # The upload invalidates the cache.  Sending the attachment event
+        # reads currently_used_upload_space_bytes in the same transaction;
+        # that read is served from the database and, as the invalidation
+        # wins at commit, doesn't refill the cache.
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm.id)))
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
+        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
 
         data2 = b"more-data!"
         upload_message_attachment("dummy2.txt", "text/plain", data2, self.user_profile)
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm.id)))
+        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
         self.assertEqual(
             len(data) + len(data2),
             cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0],
         )
-        self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 
         attachment = Attachment.objects.get(file_name="dummy.txt")
         attachment.file_name = "dummy1.txt"

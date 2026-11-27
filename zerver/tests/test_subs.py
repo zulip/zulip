@@ -39,6 +39,8 @@ from zerver.lib.attachments import (
     validate_attachment_request,
     validate_attachment_request_for_spectator_access,
 )
+from zerver.lib.cache import cache_get, display_recipient_cache_key
+from zerver.lib.display_recipient import bulk_fetch_stream_names
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
@@ -1823,9 +1825,20 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name")
 
+        assert stream.recipient_id is not None
+        recipient_tuples = {(stream.recipient_id, Recipient.STREAM, stream.id)}
+        self.assertEqual(
+            bulk_fetch_stream_names(recipient_tuples), {stream.recipient_id: "stream_name"}
+        )
+        self.assertEqual(cache_get(display_recipient_cache_key(stream.recipient_id)), "stream_name")
+
         self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_success(result)
+        self.assertIsNone(cache_get(display_recipient_cache_key(stream.recipient_id)))
+        self.assertEqual(
+            bulk_fetch_stream_names(recipient_tuples), {stream.recipient_id: "stream_name1"}
+        )
 
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_error(result, "Channel already has that name.")
