@@ -316,8 +316,8 @@
 
     .message_length_toggle {
         width: 100%;
-        height: 1.714em; /* 24px / 14px em */
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
+        padding: 0.5rem 1rem;
         color: var(--color-text-show-more-less-button);
         background-color: var(--color-show-more-less-button-background);
         border-radius: 4px;
@@ -326,9 +326,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
         overflow-wrap: normal;
-        font-variant: all-small-caps;
         font-family: inherit;
-        font-size: inherit;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
 
         &:hover {
             background-color: var(
