@@ -81,7 +81,7 @@ from zerver.lib.i18n import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import high_latency_queue_name, queue_json_publish_rollback_unsafe
-from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_expiry_string_for_html
+from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_retry_after_for_html
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
@@ -1572,8 +1572,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimitedError as e:
-                assert e.secs_to_freedom is not None
-                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
+                retry_after_string = readable_retry_after_for_html(e)
                 return TemplateResponse(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
@@ -1763,8 +1762,7 @@ def create_demo_organization(
             try:
                 rate_limit_request_by_ip(request, domain="demo_realm_creation_by_ip")
             except RateLimitedError as e:
-                assert e.secs_to_freedom is not None
-                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
+                retry_after_string = readable_retry_after_for_html(e)
                 return TemplateResponse(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
@@ -1914,8 +1912,7 @@ def accounts_home(
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimitedError as e:
-                assert e.secs_to_freedom is not None
-                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
+                retry_after_string = readable_retry_after_for_html(e)
                 return render(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
@@ -2001,8 +1998,7 @@ def find_account(request: HttpRequest) -> HttpResponse:
                 try:
                     rate_limit_request_by_ip(request, domain="sends_email_by_ip")
                 except RateLimitedError as e:
-                    assert e.secs_to_freedom is not None
-                    retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
+                    retry_after_string = readable_retry_after_for_html(e)
                     return render(
                         request,
                         "zerver/portico_error_pages/rate_limit_exceeded.html",

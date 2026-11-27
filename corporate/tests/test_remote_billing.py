@@ -365,6 +365,33 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             ],
         )
 
+    @ratelimit_rule(10, 0, domain="sends_email_by_remote_server")
+    @responses.activate
+    def test_remote_billing_authentication_flow_rate_limited_allowing_no_requests(self) -> None:
+        self.login("desdemona")
+        desdemona = self.example_user("desdemona")
+
+        self.add_mock_response()
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # A rule allowing no requests leaves no wait to suggest.
+        with self.assertLogs("zilencer.auth", "WARN") as mock_log:
+            result = self.execute_remote_billing_authentication_flow(
+                desdemona, return_without_clicking_confirmation_link=True
+            )
+        self.assertEqual(result.status_code, 429)
+        self.assert_in_response("Your server has exceeded the limit", result)
+        self.assertNotIn("You can try again", result.content.decode())
+        self.assertEqual(
+            mock_log.output,
+            [
+                (
+                    f"WARNING:zilencer.auth:Remote server {self.server.hostname} {str(self.server.uuid)[:12]} exceeded "
+                    "rate limits on domain sends_email_by_remote_server"
+                )
+            ],
+        )
+
     @responses.activate
     def test_remote_billing_authentication_flow_realm_not_registered(self) -> None:
         RemoteRealm.objects.all().delete()
