@@ -110,6 +110,144 @@ export function get_realm_time_limits_in_minutes(property: MessageTimeLimitSetti
     return val;
 }
 
+export type CustomTimeUnit = keyof typeof settings_config.custom_time_unit_values;
+
+const CUSTOM_TIME_UNITS_IN_SECONDS: {unit: CustomTimeUnit; seconds: number}[] = [
+    {
+        unit: "weeks",
+        seconds: util.get_custom_time_in_minutes("weeks", 1) * 60,
+    },
+    {
+        unit: "days",
+        seconds: util.get_custom_time_in_minutes("days", 1) * 60,
+    },
+    {
+        unit: "hours",
+        seconds: util.get_custom_time_in_minutes("hours", 1) * 60,
+    },
+];
+
+const CUSTOM_UNIT_TIME_LIMIT_SETTINGS = new Set([
+    "realm_message_content_edit_limit_seconds",
+    "realm_message_content_delete_limit_seconds",
+    "realm_move_messages_between_streams_limit_seconds",
+    "realm_move_messages_within_stream_limit_seconds",
+]);
+
+const TIME_LIMIT_IN_SECONDS_SETTINGS = new Set([
+    ...CUSTOM_UNIT_TIME_LIMIT_SETTINGS,
+    "email_notifications_batching_period_seconds",
+]);
+
+function is_custom_time_unit(value: unknown): value is CustomTimeUnit {
+    return (
+        typeof value === "string" && Object.hasOwn(settings_config.custom_time_unit_values, value)
+    );
+}
+
+function get_time_limit_unit($elem: JQuery<HTMLInputElement>): CustomTimeUnit | undefined {
+    const $time_unit_elem = $elem
+        .closest(".dependent-settings-block")
+        .find<HTMLSelectOneElement>(".time-limit-custom-unit");
+    if ($time_unit_elem.length === 0) {
+        return undefined;
+    }
+    const time_unit = $time_unit_elem.val();
+    if (is_custom_time_unit(time_unit)) {
+        return time_unit;
+    }
+    return "minutes";
+}
+
+type CustomTimeLimitParseResult =
+    | {status: "parsed"; seconds: number}
+    | {status: "error"; error: "not_a_positive_number" | "not_whole_seconds"};
+
+export type CustomTimeLimitInputError = "not_a_positive_number" | "not_whole_seconds" | "too_large";
+
+type CustomTimeLimitInputResult =
+    {status: "valid"; seconds: number} | {status: "error"; error: CustomTimeLimitInputError};
+
+// Converts a custom time limit into exact whole seconds, or reports why it
+// cannot. Whether the value is positive or within the allowed range is not
+// checked here.
+export function parse_custom_time_limit_input(
+    input_value: string,
+    time_unit: CustomTimeUnit,
+): CustomTimeLimitParseResult {
+    const trimmed = input_value.trim();
+    if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(trimmed)) {
+        return {status: "error", error: "not_a_positive_number"};
+    }
+    const [int_part = "", raw_frac = ""] = trimmed.split(".", 2);
+    const frac = raw_frac.replace(/0+$/, "");
+    const unit_seconds = util.get_custom_time_in_minutes(time_unit, 1) * 60;
+    const base_seconds = Number(int_part) * unit_seconds;
+    if (frac === "") {
+        return {status: "parsed", seconds: base_seconds};
+    }
+    // Supported units have factors of at most 2^7 and 5^2 in seconds, so more
+    // than 7 fractional digits can never represent an exact whole number of seconds.
+    if (frac.length > 7) {
+        return {status: "error", error: "not_whole_seconds"};
+    }
+    const scale = 10 ** frac.length;
+    const scaled_frac_seconds = Number(frac) * unit_seconds;
+    if (scaled_frac_seconds % scale !== 0) {
+        return {status: "error", error: "not_whole_seconds"};
+    }
+    return {status: "parsed", seconds: base_seconds + scaled_frac_seconds / scale};
+}
+
+function parse_exact_custom_time_seconds(
+    input_value: string,
+    time_unit: CustomTimeUnit,
+): number | undefined {
+    const result = parse_custom_time_limit_input(input_value, time_unit);
+    if (result.status === "error") {
+        return undefined;
+    }
+    return result.seconds;
+}
+
+export function get_realm_time_limit_custom_input_values(property: MessageTimeLimitSetting): {
+    value: string;
+    unit: CustomTimeUnit;
+} {
+    const setting_value = realm[property];
+    if (setting_value === null) {
+        return {
+            value: "",
+            unit: "minutes",
+        };
+    }
+
+    if (setting_value > 0) {
+        for (const {unit, seconds} of CUSTOM_TIME_UNITS_IN_SECONDS) {
+            if (setting_value % seconds === 0) {
+                return {
+                    value: (setting_value / seconds).toString(),
+                    unit,
+                };
+            }
+        }
+        // Any exact whole-second value entered via minutes/hours/days/weeks is
+        // divisible by 3 and therefore has an exact representation in minutes
+        // with at most 2 decimal places (e.g., 3825s -> 63.75 minutes).
+        if (setting_value % 3 === 0) {
+            return {
+                value: Number((setting_value / 60).toFixed(2)).toString(),
+                unit: "minutes",
+            };
+        }
+    }
+
+    return {
+        value: get_realm_time_limits_in_minutes(property),
+        unit: "minutes",
+    };
+}
+
 type RealmSetting = typeof realm;
 export const realm_setting_property_schema = z.union([
     z.keyof(realm_schema),
@@ -311,33 +449,20 @@ function get_jitsi_server_url_setting_value(
     return JSON.stringify($custom_input_elem.val());
 }
 
-export function update_custom_time_limit_minute_text($input: JQuery<HTMLInputElement>): void {
-    const $minutes_text = $input.parent().find(".time-unit-text");
-    const count = Number.parseInt($input.val()!, 10);
-    $minutes_text.text(
-        $t(
-            {
-                defaultMessage: "{count, plural, one {minute} other {minutes}}",
-            },
-            {count},
-        ),
-    );
-}
-
 export function update_custom_value_input(property_name: MessageTimeLimitSetting): void {
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
-    const custom_input_elem_id = $dropdown_elem
-        .parent()
-        .find(".time-limit-custom-input")
-        .attr("id")!;
+    const $custom_input_elem = $dropdown_elem.parent().find(".time-limit-custom-input");
+    const custom_input_elem_id = $custom_input_elem.attr("id")!;
 
     const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
     change_element_block_display_property(custom_input_elem_id, show_custom_limit_input);
     if (!show_custom_limit_input) {
+        set_custom_time_limit_input_error($custom_input_elem, undefined);
         return;
     }
-    $(`#${CSS.escape(custom_input_elem_id)}`).val(get_realm_time_limits_in_minutes(property_name));
-    update_custom_time_limit_minute_text($(`#${CSS.escape(custom_input_elem_id)}`));
+    const {value, unit} = get_realm_time_limit_custom_input_values(property_name);
+    $custom_input_elem.val(value);
+    $dropdown_elem.parent().find(".time-limit-custom-unit").val(unit);
 }
 
 export function get_time_limit_dropdown_setting_value(
@@ -358,12 +483,14 @@ export function get_time_limit_dropdown_setting_value(
 
 export function set_time_limit_setting(property_name: MessageTimeLimitSetting): void {
     const dropdown_elem_val = get_time_limit_dropdown_setting_value(property_name);
-    $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
+    const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
+    $dropdown_elem.val(dropdown_elem_val);
 
-    const $custom_input = $(`#id_${CSS.escape(property_name)}`)
-        .parent()
-        .find(".time-limit-custom-input");
-    $custom_input.val(get_realm_time_limits_in_minutes(property_name));
+    const $custom_input = $dropdown_elem.parent().find(".time-limit-custom-input");
+    const {value, unit} = get_realm_time_limit_custom_input_values(property_name);
+    $custom_input.val(value);
+    set_custom_time_limit_input_error($custom_input, undefined);
+    $dropdown_elem.parent().find(".time-limit-custom-unit").val(unit);
 
     change_element_block_display_property(
         $custom_input.attr("id")!,
@@ -814,8 +941,12 @@ export function get_auth_method_list_data(): Record<string, boolean> {
 }
 
 export function parse_time_limit($elem: JQuery<HTMLInputElement>): number {
-    const time_limit_in_minutes = util.check_time_input($elem.val()!, true);
-    return Math.floor(time_limit_in_minutes * 60);
+    const time_unit = get_time_limit_unit($elem);
+    if (time_unit === undefined) {
+        const time_limit_in_minutes = util.check_time_input($elem.val()!, true);
+        return Math.floor(time_limit_in_minutes * 60);
+    }
+    return parse_exact_custom_time_seconds($elem.val()!, time_unit) ?? NaN;
 }
 
 function get_time_limit_setting_value(
@@ -1321,6 +1452,7 @@ export function save_discard_realm_settings_widget_status_handler($subsection: J
 
     const $save_button_controls = $subsection.find(".subsection-header .save-button-controls");
     const button_state = show_change_process_button ? "unsaved" : "discarded";
+    update_custom_time_limit_input_validity($subsection);
     change_save_button_state($save_button_controls, button_state);
 }
 
@@ -1409,13 +1541,7 @@ function check_maximum_valid_value(
     property_name: string,
 ): boolean {
     let setting_value = Number.parseInt($custom_input_elem.val()!, 10);
-    if (
-        property_name === "realm_message_content_edit_limit_seconds" ||
-        property_name === "realm_message_content_delete_limit_seconds" ||
-        property_name === "realm_move_messages_between_streams_limit_seconds" ||
-        property_name === "realm_move_messages_within_stream_limit_seconds" ||
-        property_name === "email_notifications_batching_period_seconds"
-    ) {
+    if (TIME_LIMIT_IN_SECONDS_SETTINGS.has(property_name)) {
         setting_value = parse_time_limit($custom_input_elem);
     }
     return setting_value <= MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE;
@@ -1434,27 +1560,111 @@ function should_disable_save_button_for_jitsi_server_url_setting(): boolean {
     return $dropdown_elem.val() === "custom" && !util.is_valid_url($custom_input_elem.val()!, true);
 }
 
+function get_custom_time_limit_input_status(
+    $custom_input_elem: JQuery<HTMLInputElement>,
+): CustomTimeLimitInputResult {
+    const time_unit = get_time_limit_unit($custom_input_elem) ?? "minutes";
+    const parse_result = parse_custom_time_limit_input($custom_input_elem.val()!, time_unit);
+    if (parse_result.status === "error") {
+        return parse_result;
+    }
+    const {seconds} = parse_result;
+    if (seconds <= 0) {
+        return {status: "error", error: "not_a_positive_number"};
+    }
+    if (seconds > MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE) {
+        return {status: "error", error: "too_large"};
+    }
+    return {status: "valid", seconds};
+}
+
+function is_custom_unit_time_limit_valid($custom_input_elem: JQuery<HTMLInputElement>): boolean {
+    return get_custom_time_limit_input_status($custom_input_elem).status === "valid";
+}
+
+function get_custom_time_limit_error_message(error: CustomTimeLimitInputError): string {
+    const error_messages = {
+        not_a_positive_number: $t({defaultMessage: "Time limit must be a positive number."}),
+        not_whole_seconds: $t({defaultMessage: "Time limit must be a whole number of seconds."}),
+        too_large: $t({defaultMessage: "Time limit is too large."}),
+    };
+    return error_messages[error];
+}
+
+// The element that explains why a custom time limit is invalid is rendered
+// right below its input, with an id derived from the input's id.
+function set_custom_time_limit_input_error(
+    $custom_input_elem: JQuery,
+    result: CustomTimeLimitInputResult | undefined,
+): void {
+    const $error_elem = $(`#${CSS.escape(`${$custom_input_elem.attr("id")!}_error`)}`);
+    if (result !== undefined && result.status === "error") {
+        $custom_input_elem.addClass("invalid-input");
+        $error_elem.text(get_custom_time_limit_error_message(result.error));
+        $error_elem.show();
+        return;
+    }
+    $custom_input_elem.removeClass("invalid-input");
+    $error_elem.hide();
+}
+
+export function update_custom_time_limit_input_validity($subsection: JQuery): void {
+    const time_limit_settings = [...$subsection.find(".time-limit-setting")];
+    for (const setting_elem of time_limit_settings) {
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>(
+            "select:not([multiple]):not(.time-limit-custom-unit)",
+        );
+        const for_realm_default_settings =
+            $dropdown_elem.closest(".settings-section.show").attr("id") ===
+            "realm-user-default-settings";
+        const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
+        if (!CUSTOM_UNIT_TIME_LIMIT_SETTINGS.has(property_name)) {
+            continue;
+        }
+        const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
+            "input.time-limit-custom-input",
+        );
+        if ($custom_input_elem.length === 0) {
+            continue;
+        }
+        let result: CustomTimeLimitInputResult | undefined;
+        if ($dropdown_elem.val() === "custom_period" && $custom_input_elem.val()!.trim() !== "") {
+            result = get_custom_time_limit_input_status($custom_input_elem);
+        }
+        set_custom_time_limit_input_error($custom_input_elem, result);
+    }
+}
+
 function should_disable_save_button_for_time_limit_settings(
     time_limit_settings: HTMLElement[],
 ): boolean {
     let disable_save_button = false;
     for (const setting_elem of time_limit_settings) {
-        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>("select:not([multiple])");
+        const $dropdown_elem = $(setting_elem).find<HTMLSelectOneElement>(
+            "select:not([multiple]):not(.time-limit-custom-unit)",
+        );
         const $custom_input_elem = $(setting_elem).find<HTMLInputElement>(
             "input.time-limit-custom-input",
         );
-        const custom_input_elem_val = util.check_time_input($custom_input_elem.val()!);
 
         const for_realm_default_settings =
             $dropdown_elem.closest(".settings-section.show").attr("id") ===
             "realm-user-default-settings";
         const property_name = extract_property_name($dropdown_elem, for_realm_default_settings);
 
-        disable_save_button =
-            $dropdown_elem.val() === "custom_period" &&
-            (custom_input_elem_val <= 0 ||
-                Number.isNaN(custom_input_elem_val) ||
-                !check_maximum_valid_value($custom_input_elem, property_name));
+        if ($dropdown_elem.val() === "custom_period") {
+            if (CUSTOM_UNIT_TIME_LIMIT_SETTINGS.has(property_name)) {
+                disable_save_button = !is_custom_unit_time_limit_valid($custom_input_elem);
+            } else {
+                const custom_input_elem_val = util.check_time_input($custom_input_elem.val()!);
+                disable_save_button =
+                    custom_input_elem_val <= 0 ||
+                    Number.isNaN(custom_input_elem_val) ||
+                    !check_maximum_valid_value($custom_input_elem, property_name);
+            }
+        } else {
+            disable_save_button = false;
+        }
 
         if (
             $custom_input_elem.val() === "0" &&

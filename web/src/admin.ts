@@ -15,7 +15,6 @@ import {postprocess_content} from "./postprocess_content.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
-import * as settings_components from "./settings_components.ts";
 import type {AllNotifications} from "./settings_config.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -179,22 +178,6 @@ export function build_page(): void {
         server_avatar_changes_disabled: realm.server_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
-        realm_message_content_edit_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
-                "realm_message_content_edit_limit_seconds",
-            ),
-        realm_move_messages_between_streams_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
-                "realm_move_messages_between_streams_limit_seconds",
-            ),
-        realm_move_messages_within_stream_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
-                "realm_move_messages_within_stream_limit_seconds",
-            ),
-        realm_message_content_delete_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
-                "realm_message_content_delete_limit_seconds",
-            ),
         realm_message_retention_days: realm.realm_message_retention_days,
         realm_message_edit_history_visibility_policy:
             realm.realm_message_edit_history_visibility_policy,
@@ -242,6 +225,7 @@ export function build_page(): void {
         msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
         msg_move_limit_dropdown_values: settings_config.msg_move_limit_dropdown_values,
+        time_unit_values: settings_config.custom_time_unit_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,

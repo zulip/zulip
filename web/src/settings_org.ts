@@ -308,6 +308,11 @@ function update_message_edit_sub_settings(is_checked: boolean): void {
         "id_realm_message_content_edit_limit_minutes",
         true,
     );
+    settings_ui.disable_sub_setting_onchange(
+        is_checked,
+        "id_realm_message_content_edit_limit_unit",
+        true,
+    );
 }
 
 function set_msg_edit_limit_dropdown(): void {
@@ -1684,16 +1689,6 @@ export function build_page(): void {
 
     update_description_empty_state();
     $("#id_realm_description").on("input", update_description_empty_state);
-
-    $(".org-permissions-form").on(
-        "input change",
-        ".time-limit-custom-input",
-        function (this: HTMLInputElement, e) {
-            e.preventDefault();
-            e.stopPropagation();
-            settings_components.update_custom_time_limit_minute_text($(this));
-        },
-    );
 
     $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();

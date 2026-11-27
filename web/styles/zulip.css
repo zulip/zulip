@@ -1475,7 +1475,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .custom-time-input-value {
     width: 5ch;
-    margin-right: 15px;
+    margin-inline-end: 15px;
 
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
