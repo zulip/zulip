@@ -138,6 +138,7 @@
 ## Server & organizations
 
 * [Get server settings](/api/get-server-settings)
+* [Check subdomain availability](/api/check-subdomain-availability)
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)
 * [Update a linkifier](/api/update-linkifier)
