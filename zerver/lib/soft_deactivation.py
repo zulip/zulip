@@ -1,5 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
+from bisect import bisect_right
 from collections import defaultdict
 from collections.abc import Sequence
 from typing import Any, TypedDict
@@ -7,8 +8,7 @@ from typing import Any, TypedDict
 import sentry_sdk
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, F, Max, OuterRef, QuerySet
-from django.db.models.functions import Greatest
+from django.db.models import Exists, Max, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
@@ -239,16 +239,33 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         user_profile, stream_messages, all_stream_subscription_logs
     )
 
-    # Doing a bulk create for all the UserMessage objects stored for creation.
+    # Each batch is committed on its own, so that a catch-up which is
+    # interrupted partway through keeps the batches it has saved.
     while len(message_ids_to_insert) > 0:
-        message_ids, message_ids_to_insert = (
-            message_ids_to_insert[0:BULK_CREATE_BATCH_SIZE],
-            message_ids_to_insert[BULK_CREATE_BATCH_SIZE:],
-        )
-        bulk_insert_all_ums(user_ids=[user_profile.id], message_ids=message_ids, flags=0)
-        UserProfile.objects.filter(id=user_profile.id).update(
-            last_active_message_id=Greatest(F("last_active_message_id"), message_ids[-1])
-        )
+        with transaction.atomic(durable=True):
+            # Concurrent catch-ups of the same user take turns saving
+            # batches, each skipping what the others have saved.
+            locked_user = (
+                UserProfile.objects.select_for_update(no_key=True)
+                .only("id", "long_term_idle", "last_active_message_id")
+                .get(id=user_profile.id)
+            )
+            if not locked_user.long_term_idle:
+                return
+            assert locked_user.last_active_message_id is not None
+            message_ids_to_insert = message_ids_to_insert[
+                bisect_right(message_ids_to_insert, locked_user.last_active_message_id) :
+            ]
+            if len(message_ids_to_insert) == 0:
+                return
+            message_ids, message_ids_to_insert = (
+                message_ids_to_insert[0:BULK_CREATE_BATCH_SIZE],
+                message_ids_to_insert[BULK_CREATE_BATCH_SIZE:],
+            )
+            bulk_insert_all_ums(user_ids=[user_profile.id], message_ids=message_ids, flags=0)
+            UserProfile.objects.filter(id=user_profile.id).update(
+                last_active_message_id=message_ids[-1]
+            )
 
 
 def do_soft_deactivate_user(user_profile: UserProfile) -> None:
@@ -322,20 +339,25 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
     if not user_profile.long_term_idle:
         return None
 
-    with transaction.atomic(savepoint=False):
-        # Lock the row and re-read the flag so concurrent reactivations of the
-        # same user run the expensive backfill at most once.
+    # Our copy may be stale: since it was loaded, another caller may
+    # have reactivated this user, or saved part of the catch-up.
+    user_profile.refresh_from_db(fields=["long_term_idle", "last_active_message_id"])
+    if user_profile.long_term_idle:
+        add_missing_messages(user_profile)
+
+    with transaction.atomic(durable=True):
+        # Lock the row and re-read the flag, so that the reactivation
+        # is recorded only once even if several run concurrently.
         locked_user = (
             UserProfile.objects.select_for_update(no_key=True)
             .only("id", "long_term_idle")
             .get(id=user_profile.id)
         )
         if not locked_user.long_term_idle:
-            # Another caller reactivated this user while we waited; sync our copy.
+            # Another caller has reactivated this user; sync our copy.
             user_profile.long_term_idle = False
             return None
 
-        add_missing_messages(user_profile)
         user_profile.long_term_idle = False
         user_profile.save(update_fields=["long_term_idle"])
         RealmAuditLog.objects.create(

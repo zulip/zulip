@@ -1,18 +1,24 @@
+from collections import defaultdict
+from collections.abc import Callable, Iterator
 from collections.abc import Set as AbstractSet
+from contextlib import contextmanager
 from unittest import mock
 
+from django.db import OperationalError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.lib.mention import stream_wildcards
 from zerver.lib.soft_deactivation import (
+    MissingMessageDict,
     add_missing_messages,
     do_auto_soft_deactivate_users,
     do_catch_up_soft_deactivated_users,
     do_soft_activate_users,
     do_soft_deactivate_user,
     do_soft_deactivate_users,
+    filter_by_subscription_history,
     get_soft_deactivated_users_for_catch_up,
     get_users_for_soft_deactivation,
     queue_soft_reactivation,
@@ -21,6 +27,7 @@ from zerver.lib.soft_deactivation import (
 from zerver.lib.stream_subscription import get_subscriptions_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, get_user_messages, make_client
+from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.models import (
     AlertWord,
     Client,
@@ -362,7 +369,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
-        with self.assert_database_query_count(8):
+        with self.assert_database_query_count(10):
             reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(
@@ -377,7 +384,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
     def test_reactivate_user_skips_backfill_if_already_reactivated(self) -> None:
         # A stale in-memory long_term_idle must not trigger a second backfill:
-        # the lock re-read sees the flag already cleared and bails out.
+        # re-reading the flag finds it already cleared.
         user = self.example_user("hamlet")
         self.subscribe(user, "Denmark")
         self.send_stream_message(user, "Denmark")
@@ -457,7 +464,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
@@ -473,7 +480,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 1)
@@ -497,7 +504,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -528,7 +535,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -588,7 +595,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_count = len(idle_user_msg_list)
         for sent_message in sent_message_list:
             self.assertNotEqual(idle_user_msg_list.pop(), sent_message)
-        with self.assert_database_query_count(5):
+        with self.assert_database_query_count(6):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + 2)
@@ -625,12 +632,202 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(12):
             add_missing_messages(long_term_idle_user)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assert_length(idle_user_msg_list, idle_user_msg_count + num_new_messages)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, message_ids[-1])
+
+    def soft_deactivate_and_send_messages(self, num_messages: int) -> tuple[UserProfile, list[int]]:
+        long_term_idle_user = self.example_user("hamlet")
+        sender = self.example_user("iago")
+        stream_name = "Denmark"
+        for user_profile in [long_term_idle_user, sender]:
+            self.subscribe(user_profile, stream_name)
+        self.send_stream_message(long_term_idle_user, stream_name)
+        self.soft_deactivate_user(long_term_idle_user)
+
+        message_ids = [self.send_stream_message(sender, stream_name) for _ in range(num_messages)]
+        self.assertFalse(
+            UserMessage.objects.filter(
+                user_profile=long_term_idle_user, message_id__in=message_ids
+            ).exists()
+        )
+        return long_term_idle_user, message_ids
+
+    def saved_message_ids(self, user_profile: UserProfile, message_ids: list[int]) -> list[int]:
+        return sorted(
+            UserMessage.objects.filter(
+                user_profile=user_profile, message_id__in=message_ids
+            ).values_list("message_id", flat=True)
+        )
+
+    @contextmanager
+    def concurrent_change_before_saving(
+        self, change: Callable[[list[int]], None]
+    ) -> Iterator[None]:
+        """Calls `change`, standing in for another catch-up of the same
+        user, after add_missing_messages has computed which messages
+        are missing but before it saves any of them."""
+
+        def filter_then_change(
+            user_profile: UserProfile,
+            all_stream_messages: defaultdict[int, list[MissingMessageDict]],
+            all_stream_subscription_logs: defaultdict[int, list[RealmAuditLog]],
+        ) -> list[int]:
+            missing_message_ids = filter_by_subscription_history(
+                user_profile, all_stream_messages, all_stream_subscription_logs
+            )
+            change(missing_message_ids)
+            return missing_message_ids
+
+        with mock.patch(
+            "zerver.lib.soft_deactivation.filter_by_subscription_history",
+            side_effect=filter_then_change,
+        ):
+            yield
+
+    @mock.patch("zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE", 2)
+    def test_reactivate_user_resumes_interrupted_catch_up(self) -> None:
+        """A catch-up that's interrupted partway through, for example by
+        a request timeout, keeps the batches it saved, and the next
+        attempt saves only the rest."""
+        long_term_idle_user, sent_message_ids = self.soft_deactivate_and_send_messages(5)
+
+        def interrupt_second_batch(
+            *, user_ids: list[int], message_ids: list[int], flags: int
+        ) -> None:
+            if message_ids[0] == sent_message_ids[2]:
+                raise OperationalError("interrupted")
+            bulk_insert_all_ums(user_ids=user_ids, message_ids=message_ids, flags=flags)
+
+        with (
+            mock.patch(
+                "zerver.lib.soft_deactivation.bulk_insert_all_ums",
+                side_effect=interrupt_second_batch,
+            ),
+            self.assertRaises(OperationalError),
+        ):
+            reactivate_user_if_soft_deactivated(long_term_idle_user)
+        self.assertEqual(
+            self.saved_message_ids(long_term_idle_user, sent_message_ids), sent_message_ids[:2]
+        )
+        saved_user = UserProfile.objects.get(id=long_term_idle_user.id)
+        self.assertTrue(saved_user.long_term_idle)
+        self.assertEqual(saved_user.last_active_message_id, sent_message_ids[1])
+
+        progress_at_start: list[int | None] = []
+
+        def record_progress(user_profile: UserProfile) -> None:
+            progress_at_start.append(user_profile.last_active_message_id)
+            add_missing_messages(user_profile)
+
+        with (
+            mock.patch(
+                "zerver.lib.soft_deactivation.add_missing_messages", side_effect=record_progress
+            ),
+            mock.patch(
+                "zerver.lib.soft_deactivation.bulk_insert_all_ums", wraps=bulk_insert_all_ums
+            ) as mock_insert,
+        ):
+            result = reactivate_user_if_soft_deactivated(long_term_idle_user)
+        self.assertEqual(result, long_term_idle_user)
+        # The second attempt looks for missing messages only after the saved ones.
+        self.assertEqual(progress_at_start, [sent_message_ids[1]])
+        self.assertEqual(
+            [call.kwargs["message_ids"] for call in mock_insert.call_args_list],
+            [sent_message_ids[2:4], sent_message_ids[4:]],
+        )
+        self.assertEqual(
+            self.saved_message_ids(long_term_idle_user, sent_message_ids), sent_message_ids
+        )
+        saved_user.refresh_from_db()
+        self.assertFalse(saved_user.long_term_idle)
+        self.assertEqual(saved_user.last_active_message_id, sent_message_ids[-1])
+
+    @mock.patch("zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE", 2)
+    def test_add_missing_messages_skips_messages_saved_concurrently(self) -> None:
+        """Messages that another catch-up of the same user saves after
+        this one has computed which messages are missing aren't saved
+        again."""
+        long_term_idle_user, sent_message_ids = self.soft_deactivate_and_send_messages(5)
+
+        def save_first_batch(missing_message_ids: list[int]) -> None:
+            bulk_insert_all_ums(
+                user_ids=[long_term_idle_user.id], message_ids=missing_message_ids[:2], flags=0
+            )
+            UserProfile.objects.filter(id=long_term_idle_user.id).update(
+                last_active_message_id=missing_message_ids[1]
+            )
+
+        with (
+            self.concurrent_change_before_saving(save_first_batch),
+            mock.patch(
+                "zerver.lib.soft_deactivation.bulk_insert_all_ums", wraps=bulk_insert_all_ums
+            ) as mock_insert,
+        ):
+            add_missing_messages(long_term_idle_user)
+        self.assertEqual(
+            [call.kwargs["message_ids"] for call in mock_insert.call_args_list],
+            [sent_message_ids[2:4], sent_message_ids[4:]],
+        )
+        self.assertEqual(
+            self.saved_message_ids(long_term_idle_user, sent_message_ids), sent_message_ids
+        )
+        long_term_idle_user.refresh_from_db()
+        self.assertEqual(long_term_idle_user.last_active_message_id, sent_message_ids[-1])
+
+    @mock.patch("zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE", 2)
+    def test_add_missing_messages_saves_nothing_if_all_saved_concurrently(self) -> None:
+        """If another catch-up of the same user saves every missing
+        message after this one has computed which are missing, this one
+        has nothing left to save."""
+        long_term_idle_user, sent_message_ids = self.soft_deactivate_and_send_messages(3)
+
+        def save_all(missing_message_ids: list[int]) -> None:
+            bulk_insert_all_ums(
+                user_ids=[long_term_idle_user.id], message_ids=missing_message_ids, flags=0
+            )
+            UserProfile.objects.filter(id=long_term_idle_user.id).update(
+                last_active_message_id=missing_message_ids[-1]
+            )
+
+        with (
+            self.concurrent_change_before_saving(save_all),
+            mock.patch("zerver.lib.soft_deactivation.bulk_insert_all_ums") as mock_insert,
+        ):
+            add_missing_messages(long_term_idle_user)
+        mock_insert.assert_not_called()
+        self.assertEqual(
+            self.saved_message_ids(long_term_idle_user, sent_message_ids), sent_message_ids
+        )
+
+    @mock.patch("zerver.lib.soft_deactivation.BULK_CREATE_BATCH_SIZE", 2)
+    def test_reactivate_user_stops_if_reactivated_concurrently(self) -> None:
+        """If another reactivation of the same user finishes after this
+        one has computed which messages are missing, this one saves
+        nothing and doesn't record a second reactivation."""
+        long_term_idle_user, sent_message_ids = self.soft_deactivate_and_send_messages(5)
+
+        def finish_reactivation(missing_message_ids: list[int]) -> None:
+            UserProfile.objects.filter(id=long_term_idle_user.id).update(long_term_idle=False)
+
+        with (
+            self.concurrent_change_before_saving(finish_reactivation),
+            mock.patch("zerver.lib.soft_deactivation.bulk_insert_all_ums") as mock_insert,
+        ):
+            result = reactivate_user_if_soft_deactivated(long_term_idle_user)
+        self.assertIsNone(result)
+        mock_insert.assert_not_called()
+        self.assertEqual(self.saved_message_ids(long_term_idle_user, sent_message_ids), [])
+        self.assertFalse(long_term_idle_user.long_term_idle)
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                modified_user=long_term_idle_user,
+                event_type=AuditLogEventType.USER_SOFT_ACTIVATED,
+            ).exists()
+        )
 
     def test_user_message_filter(self) -> None:
         # In this test we are basically testing out the logic used out in
