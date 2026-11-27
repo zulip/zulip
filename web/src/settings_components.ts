@@ -410,31 +410,43 @@ function read_custom_profile_field_choices_from_form(
     const field_data: SelectFieldData = {};
     let field_order = 1;
 
-    const old_option_value_map = new Map<string, string>();
+    const form_choices: {row_value: string; text: string}[] = [];
+    const present_values = new Set<string>();
+    for (const row of $profile_field_form.find("div.choice-row")) {
+        const text = util.the($(row).find("input")).value;
+        if (text) {
+            const row_value = $(row).attr("data-value")!;
+            form_choices.push({row_value, text});
+            present_values.add(row_value);
+        }
+    }
+
+    const old_values = new Set<string>();
+    const deleted_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
         const choices = custom_profile_field_choices_schema.parse(old_field_data);
         for (const [value, choice] of Object.entries(choices)) {
-            assert(typeof choice !== "string");
-            old_option_value_map.set(choice.text, value);
+            old_values.add(value);
+            if (!present_values.has(value)) {
+                deleted_option_value_map.set(choice.text, value);
+            }
         }
     }
-    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
-        const text = util.the($(this).find("input")).value;
-        if (text) {
-            let value = old_option_value_map.get(text);
-            if (value !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", value);
-            } else {
-                value = $(this).attr("data-value")!;
+
+    for (const {row_value, text} of form_choices) {
+        let value = row_value;
+        if (!old_values.has(row_value)) {
+            const deleted_value = deleted_option_value_map.get(text);
+            if (deleted_value !== undefined) {
+                // Preserve the original option ID if an option row was removed
+                // and the same text was re-entered in a new row before saving.
+                value = deleted_value;
+                deleted_option_value_map.delete(text);
             }
-            field_data[value] = {text, order: field_order.toString()};
-            field_order += 1;
         }
-    });
+        field_data[value] = {text, order: field_order.toString()};
+        field_order += 1;
+    }
 
     return field_data;
 }
