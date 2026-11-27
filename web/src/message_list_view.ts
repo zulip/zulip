@@ -995,7 +995,6 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
-            message.reminders = message_reminder.get_reminders(message.id) ?? [];
 
             // These will be used to build the message container
             let include_recipient = false;
@@ -1311,6 +1310,15 @@ export class MessageListView {
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
+
+        // Look up reminders on every render, since a redrawn group's
+        // messages may have gained or lost reminders since it was built.
+        for (const message_group of message_groups) {
+            for (const message_container of message_group.message_containers) {
+                message_container.msg.reminders =
+                    message_reminder.get_reminders(message_container.msg.id) ?? [];
+            }
+        }
 
         return $(
             render_message_group({
