@@ -215,6 +215,9 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        if (!pill_widget.finalize_pending_edit()) {
+            return;
+        }
         const $loading_spinner = $parent_container.find(spinner_selector);
         const $add_button = $parent_container.find(button_selector);
         const $add_button_container = $add_button.closest(".add-button-container");

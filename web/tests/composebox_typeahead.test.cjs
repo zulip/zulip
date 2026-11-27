@@ -1590,6 +1590,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         items: () => pill_items,
         onPillCreate() {},
         onPillRemove() {},
+        setSetupTypeahead() {},
         appendValidatedData(item) {
             appended_names.push(user_pill.get_display_value_from_item(item));
         },
@@ -3488,6 +3489,8 @@ test("message people", ({override, override_rewire}) => {
     override_rewire(ct, "max_group_size_for_dm", 4);
     results = ct.get_person_suggestions("rs", opts);
     assert.deepEqual(results, [hamletcharacters, admins]);
+    results = ct.get_person_suggestions("rs", {...opts, include_groups: false});
+    assert.deepEqual(results, []);
 
     // Test that full members group is only included if
     // waiting_period_threshold is not 0.
