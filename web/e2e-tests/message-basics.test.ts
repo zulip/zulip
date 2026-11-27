@@ -39,7 +39,7 @@ async function expect_verona_stream_top_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+        ["test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(await page.title(), "#Verona > test - Zulip Dev - Zulip");
 }
@@ -50,9 +50,9 @@ async function expect_verona_stream(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b"]],
-        ["Verona > other topic", ["verona other topic c"]],
-        ["Verona > test", ["verona test d"]],
+        ["test", ["verona test a", "verona test b"]],
+        ["other topic", ["verona other topic c"]],
+        ["test", ["verona test d"]],
     ]);
     assert.strictEqual(await page.title(), "#Verona - Zulip Dev - Zulip");
 }
@@ -63,7 +63,7 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+        ["test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(
         await common.get_text_from_selector(page, "#new_conversation_button"),
@@ -77,7 +77,7 @@ async function expect_verona_other_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > other topic", ["verona other topic c"]],
+        ["other topic", ["verona other topic c"]],
     ]);
 }
 
@@ -488,6 +488,38 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     );
 }
 
+async function test_channel_name_in_near_view(page: Page): Promise<void> {
+    console.log("Narrowing between a topic view and a near view");
+    const stream_id = await common.get_stream_id(page, "Verona");
+    const topic_url = `http://zulip.zulipdev.com:9981/#narrow/channel/${stream_id}-Verona/topic/test`;
+    await page.goto(topic_url);
+    const topic_view_message_list_id = await common.get_current_msg_list_id(page, true);
+    const verona_test_messages = ["verona test a", "verona test b", "verona test d"];
+    await common.check_messages_sent(page, topic_view_message_list_id, [
+        ["test", verona_test_messages],
+    ]);
+    const message_id = await page.evaluate(() => zulip_test.current_msg_list?.first()?.id);
+    assert.ok(message_id !== undefined);
+
+    // Near views show the search bar in place of the navbar title, so
+    // their recipient bars show the channel name. Narrowing between a
+    // topic view and its near view reuses the rendered message list,
+    // so its recipient bars need to be rerendered.
+    await page.goto(`${topic_url}/near/${message_id}`);
+    await page.waitForSelector(".focused-message-list .stream_label", {visible: true});
+    assert.equal(await common.get_current_msg_list_id(page), topic_view_message_list_id);
+    await common.check_messages_sent(page, topic_view_message_list_id, [
+        ["Verona > test", verona_test_messages],
+    ]);
+
+    await page.click(".focused-message-list .narrows_by_topic");
+    await page.waitForSelector(".focused-message-list .stream_label", {hidden: true});
+    assert.equal(await common.get_current_msg_list_id(page), topic_view_message_list_id);
+    await common.check_messages_sent(page, topic_view_message_list_id, [
+        ["test", verona_test_messages],
+    ]);
+}
+
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
@@ -533,6 +565,7 @@ async function message_basic_tests(page: Page): Promise<void> {
     await test_stream_search_filters_stream_list(page);
     await test_users_search(page);
     await test_narrow_public_streams(page);
+    await test_channel_name_in_near_view(page);
 }
 
 await common.run_test(message_basic_tests);

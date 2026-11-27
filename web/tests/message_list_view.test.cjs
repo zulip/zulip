@@ -356,6 +356,30 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
     assert.deepEqual(rerendered_group_ids, ["group-A", "group-B"]);
 });
 
+test("_render_group hides channel names based on the list's own filter", ({mock_template}) => {
+    // Message lists like the Combined feed stay rendered, and receive
+    // new messages, while another view is current, so each list's
+    // recipient bars depend only on that list's filter.
+    let hide_channel_name;
+    mock_template("message_group.hbs", false, (data) => {
+        hide_channel_name = data.hide_channel_name;
+        return "<message-group-stub>";
+    });
+
+    function render_group_for_filter(terms) {
+        const list = new message_list.MessageList({
+            data: new MessageListData({excludes_muted_topics: false, filter: new Filter(terms)}),
+            is_node_test: true,
+        });
+        const view = new MessageListView(list, true, true);
+        view._render_group({message_groups: [], use_match_properties: false});
+        return hide_channel_name;
+    }
+
+    assert.equal(render_group_for_filter([{operator: "channel", operand: "1"}]), true);
+    assert.equal(render_group_for_filter([{operator: "in", operand: "home"}]), false);
+});
+
 test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.

@@ -1948,6 +1948,14 @@ export class Filter {
         return false;
     }
 
+    should_hide_channel_name_in_recipient_row(): boolean {
+        // Common narrows display a navbar title, which for views with a
+        // channel term is the channel name, so we don't repeat it in
+        // every recipient row. Other views, like `near` views, open the
+        // search bar in place of the navbar title.
+        return this.is_common_narrow() && this.has_operator("channel");
+    }
+
     can_show_next_unread_dm_conversation_button(): boolean {
         const term_types = this.sorted_term_types();
         if (
