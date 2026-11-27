@@ -141,6 +141,7 @@ export function set_up_handlers_for_add_button_state(
 export function create({
     $parent_container,
     $pill_container,
+    $error_element,
     get_potential_subscribers,
     get_user_groups,
     with_add_button,
@@ -151,6 +152,7 @@ export function create({
 }: {
     $parent_container: JQuery;
     $pill_container: JQuery;
+    $error_element: JQuery;
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
     with_add_button: boolean;
@@ -161,6 +163,7 @@ export function create({
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
+        $error_element,
         create_item_from_text,
         get_text_from_item,
         get_display_value_from_item,

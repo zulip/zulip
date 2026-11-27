@@ -94,6 +94,7 @@ export function create_item_from_text(
 export function create({
     $parent_container,
     $pill_container,
+    $error_element,
     get_potential_members,
     get_potential_groups,
     with_add_button,
@@ -102,6 +103,7 @@ export function create({
 }: {
     $parent_container: JQuery;
     $pill_container: JQuery;
+    $error_element: JQuery;
     get_potential_members: () => User[];
     get_potential_groups: () => UserGroup[];
     with_add_button: boolean;
@@ -110,6 +112,7 @@ export function create({
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
+        $error_element,
         create_item_from_text,
         get_text_from_item: add_subscribers_pill.get_text_from_item,
         get_display_value_from_item: add_subscribers_pill.get_display_value_from_item,
