@@ -11,7 +11,16 @@ _Unreleased_
 
 ### Upgrade notes for 14.0
 
-- None yet.
+- A message's content can now be edited at most 300 times (50 times
+  for messages sent by bots), and only while its edit history is
+  smaller than 10 MiB. Messages already past these limits can no
+  longer have their content edited. Bots that keep a message up to
+  date by editing it will need to send a new message once it reaches
+  the limit. You can change these limits with the
+  `MAX_CONTENT_EDITS_PER_MESSAGE`, `MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS`,
+  and `MAX_EDIT_HISTORY_BYTES` settings in `/etc/zulip/settings.py`.
+  Very large edit histories make editing slow, so we don't recommend
+  raising these limits significantly.
 
 ## Zulip Server 13.x series
 

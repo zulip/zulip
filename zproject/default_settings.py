@@ -706,6 +706,15 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 # See: `_internal_prep_message` function in zerver/actions/message_send.py.
 MAX_MESSAGE_LENGTH = 10000
 
+# Editing a message with a very large edit history is slow, so
+# content edits are rejected once a message's edit history records
+# MAX_CONTENT_EDITS_PER_MESSAGE content edits
+# (MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS for bots), or its
+# uncompressed size reaches MAX_EDIT_HISTORY_BYTES.
+MAX_CONTENT_EDITS_PER_MESSAGE = 300
+MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS = 50
+MAX_EDIT_HISTORY_BYTES = 10 * 1024 * 1024
+
 # Maximum length of note text for a reminder.
 # NOTE: Keep it significantly smaller than MAX_MESSAGE_LENGTH
 # to avoid message being completely truncated when reminder is sent.

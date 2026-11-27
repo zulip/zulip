@@ -1,6 +1,6 @@
 from datetime import timedelta
 from operator import itemgetter
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 from unittest import mock
 
 import orjson
@@ -40,6 +40,9 @@ from zerver.models.groups import SystemGroups
 from zerver.models.messages import UserMessage
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum, get_realm
 from zerver.models.streams import get_stream
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class EditMessageTest(ZulipTestCase):
@@ -828,10 +831,22 @@ class EditMessageTest(ZulipTestCase):
             self.assertNotIn("first version", update_sqls[0])
 
             # Nor is the existing edit history fetched from the
-            # database.
-            for query in queries:
-                if query.sql.startswith("SELECT"):
-                    self.assertNotIn('"zerver_message"."edit_history"', query.sql)
+            # database. It's only measured there, to check its limits,
+            # and only parsed when it's under the size limit.
+            edit_history_select_sqls = [
+                q.sql
+                for q in queries
+                if q.sql.startswith("SELECT") and '"zerver_message"."edit_history"' in q.sql
+            ]
+            self.assert_length(edit_history_select_sqls, 1)
+            sql = edit_history_select_sqls[0]
+            self.assertIn('CASE WHEN octet_length("zerver_message"."edit_history") <', sql)
+            # The column only appears as the argument of a function or
+            # cast; it isn't selected by itself.
+            self.assertNotIn(
+                '"zerver_message"."edit_history"',
+                sql.replace('("zerver_message"."edit_history")', ""),
+            )
 
             message = Message.objects.get(id=msg_id)
             self.assertEqual(message.content, "third version")
@@ -840,6 +855,77 @@ class EditMessageTest(ZulipTestCase):
                 [event["prev_content"] for event in edit_history],
                 ["second version", "first version"],
             )
+
+    def assert_edit_history_limit_error(self, result: "TestHttpResponse") -> None:
+        self.assert_json_error(
+            result, "This message has been edited too many times. Send a new message instead."
+        )
+        self.assertEqual(orjson.loads(result.content)["code"], "EDIT_HISTORY_LIMIT_EXCEEDED")
+
+    def test_content_edit_count_limit(self) -> None:
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(hamlet, "Denmark", "version 0", "topic 0")
+        url = f"/api/v1/messages/{msg_id}"
+        with self.settings(MAX_CONTENT_EDITS_PER_MESSAGE=2):
+            # A message that was never edited has no edit history to
+            # measure.
+            with queries_captured() as queries:
+                self.assert_json_success(self.api_patch(hamlet, url, {"content": "version 1"}))
+            for query in queries:
+                self.assertNotIn("octet_length", query.sql)
+
+            # Moves don't count towards the limit, but a request that
+            # both edits the content and moves the message does.
+            for request in [
+                {"topic": "topic 1"},
+                {"content": "version 2", "topic": "topic 2"},
+            ]:
+                self.assert_json_success(self.api_patch(hamlet, url, request))
+
+            # Now that the message has 2 content edits, moving it still
+            # works, but editing its content doesn't.
+            self.assert_json_success(self.api_patch(hamlet, url, {"topic": "topic 3"}))
+            self.assert_edit_history_limit_error(
+                self.api_patch(hamlet, url, {"content": "version 3"})
+            )
+            # A request that also moves the message fails as a whole.
+            self.assert_edit_history_limit_error(
+                self.api_patch(hamlet, url, {"content": "version 3", "topic": "topic 4"})
+            )
+
+        message = Message.objects.get(id=msg_id)
+        self.assertEqual((message.content, message.topic_name()), ("version 2", "topic 3"))
+        self.assert_length(orjson.loads(assert_is_not_none(message.edit_history)), 4)
+
+    def test_content_edit_count_limit_for_bots(self) -> None:
+        bot = self.example_user("default_bot")
+        msg_id = self.send_personal_message(bot, self.example_user("hamlet"), "version 0")
+        url = f"/api/v1/messages/{msg_id}"
+        with self.settings(MAX_CONTENT_EDITS_PER_MESSAGE_BY_BOTS=1):
+            self.assert_json_success(self.api_patch(bot, url, {"content": "version 1"}))
+            self.assert_edit_history_limit_error(self.api_patch(bot, url, {"content": "version 2"}))
+        self.assertEqual(Message.objects.get(id=msg_id).content, "version 1")
+
+    def test_edit_history_size_limit(self) -> None:
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(hamlet, "Denmark", "version 0", "topic 0")
+        url = f"/api/v1/messages/{msg_id}"
+        self.assert_json_success(self.api_patch(hamlet, url, {"content": "version 1"}))
+
+        def edit_history_bytes() -> int:
+            edit_history = assert_is_not_none(Message.objects.get(id=msg_id).edit_history)
+            return len(edit_history.encode())
+
+        with self.settings(MAX_EDIT_HISTORY_BYTES=edit_history_bytes()):
+            self.assert_edit_history_limit_error(
+                self.api_patch(hamlet, url, {"content": "version 2"})
+            )
+            self.assert_json_success(self.api_patch(hamlet, url, {"topic": "topic 1"}))
+
+        with self.settings(MAX_EDIT_HISTORY_BYTES=edit_history_bytes() + 1):
+            self.assert_json_success(self.api_patch(hamlet, url, {"content": "version 2"}))
+        message = Message.objects.get(id=msg_id)
+        self.assertEqual((message.content, message.topic_name()), ("version 2", "topic 1"))
 
     def test_edit_history_unedited(self) -> None:
         self.login("hamlet")
