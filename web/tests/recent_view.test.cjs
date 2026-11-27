@@ -192,6 +192,7 @@ const unread = mock_esm("../src/unread", {
     num_unread_for_user_ids_string() {
         return 0;
     },
+    get_unread_pm: () => ({total_count: 0, pm_dict: new Map()}),
     topic_has_any_unread_mentions: () => false,
     num_unread_mentions_for_user_ids_strings(user_ids_string) {
         if (user_ids_string === "2,3") {
