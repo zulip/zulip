@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 527
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (394, 2)  # bumped 2026-11-09 to upgrade brotli
+PROVISION_VERSION = (394, 3)  # bumped 2026-11-23 to add anthropic
