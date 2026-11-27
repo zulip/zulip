@@ -40,16 +40,21 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import BouncerTestCase
-from zerver.lib.test_helpers import activate_push_notification_service
+from zerver.lib.test_helpers import activate_push_notification_service, read_test_image_file
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.models import Realm, RealmAuditLog
+from zerver.models import Message, Realm, RealmAuditLog
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
 if settings.ZILENCER_ENABLED:
+    from zilencer.lib.communities_directory import (
+        MODERATION_CHANNEL_NAME,
+        check_remote_realms_active_for_communities_directory,
+    )
     from zilencer.models import (
         RemoteInstallationCount,
         RemoteRealm,
@@ -1610,3 +1615,74 @@ class AdvertiseRealmDataTest(BouncerTestCase):
         remote_realm.refresh_from_db()
         self.assertFalse(remote_realm.communities_directory_listing_requested)
         self.assertEqual(remote_realm.description, "An edited description")
+
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALMS=True)
+    def test_posts_to_the_channel_when_an_advertised_realm_changes(self) -> None:
+        self.add_mock_response()
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        # A probe reaches the organization, copies its icon
+        # and announces it to moderation channel.
+        remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+        responses.add(
+            responses.GET,
+            f"https://{realm.host}/api/v1/server_settings",
+            json={"zulip_version": "11.0", "realm_url": f"https://{realm.host}"},
+            status=200,
+        )
+        responses.add(
+            responses.GET, remote_realm.icon_url, body=read_test_image_file("img.png"), status=200
+        )
+        with self.assertLogs("zilencer.lib.communities_directory", level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+        message_count = Message.objects.count()
+
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertEqual(Message.objects.count(), message_count + 1)
+        message = Message.objects.latest("id")
+        self.assertEqual(message.topic_name(), str(remote_realm.uuid))
+        self.assertEqual(
+            message.content,
+            f"[{realm.name}](https://{realm.host}) changed:\n\n"
+            "**Description**\n* Old: A place to talk\n* New: An edited description",
+        )
+
+        message_count = Message.objects.count()
+
+        # Emptying the description takes the organization out of the
+        # directory, so the change is not posted for moderation.
+        do_set_realm_property(realm, "description", "", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.description, "")
+        self.assertEqual(Message.objects.count(), message_count)
+
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALMS=True)
+    def test_no_post_for_a_realm_that_was_never_advertised(self) -> None:
+        self.add_mock_response()
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        message_count = Message.objects.count()
+
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertEqual(Message.objects.count(), message_count)
