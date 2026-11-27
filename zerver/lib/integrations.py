@@ -147,6 +147,7 @@ class Integration:
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
     ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
+    DEFAULT_BOT_AVATAR_MEDIUM_PATH = "images/integrations/bot_avatars/{name}-medium.png"
     DEFAULT_DOC_PATH = "zerver/integrations/{name}.md"
 
     def __init__(
@@ -229,8 +230,10 @@ class Integration:
                 return potential_path
         return self.ZULIP_LOGO_STATIC_PATH_PNG
 
-    def get_bot_avatar_path(self) -> str:
+    def get_bot_avatar_path(self, medium: bool = False) -> str:
         name = os.path.splitext(os.path.basename(self.logo_path))[0]
+        if medium:
+            return self.DEFAULT_BOT_AVATAR_MEDIUM_PATH.format(name=name)
         return self.DEFAULT_BOT_AVATAR_PATH.format(name=name)
 
 
