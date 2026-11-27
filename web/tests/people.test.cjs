@@ -871,6 +871,64 @@ run_test("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 });
 
+run_test("filter matches text inside parentheses", () => {
+    initialize();
+
+    const aaron = make_user({
+        email: "aaron-ta@example.com",
+        user_id: 1300,
+        full_name: "aaron ta",
+    });
+
+    const desdemona = make_user({
+        email: "desdemona-ta@example.com",
+        user_id: 1301,
+        full_name: "Desdemona(TA)",
+    });
+
+    const king_hamlet = make_user({
+        email: "king-hamlet-ta@example.com",
+        user_id: 1302,
+        full_name: "King Hamlet (TA)",
+    });
+
+    const someone = make_user({
+        email: "someone@example.com",
+        user_id: 1303,
+        full_name: "Someone Else",
+    });
+
+    for (const user of [aaron, desdemona, king_hamlet, someone]) {
+        people.add_active_user(user);
+    }
+
+    const users = people.get_realm_users();
+
+    // Text inside parentheses is matched, with or without a space
+    // before the opening parenthesis.
+    let filtered_people = people.filter_people_by_search_terms(users, "ta");
+    assert.equal(filtered_people.size, 3);
+    assert.ok(filtered_people.has(aaron.user_id));
+    assert.ok(filtered_people.has(desdemona.user_id));
+    assert.ok(filtered_people.has(king_hamlet.user_id));
+
+    // Punctuation in the query is ignored, so "(TA)" behaves like "ta".
+    filtered_people = people.filter_people_by_search_terms(users, "(TA)");
+    assert.equal(filtered_people.size, 3);
+    assert.ok(filtered_people.has(aaron.user_id));
+    assert.ok(filtered_people.has(desdemona.user_id));
+    assert.ok(filtered_people.has(king_hamlet.user_id));
+
+    // Matching still starts at a word or punctuation boundary.
+    filtered_people = people.filter_people_by_search_terms(users, "mona");
+    assert.equal(filtered_people.size, 0);
+
+    // Existing prefix matching remains unchanged.
+    filtered_people = people.filter_people_by_search_terms(users, "desd");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(desdemona.user_id));
+});
+
 run_test("dm_matches_search_string", () => {
     initialize();
     people.add_active_user(charles);
