@@ -115,6 +115,27 @@ class RealmPlaygroundTests(ZulipTestCase):
         result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(result, "Language 'math' is not allowed.")
 
+        # Test leading/trailing whitespace with restricted keyword
+        payload = {
+            "name": "Restricted keyword",
+            "pygments_language": "\nquote\n",
+            "url_template": "https://example.com",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(result, "Language 'quote' is not allowed.")
+
+        # Test leading/trailing whitespace is stripped for all parameters
+        payload = {
+            "name": " Random playground\n",
+            "pygments_language": "\nrandom",
+            "url_template": "\nhttps://example.com/{code} ",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        realm = get_realm("zulip")
+        realm_playground = RealmPlayground.objects.get(realm=realm, name="Random playground")
+        self.assertEqual(realm_playground.pygments_language, "random")
+        self.assertEqual(realm_playground.url_template, "https://example.com/{code}")
+
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
 
