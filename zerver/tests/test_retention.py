@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from analytics.lib.counts import COUNT_STATS, do_fill_count_stat_at_hour
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
@@ -426,8 +427,17 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
             [msgs_ids["other_user_message_id"]], timezone_now() - timedelta(days=MIT_REALM_DAYS + 1)
         )
 
-        archive_messages()
+        # The deleted attachments are subtracted from the realm's
+        # upload space snapshot, and added back when restored.
+        realm = get_realm("zulip")
+        do_fill_count_stat_at_hour(COUNT_STATS["upload_quota_used_bytes::day"], timezone_now())
+        used_space = realm.currently_used_upload_space_bytes()
+        attachments_size = sum(Attachment.objects.values_list("size", flat=True))
+
+        with self.captureOnCommitCallbacks(execute=True):
+            archive_messages()
         self.assertEqual(Attachment.objects.count(), 0)
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space - attachments_size)
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
             list(
@@ -438,9 +448,11 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
             sorted(msgs_ids.values()),
         )
 
-        restore_all_data_from_archive()
+        with self.captureOnCommitCallbacks(execute=True):
+            restore_all_data_from_archive()
         # Attachments should have been restored:
         self.assertEqual(Attachment.objects.count(), 3)
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space)
         # Archived data doesn't get deleted by restoring.
         self.assertEqual(ArchivedAttachment.objects.count(), 3)
         self.assertEqual(
@@ -684,12 +696,17 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             )
 
         usermsg_ids = self._get_usermessage_ids(msg_ids)
+        do_fill_count_stat_at_hour(COUNT_STATS["upload_quota_used_bytes::day"], timezone_now())
+        used_space = realm.currently_used_upload_space_bytes()
+        attachments_size = sum(Attachment.objects.values_list("size", flat=True))
 
         self._assert_archive_empty()
-        move_messages_to_archive(message_ids=msg_ids, realm=realm)
+        with self.captureOnCommitCallbacks(execute=True):
+            move_messages_to_archive(message_ids=msg_ids, realm=realm)
         self._verify_archive_data(msg_ids, usermsg_ids)
 
         self.assertFalse(Attachment.objects.exists())
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space - attachments_size)
         archived_attachment_ids = list(
             ArchivedAttachment.objects.filter(messages__id__in=msg_ids).values_list(
                 "id", flat=True
@@ -707,8 +724,10 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
                 ),
             )
 
-        restore_all_data_from_archive()
+        with self.captureOnCommitCallbacks(execute=True):
+            restore_all_data_from_archive()
         self._verify_restored_data(msg_ids, usermsg_ids)
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space)
 
         restored_attachment_ids = list(
             Attachment.objects.filter(messages__id__in=msg_ids).values_list("id", flat=True),
@@ -752,12 +771,17 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True),
         )
 
+        do_fill_count_stat_at_hour(COUNT_STATS["upload_quota_used_bytes::day"], timezone_now())
+        used_space = realm.currently_used_upload_space_bytes()
+
         self._assert_archive_empty()
         # Archive one of the messages:
-        move_messages_to_archive(message_ids=[msg_id], realm=realm)
+        with self.captureOnCommitCallbacks(execute=True):
+            move_messages_to_archive(message_ids=[msg_id], realm=realm)
         self._verify_archive_data([msg_id], usermsg_ids)
         # Attachments shouldn't have been deleted, as the second message links to them:
         self.assertEqual(Attachment.objects.count(), 5)
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space)
 
         self.assertEqual(
             set(

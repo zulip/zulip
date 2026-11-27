@@ -4,7 +4,12 @@ from typing import Any
 
 from django.db import transaction
 
-from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from zerver.lib.attachments import (
+    AttachmentSpaceUsage,
+    adjust_upload_space_snapshots,
+    get_old_unclaimed_attachments,
+    validate_attachment_request,
+)
 from zerver.lib.event_types import Attachment as AttachmentData
 from zerver.lib.event_types import AttachmentUpdateEvent
 from zerver.lib.markdown import MessageRenderingResult
@@ -91,13 +96,16 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         weeks_ago
     )
 
+    deleted_attachments: list[AttachmentSpaceUsage] = []
     with delete_message_attachments(delete_from=(ImageAttachment, Attachment)) as delete_one:
-        for path_id in (
-            old_unclaimed_attachments.values_list("path_id", flat=True)
+        for path_id, realm_id, create_time, size in (
+            old_unclaimed_attachments.values_list("path_id", "realm_id", "create_time", "size")
             .select_for_update(of=("self",), no_key=False)
             .iterator()
         ):
             delete_one(path_id)
+            deleted_attachments.append(AttachmentSpaceUsage(realm_id, create_time, size))
+    adjust_upload_space_snapshots(deleted_attachments, removed=True)
     with delete_message_attachments(
         delete_from=(ImageAttachment, ArchivedAttachment)
     ) as delete_one:

@@ -41,6 +41,11 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
+from zerver.lib.attachments import (
+    AttachmentSpaceUsage,
+    adjust_upload_space_snapshots,
+    delete_attachments_and_adjust_upload_space,
+)
 from zerver.lib.internal_event_types import InternalDeleteMessageEvent
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import bulk_access_messages, event_recipient_ids_for_action_on_messages
@@ -478,12 +483,14 @@ def delete_messages(
 
 
 def delete_expired_attachments(realm: Realm) -> None:
-    (num_deleted, _deletions) = Attachment.objects.filter(
-        messages__isnull=True,
-        scheduled_messages__isnull=True,
-        realm_id=realm.id,
-        id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
-    ).delete()
+    num_deleted = delete_attachments_and_adjust_upload_space(
+        Attachment.objects.filter(
+            messages__isnull=True,
+            scheduled_messages__isnull=True,
+            realm_id=realm.id,
+            id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
+        )
+    )
 
     if num_deleted > 0:
         logger.info("Cleaned up %s attachments for realm %s", num_deleted, realm.string_id)
@@ -653,9 +660,11 @@ def move_messages_to_archive(
         archived_attachments = ArchivedAttachment.objects.filter(
             messages__id__in=message_ids_chunk
         ).distinct()
-        Attachment.objects.filter(
-            messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
-        ).delete()
+        delete_attachments_and_adjust_upload_space(
+            Attachment.objects.filter(
+                messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
+            )
+        )
 
     if message_ids and count == 0:
         raise Message.DoesNotExist
@@ -717,13 +726,24 @@ def restore_attachments_from_archive(archive_transaction_id: int) -> None:
         WHERE zerver_archivedmessage.archive_transaction_id = {archive_transaction_id}
         GROUP BY zerver_archivedattachment.id
     ON CONFLICT (id) DO NOTHING
+    RETURNING id
     """
     )
-    move_rows(
+    restored_attachment_ids = move_rows(
         Attachment,
         query,
         src_db_table="zerver_archivedattachment",
+        returning_id=True,
         archive_transaction_id=Literal(archive_transaction_id),
+    )
+    adjust_upload_space_snapshots(
+        [
+            AttachmentSpaceUsage(realm_id, create_time, size)
+            for realm_id, create_time, size in Attachment.objects.filter(
+                id__in=restored_attachment_ids
+            ).values_list("realm_id", "create_time", "size")
+        ],
+        removed=False,
     )
 
 

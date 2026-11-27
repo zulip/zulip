@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 import zerver.lib.upload
+from analytics.lib.counts import COUNT_STATS, do_fill_count_stat_at_hour
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
@@ -145,20 +146,29 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_unused_upload(self) -> None:
         unused_attachment = self.make_attachment("text.txt")
+        realm = unused_attachment.realm
+        do_fill_count_stat_at_hour(COUNT_STATS["upload_quota_used_bytes::day"], timezone_now())
+        used_space = realm.currently_used_upload_space_bytes()
         self.assert_exists(
             unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
 
         # If we have 3 weeks of grace, nothing happens
-        do_delete_old_unclaimed_attachments(3)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_delete_old_unclaimed_attachments(3)
         self.assert_exists(
             unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
         )
+        self.assertEqual(realm.currently_used_upload_space_bytes(), used_space)
 
         # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
-        do_delete_old_unclaimed_attachments(1)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
             unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+        )
+        self.assertEqual(
+            realm.currently_used_upload_space_bytes(), used_space - unused_attachment.size
         )
 
     def test_delete_used_upload(self) -> None:
