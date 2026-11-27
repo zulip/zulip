@@ -270,3 +270,7 @@ class TestChecks(ZulipTestCase):
     @override_settings(JITSI_SERVER_URL="https://example.com/jitsi")
     def test_check_jitsi_server_url_valid(self) -> None:
         self.assert_check_with_error(None)
+
+    def test_check_jitsi_server_url_disabled_or_saas(self) -> None:
+        self.assert_check_with_error(None, JITSI_SERVER_URL=None)
+        self.assert_check_with_error(None, JITSI_SERVER_URL="https://meet.jit.si")
