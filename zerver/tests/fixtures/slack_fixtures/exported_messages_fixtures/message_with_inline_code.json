@@ -1,0 +1,114 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029539.293359",
+    "text": "Hello there, I am an `inline code`\n*Hello there, I am an `inline code`*\n ~_*<https://chat.zulip.org|Hello there, I am an >`inline code`*_~",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "attachments": [
+        {
+            "from_url": "https://chat.zulip.org/",
+            "thumb_url": "https://chat.zulip.org/user_avatars/2/realm/icon.png?version=3",
+            "thumb_width": 100,
+            "thumb_height": 100,
+            "id": 1,
+            "original_url": "https://chat.zulip.org",
+            "fallback": "Zulip: Public view of Zulip Community | Zulip team chat",
+            "text": "Browse the publicly accessible channels in Zulip Community without logging in.",
+            "title": "Public view of Zulip Community | Zulip team chat",
+            "title_link": "https://chat.zulip.org/",
+            "service_name": "Zulip"
+        }
+    ],
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "6rWGR",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am an "
+                        },
+                        {
+                            "type": "text",
+                            "text": "inline code",
+                            "style": {
+                                "code": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am an ",
+                            "style": {
+                                "bold": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "inline code",
+                            "style": {
+                                "bold": true,
+                                "code": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "text",
+                            "text": " ",
+                            "style": {
+                                "bold": true,
+                                "italic": true,
+                                "strike": true,
+                                "underline": true
+                            }
+                        },
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org",
+                            "text": "Hello there, I am an ",
+                            "style": {
+                                "bold": true,
+                                "italic": true,
+                                "strike": true,
+                                "underline": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "inline code",
+                            "style": {
+                                "bold": true,
+                                "italic": true,
+                                "strike": true,
+                                "code": true,
+                                "underline": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
