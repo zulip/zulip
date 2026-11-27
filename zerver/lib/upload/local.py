@@ -13,9 +13,18 @@ from typing_extensions import override
 from zerver.lib.mime_types import guess_type
 from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.upload import MAX_FILE_NAME_LENGTH, truncate_file_name
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmEmoji, UserProfile
+
+# 2**32 - 1
+MAX_UINT32 = 4294967295
+# While locking an upload, tusd creates a temporary file named
+# "<upload ID>.lock.<random 32-bit number>" next to it. That's a
+# longer name than "<upload ID>.info", where tusd stores the upload's
+# metadata.
+LONGEST_TUSD_LOCK_FILE_SUFFIX = f".lock.{MAX_UINT32}"
 
 
 def assert_is_local_storage_path(type: Literal["avatars", "files"], full_path: str) -> None:
@@ -79,6 +88,13 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     @override
     def generate_message_upload_path(self, realm_id: str, sanitized_file_name: str) -> str:
+        # Truncate before the ".info" check below, so that it sees the
+        # truncated name, and leave room for the "-file" suffix it may
+        # add and for tusd's lock files.
+        sanitized_file_name = truncate_file_name(
+            sanitized_file_name,
+            MAX_FILE_NAME_LENGTH - len(LONGEST_TUSD_LOCK_FILE_SUFFIX) - len("-file"),
+        )
         # tusd uses this directory too, and trusts any "<upload ID>.info"
         # file in it as that upload's metadata, which can point it at
         # arbitrary paths on disk. So uploaded files must never have
