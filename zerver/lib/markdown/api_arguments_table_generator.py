@@ -139,79 +139,86 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
     def render_parameters(self, parameters: Sequence[Parameter]) -> list[str]:
         lines = []
-
-        md_engine = markdown.Markdown(extensions=[])
         parameters = sorted(parameters, key=lambda parameter: parameter.deprecated)
         for parameter in parameters:
-            name = parameter.name
-            description = parameter.description
-            enums = parameter.value_schema.get("enum")
-            if enums is not None:
-                formatted_enums = [
-                    OBJECT_CODE_TEMPLATE.format(value=json.dumps(enum)) for enum in enums
-                ]
-                description += "\nMust be one of: {}. ".format(", ".join(formatted_enums))
-
-            default = parameter.value_schema.get("default")
-            if default is not None:
-                description += f"\nDefaults to `{json.dumps(default)}`."
-            data_type = generate_data_type(parameter.value_schema)
-
-            # TODO: OpenAPI allows indicating where the argument goes
-            # (path, querystring, form data...).  We should document this detail.
-
-            # We use this style without explicit JSON encoding for
-            # integers, strings, and booleans.
-            # * For booleans, JSON encoding correctly corrects for Python's
-            #   str(True)="True" not matching the encoding of "true".
-            # * For strings, doing so nicely results in strings being quoted
-            #   in the documentation, improving readability.
-            # * For integers, it is a noop, since json.dumps(3) == str(3) == "3".
-            example = json.dumps(parameter.example)
-
-            required_string: str = "required"
-            if parameter.kind == "path":
-                # Any path variable is required
-                assert parameter.required
-                required_string = "required in path"
-
-            if parameter.required:
-                required_block = f'<span class="api-argument-required">{required_string}</span>'
-            else:
-                required_block = '<span class="api-argument-optional">optional</span>'
-
-            check_deprecated_consistency(parameter.deprecated, description)
-            if parameter.deprecated:
-                deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
-            else:
-                deprecated_block = ""
-
-            object_block = ""
-            # TODO: There are some endpoint parameters with object properties
-            # that are not defined in `zerver/openapi/zulip.yaml`
-            if "object" in data_type:
-                object_schema = parameter.value_schema
-
-                if "items" in object_schema and "properties" in object_schema["items"]:
-                    object_block = self.render_object_details(object_schema["items"], str(name))
-                elif "properties" in object_schema:
-                    object_block = self.render_object_details(object_schema, str(name))
-                elif "oneOf" in object_schema:
-                    object_block = self.render_oneof_block(object_schema, str(name))
-
-            lines.append(
-                API_PARAMETER_TEMPLATE.format(
-                    argument=name,
-                    example=escape_html(example),
-                    required=required_block,
-                    deprecated=deprecated_block,
-                    description=md_engine.convert(description),
-                    type=data_type,
-                    object_details=object_block,
+            if parameter.kind == "body":
+                # Document the body's fields as arguments, rather than one
+                # argument for typed_endpoint's internal "request" name.
+                lines.append("<p>A JSON object with the following name/value pairs:</p>")
+                lines.extend(
+                    self.render_parameter(field) for field in get_json_body_fields(parameter)
                 )
-            )
-
+            else:
+                lines.append(self.render_parameter(parameter))
         return lines
+
+    def render_parameter(self, parameter: Parameter) -> str:
+        md_engine = markdown.Markdown(extensions=[])
+        name = parameter.name
+        description = parameter.description
+        enums = parameter.value_schema.get("enum")
+        if enums is not None:
+            formatted_enums = [
+                OBJECT_CODE_TEMPLATE.format(value=json.dumps(enum)) for enum in enums
+            ]
+            description += "\nMust be one of: {}. ".format(", ".join(formatted_enums))
+
+        default = parameter.value_schema.get("default")
+        if default is not None:
+            description += f"\nDefaults to `{json.dumps(default)}`."
+        data_type = generate_data_type(parameter.value_schema)
+
+        # TODO: OpenAPI allows indicating where the argument goes
+        # (path, querystring, form data...).  We should document this detail.
+
+        # We use this style without explicit JSON encoding for
+        # integers, strings, and booleans.
+        # * For booleans, JSON encoding correctly corrects for Python's
+        #   str(True)="True" not matching the encoding of "true".
+        # * For strings, doing so nicely results in strings being quoted
+        #   in the documentation, improving readability.
+        # * For integers, it is a noop, since json.dumps(3) == str(3) == "3".
+        example = json.dumps(parameter.example)
+
+        required_string: str = "required"
+        if parameter.kind == "path":
+            # Any path variable is required
+            assert parameter.required
+            required_string = "required in path"
+
+        if parameter.required:
+            required_block = f'<span class="api-argument-required">{required_string}</span>'
+        else:
+            required_block = '<span class="api-argument-optional">optional</span>'
+
+        check_deprecated_consistency(parameter.deprecated, description)
+        if parameter.deprecated:
+            deprecated_block = '<span class="api-argument-deprecated">Deprecated</span>'
+        else:
+            deprecated_block = ""
+
+        object_block = ""
+        # TODO: There are some endpoint parameters with object properties
+        # that are not defined in `zerver/openapi/zulip.yaml`
+        if "object" in data_type:
+            object_schema = parameter.value_schema
+
+            if "items" in object_schema and "properties" in object_schema["items"]:
+                object_block = self.render_object_details(object_schema["items"], str(name))
+            elif "properties" in object_schema:
+                object_block = self.render_object_details(object_schema, str(name))
+            elif "oneOf" in object_schema:
+                object_block = self.render_oneof_block(object_schema, str(name))
+
+        return API_PARAMETER_TEMPLATE.format(
+            argument=name,
+            example=escape_html(example),
+            required=required_block,
+            deprecated=deprecated_block,
+            description=md_engine.convert(description),
+            type=data_type,
+            object_details=object_block,
+        )
 
     def render_object_details(
         self, schema: Mapping[str, Any], name: str, oneof: bool = False
@@ -314,3 +321,22 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
         if schema.get("nullable", False):
             data_type += " | null"
     return data_type
+
+
+def get_json_body_fields(parameter: Parameter) -> list[Parameter]:
+    schema = parameter.value_schema
+    assert isinstance(parameter.example, dict)
+    required = schema.get("required", [])
+    return [
+        Parameter(
+            kind="body",
+            name=key,
+            description=field_schema["description"],
+            json_encoded=True,
+            value_schema=field_schema,
+            example=parameter.example.get(key, field_schema.get("example")),
+            required=key in required,
+            deprecated=field_schema.get("deprecated", False),
+        )
+        for key, field_schema in schema["properties"].items()
+    ]
