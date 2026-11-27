@@ -1,6 +1,5 @@
 import {$} from "jquery";
 import assert from "minimalistic-assert";
-import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
@@ -291,6 +290,34 @@ function update_announce_stream_state(): void {
     $("#announce-new-stream").show();
 }
 
+export function handle_create_channel_error(xhr: JQuery.jqXHR<unknown>): void {
+    const code = channel.xhr_error_code(xhr);
+    if (code === "PERMISSION_DENIED") {
+        // If we can't access the channel, it is a duplicate channel we
+        // cannot view (private or archived). We don't know whether it's
+        // archived, so use the generic non-archived copy to avoid leaking
+        // that information.
+        const rendered_error = render_channel_name_conflict_error({
+            stream_id: undefined,
+            is_archived: false,
+            show_rename: false,
+            can_view_channel: false,
+        });
+        stream_name_error.report_already_exists(rendered_error);
+        stream_name_error.select();
+
+        stream_settings_components.show_subs_pane.create_stream("configure_channel_settings");
+    } else {
+        ui_report.error(
+            $t_html({defaultMessage: "Error creating channel"}),
+            xhr,
+            $(".stream_create_info"),
+        );
+    }
+    loading.destroy_indicator($("#stream_creating_indicator"));
+    set_create_form_disabled(false);
+}
+
 function create_stream(): void {
     const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
     const description = $<HTMLInputElement>("input#create_stream_description").val()!.trim();
@@ -426,39 +453,7 @@ function create_stream(): void {
             set_create_form_disabled(false);
             // The rest of the work is done via the subscribe event we will get
         },
-        error(xhr): void {
-            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
-                // If we can't access the stream, we can safely
-                // assume it's a duplicate stream that we are not invited to.
-                //
-                // BUG: This check should be using error codes, not
-                // parsing the error string, so it works correctly
-                // with i18n.  And likely we should be reporting the
-                // error text directly rather than turning it into
-                // "Error creating channel"?
-                const rendered_error = render_channel_name_conflict_error({
-                    stream_id: undefined,
-                    is_archived: false,
-                    show_rename: false,
-                    can_view_channel: false,
-                });
-                stream_name_error.report_already_exists(rendered_error);
-                stream_name_error.select();
-
-                stream_settings_components.show_subs_pane.create_stream(
-                    "configure_channel_settings",
-                );
-            } else {
-                ui_report.error(
-                    $t_html({defaultMessage: "Error creating channel"}),
-                    xhr,
-                    $(".stream_create_info"),
-                );
-            }
-            loading.destroy_indicator($("#stream_creating_indicator"));
-            set_create_form_disabled(false);
-        },
+        error: handle_create_channel_error,
     });
 }
 
