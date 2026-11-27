@@ -519,7 +519,11 @@ export function check_and_show_muted_messages_banner(): void {
     }
 }
 
-export function initialize(): void {
+export function initialize({
+    on_desktop_notifications_permission_granted,
+}: {
+    on_desktop_notifications_permission_granted: () => void;
+}): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
     if (realm.demo_organization_scheduled_deletion_date) {
@@ -576,7 +580,10 @@ export function initialize(): void {
                 const $banner = $(this).closest(".banner");
                 const permission =
                     await desktop_notifications.request_desktop_notifications_permission();
-                if (permission === "granted" || permission === "denied") {
+                if (permission === "granted") {
+                    close_navbar_banner_and_resize($banner);
+                    on_desktop_notifications_permission_granted();
+                } else if (permission === "denied") {
                     close_navbar_banner_and_resize($banner);
                 }
             })();
