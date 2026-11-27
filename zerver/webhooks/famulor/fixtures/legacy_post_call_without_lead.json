@@ -1,0 +1,19 @@
+{
+    "id": 480337,
+    "customer_phone": "+4917123456789",
+    "assistant_phone": "+4912345678",
+    "duration": 120,
+    "status": "completed",
+    "extracted_variables": {
+        "issue_resolved": true,
+        "customer_satisfaction": 9,
+        "support_category": "technical"
+    },
+    "input_variables": {},
+    "transcript": "Assistant: Hello! How can I assist you today?\nCustomer: I have a problem with...",
+    "recording_url": null,
+    "created_at": "2024-01-15T14:20:00Z",
+    "finished_at": "2024-01-15T14:22:00Z",
+    "lead": null,
+    "campaign": null
+}

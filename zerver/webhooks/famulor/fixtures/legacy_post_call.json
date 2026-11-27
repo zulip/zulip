@@ -1,0 +1,55 @@
+{
+    "id": 480336,
+    "customer_phone": "+4915123456789",
+    "assistant_phone": "+4912345678",
+    "duration": 180,
+    "status": "completed",
+    "extracted_variables": {
+        "customer_interested": true,
+        "appointment_scheduled": false,
+        "contact_reason": "product_inquiry",
+        "follow_up_needed": true,
+        "customer_budget": "10000-50000",
+        "decision_maker": true,
+        "next_contact_date": "2024-02-15"
+    },
+    "input_variables": {
+        "customer_name": "Max Mustermann",
+        "company": "Beispiel GmbH"
+    },
+    "transcript": "Assistant: Hello Mr. Mustermann! I am calling from Famulor...\nCustomer: Hello, yes I’m listening...",
+    "recording_url": "https://recordings.famulor.de/call-480336.mp3",
+    "created_at": "2024-01-15T10:30:00Z",
+    "finished_at": "2024-01-15T10:33:00Z",
+    "lead": {
+        "id": 12345,
+        "phone_number": "+4915123456789",
+        "variables": {
+            "customer_name": "Max Mustermann",
+            "company": "Beispiel GmbH",
+            "source": "website"
+        },
+        "status": "contacted",
+        "created_at": "2024-01-14T09:00:00Z",
+        "updated_at": "2024-01-15T10:33:00Z"
+    },
+    "campaign": {
+        "id": 2324,
+        "name": "New Customer Acquisition Q1 2024",
+        "status": "in-progress",
+        "allowed_hours_start_time": "09:00:00",
+        "allowed_hours_end_time": "18:00:00",
+        "allowed_days": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday"
+        ],
+        "max_calls_in_parallel": 5,
+        "max_retries": 3,
+        "retry_interval": 60,
+        "created_at": "2024-01-01T08:00:00Z",
+        "updated_at": "2024-01-15T10:00:00Z"
+    }
+}
