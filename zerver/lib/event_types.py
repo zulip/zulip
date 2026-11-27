@@ -628,6 +628,7 @@ class RealmUpdateDictData(BaseEventModel):
     can_set_delete_message_policy_group: int | UserGroupMembersDict | None = None
     can_set_topics_policy_group: int | UserGroupMembersDict | None = None
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
+    can_unsubscribe_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
     workplace_users_group: int | UserGroupMembersDict | None = None
@@ -893,6 +894,7 @@ class BasicStreamFields(BaseEventModel):
     can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_unsubscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
@@ -967,6 +969,7 @@ class SingleSubscription(BaseEventModel):
     can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
+    can_unsubscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
