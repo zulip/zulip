@@ -38,8 +38,6 @@ class JiraHookTests(WebhookTestCase):
             "jira:worklog_updated",
             "sprint_closed",
             "sprint_started",
-            "worklog_created",
-            "worklog_updated",
         ]
         for action in ignored_actions:
             url = self.build_webhook_url()
@@ -58,6 +56,21 @@ class JiraHookTests(WebhookTestCase):
         expected_topic_name = "TEST-4: Test Created Assignee"
         expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority (assigned to Kevin Lin)."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_worklog_created(self) -> None:
+        expected_topic_name = "Issue 10014"
+        expected_message = "Leo Franchi created a work log entry of 1w on issue [10014](https://zulipp.atlassian.net/issues/?jql=id=10014)."
+        self.check_webhook("worklog_created", expected_topic_name, expected_message)
+
+    def test_worklog_updated(self) -> None:
+        expected_topic_name = "Issue 10014"
+        expected_message = "Leo Franchi updated a work log entry on issue [10014](https://zulipp.atlassian.net/issues/?jql=id=10014); time spent is 4d."
+        self.check_webhook("worklog_updated", expected_topic_name, expected_message)
+
+    def test_worklog_deleted(self) -> None:
+        expected_topic_name = "Issue 10014"
+        expected_message = "Leo Franchi deleted a work log entry from issue [10014](https://zulipp.atlassian.net/issues/?jql=id=10014)."
+        self.check_webhook("worklog_deleted", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
