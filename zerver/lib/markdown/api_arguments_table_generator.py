@@ -307,6 +307,8 @@ def generate_data_type(schema: Mapping[str, Any]) -> str:
     data_type = ""
     if "oneOf" in schema:
         data_type = " | ".join(generate_data_type(item) for item in schema["oneOf"])
+    elif "anyOf" in schema:
+        data_type = " | ".join(generate_data_type(item) for item in schema["anyOf"])
     elif "items" in schema:
         data_type = "(" + generate_data_type(schema["items"]) + ")[]"
     else:

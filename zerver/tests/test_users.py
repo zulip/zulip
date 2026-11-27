@@ -865,11 +865,12 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(biography_field.editable_by_user)
 
         # Test for all type of data
-        fields = {
+        fields: dict[str, str | list[Any]] = {
             "Phone number": "short text data",
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "0",
+            "Favorite programming languages": ["0", "2"],
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],
@@ -908,6 +909,7 @@ class PermissionTest(ZulipTestCase):
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "Vim",  # SELECT field: "0" -> "Vim"
+            "Favorite programming languages": "Python, Rust",  # CHECKBOXES field: ["0", "2"]
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": silent_mention_syntax_for_user(cordelia),
@@ -1007,7 +1009,7 @@ class PermissionTest(ZulipTestCase):
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
             value: str | list[Any] | None = ""
-            if field.field_type == CustomProfileField.USER:
+            if field.field_type in (CustomProfileField.USER, CustomProfileField.CHECKBOXES):
                 value = []
             empty_profile_data.append(
                 {
@@ -1026,31 +1028,33 @@ class PermissionTest(ZulipTestCase):
 
         # Test adding some of the field values after removing all.
         hamlet = self.example_user("hamlet")
-        new_fields = {
+        new_fields: dict[str, str | list[Any] | None] = {
             "Phone number": None,
             "Biography": "A test user",
             "Favorite food": None,
             "Favorite editor": None,
+            "Favorite programming languages": None,
             "Birthday": None,
             "Favorite website": "https://zulip.github.io",
             "Mentor": [hamlet.id],
             "GitHub username": "timabbott",
             "Pronouns": None,
         }
-        new_profile_data = []
+        reset_profile_data: list[dict[str, Any]] = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
             value = None
             if new_fields[field_name]:
                 value = new_fields[field_name]
-            new_profile_data.append(
+            reset_profile_data.append(
                 {
                     "id": field.id,
                     "value": value,
                 }
             )
         result = self.client_patch(
-            f"/json/users/{cordelia.id}", {"profile_data": orjson.dumps(new_profile_data).decode()}
+            f"/json/users/{cordelia.id}",
+            {"profile_data": orjson.dumps(reset_profile_data).decode()},
         )
         self.assert_json_success(result)
         for field_dict in cordelia.profile_data():

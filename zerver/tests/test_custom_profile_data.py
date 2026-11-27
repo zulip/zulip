@@ -893,11 +893,12 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields: list[tuple[str, str | list[int]]] = [
+        fields: list[tuple[str, str | list[int] | list[str]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
             ("Favorite editor", "0"),
+            ("Favorite programming languages", ["0", "2"]),
             ("Birthday", "1909-03-05"),
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
