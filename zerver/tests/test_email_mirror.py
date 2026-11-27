@@ -36,6 +36,7 @@ from zerver.lib.email_mirror import (
     process_message,
     process_missed_message,
     redact_email_address,
+    silence_email_gateway_wildcards,
     strip_from_subject,
 )
 from zerver.lib.email_mirror_helpers import (
@@ -56,7 +57,7 @@ from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
-from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models import Attachment, Realm, Recipient, Stream, UserProfile
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
@@ -2201,6 +2202,58 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
             redacted_message = redact_email_address(error_message)
             self.assertEqual(redacted_message, expected_message)
+
+
+class TestEmailGatewayWildcardMentions(ZulipTestCase):
+    def test_silence_email_gateway_wildcards(self) -> None:
+        self.assertEqual(
+            silence_email_gateway_wildcards(
+                "@**all** @**everyone** @**channel** @**stream** @**topic**"
+            ),
+            "@_**all** @_**everyone** @_**channel** @_**stream** @_**topic**",
+        )
+
+        # Silent wildcard mentions, other mentions and text that isn't a
+        # mention are left as they are.
+        content = "@_**all** @_**topic** @**King Hamlet** @**ALL** abc@**all** abc@example.com"
+        self.assertEqual(silence_email_gateway_wildcards(content), content)
+
+    def test_receive_stream_email_with_wildcard_mentions(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        incoming = EmailMessage()
+        incoming.set_content("Hello @**all**, please read @**topic**")
+        incoming["Subject"] = "Test"
+        incoming["From"] = self.example_email("othello")
+        incoming["To"] = stream_to_address
+        incoming["Reply-to"] = self.example_email("othello")
+
+        # The email gateway isn't allowed to use wildcard mentions in a
+        # channel with many subscribers.
+        with (
+            mock.patch(
+                "zerver.lib.message.num_subscribers_for_stream_id",
+                return_value=Realm.WILDCARD_MENTION_THRESHOLD + 1,
+            ),
+            mock.patch("zerver.lib.message.can_mention_many_users", return_value=False),
+            self.assertLogs(logger_name, level="INFO") as m,
+        ):
+            process_message(incoming)
+
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Successfully processed email to {stream.name} ({stream.realm.string_id})"
+            ],
+        )
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.content, "Hello @_**all**, please read @_**topic**")
 
 
 class TestEmailMirrorServer(ZulipTestCase):
