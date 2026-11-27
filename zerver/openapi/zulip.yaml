@@ -6089,6 +6089,10 @@ paths:
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
+                                        Only the configured video call provider will successfully create calls
+                                        even if other [call integrations][video-calls-production] are configured
+                                        on the server.
+
                                         **Changes**: In Zulip 13.0 (feature level 514),
                                         added the Google Meet option.
 
@@ -6108,6 +6112,7 @@ paths:
                                         to disable video call UI.
 
                                         [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+                                        [video-calls-production]: https://zulip.readthedocs.io/en/latest/production/video-calls.html
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -21407,6 +21412,10 @@ paths:
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
+                          Only the configured video call provider will successfully create calls
+                          even if other [call integrations][video-calls-production] are configured
+                          on the server.
+
                           **Changes**: In Zulip 13.0 (feature level 514), added the
                           Google Meet option.
 
@@ -21426,6 +21435,7 @@ paths:
                           to disable video call UI.
 
                           [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+                          [video-calls-production]: https://zulip.readthedocs.io/en/latest/production/video-calls.html
                       realm_jitsi_server_url:
                         type: string
                         nullable: true
@@ -27703,7 +27713,14 @@ paths:
 
         The acting user will be given the moderator role on the call.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 337), every
+        Returns an error if BigBlueButton isn't the organization's
+        [configured call provider](/help/configure-call-provider).
+
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the organization had
+        configured BigBlueButton as its video call provider.
+
+        Prior to Zulip 10.0 (feature level 337), every
         user was given the moderator role on BigBlueButton calls, via
         encoding a moderator password in the generated URLs.
       parameters:
@@ -27762,7 +27779,14 @@ paths:
         [Nextcloud Talk](/integrations/nextcloud-talk) to be configured on the
         Zulip server.
 
-        **Changes**: New in Zulip 12.0 (feature level 465).
+        Returns an error if Nextcloud Talk isn't the organization's
+        [configured call provider](/help/configure-call-provider).
+
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the organization had
+        configured Nextcloud Talk as its video call provider.
+
+        New in Zulip 12.0 (feature level 465).
       requestBody:
         required: true
         content:
@@ -27819,7 +27843,14 @@ paths:
         response](/api/register-queue), as well as the [`has_webex_token`
         event type](/api/get-events#has_webex_token).
 
-        **Changes**: New in Zulip 12.0 (feature level 493).
+        Returns an error if Webex isn't the organization's
+        [configured call provider](/help/configure-call-provider).
+
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the organization had
+        configured Webex as its video call provider.
+
+        New in Zulip 12.0 (feature level 493).
       responses:
         "200":
           description: Success.
@@ -27861,7 +27892,14 @@ paths:
         /register` response](/api/register-queue), as well as the
         [`has_google_meet_token` event type](/api/get-events#has_google_meet_token).
 
-        **Changes**: New in Zulip 13.0 (feature level 514).
+        Returns an error if Google Meet isn't the organization's
+        [configured call provider](/help/configure-call-provider).
+
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the organization had
+        configured Google Meet as its video call provider.
+
+        New in Zulip 13.0 (feature level 514).
       responses:
         "200":
           description: Success.
@@ -27896,7 +27934,14 @@ paths:
         Requires [Constructor Groups](/integrations/constructor-groups)
         to be configured on the Zulip server.
 
-        **Changes**: New in Zulip 12.0 (feature level 460).
+        Returns an error if Constructor Groups isn't the organization's
+        [configured call provider](/help/configure-call-provider).
+
+        **Changes**: Prior to Zulip 14.0 (feature level ZF-dbd3de),
+        this endpoint did not verify that the organization had
+        configured Constructor Groups as its video call provider.
+
+        New in Zulip 12.0 (feature level 460).
       responses:
         "200":
           description: Success.
