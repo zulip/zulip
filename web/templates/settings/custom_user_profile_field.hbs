@@ -15,6 +15,16 @@
                 <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
             {{/each}}
         </select>
+        {{else if is_checkboxes_field}}
+        <div class="custom_user_checkboxes_field_value checkboxes-field-value" name="{{ field.id }}" data-field-id="{{ field.id }}">
+            {{#each field_choices}}
+                <label class="checkbox">
+                    <input type="checkbox" name="{{ ../field.id }}-{{ this.value }}" value="{{ this.value }}" {{#if this.selected}}checked{{/if}} {{#unless ../editable_by_user}}disabled{{/unless}} />
+                    <span class="rendered-checkbox"></span>
+                    {{ this.text }}
+                </label>
+            {{/each}}
+        </div>
         {{else if is_user_field }}
         <div class="pill-container person_picker {{#unless editable_by_user}}not-editable-by-user disabled{{/unless}}" name="{{ field.id }}">
             <div class="input" {{#if editable_by_user}}contenteditable="true"{{/if}}></div>

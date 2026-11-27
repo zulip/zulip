@@ -502,6 +502,16 @@ export function get_custom_profile_field_data(
             profile_field.value = field_choice_dict[field_value.value]!.text;
             break;
         }
+        case field_types.CHECKBOXES.id: {
+            const field_choice_dict = settings_components.custom_profile_field_choices_schema.parse(
+                JSON.parse(field.field_data),
+            );
+            const selected_values = z.array(z.string()).parse(JSON.parse(field_value.value));
+            profile_field.value = selected_values
+                .map((value) => field_choice_dict[value]!.text)
+                .join(", ");
+            break;
+        }
         case field_types.SHORT_TEXT.id:
         case field_types.PARAGRAPH.id:
             profile_field.value = field_value.value;
@@ -1138,7 +1148,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
 function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPillWidget>): {
     id: number;
-    value: string | number[];
+    value: string | number[] | string[];
 }[] {
     /*
         This formats custom profile field data to send to the server.
@@ -1153,6 +1163,18 @@ function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPil
         new_profile_data.push({
             id: Number.parseInt($(this).closest(".custom_user_field").attr("data-field-id")!, 10),
             value: $(this).val(),
+        });
+    });
+    $("#edit-user-form .custom_user_checkboxes_field_value").each(function () {
+        const selected_values = $(this)
+            .find<HTMLInputElement>('input[type="checkbox"]:checked')
+            .map(function () {
+                return $(this).val()!;
+            })
+            .toArray();
+        new_profile_data.push({
+            id: Number.parseInt($(this).attr("data-field-id")!, 10),
+            value: selected_values,
         });
     });
     // Append user type field values also
