@@ -193,6 +193,7 @@ translators can understand and preserve those decisions:
 - [Polish](polish.md)
 - [Russian](russian.md)
 - [Spanish](spanish.md)
+- [Traditional Chinese](traditional-chinese.md)
 
 We encourage this information to also be placed in [Weblate's
 glossary](https://hosted.weblate.org/projects/zulip/glossary/), which
