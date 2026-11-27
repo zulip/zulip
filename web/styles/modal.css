@@ -651,6 +651,12 @@
     margin-top: 10px;
 }
 
+#start_export_modal_loading_indicator:not(:empty) {
+    /* loading.make_indicator sets no height, so the bottom margin
+       makes room for the spinner. */
+    margin: 0 auto 2.7143em;
+}
+
 #read_receipts_modal {
     .modal__container {
         width: 25.7142em; /* 360px at 14px em */

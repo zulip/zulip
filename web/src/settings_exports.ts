@@ -19,6 +19,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
@@ -74,6 +75,8 @@ function get_export_type_from_select(
 
 let users_consented_for_export_count: number;
 let total_users_count: number;
+let exports_list_widget: ListWidgetType<RealmExport> | undefined;
+let listed_exports: RealmExport[] = [];
 
 export function reset(): void {
     meta.loaded = false;
@@ -97,7 +100,8 @@ export function populate_exports_table(exports: RealmExport[]): void {
     }
 
     const $exports_table = $("#admin_exports_table").expectOne();
-    ListWidget.create($exports_table, Object.values(exports), {
+    listed_exports = Object.values(exports);
+    exports_list_widget = ListWidget.create($exports_table, listed_exports, {
         name: "admin_exports_list",
         get_item: ListWidget.default_get_item,
         modifier_html(data) {
@@ -120,6 +124,9 @@ export function populate_exports_table(exports: RealmExport[]): void {
                 realm_export: {
                     id: data.id,
                     acting_user: people.get_full_name(data.acting_user_id),
+                    acting_user_is_placeholder_user: people.is_placeholder_user(
+                        data.acting_user_id,
+                    ),
                     // Convert seconds -> milliseconds
                     event_time: timerender.relative_time_string_from_date(
                         new Date(data.export_time * 1000),
@@ -230,14 +237,38 @@ function get_export_consents_having_email_visibility_value(
     return export_consent_list;
 }
 
+// Until every user's data has arrived, the list of export permissions
+// is incomplete, so it has no rows and shows its loading indicator.
+function are_export_consent_users_loading(): boolean {
+    return export_consents.keys().some((user_id) => people.is_placeholder_user(user_id));
+}
+
+function update_export_consents_loading_indicator(is_loading: boolean): void {
+    const $loading_indicator = $("#admin_page_export_consents_loading_indicator");
+    const $export_consents_table = $("#admin_export_consents_table");
+    if (is_loading) {
+        loading.make_indicator_if_missing($loading_indicator);
+        $export_consents_table.hide();
+    } else {
+        loading.destroy_indicator($loading_indicator);
+        $export_consents_table.show();
+    }
+}
+
 export function redraw_export_consents_list(): void {
-    let new_list_data;
-    if (filter_by_consent_dropdown_widget.value() === filter_by_consent_options[0]!.unique_id) {
+    const is_loading = are_export_consent_users_loading();
+    let new_list_data: ExportConsent[];
+    if (is_loading) {
+        new_list_data = [];
+    } else if (
+        filter_by_consent_dropdown_widget.value() === filter_by_consent_options[0]!.unique_id
+    ) {
         new_list_data = get_export_consents_having_consent_value(true);
     } else {
         new_list_data = get_export_consents_having_consent_value(false);
     }
     export_consent_list_widget.replace_list_data(new_list_data);
+    update_export_consents_loading_indicator(is_loading);
 }
 
 export function populate_export_consents_table(): void {
@@ -246,9 +277,10 @@ export function populate_export_consents_table(): void {
     }
 
     const $export_consents_table = $("#admin_export_consents_table").expectOne();
+    const is_loading = are_export_consent_users_loading();
     export_consent_list_widget = ListWidget.create(
         $export_consents_table,
-        get_export_consents_having_consent_value(true),
+        is_loading ? [] : get_export_consents_having_consent_value(true),
         {
             name: "admin_export_consents_list",
             get_item: ListWidget.default_get_item,
@@ -288,6 +320,7 @@ export function populate_export_consents_table(): void {
             ),
         },
     );
+    update_export_consents_loading_indicator(is_loading);
 
     filter_by_consent_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: "filter_by_consent",
@@ -311,6 +344,41 @@ export function populate_export_consents_table(): void {
         hide_search_box: true,
     });
     filter_by_consent_dropdown_widget.setup();
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!meta.loaded || !overlays.settings_open()) {
+        return;
+    }
+    // Redrawing the list scrolls it back to the top, so we only do
+    // it when the data of a user who requested one of its exports has
+    // arrived.
+    const fetched_user_ids = new Set(user_ids);
+    if (
+        exports_list_widget !== undefined &&
+        listed_exports.some((realm_export) => fetched_user_ids.has(realm_export.acting_user_id))
+    ) {
+        exports_list_widget.hard_redraw();
+        update_export_url_spinners();
+    }
+    // The export permissions list and the form of the export modal
+    // show only once none of their users is a placeholder.
+    if (are_export_consent_users_loading()) {
+        return;
+    }
+    if ($("#admin_page_export_consents_loading_indicator").children().length > 0) {
+        redraw_export_consents_list();
+    }
+    // The modal's list of administrators is made again, from the
+    // roles that have arrived.
+    if ($("#start_export_modal_loading_indicator").children().length > 0) {
+        maybe_show_notes_about_unusable_users_if_exported(
+            get_export_type_from_select(
+                $<HTMLSelectOneElement>("select:not([multiple])#export_type"),
+            ),
+        );
+        update_start_export_modal_loading_indicator();
+    }
 }
 
 function maybe_show_allow_private_data_export_banner(): void {
@@ -390,6 +458,24 @@ function maybe_show_notes_about_unusable_users_if_exported(
     $warning_container.append($export_warnings);
 }
 
+// The modal lists the administrators who will be unable to log in.
+// The role of a placeholder user isn't known, so until every user's
+// data has arrived, the modal shows a loading indicator and can't be
+// submitted.
+function update_start_export_modal_loading_indicator(): void {
+    const is_loading = are_export_consent_users_loading();
+    const $loading_indicator = $("#start_export_modal_loading_indicator");
+    const $modal_content = $("#allow_private_data_export_banner_container, #start-export-form");
+    if (is_loading) {
+        loading.make_indicator_if_missing($loading_indicator);
+        $modal_content.hide();
+    } else {
+        loading.destroy_indicator($loading_indicator);
+        $modal_content.show();
+    }
+    $("#start-export-modal .dialog_submit_button").prop("disabled", is_loading);
+}
+
 function show_start_export_modal(): void {
     const modal_content_html = render_start_export_modal({
         export_type_values: get_export_type_options_to_render(),
@@ -462,6 +548,9 @@ function show_start_export_modal(): void {
         id: "start-export-modal",
         loading_spinner: true,
         on_click: start_export,
+        // post_render runs after the modal is shown, which would show
+        // its form for a moment.
+        on_show: update_start_export_modal_loading_indicator,
         post_render: start_export_modal_post_render,
     });
 }

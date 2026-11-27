@@ -364,6 +364,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     settings_bots.handle_users_fetched(user_ids);
     settings_emoji.handle_users_fetched(user_ids);
     settings_muted_users.handle_users_fetched(user_ids);
+    settings_exports.handle_users_fetched(user_ids);
     stream_edit.handle_users_fetched(user_ids);
     user_group_edit.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
