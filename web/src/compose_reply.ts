@@ -196,7 +196,15 @@ export function reply_with_mention(opts: {
     });
     const message = message_lists.current.selected_message();
     assert(message !== undefined);
-    const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
+    // The name of a placeholder sender comes from the message, and we
+    // can't tell yet whether another user shares it, so their mention
+    // always has their ID.
+    const mention = people.get_mention_syntax(
+        message.sender_full_name,
+        message.sender_id,
+        false,
+        people.is_placeholder_user(message.sender_id),
+    );
     compose_ui.insert_syntax_and_focus(mention);
 }
 

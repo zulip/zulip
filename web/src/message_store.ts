@@ -270,6 +270,25 @@ export function set_messages_for_tests(messages: ProcessedMessage[]): void {
     }
 }
 
+// A message from the server carries the name and email of each of
+// its DM recipients, which we need while a recipient is a placeholder
+// user. A locally echoed message is built from our own user data, so
+// it has nothing better for them.
+function get_dm_recipient_from_message(
+    message: Message | MessageWithBooleans | LocalMessageWithBooleans,
+    user_id: number,
+): DisplayRecipientUser | undefined {
+    if ("local_id" in message && message.local_id !== undefined) {
+        return undefined;
+    }
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
+    assert(message.display_recipient !== undefined);
+    return message.display_recipient.find((recipient) => recipient.id === user_id);
+}
+
 export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
 ): string {
@@ -279,6 +298,9 @@ export function get_pm_emails(
         if (!person) {
             blueslip.error("Unknown user id", {user_id});
             return "?";
+        }
+        if (person.is_placeholder_user) {
+            return get_dm_recipient_from_message(message, user_id)?.email ?? person.email;
         }
         return person.email;
     });
@@ -290,6 +312,28 @@ export function get_pm_emails(
 export function get_pm_full_names(user_ids: number[]): string {
     user_ids = people.sorted_other_user_ids(user_ids);
     const sorted_names = people.get_display_full_names(user_ids);
+    sorted_names.sort(util.make_strcmp());
+
+    return sorted_names.join(", ");
+}
+
+// Like get_pm_full_names, for the DM recipients of a message. A
+// recipient whose name is still loading gets the name the server
+// sent with the message.
+export function get_dm_full_names(
+    message: Message | MessageWithBooleans | LocalMessageWithBooleans,
+    user_ids: number[],
+): string {
+    user_ids = people.sorted_other_user_ids(user_ids);
+    const sorted_names = user_ids.map((user_id) => {
+        if (people.is_display_full_name_loading(user_id)) {
+            const recipient = get_dm_recipient_from_message(message, user_id);
+            if (recipient !== undefined) {
+                return recipient.full_name;
+            }
+        }
+        return people.get_display_full_name(user_id);
+    });
     sorted_names.sort(util.make_strcmp());
 
     return sorted_names.join(", ");

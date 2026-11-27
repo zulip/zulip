@@ -400,6 +400,57 @@ test("update_property", () => {
     assert.equal(message1.small_avatar_url, "alice_url");
     assert.equal(message2.small_avatar_url, "bobby_url");
 
+    // The data of a placeholder user has not arrived yet, so a
+    // message keeps the name and email the server sent with it.
+    const zoe = make_user({
+        email: "user106@example.com",
+        user_id: 106,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(zoe);
+    const zoe_from_message = {...zoe, email: "zoe@example.com", full_name: "Zoe"};
+    const dm_message = message_helper.process_new_message({
+        type: "server_message",
+        raw_message: {
+            sender_email: zoe_from_message.email,
+            sender_full_name: zoe_from_message.full_name,
+            sender_id: zoe.user_id,
+            type: "private",
+            display_recipient: convert_recipients([me, alice, zoe_from_message]),
+            flags: [],
+            id: 102,
+            reactions: [],
+            avatar_url: `/avatar/${zoe.user_id}`,
+            submessages: [],
+        },
+    }).message;
+    assert.equal(dm_message.sender_full_name, "Zoe");
+    assert.equal(dm_message.sender_email, "zoe@example.com");
+    assert.equal(dm_message.display_reply_to, "Alice, Zoe");
+    assert.equal(dm_message.reply_to, "alice@example.com,zoe@example.com");
+
+    // A locally echoed message is built from our own user data, so
+    // it has no name for a placeholder user.
+    const local_dm_message = message_helper.process_new_message({
+        type: "local_message",
+        raw_message: {
+            sender_email: me.email,
+            sender_full_name: me.full_name,
+            sender_id: me.user_id,
+            type: "private",
+            display_recipient: convert_recipients([me, zoe]),
+            flags: [],
+            id: 103.01,
+            local_id: "103.01",
+            reactions: [],
+            avatar_url: `/avatar/${me.user_id}`,
+            draft_id: 3,
+        },
+    }).message;
+    assert.equal(local_dm_message.display_reply_to, "Loading…");
+    assert.equal(local_dm_message.reply_to, "user106@example.com");
+
     assert.equal(message1.stream_id, devel.stream_id);
     assert.equal(message1.display_recipient, devel.name);
     assert.equal(message2.stream_id, denmark.stream_id);

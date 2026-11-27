@@ -127,7 +127,15 @@ export function reply_message(message: Message, content: string): void {
     if (message.type === "stream") {
         const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
 
-        const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
+        // The name of a placeholder sender comes from the message, and
+        // we can't tell yet whether another user shares it, so their
+        // mention always has their ID.
+        const mention = people.get_mention_syntax(
+            message.sender_full_name,
+            message.sender_id,
+            false,
+            people.is_placeholder_user(message.sender_id),
+        );
 
         content = mention + " " + content;
 
