@@ -51,16 +51,16 @@ problems in a scalable, correct, and predictable way.
 ## Generation system
 
 Zulip's generation system is built around a Python function,
-`send_event_on_commit(realm, event, users)`. It accepts the realm (used for
-sharding), the event data structure (just a Python dictionary with
-some keys and value; `type` is always one of the keys but the rest
-depends on the specific event) and a list of user IDs for the users
-whose clients should receive the event. In special cases such as
-message delivery, the list of users will instead be a list of dicts
-mapping user IDs to user-specific data like whether that user was
-mentioned in that message. The data passed to `send_event_on_commit` are
-simply marshalled as JSON and placed in the `notify_tornado` RabbitMQ
-queue to be consumed by the delivery system.
+`send_event_on_commit(realm, event, users)`. It accepts the realm (used
+for sharding), the event (an instance of one of the Pydantic models in
+`zerver/lib/event_types.py`, which declare the fields of each event
+type) and a list of user IDs for the users whose clients should receive
+the event. In special cases such as message delivery, the list of users
+will instead be a list of dicts mapping user IDs to user-specific data
+like whether that user was mentioned in that message. The data passed
+to `send_event_on_commit` are simply marshalled as JSON and placed in
+the `notify_tornado` RabbitMQ queue to be consumed by the delivery
+system.
 
 Usually, this list of users is one of 3 things:
 
@@ -353,25 +353,25 @@ things like database ids. So instead, we just verify the "schema"
 of the event(s). We use a schema checker like `check_default_streams`
 to validate the types of the data.
 
-If you are creating a new event format, then you will have to
-write your own schema checker in `event_schema.py`. Here is
-the example relevant to our example:
+If you are creating a new event format, first declare its Pydantic
+model in `event_types.py`; `send_event_on_commit` only accepts an
+instance of one of these models, so this is also what lets you send
+the event at all. Then make a schema checker from the model in
+`event_schema.py`. Here is the example relevant to our example:
 
 ```python
-default_streams_event = event_dict_type(
-    required_keys=[
-        ("type", Equals("default_streams")),
-        ("default_streams", ListType(DictType(basic_stream_fields))),
-    ]
-)
-check_default_streams = make_checker(default_streams_event)
+# zerver/lib/event_types.py
+class DefaultStreamsEvent(BaseEvent):
+    type: Literal["default_streams"] = "default_streams"
+    default_streams: list[int]
+
+
+# zerver/lib/event_schema.py
+check_default_streams = make_checker(DefaultStreamsEvent)
 ```
 
-Note that `basic_stream_fields` is not shown in these docs. The
-best way to understand how to write schema checkers is to read
-`event_schema.py`. There is a large block comment at the top of
-the file, and then you can skim the rest of the file to see the
-patterns.
+The best way to understand how to write these is to skim
+`event_types.py` and `event_schema.py` to see the patterns.
 
 When you create a new schema checker for a new event, you not only
 make the `test_events` test more rigorous, you also allow our other
