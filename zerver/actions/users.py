@@ -78,6 +78,7 @@ from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_
 from zerver.models import (
     Draft,
     GroupGroupMembership,
+    IdempotentRequest,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -213,6 +214,7 @@ def do_delete_user_core(
             (SavedSnippet, "user_profile"),
             (ScheduledMessage, "sender"),
             (Draft, "user_profile"),
+            (IdempotentRequest, "user"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()
