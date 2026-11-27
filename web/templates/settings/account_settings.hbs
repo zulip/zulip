@@ -70,6 +70,18 @@
                 {{/if}}
             </form>
 
+            <div>
+                <label class="settings-field-label" for="log_out_other_sessions">{{t "Other devices" }}</label>
+                <div class="input-group">
+                    {{> ../components/action_button
+                      label=(t "Log out of all other devices")
+                      variant="subtle"
+                      intent="neutral"
+                      id="log_out_other_sessions"
+                      }}
+                </div>
+            </div>
+
             <form class="user-self-role-change-form grid">
                 <div class="input-group">
                     <label for="user-self-role-select" class="settings-field-label">

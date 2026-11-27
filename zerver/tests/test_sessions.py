@@ -47,6 +47,22 @@ class TestSessions(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertTrue('is_spectator":true' in str(result.content))
 
+    def test_delete_user_sessions_except_session_key(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        other_session_key = self.client.session.session_key
+        self.client.cookies.clear()
+        self.login_user(user_profile)
+        current_session_key = self.client.session.session_key
+        self.assertNotEqual(other_session_key, current_session_key)
+        self.assert_length(user_sessions(user_profile), 2)
+
+        delete_user_sessions(user_profile, except_session_key=current_session_key)
+        self.assertEqual(
+            [session.session_key for session in user_sessions(user_profile)],
+            [current_session_key],
+        )
+
     def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user("hamlet")
         self.do_test_session(
