@@ -238,7 +238,7 @@
         }
     }
 
-    &.invalid {
+    &.invalid:has(.input:not(:focus)) {
         border-color: var(--color-invalid-input-border);
         box-shadow: var(--invalid-input-box-shadow);
     }
