@@ -160,6 +160,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 } else if (status !== "abort") {
                     ui_report.generic_embed_error(
                         $t_html({defaultMessage: "Failed to create video call."}),
+                        2000,
                     );
                 }
             };
