@@ -4,6 +4,7 @@ from typing import Any
 
 import orjson
 from django.conf import settings
+from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from typing_extensions import override
 
@@ -108,10 +109,25 @@ class Command(ZulipBaseCommand):
             help="Prints emails of the recipients and text of the email.",
         )
 
+        parser.add_argument(
+            "--no-footer",
+            action="store_true",
+            help="With --remote-servers, leave out the footer with the Terms of Service "
+            "notice and the link to deactivate the server's registration.",
+        )
+
     @override
     def handle(
-        self, *args: Any, dry_run: bool = False, admins_only: bool = False, **options: str
+        self,
+        *args: Any,
+        dry_run: bool = False,
+        admins_only: bool = False,
+        no_footer: bool = False,
+        **options: str,
     ) -> None:
+        if no_footer and not options["remote_servers"]:
+            raise CommandError("--no-footer can only be used with --remote-servers")
+
         users: QuerySet[UserProfile] = UserProfile.objects.none()
         add_context: Callable[[dict[str, object], UserProfile], None] | None = None
         distinct_email = False
@@ -138,6 +154,7 @@ class Command(ZulipBaseCommand):
                 dry_run=dry_run,
                 options=options,
                 add_context=add_server_context,
+                include_footer=not no_footer,
             )
             if dry_run:
                 print("Would send the above email to:")

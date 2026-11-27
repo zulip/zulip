@@ -3,7 +3,7 @@
 {% if remote_server_email %}
 {% if released_version %}
 You are receiving this email because you opted into release notifications.
-{% else %}
+{% elif unsubscribe_link %}
 You are receiving this email to update you about important changes to Zulip's Terms of Service.
 
 Unsubscribe: {{ unsubscribe_link }}

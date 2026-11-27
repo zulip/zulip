@@ -809,6 +809,7 @@ def send_custom_server_email(
     dry_run: bool,
     options: dict[str, str],
     add_context: Callable[[dict[str, object], "RemoteZulipServer"], None] | None = None,
+    include_footer: bool = True,
 ) -> None:
     assert settings.CORPORATE_ENABLED
     from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
@@ -816,18 +817,23 @@ def send_custom_server_email(
         generate_confirmation_link_for_server_deactivation,
     )
 
+    # The management command always gives from_address. Its value is
+    # None if the user does not give --from-address.
+    from_address = options.get("from_address") or BILLING_SUPPORT_EMAIL
     email_sender = custom_email_sender(
-        **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
+        **(options | {"from_address": from_address}), dry_run=dry_run
     )
 
     for server in remote_servers:
-        context = {
+        context: dict[str, object] = {
             "remote_server_email": True,
             "hostname": server.hostname,
-            "unsubscribe_link": generate_confirmation_link_for_server_deactivation(
-                server, 60 * 24 * 2
-            ),
         }
+        # The footer shows only if the email has an unsubscribe link.
+        if include_footer:
+            context["unsubscribe_link"] = generate_confirmation_link_for_server_deactivation(
+                server, 60 * 24 * 2
+            )
         if add_context is not None:
             add_context(context, server)
         email_sender(
