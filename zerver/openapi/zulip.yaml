@@ -13233,7 +13233,13 @@ paths:
         to a specified channel depends on the [channel's permissions
         settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 362),
+        **Changes**: Before Zulip 14.0 (feature level ZF-32138a),
+        attempting to subscribe to or create a channel when an
+        inaccessible channel with the same name existed returned an
+        HTTP 400 `BAD_REQUEST` error naming the channel, instead of an
+        HTTP 403 `PERMISSION_DENIED` error.
+
+        Before Zulip 10.0 (feature level 362),
         subscriptions in archived channels could not be modified.
 
         Before Zulip 10.0 (feature level 357), the
@@ -13575,13 +13581,29 @@ paths:
                   - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
-                        "msg": "Unable to access channel (private).",
+                        "msg": "Insufficient permission",
                         "result": "error",
                         "code": "BAD_REQUEST",
                       }
                     description: |
                       An example JSON response for when the requesting user does not have
-                      access to a private channel and `"authorization_errors_fatal": true`:
+                      permission to create a new channel:
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "msg": "Insufficient permission",
+                        "result": "error",
+                        "code": "PERMISSION_DENIED",
+                      }
+                    description: |
+                      An example JSON response for when the requesting user does not have
+                      access to a requested channel and `"authorization_errors_fatal": true`:
     delete:
       operationId: unsubscribe
       summary: Unsubscribe from a channel
@@ -25915,7 +25937,13 @@ paths:
         The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
-        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was
+        **Changes**: Before Zulip 14.0 (feature level ZF-32138a),
+        attempting to create a channel when an inaccessible channel
+        with the same name already existed returned an HTTP 409
+        `CHANNEL_ALREADY_EXISTS` error naming the channel, instead of an
+        HTTP 403 `PERMISSION_DENIED` error.
+
+        New in Zulip 11.0 (feature level 417). Previously, this was
         only possible via the [`POST /api/subscribe`](/api/subscribe) endpoint,
         which handles both channel subscription and creation.
       x-curl-examples-parameters:
@@ -26101,8 +26129,24 @@ paths:
                         type: integer
                         description: "The ID of the newly created channel."
                 example: {"result": "success", "msg": "", "id": 50}
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        result: "error",
+                        msg: "Insufficient permission",
+                        code: "PERMISSION_DENIED",
+                      }
+                    description: |
+                      An example JSON error response for when a channel with the submitted
+                      name already exists and the acting user does not have access to it:
         "409":
-          description: Bad request.
+          description: Conflict.
           content:
             application/json:
               schema:
@@ -26116,7 +26160,7 @@ paths:
                       }
                     description: |
                       An example JSON error response for when a channel with the submitted
-                      name already exists.
+                      name already exists and the acting user has metadata access to it:
   /user_groups/create:
     post:
       operationId: create-user-group

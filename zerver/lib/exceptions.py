@@ -635,6 +635,19 @@ class AccessDeniedError(JsonableError):
         return _("Access denied")
 
 
+class PermissionDeniedError(JsonableError):
+    code = ErrorCode.PERMISSION_DENIED
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Insufficient permission")
+
+
 class ResourceNotFoundError(JsonableError):
     http_status_code = 404
 
