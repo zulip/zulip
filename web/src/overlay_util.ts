@@ -29,6 +29,29 @@ export function get_visible_focusable_elements_in_overlay_container(
     return visible_focusable_elements;
 }
 
+function selection_has_text(selection: Selection): boolean {
+    // Unlike Selection.toString(), the text content of the selected
+    // ranges doesn't include the alt text of selected images, which
+    // Firefox includes.
+    for (let i = 0; i < selection.rangeCount; i += 1) {
+        if (selection.getRangeAt(i).cloneContents().textContent.trim() !== "") {
+            return true;
+        }
+    }
+    return false;
+}
+
+function move_textless_selection_to_start_of_element(element: HTMLElement): void {
+    const selection = document.getSelection();
+    if (
+        selection?.focusNode &&
+        element.contains(selection.focusNode) &&
+        !selection_has_text(selection)
+    ) {
+        selection.collapse(element, 0);
+    }
+}
+
 export function wrap_overlay_tab_focus(
     shift_key: boolean,
     focusable_elements: HTMLElement[],
@@ -44,6 +67,16 @@ export function wrap_overlay_tab_focus(
         active_element !== null && focusable_elements.includes(active_element);
     const first_element = focusable_elements[0]!;
     const last_element = focusable_elements.at(-1)!;
+
+    if (focus_is_in_overlay) {
+        // Firefox starts Tab navigation from the selection when it's
+        // inside the focused element, rather than from the element
+        // itself, and a caret or a selection of no text, such as from
+        // clicking empty space or selecting an image, can be anywhere
+        // in it. Move such a selection to the start of the element; a
+        // selection of actual text is kept.
+        move_textless_selection_to_start_of_element(active_element);
+    }
 
     if (shift_key) {
         if (active_element === first_element || !focus_is_in_overlay) {
