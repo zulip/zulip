@@ -74,8 +74,8 @@ as an empty string.
   topic name for channel messages.
 
 * In Zulip 9.0 (feature level 271), support was added for a new filter
-  operator, `with`, which uses a [message ID](#message-ids) for its
-  operand, and is designed for creating permanent links to topics.
+  operator, `with`, which uses a [message ID](#the-with-operator) for
+  its operand, and is designed for creating permanent links to topics.
 
 * In Zulip 9.0 (feature level 265), support was added for a new
   `is:followed` filter, matching messages in topics that the current
@@ -111,9 +111,7 @@ as an empty string.
       respectively, and return the same exact results that the
       deprecated filters did.
 
-## Narrows that use IDs
-
-### Message IDs
+## Narrows that use message IDs
 
 The `id` and `with` operators use message IDs for their operands. The
 message ID operand for these two operators may be encoded as either a
@@ -123,8 +121,15 @@ number or a string.
 * `with:12345`: Search for the conversation that contains the message
   with ID `12345`.
 
+### The `id` operator
+
 The `id` operator returns the message with the specified ID if it exists,
 and if it can be accessed by the user.
+
+**Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
+operand for the `id` operator needed to be encoded as a string.
+
+### The `with` operator
 
 The `with` operator is designed to be used for permanent links to
 topics, which means they should continue to work when the topic is
@@ -142,33 +147,11 @@ conversation (i.e., they contain `channel` and `topic` terms or `dm`
 term). This behavior is intended to provide the best possible
 experience for links to private channels with protected history.
 
-**Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
-operand for the `id` operator needed to be encoded as a string.
-
-
-```json
-[
-    {
-        "operator": "id",
-        "operand": 12345
-    }
-]
-```
-
-### Channel and user IDs
+## Narrows that use channel and user IDs
 
 There are a few additional narrow/search options (new in Zulip 2.1)
 that use either channel IDs or user IDs that are not documented in the
-help center because they are primarily useful to API clients:
-
-* `channel:1234`: Search messages sent to the channel with ID `1234`.
-* `sender:1234`: Search messages sent by user ID `1234`.
-* `dm:1234`: Search the direct message conversation between
-  you and user ID `1234`.
-* `dm:1234,5678`: Search the direct message conversation between
-  you, user ID `1234`, and user ID `5678`.
-* `dm-including:1234`: Search all direct messages (1-on-1 and group)
-  that include you and user ID `1234`.
+help center because they are primarily useful to API clients.
 
 !!! tip ""
 
@@ -176,10 +159,38 @@ help center because they are primarily useful to API clients:
     in the web or desktop apps. A channel ID can be found when [browsing
     channels][browse-channels] in the web or desktop apps.
 
-The operands for these search options must be encoded either as an
-integer ID or a JSON list of integer IDs. For example, to query
-messages sent by a user 1234 to a direct message thread with yourself,
-user 1234, and user 5678, the correct JSON-encoded query is:
+* `channel:1234`: Search messages sent to the channel with ID `1234`.
+* `sender:1234`: Search messages sent by user ID `1234`.
+* `dm:1234`: Search the direct message conversation between
+  the current user and user ID `1234`.
+* `dm:1234,5678`: Search the direct message conversation between
+  the current user, user ID `1234`, and user ID `5678`.
+* `dm-including:1234`: Search all direct messages (1-on-1 and group)
+  that include the current user and user ID `1234`.
+
+### The `channel` operator
+
+The operand for the `channel` operator must be encoded as an integer ID.
+
+### The `sender` operator
+
+The operand for the `sender` operator must be encoded as an integer ID.
+
+### The `dm` operator
+
+The operand for the `dm` operator must be encoded as a list of integer
+IDs.
+
+The current user's ID can be omitted from the list of user IDs, except
+in the special case of the 1-on-1 direct message conversation of
+the current user with themself. In that case, the current user's ID
+should be the only user ID in the list.
+
+For example, let's say the current user's ID is 9876.
+
+To query messages sent by user 1234 to a direct message conversation
+with the current user, user 1234, and user 5678, the correct
+JSON-encoded query is:
 
 ```json
 [
@@ -190,6 +201,45 @@ user 1234, and user 5678, the correct JSON-encoded query is:
     {
         "operator": "sender",
         "operand": 1234
+    }
+]
+```
+
+To query the direct message conversation where the current user is the
+only recipient (i.e., the 1-on-1 direct message conversation with
+themself), the correct JSON-encoded query is:
+
+```json
+[
+    {
+        "operator": "dm",
+        "operand": [9876]
+    }
+]
+```
+
+### The `dm-including` operator
+
+The operand for the `dm-including` operator must be encoded as an integer ID.
+
+If a [URL used or generated by the Zulip web app](/api/zulip-urls) has multiple
+user IDs listed for a `dm-including` operator, then the narrow constructed for
+that URL should have a separate `dm-including`/user ID pair for each user ID in
+the URL.
+
+For example, if the URL contains `/dm-including/1234,5678-group`, the narrow
+should have a separate operator/operand pair for each user ID. The correct
+JSON-encoded query for the URL fragment above is:
+
+```json
+[
+    {
+        "operator": "dm-including",
+        "operand": 1234
+    },
+    {
+        "operator": "dm-including",
+        "operand": 5678
     }
 ]
 ```

@@ -3169,7 +3169,7 @@ No changes; feature level used for Zulip 8.0 release.
   [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
   [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
   [`POST /register`](/api/register-queue):
-  For [search/narrow filters](/api/construct-narrow#message-ids) with the
+  For [search/narrow filters](/api/construct-narrow#the-id-operator) with the
   `id` operator, added support for encoding the message ID operand as either
   a string or an integer. Previously, only string encoding was supported.
 
