@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -17,6 +17,7 @@ const presence = mock_esm("../src/presence");
 set_global("document", {hasFocus: () => true});
 
 const activity = zrequire("activity");
+const server_time = zrequire("server_time");
 
 run_test("send_presence_to_server (spectator)", ({override}) => {
     override(page_params, "is_spectator", true);
@@ -78,7 +79,9 @@ run_test("send_presence_to_server (redraw)", ({override}) => {
     }
 
     override(presence, "presence_last_update_id", 77);
+    clock.setSystemTime(1000 * 1000);
     activity.send_presence_to_server(redraw);
+    clock.tick(500);
 
     const response = {
         presences: {},
@@ -97,4 +100,10 @@ run_test("send_presence_to_server (redraw)", ({override}) => {
     success_function(response);
     assert.equal(activity.new_user_input, false);
     assert.equal(num_redraw_callbacks, 1);
+    // The client's clock is far behind the server's, which read its
+    // clock as 9999 sometime during the 0.5s request. We assume the
+    // midpoint.
+    assert.equal(server_time.now(), 9999.25);
+    server_time.clear_for_testing();
+    clock.reset();
 });

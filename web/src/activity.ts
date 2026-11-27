@@ -7,6 +7,7 @@ import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
 import * as presence from "./presence.ts";
+import * as server_time from "./server_time.ts";
 import * as watchdog from "./watchdog.ts";
 
 export const post_presence_response_schema = z.object({
@@ -136,6 +137,7 @@ export let send_presence_to_server = (redraw?: () => void): void => {
 
     watchdog.check_for_unsuspend();
 
+    const request_start = server_time.get_request_start();
     void channel.post({
         url: "/json/users/me/presence",
         data: {
@@ -148,6 +150,10 @@ export let send_presence_to_server = (redraw?: () => void): void => {
             const data = post_presence_response_schema.parse(response);
 
             set_new_user_input(false);
+
+            if (data.server_timestamp !== undefined) {
+                server_time.update_offset(data.server_timestamp, request_start);
+            }
 
             if (redraw) {
                 assert(

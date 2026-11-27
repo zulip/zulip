@@ -3,11 +3,12 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 const message_edit = zrequire("message_edit");
+const server_time = zrequire("server_time");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
@@ -188,6 +189,50 @@ run_test("is_stream_editable", ({override}) => {
 
     override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_stream_editable(message), true);
+});
+
+run_test("time limits use the server's clock", ({override}) => {
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+    override(realm, "realm_move_messages_within_stream_limit_seconds", 600);
+    override(realm, "realm_move_messages_between_streams_limit_seconds", 600);
+    override(current_user, "is_moderator", false);
+    override(stream_data, "is_stream_archived_by_id", () => false);
+    override(stream_data, "is_empty_topic_only_channel", () => false);
+    override(stream_data, "get_sub_by_id", () => ({}));
+    override(stream_data, "user_can_move_messages_within_channel", () => true);
+    override(stream_data, "user_can_move_messages_out_of_channel", () => true);
+
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        type: "stream",
+        stream_id: 1,
+        timestamp: 5000,
+    };
+
+    // The server sent the message 50 seconds ago, by its clock, which
+    // is an hour behind the client's.
+    clock.setSystemTime((5050 + 3600) * 1000);
+    server_time.update_offset(5050, server_time.get_request_start());
+    assert.equal(is_content_editable(message), true);
+    assert.equal(message_edit.is_topic_editable(message), true);
+    assert.equal(message_edit.is_stream_editable(message), true);
+    assert.equal(message_edit.remaining_content_edit_time(message), 550);
+    assert.equal(message_edit.remaining_message_move_time(message), 550);
+
+    // The server sent the message 650 seconds ago, by its clock, which
+    // is an hour ahead of the client's.
+    clock.setSystemTime((5650 - 3600) * 1000);
+    server_time.update_offset(5650, server_time.get_request_start());
+    assert.equal(is_content_editable(message), false);
+    assert.equal(message_edit.is_topic_editable(message), false);
+    assert.equal(message_edit.is_stream_editable(message), false);
+    assert.equal(message_edit.remaining_content_edit_time(message), 0);
+    assert.equal(message_edit.remaining_message_move_time(message), 0);
+
+    server_time.clear_for_testing();
+    clock.reset();
 });
 
 run_test("stream_and_topic_exist_in_edit_history", () => {

@@ -124,6 +124,7 @@ import * as search from "./search.ts";
 import {FETCH_EVENT_TYPES} from "./server_event_types.ts";
 import * as server_events from "./server_events.js";
 import * as server_events_state from "./server_events_state.ts";
+import * as server_time from "./server_time.ts";
 import * as settings from "./settings.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
@@ -464,6 +465,9 @@ export async function initialize_everything(state_data) {
     set_current_user(state_data.current_user);
     set_realm(state_data.realm);
     set_realm_billing(state_data.realm_billing);
+    // Early, since the error bound on this estimate grows with the
+    // time since the page started loading.
+    server_time.initialize(state_data.presence.server_timestamp);
 
     if (page_params.narrow_stream !== undefined) {
         // In the /?stream=X mini-window flow, the user's main Zulip
