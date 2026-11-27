@@ -337,6 +337,7 @@ export default defineConfig({
                             link: "/animated-gifs",
                         },
                         "text-emphasis",
+                        "headings",
                         "paragraph-and-section-formatting",
                         "bulleted-lists",
                         "numbered-lists",
