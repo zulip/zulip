@@ -29,6 +29,7 @@ from zerver.lib.validator import (
     check_url,
     equals,
     to_wild_value,
+    validate_todo_data,
 )
 
 if settings.ZILENCER_ENABLED:
@@ -233,6 +234,36 @@ class ValidatorTestCase(ZulipTestCase):
         }
         with self.assertRaisesRegex(ValidationError, r'x\["food"\] is not a list'):
             check_dict_only(keys, optional_keys)("x", x)
+
+    def test_validate_todo_data_reorder_tasks(self) -> None:
+        valid_reorder = {
+            "type": "reorder_tasks",
+            "key": "2,10",
+            "after_key": "1,10",
+        }
+        validate_todo_data(valid_reorder, is_widget_author=True)
+
+        valid_reorder_to_front = {
+            "type": "reorder_tasks",
+            "key": "2,10",
+            "after_key": None,
+        }
+        validate_todo_data(valid_reorder_to_front, is_widget_author=True)
+
+        non_author_reorder = {
+            "type": "reorder_tasks",
+            "key": "2,10",
+            "after_key": "1,10",
+        }
+        validate_todo_data(non_author_reorder, is_widget_author=False)
+
+        invalid_key_type = {
+            "type": "reorder_tasks",
+            "key": 2,
+            "after_key": "1,10",
+        }
+        with self.assertRaisesRegex(ValidationError, r'.*"key".*is not a string'):
+            validate_todo_data(invalid_key_type, is_widget_author=True)
 
     def test_encapsulation(self) -> None:
         # There might be situations where we want deep
