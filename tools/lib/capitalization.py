@@ -208,6 +208,8 @@ IGNORED_PHRASES = [
     r"everyone except guests can subscribe to any public channel",
     # Used in branch-filtering label in the integration-url-modal.
     r"comma-separated list",
+    # Used in search suggestions after pills, where it continues the line.
+    r"^search for \{search_text\}$",
     # Used in info_overlay.
     r"then",
     r"Joe Smith",
