@@ -1,0 +1,7 @@
+{{ _("Hi,") }}
+
+{% trans old_email=old_email, new_email=new_email %}An organization administrator recently changed the email associated with your Zulip account from {{ old_email }} to {{ new_email }}. If you were not expecting this change, please contact us immediately at <{{ support_email }}>.{% endtrans %}
+
+
+{{ _("Best,") }}
+{{ _("Team Zulip") }}
