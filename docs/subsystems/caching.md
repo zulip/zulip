@@ -99,6 +99,20 @@ This decorator implements a pretty classic caching paradigm:
 We use this decorator in about 30 places in Zulip, and it saves a
 huge amount of otherwise very self-similar caching code.
 
+Storing the value after a cache miss takes some care. If another
+process changes the user, and flushes the cache key, while we are
+fetching from the database, then the value we fetched is already
+stale. Storing it would leave the stale value in the cache until the
+user next changes.
+
+So on a miss, `cache_with_key` first puts a short-lived placeholder in
+the cache. After fetching from the database, it stores the value only
+if its placeholder is still there, using memcached's compare-and-swap
+operation. If the placeholder is gone, or if another process's
+placeholder was already there, the caller still gets the value from
+the database, but nothing is cached. This logic lives in
+`read_through_cache`.
+
 ### Cautions
 
 The one thing to be really careful with in using `cache_with_key` is
@@ -213,6 +227,14 @@ time when debugging, since developers don't need to think about things
 like whether some test changed Hamlet's email address and that's why
 login is broken.
 
+The backend tests don't talk to a real memcached server. They use an
+in-process cache backend, `CASCapableLocMemCache` in
+`zerver/lib/test_cache_backends.py`, which implements the memcached
+operations that `zerver/lib/cache.py` relies on. This means that the
+small amount of code in `zerver/lib/cache.py` that is specific to our
+production memcached client is only tested using mocks. If you change
+it, test it manually against memcached in the development environment.
+
 More full-stack test suites like `test-js-with-puppeteer` or `test-api`
 use a similar strategy (set a random `KEY_PREFIX` at the start of the
 test run).
@@ -229,10 +251,17 @@ You can run the server with that behavior disabled using
 One thing be careful about with memcached queries is to avoid doing
 them in loops (the same applies for database queries!). Instead, one
 should use a bulk query. We have a fancy function,
-`generate_bulk_cached_fetch`, which is super magical and handles this
+`generic_bulk_cached_fetch`, which is super magical and handles this
 for us, with support for a bunch of fancy features like marshalling
 data before/after going into the cache (e.g., to compress `message`
 objects to minimize data transfer between Django and memcached).
+
+It protects against storing stale values in the same way as
+`cache_with_key`, and makes the same small number of memcached
+requests however many of the keys are missing from the cache. Every
+key it is given must be a valid cache key. Unlike `cache_with_key`,
+which skips the cache for an invalid key, it raises
+`InvalidCacheKeyError`.
 
 ## In-process caching in Django
 

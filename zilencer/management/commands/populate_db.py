@@ -99,13 +99,7 @@ settings.ZULIP_SERVICE_SECURITY_ALERTS = False
 settings.ZULIP_SERVICE_ADVERTISE_REALMS = False
 settings.ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
 settings.USING_TORNADO = False
-# Disable using memcached caches to avoid 'unsupported pickle
-# protocol' errors if `populate_db` is run with a different Python
-# from `run-dev`.
 default_cache = settings.CACHES["default"]
-settings.CACHES["default"] = {
-    "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-}
 
 DEFAULT_EMOJIS = [
     ("+1", "1f44d"),
@@ -118,11 +112,7 @@ DEFAULT_EMOJIS = [
 ]
 
 
-def clear_database() -> None:
-    # Hacky function only for use inside populate_db.  Designed to
-    # allow running populate_db repeatedly in series to work without
-    # flushing memcached or clearing the database manually.
-
+def flush_memcached() -> None:
     # With `zproject.test_settings`, we aren't using real memcached
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
@@ -136,6 +126,13 @@ def clear_database() -> None:
             memcached_client.flush_all()
         finally:
             memcached_client.disconnect_all()
+
+
+def clear_database() -> None:
+    # Hacky function only for use inside populate_db.  Designed to
+    # allow running populate_db repeatedly in series to work without
+    # flushing memcached or clearing the database manually.
+    flush_memcached()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
 
@@ -1248,6 +1245,9 @@ class Command(ZulipBaseCommand):
             )
 
         mark_all_messages_as_read()
+        # Not everything above invalidates the cache entries it makes
+        # stale, so flush again before the development server reads them.
+        flush_memcached()
         self.stdout.write("Successfully populated test database.\n")
 
         push_notifications_logger.disabled = False
