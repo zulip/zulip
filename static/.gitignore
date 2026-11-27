@@ -9,3 +9,5 @@
 /generated/integrations/
 # From emoji
 /generated/emoji
+# Copied from the oembed-providers npm package
+/generated/oembed-providers.json
