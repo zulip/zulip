@@ -270,3 +270,37 @@ class TestChecks(ZulipTestCase):
     @override_settings(JITSI_SERVER_URL="https://example.com/jitsi")
     def test_check_jitsi_server_url_valid(self) -> None:
         self.assert_check_with_error(None)
+
+    @override_settings(RUNNING_IN_DOCKER=False)
+    def test_check_renamed_settings(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E008) DEFAULT_AVATAR_URI in /etc/zulip/settings.py is ignored, "
+            "because DEFAULT_AVATAR_URL is also set",
+            DEFAULT_AVATAR_URI="/local-static/old-avatar.png",
+            DEFAULT_AVATAR_URL="/local-static/new-avatar.png",
+        )
+        self.assert_check_with_error(
+            "(zulip.E008) DEFAULT_LOGO_URI in /etc/zulip/settings.py is ignored, "
+            "because DEFAULT_LOGO_URL is also set",
+            DEFAULT_LOGO_URI="/local-static/old-logo.svg",
+            DEFAULT_LOGO_URL="/local-static/new-logo.svg",
+        )
+
+    @override_settings(RUNNING_IN_DOCKER=True)
+    def test_check_renamed_settings_in_docker(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E008) SETTING_DEFAULT_AVATAR_URI in your Docker environment configuration "
+            "is ignored, because SETTING_DEFAULT_AVATAR_URL is also set",
+            DEFAULT_AVATAR_URI="/local-static/old-avatar.png",
+            DEFAULT_AVATAR_URL="/local-static/new-avatar.png",
+        )
+
+    def test_check_renamed_settings_valid(self) -> None:
+        self.assert_check_with_error(None, DEFAULT_AVATAR_URL="/local-static/avatar.png")
+        # This is what computed_settings.py leaves when a server only
+        # sets the old name.
+        self.assert_check_with_error(
+            None,
+            DEFAULT_AVATAR_URI="/local-static/avatar.png",
+            DEFAULT_AVATAR_URL="/local-static/avatar.png",
+        )
