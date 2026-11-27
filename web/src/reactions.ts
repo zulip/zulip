@@ -15,12 +15,15 @@ import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -31,14 +34,92 @@ const MAX_SEND_REACTION_RETRIES = 5;
 
 export type ReactionEvent = {
     message_id: number;
+    message_sender_id: number;
     user_id: number;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
     emoji_code: string;
 };
 
+// New reactions to the current user's messages, which the left sidebar's
+// Reactions row counts, by message id and then by get_reaction_event_key.
+// Grouped by message so that each message is checked once per scroll and
+// per count. The server does not track which reactions a user has seen,
+// so this is client-side only and starts empty on each page load.
+const new_reactions = new Map<number, Map<string, ReactionEvent>>();
+
+export function increment_new_reaction_count(event: ReactionEvent): void {
+    let message_reactions = new_reactions.get(event.message_id);
+    if (message_reactions === undefined) {
+        message_reactions = new Map();
+        new_reactions.set(event.message_id, message_reactions);
+    }
+    message_reactions.set(get_reaction_event_key(event), event);
+}
+
+export function decrement_new_reaction_count(event: ReactionEvent): void {
+    // A retracted reaction stops counting, as it stops being credited in
+    // a notification.
+    const message_reactions = new_reactions.get(event.message_id);
+    message_reactions?.delete(get_reaction_event_key(event));
+    if (message_reactions?.size === 0) {
+        new_reactions.delete(event.message_id);
+    }
+}
+
+export function discard_new_reactions_to_messages(message_ids: number[]): void {
+    // Reactions to a deleted message never count again.
+    for (const message_id of message_ids) {
+        new_reactions.delete(message_id);
+    }
+}
+
+export function discard_new_reactions_on_screen(): boolean {
+    // A reaction on a message the user has on screen needs no count.
+    // Returns whether any reaction stopped counting.
+    if (!message_viewport.viewport_is_visible_and_focused()) {
+        return false;
+    }
+    let discarded = false;
+    for (const message_id of new_reactions.keys()) {
+        if (message_viewport.is_message_visible(message_id, false)) {
+            new_reactions.delete(message_id);
+            discarded = true;
+        }
+    }
+    return discarded;
+}
+
+export function clear(): void {
+    new_reactions.clear();
+}
+
+export function get_count(): number {
+    // Decided when read rather than when a reaction arrives, since its
+    // message can since have been deleted or muted, or its reactor muted.
+    let count = 0;
+    for (const [message_id, message_reactions] of new_reactions) {
+        const message = message_store.get(message_id);
+        if (message === undefined || !user_topics.is_message_visible_in_home(message)) {
+            continue;
+        }
+        for (const event of message_reactions.values()) {
+            if (!muted_users.is_user_muted(event.user_id)) {
+                count += 1;
+            }
+        }
+    }
+    return count;
+}
+
 export function get_local_reaction_id(rendering_details: EmojiRenderingDetails): string {
     return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");
+}
+
+export function get_reaction_event_key(event: ReactionEvent): string {
+    // Identifies one reaction (message, reactor, and emoji), so that state
+    // kept for it can be found again when it is retracted.
+    return `${event.message_id}:${event.user_id}:${get_local_reaction_id(event)}`;
 }
 
 export function current_user_has_reacted_to_emoji(message: Message, local_id: string): boolean {
@@ -67,11 +148,12 @@ export type RawReaction = {
 };
 
 function create_reaction(
-    message_id: number,
+    message: Message,
     rendering_details: EmojiRenderingDetails,
 ): ReactionEvent {
     return {
-        message_id,
+        message_id: message.id,
+        message_sender_id: message.sender_id,
         user_id: current_user.user_id,
         reaction_type: rendering_details.reaction_type,
         emoji_name: rendering_details.emoji_name,
@@ -93,7 +175,7 @@ function update_ui_and_send_reaction_ajax(
     const local_id = get_local_reaction_id(rendering_details);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
     const operation = has_reacted ? "remove" : "add";
-    const reaction = create_reaction(message.id, rendering_details);
+    const reaction = create_reaction(message, rendering_details);
 
     // To avoid duplicate requests to the server, we construct a
     // unique request ID combining the message ID and the local ID,
@@ -319,14 +401,47 @@ export function get_reaction_sections(message_id: number): JQuery {
     return $rows.find(".message_reactions");
 }
 
-export let find_reaction = (message_id: number, local_id: string): JQuery => {
-    const $reaction_section = get_reaction_sections(message_id);
+function find_reaction_in_rows($rows: JQuery, local_id: string): JQuery {
+    const $reaction_section = $rows.find(".message_reactions");
     const $reaction = $reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
     return $reaction;
+}
+
+export let find_reaction = (message_id: number, local_id: string): JQuery => {
+    const $rows = message_lists.all_rendered_row_for_message_id(message_id);
+    return find_reaction_in_rows($rows, local_id);
 };
 
 export function rewire_find_reaction(value: typeof find_reaction): void {
     find_reaction = value;
+}
+
+export let animate_reaction_arrival = (event: ReactionEvent): void => {
+    // Draws the eye to a reaction that has just landed on a message the user
+    // is looking at. Only the current message list is on screen; other
+    // rendered lists, which may hold the same message, are hidden.
+    const $row = message_lists.current?.get_row(event.message_id) ?? $();
+    const reaction = find_reaction_in_rows($row, get_local_reaction_id(event))[0];
+    if (!reaction || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+
+    const reaction_arrival_pop_keyframes: Keyframe[] = [
+        {offset: 0, transform: "scale(1)"},
+        {offset: 0.3, transform: "translateY(-1px) scale(1.25)"},
+        {offset: 0.6, transform: "scale(0.98)"},
+        {offset: 0.8, transform: "scale(1.007)"},
+        {offset: 1, transform: "scale(1)"},
+    ];
+
+    reaction.animate(reaction_arrival_pop_keyframes, {
+        duration: 800,
+        easing: "cubic-bezier(0.34, 1.2, 0.64, 1)",
+    });
+};
+
+export function rewire_animate_reaction_arrival(value: typeof animate_reaction_arrival): void {
+    animate_reaction_arrival = value;
 }
 
 export function get_add_reaction_button(message_id: number): JQuery {

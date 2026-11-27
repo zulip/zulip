@@ -16,6 +16,7 @@ import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {RawLocalMessage} from "./echo.ts";
 import {Filter} from "./filter.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
@@ -36,6 +37,7 @@ import {
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
+import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
@@ -1034,5 +1036,7 @@ export function remove_messages(message_ids: number[]): void {
     recent_view_ui.update_topics_of_deleted_message_ids(message_ids);
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
+    reactions.discard_new_reactions_to_messages(message_ids);
     message_store.remove(message_ids);
+    left_sidebar_navigation_area.update_my_reactions_row();
 }

@@ -32,6 +32,7 @@ def notify_reaction_update(
         event = ReactionAddEvent(
             user_id=user_profile.id,
             message_id=message.id,
+            message_sender_id=message.sender_id,
             emoji_name=reaction.emoji_name,
             emoji_code=reaction.emoji_code,
             reaction_type=reaction_type,
@@ -40,6 +41,7 @@ def notify_reaction_update(
         event = ReactionRemoveEvent(
             user_id=user_profile.id,
             message_id=message.id,
+            message_sender_id=message.sender_id,
             emoji_name=reaction.emoji_name,
             emoji_code=reaction.emoji_code,
             reaction_type=reaction_type,

@@ -1,4 +1,5 @@
 import {$} from "jquery";
+import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
@@ -36,7 +37,7 @@ function small_avatar_url_for_test_notification(message: TestNotificationMessage
     return people.gravatar_url_for_email(message.sender_email);
 }
 
-function get_notification_content(message: Message | TestNotificationMessage): string {
+export function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -171,6 +172,7 @@ export function process_notification(message: Message | TestNotificationMessage)
 
     const notice_memory = desktop_notifications.notice_memory.get(key);
     if (notice_memory) {
+        assert(notice_memory.data.type === "message");
         msg_count = notice_memory.data.msg_count + 1;
     }
 

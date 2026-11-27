@@ -2,8 +2,16 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
+import type {EmojiRenderingDetails} from "./emoji.ts";
 
-export type NotificationData = {type: "message"; message_id: number; msg_count: number};
+export type NotifiedReaction = {
+    user_id: number;
+    emoji_detail: EmojiRenderingDetails;
+};
+
+export type NotificationData =
+    | {type: "message"; message_id: number; msg_count: number}
+    | {type: "reaction"; message_id: number; reactions: Map<string, NotifiedReaction>};
 
 type NoticeMemory = Map<
     string,
