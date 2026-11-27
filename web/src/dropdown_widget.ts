@@ -152,6 +152,7 @@ export class DropdownWidget {
     search_placeholder_text: string;
     no_items_text: string;
     sort_list_by_filter_value: ((items: Option[], filter_value: string) => Option[]) | undefined;
+    fit_to_viewport: (() => void) | undefined;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -244,7 +245,11 @@ export class DropdownWidget {
             top_offset = this.tippy_props.offset[1];
         }
 
-        const window_height = window.innerHeight;
+        // On iOS, the on-screen keyboard covers the bottom of the window
+        // without resizing it, so only count the part that is visible.
+        const window_height = window.visualViewport
+            ? window.visualViewport.offsetTop + window.visualViewport.height
+            : window.innerHeight;
         let dropdown_search_box_and_padding_height = 50;
         if (this.hide_search_box) {
             dropdown_search_box_and_padding_height = 0;
@@ -760,12 +765,24 @@ export class DropdownWidget {
 
                 this.on_show_callback(instance, this);
                 this.adjust_dropdown_position_post_list_render(instance);
+
+                // The on-screen keyboard often opens after the dropdown
+                // does, so fit the dropdown again when the visible part
+                // of the window changes size.
+                this.fit_to_viewport = () => {
+                    this.adjust_dropdown_position_post_list_render(instance);
+                };
+                window.visualViewport?.addEventListener("resize", this.fit_to_viewport);
             },
             onMount: (instance: tippy.Instance) => {
                 this.show_empty_if_no_items($(instance.popper));
                 this.on_mount_callback(instance);
             },
             onHidden: (instance: tippy.Instance) => {
+                if (this.fit_to_viewport) {
+                    window.visualViewport?.removeEventListener("resize", this.fit_to_viewport);
+                    this.fit_to_viewport = undefined;
+                }
                 if (this.focus_target_on_hidden) {
                     $(this.widget_selector).trigger("focus");
                 }

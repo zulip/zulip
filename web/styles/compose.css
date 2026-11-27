@@ -667,7 +667,8 @@
 
 #compose {
     position: fixed;
-    bottom: 0;
+    /* Set by update_keyboard_height in resize_handler.ts. */
+    bottom: var(--keyboard-height, 0);
     left: 0;
     z-index: 4;
 }
