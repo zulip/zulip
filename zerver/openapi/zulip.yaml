@@ -13233,7 +13233,13 @@ paths:
         to a specified channel depends on the [channel's permissions
         settings](/help/channel-permissions).
 
-        **Changes**: Before Zulip 10.0 (feature level 362),
+        **Changes**: Before Zulip 14.0 (feature level ZF-32138a),
+        attempting to subscribe to or create a channel when an
+        inaccessible channel with the same name existed returned an
+        HTTP 400 `BAD_REQUEST` error naming the channel, instead of an
+        HTTP 403 `PERMISSION_DENIED` error.
+
+        Before Zulip 10.0 (feature level 362),
         subscriptions in archived channels could not be modified.
 
         Before Zulip 10.0 (feature level 357), the
@@ -25931,7 +25937,13 @@ paths:
         The initial [channel settings](/api/update-stream) will be determined
         by the optional parameters, like `invite_only`, detailed below.
 
-        **Changes**: New in Zulip 11.0 (feature level 417). Previously, this was
+        **Changes**: Before Zulip 14.0 (feature level ZF-32138a),
+        attempting to create a channel when an inaccessible channel
+        with the same name already existed returned an HTTP 409
+        `CHANNEL_ALREADY_EXISTS` error naming the channel, instead of an
+        HTTP 403 `PERMISSION_DENIED` error.
+
+        New in Zulip 11.0 (feature level 417). Previously, this was
         only possible via the [`POST /api/subscribe`](/api/subscribe) endpoint,
         which handles both channel subscription and creation.
       x-curl-examples-parameters:
