@@ -966,8 +966,16 @@ input.settings_text_input {
                 overflow-wrap: unset;
             }
 
+            /* Like the delete button, these use the icon-button
+               styles, so all three get the same focus ring. */
             .copy-overlay-message {
+                padding: 0;
                 font-size: 1.2em;
+            }
+
+            .draft-selection-tooltip {
+                padding: 0;
+                font-size: inherit;
             }
 
             .restore-overlay-message {
