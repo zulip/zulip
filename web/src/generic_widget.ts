@@ -7,7 +7,11 @@ import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
 type HandleInboundEventsFunction = (events: Event[]) => void;
 
-export type PostToServerFunction = (data: {msg_type: string; data: WidgetOutboundData}) => void;
+export type PostToServerFunction = (data: {
+    msg_type: string;
+    data: WidgetOutboundData;
+    on_error?: ((xhr: JQuery.jqXHR) => void) | undefined;
+}) => void;
 
 type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 
@@ -21,7 +25,7 @@ type WidgetImplementation = {
     };
     render: (data: {
         $elem: JQuery;
-        callback: (data: WidgetOutboundData) => void;
+        callback: (data: WidgetOutboundData, on_error?: (xhr: JQuery.jqXHR) => void) => void;
         message: Message;
         widget_data: WidgetData;
         rerender: boolean;
@@ -97,10 +101,14 @@ export function render_widget_instance(info: {
     // users. For example, if I vote on a poll, the widget from my
     // client will send data to the server using this callback, and
     // then the server will broadcast my poll vote to other users.
-    function post_to_server_callback(data: WidgetOutboundData): void {
+    function post_to_server_callback(
+        data: WidgetOutboundData,
+        on_error?: (xhr: JQuery.jqXHR) => void,
+    ): void {
         post_to_server({
             msg_type: "widget",
             data,
+            on_error,
         });
     }
 
