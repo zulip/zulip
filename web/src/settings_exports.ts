@@ -154,6 +154,10 @@ export function populate_exports_table(exports: RealmExport[]): void {
         $simplebar_container: $('[data-export-section="data-exports"] .progressive-table-wrapper'),
     });
 
+    update_export_url_spinners();
+}
+
+function update_export_url_spinners(): void {
     const $spinner = $(".export_row .export_url_spinner");
     if ($spinner.length > 0) {
         loading.make_indicator($spinner);
