@@ -1,3 +1,4 @@
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import type {NavigationView, StateData} from "./state_data.ts";
@@ -18,6 +19,7 @@ export type BuiltInViewBasicMetadata = {
     menu_aria_label: string;
     home_view_code: string;
     prioritize_in_condensed_view: boolean;
+    is_visible?: () => boolean;
 };
 
 export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> = {
@@ -84,6 +86,24 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         menu_aria_label: "",
         home_view_code: "",
         prioritize_in_condensed_view: true,
+    },
+    alert_words: {
+        fragment: "narrow/is/alerted",
+        name: $t({defaultMessage: "Alert words"}),
+        is_pinned: true,
+        // Placeholder icon until a dedicated one is designed; see #28778.
+        icon: "zulip-icon-exclamation-circle",
+        css_class_suffix: "alert_words",
+        tooltip_template_id: "alert-words-tooltip-template",
+        has_unread_count: true,
+        unread_count_type: "normal-count",
+        supports_masked_unread: false,
+        hidden_for_spectators: true,
+        menu_icon_class: "alert-words-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Alert words options"}),
+        home_view_code: "",
+        prioritize_in_condensed_view: false,
+        is_visible: () => alert_words.has_alert_words_configured(),
     },
     my_reactions: {
         fragment: "narrow/has/reaction/sender/me",
