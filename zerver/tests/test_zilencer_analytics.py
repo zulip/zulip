@@ -18,6 +18,7 @@ from typing_extensions import override
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount, UserCount
 from corporate.lib.stripe import BillingUserCounts, RemoteRealmBillingSession
+from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_realm import do_create_realm
@@ -33,6 +34,7 @@ from zerver.lib.remote_server import (
     AnalyticsRequest,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
+    clear_realm_billing_state,
     get_advertise_realm_data,
     get_realms_info_for_push_bouncer,
     record_push_notifications_recently_working,
@@ -88,7 +90,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assertLogs("zulip.analytics", level="WARNING") as mock_warning,
         ):
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
-            Realm.objects.all().update(push_notifications_enabled=True)
+            Realm.objects.all().update(
+                push_notifications_enabled=True,
+                non_workplace_pricing_eligible=True,
+                has_discount_configured=True,
+            )
             send_server_data_to_push_bouncer()
             self.assertEqual(
                 "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
@@ -96,6 +102,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
             self.assertPushNotificationsAre(False)
+            # The service is what tells a realm the billing state of its plan,
+            # so we stop claiming to know it once we can no longer reach the
+            # service.
+            self.assertFalse(Realm.objects.filter(non_workplace_pricing_eligible=True).exists())
+            self.assertFalse(Realm.objects.filter(has_discount_configured=True).exists())
 
         # Simulate ConnectionError again, but this time with a redis record indicating
         # that push notifications have recently worked fine.
@@ -1046,6 +1057,63 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 skip_audit_log_check=True,
             )
         self.assertIn("Malformed audit log data", m.output[0])
+
+    @activate_push_notification_service()
+    @responses.activate
+    def test_realm_billing_state_after_send_analytics(self) -> None:
+        self.add_mock_response()
+
+        realm = get_realm("zulip")
+        # The server has not reported yet, so nothing has answered for its
+        # realms.
+        self.assertFalse(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.has_discount_configured)
+
+        # The service has no record of the realms until the server reports them.
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        realm.refresh_from_db()
+        # Nothing bills this realm yet, so it can configure the pricing before
+        # it upgrades, and has no negotiated discount to conflict with.
+        self.assertTrue(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.has_discount_configured)
+
+        remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+        remote_realm.plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
+        remote_realm.save(update_fields=["plan_type"])
+        customer = Customer.objects.create(remote_realm=remote_realm, monthly_discounted_price=350)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            billing_cycle_anchor=now(),
+            price_per_license=4200,
+        )
+
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        realm.refresh_from_db()
+        self.assertTrue(realm.non_workplace_pricing_eligible)
+        self.assertTrue(realm.has_discount_configured)
+
+        # A fixed-price plan leaves nothing to discount for non-workplace users.
+        plan.price_per_license = None
+        plan.fixed_price = 100000
+        plan.save(update_fields=["price_per_license", "fixed_price"])
+
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        realm.refresh_from_db()
+        self.assertFalse(realm.non_workplace_pricing_eligible)
+        self.assertTrue(realm.has_discount_configured)
+
+    def test_clear_realm_billing_state(self) -> None:
+        Realm.objects.all().update(
+            non_workplace_pricing_eligible=True, has_discount_configured=True
+        )
+
+        clear_realm_billing_state()
+
+        self.assertFalse(Realm.objects.filter(non_workplace_pricing_eligible=True).exists())
+        self.assertFalse(Realm.objects.filter(has_discount_configured=True).exists())
 
     @activate_push_notification_service()
     @responses.activate

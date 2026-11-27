@@ -166,6 +166,37 @@ def do_set_realm_property(
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
 
 
+@transaction.atomic(savepoint=False)
+def do_set_realm_billing_state(
+    realm: Realm,
+    name: Literal["non_workplace_pricing_eligible", "has_discount_configured"],
+    value: bool,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
+    # Variant of do_set_realm_property for the fields that billing decides,
+    # rather than ones the organization configures, so they are not sent to
+    # clients as realm properties.
+    old_value = getattr(realm, name)
+    if old_value == value:
+        return
+
+    setattr(realm, name, value)
+    realm.save(update_fields=[name])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.REALM_PROPERTY_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
+    )
+
+
 @transaction.atomic(durable=True)
 def do_set_push_notifications_enabled_end_timestamp(
     realm: Realm, value: int | None, *, acting_user: UserProfile | None
@@ -976,6 +1007,15 @@ def do_change_realm_plan_type(
             RealmAuditLog.NEW_VALUE: plan_type,
         },
     )
+
+    if settings.BILLING_ENABLED:
+        from zerver.lib.workplace_users import (
+            update_realm_has_discount_configured,
+            update_realm_non_workplace_pricing_eligibility,
+        )
+
+        update_realm_non_workplace_pricing_eligibility(realm, acting_user=acting_user)
+        update_realm_has_discount_configured(realm, acting_user=acting_user)
 
     realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:

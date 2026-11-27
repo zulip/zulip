@@ -1624,6 +1624,7 @@ def remote_server_post_analytics(
         RemoteRealmBillingSession,
         RemoteServerBillingSession,
         get_push_status_for_remote_request,
+        get_realm_billing_state_for_remote_request,
     )
 
     # Lock the server, preventing this from racing with other
@@ -1782,6 +1783,7 @@ def remote_server_post_analytics(
     for remote_realm in realm_id_to_remote_realm.values():
         uuid = str(remote_realm.uuid)
         status = get_push_status_for_remote_request(server, remote_realm)
+        billing_state = get_realm_billing_state_for_remote_request(server, remote_realm)
         if remote_realm.is_system_bot_realm:
             # Ignore system bot realms for computing log_data
             pass
@@ -1792,6 +1794,8 @@ def remote_server_post_analytics(
         remote_realm_dict[uuid] = {
             "can_push": status.can_push,
             "expected_end_timestamp": status.expected_end_timestamp,
+            "non_workplace_pricing_eligible": billing_state.non_workplace_pricing_eligible,
+            "has_discount_configured": billing_state.has_discount_configured,
         }
 
     if len(can_push_values) == 1:

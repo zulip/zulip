@@ -1499,7 +1499,14 @@ class BillingSession(ABC):
             },
         )
 
+        self.update_realm_discount_configured_state()
+
         return f"Monthly price for {self.billing_entity_display_name} changed to {customer.monthly_discounted_price} from {old_monthly_discounted_price}. Annual price changed to {customer.annual_discounted_price} from {old_annual_discounted_price}."
+
+    def update_realm_discount_configured_state(self) -> None:
+        # Overridden for realms billed by this server, which store whether
+        # their plan has a negotiated discount.
+        return
 
     def update_customer_minimum_licenses(self, new_minimum_license_count: int) -> str:
         previous_minimum_license_count = None
@@ -4383,6 +4390,12 @@ class RealmBillingSession(BillingSession):
         return self.user.delivery_email
 
     @override
+    def update_realm_discount_configured_state(self) -> None:
+        from zerver.lib.workplace_users import update_realm_has_discount_configured
+
+        update_realm_has_discount_configured(self.realm, acting_user=self.user)
+
+    @override
     def current_counts_for_billed_users(
         self, event_time: datetime | None = None
     ) -> BillingUserCounts:
@@ -6112,6 +6125,77 @@ class PushNotificationsEnabledStatus:
 
 
 MAX_USERS_WITHOUT_PLAN = 10
+
+
+@dataclass
+class RemoteRealmBillingState:
+    non_workplace_pricing_eligible: bool
+    has_discount_configured: bool
+
+
+def remote_realm_has_discount_configured(
+    remote_realm: RemoteRealm, customer: Customer | None
+) -> bool:
+    if remote_realm.plan_type in (
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+        RemoteRealm.PLAN_TYPE_COMMUNITY,
+    ):
+        # Realm is on the free plan, has complimentary access, or is fully
+        # sponsored, so it pays nothing that could be discounted. Its
+        # customer can still carry the prices of a plan that has ended.
+        return False
+
+    # A realm on a paid plan type always has a customer, since the plan on it
+    # is what sets the plan type.
+    assert customer is not None
+
+    return customer.monthly_discounted_price > 0 or customer.annual_discounted_price > 0
+
+
+def remote_realm_eligible_for_non_workplace_pricing(
+    remote_realm: RemoteRealm, remote_server: RemoteZulipServer, customer: Customer | None
+) -> bool:
+    if remote_realm.plan_type in (
+        RemoteRealm.PLAN_TYPE_COMMUNITY,
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+    ):
+        # Sponsored and complimentary access plans are completely free, so it
+        # would be distracting to offer menu options for discounted pricing.
+        return False
+
+    if remote_realm.plan_type == RemoteRealm.PLAN_TYPE_SELF_MANAGED:
+        # The realm has no plan of its own. Pricing for users outside a
+        # realm's workplace_users_group is configured per realm, so a realm
+        # billed under a plan for the whole server cannot use it. One that is
+        # not billed at all can, so that an organization can configure it
+        # before it upgrades.
+        return remote_server.plan_type == RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
+
+    # A realm on a paid plan type always has a customer with a plan of its own,
+    # since the plan is what sets the plan type.
+    assert customer is not None
+    plan = get_current_plan_by_customer(customer)
+    assert plan is not None
+
+    # Discounted pricing for non-workplace users is currently incompatible
+    # with a fixed-price plan.
+    return plan.fixed_price is None
+
+
+def get_realm_billing_state_for_remote_request(
+    remote_server: RemoteZulipServer, remote_realm: RemoteRealm
+) -> RemoteRealmBillingState:
+    # Both of these are decided by the realm's own customer, so look it
+    # up once for the two of them.
+    customer = get_customer_by_remote_realm(remote_realm)
+
+    return RemoteRealmBillingState(
+        non_workplace_pricing_eligible=remote_realm_eligible_for_non_workplace_pricing(
+            remote_realm, remote_server, customer
+        ),
+        has_discount_configured=remote_realm_has_discount_configured(remote_realm, customer),
+    )
 
 
 def get_push_status_for_remote_request(
