@@ -87,7 +87,7 @@ export async function fetch_bot_api_key(
             url: `/json/bots/${bot_id}/api_key`,
             error(xhr) {
                 const error_message = channel.xhr_error_message(
-                    $t_html({defaultMessage: "Failed"}),
+                    $t({defaultMessage: "Failed"}),
                     xhr,
                 );
                 banners.open(
