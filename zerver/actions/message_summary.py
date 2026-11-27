@@ -16,6 +16,7 @@ from zerver.lib.narrow import (
     NarrowParameter,
     clean_narrow_for_message_fetch,
     fetch_messages,
+    read_only_repeatable_read_transaction,
 )
 from zerver.models import UserProfile
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
@@ -96,16 +97,19 @@ def do_summarize_narrow(
     # summaries. Doing so correctly will require careful work around
     # invalidation of caches when messages are edited, moved, or sent.
     narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
-    query_info = fetch_messages(
-        narrow=narrow,
-        user_profile=user_profile,
-        realm=user_profile.realm,
-        is_web_public_query=False,
-        anchor_info=AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID),
-        include_anchor=True,
-        num_before=MAX_MESSAGES_SUMMARIZED,
-        num_after=0,
-    )
+    # A search checks fts_update_log for messages that haven't been
+    # indexed yet, so all of its queries should see the same snapshot.
+    with read_only_repeatable_read_transaction():
+        query_info = fetch_messages(
+            narrow=narrow,
+            user_profile=user_profile,
+            realm=user_profile.realm,
+            is_web_public_query=False,
+            anchor_info=AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID),
+            include_anchor=True,
+            num_before=MAX_MESSAGES_SUMMARIZED,
+            num_after=0,
+        )
 
     if len(query_info.rows) == 0:  # nocoverage
         return None
