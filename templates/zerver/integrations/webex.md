@@ -78,3 +78,4 @@ call provider instead.
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
+- [LiveKit integration](/integrations/livekit)

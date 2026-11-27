@@ -77,6 +77,15 @@ class zulip::common {
       'sha256'  => '800d455bbdd23df0587b72e05e9bb51ce80d0f5816bd1b7070c2c26f4340cfca',
     },
 
+    # https://github.com/livekit/livekit/releases
+    'livekit-server' => {
+      'version' => '1.13.11',
+      'sha256'  => {
+        'amd64'   => '1e9ee90ca301e1842b2887fc77cb122759756a9c8aeb4334ee91de3325ec43fb',
+        'aarch64' => '2af6ce091d6b3c79d1677f8ff1bbb91a8007f40b2325c059b52d38383c0830b6',
+      },
+    },
+
     # https://github.com/tus/tusd/releases
     # Keep in sync with tools/setup/install-tusd
     'tusd' => {
