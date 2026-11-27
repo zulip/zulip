@@ -220,6 +220,47 @@ exactly what data is being used in the test without looking at other
 resources. It also gives us more freedom to edit the development
 environment directory without worrying about tests.
 
+## Zulip as an OAuth2 provider
+
+Zulip can act as an OAuth2 authorization server so third-party apps
+can obtain an access token and call the Zulip API on behalf of a user.
+This uses [django-oauth-toolkit][1] and is experimental: it is not
+supported in production or covered by security support.
+
+To enable it, set `ENABLE_ZULIP_OAUTH` to `True`. That is the default
+in the development environment; production settings default to
+`False`. When enabled, Zulip installs the `oauth2_provider` Django app
+(models and migrations), serves OAuth endpoints under `/o/`, and accepts
+`Authorization: Bearer` tokens on the REST API. When disabled, the app
+is not installed and those code paths are not loaded.
+
+To try the flow in development:
+
+- As an organization administrator, open `/o/applications/` and
+  register an application (authorization code grant only). Each
+  application is owned by the administrator who created it.
+- As the Zulip user who will grant access (any logged-in user, not
+  only an administrator), complete the authorization code flow. PKCE
+  with `S256` is required. Send `code_challenge` and
+  `code_challenge_method=S256` on `GET /o/authorize/`. Then send the
+  matching `code_verifier` with the code, `redirect_uri`, and client
+  credentials on `POST /o/token/`.
+- Call Zulip REST API endpoints with
+  `Authorization: Bearer <access_token>`. Unauthenticated `/api`
+  responses advertise both `Bearer` and `Basic` in
+  `WWW-Authenticate` when this feature is enabled.
+
+No additional secrets are required in `dev-secrets.conf` (or
+`/etc/zulip/zulip-secrets.conf` in production). Access tokens are
+stored in the database and looked up when validating a request.
+
+Tokens currently grant the same API access as the authorizing user's
+API key. Incoming webhook bots cannot use bearer authentication.
+
+As of writing, this only authorizes access to Zulip itself (the API
+and related endpoints such as uploads). It is not a general identity
+provider for other applications.
+
 ## Two factor authentication
 
 Zulip uses [django-two-factor-auth][0] as a beta 2FA integration.
@@ -247,3 +288,4 @@ password.
 Visit <https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete> for more details.
 
 [0]: https://github.com/Bouke/django-two-factor-auth
+[1]: https://github.com/jazzband/django-oauth-toolkit
