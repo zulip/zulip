@@ -36,7 +36,7 @@ link_regex = re.compile(
 
 # Use Chrome User-Agent, since some sites refuse to work on old browsers
 ZULIP_URL_PREVIEW_USER_AGENT = (
-    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
+    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URL})"
 )
 
 # FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!

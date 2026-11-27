@@ -51,7 +51,7 @@ def common_context(user: UserProfile) -> dict[str, Any]:
     return {
         "realm_url": user.realm.url,
         "realm_name": user.realm.name,
-        "root_domain_url": settings.ROOT_DOMAIN_URI,
+        "root_domain_url": settings.ROOT_DOMAIN_URL,
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
@@ -125,7 +125,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
     realm = get_realm_from_request(request)
 
     if realm is None:
-        realm_url = settings.ROOT_DOMAIN_URI
+        realm_url = settings.ROOT_DOMAIN_URL
         realm_name = None
         realm_icon = None
     else:
@@ -150,7 +150,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         skip_footer = True
         non_realm_specific_page = True
 
-    apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
+    apps_page_web = settings.ROOT_DOMAIN_URL + "/accounts/go/"
 
     if settings.DEVELOPMENT:
         secrets_path = "zproject/dev-secrets.conf"
@@ -187,7 +187,7 @@ def zulip_default_context(request: HttpRequest) -> dict[str, Any]:
         "realm_url": realm_url,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
-        "root_domain_url": settings.ROOT_DOMAIN_URI,
+        "root_domain_url": settings.ROOT_DOMAIN_URL,
         "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,
         "open_realm_creation": settings.OPEN_REALM_CREATION,

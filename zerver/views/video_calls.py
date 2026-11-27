@@ -214,7 +214,7 @@ class OAuthVideoCallProvider(ABC):
         return OAuth2Session(
             self.client_id,
             scope=self.authorization_scope,
-            redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, f"/calls/{self.provider_slug}/complete"),
+            redirect_uri=urljoin(settings.ROOT_DOMAIN_URL, f"/calls/{self.provider_slug}/complete"),
             auto_refresh_url=self.auto_refresh_url,
             auto_refresh_kwargs={
                 "client_id": self.client_id,
