@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -565,13 +565,23 @@ def get_emoji_event_url_id(payload: WildValue, type: str) -> tuple[str, str]:
 
     url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
 
+    # Commit emoji awards (and notes on commits) use a SHA in the path, not a
+    # numeric resource id. Example:
+    # https://gitlab.com/org/repo/-/commit/<sha>
+    # https://gitlab.com/org/repo/-/commit/<sha>#note_123
+    # Matching commits first also avoids corrupting SHAs that end in digits.
+    commit_match = re.search(r"/commit/([0-9a-fA-F]{7,40})(?:[#?/]|$)", url)
+    if commit_match:
+        return url, commit_match.group(1).lower()
+
     # Extract the last numeric ID in the URL path before any '#' fragment.
     # Example:
     # https://gitlab.com/abc/def/issues/123 → "123"
     # https://gitlab.com/abc/def/-/merge_requests/456#note_789 → "456"
     clean_url = url.split("#")[0]
     match = re.search(r"/(\d+)(?:/)?$", clean_url)
-    assert match is not None
+    if match is None:
+        raise AnomalousWebhookPayloadError
     return url, match.group(1)
 
 

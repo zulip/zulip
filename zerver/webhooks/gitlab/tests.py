@@ -873,6 +873,65 @@ A trivial change that should probably be ignored.
 
         self.check_webhook("emoji_hook__award__design_note", expected_topic_name, expected_message)
 
+    def test_emoji_award_on_commit(self) -> None:
+        # Commit SHAs ending in a letter previously crashed get_emoji_event_url_id
+        # with AssertionError (#40779).
+        payload = orjson.loads(self.get_body("emoji_hook__award__merge_request"))
+        payload["object_attributes"]["awardable_type"] = "Commit"
+        payload["object_attributes"]["awarded_on_url"] = (
+            "https://gitlab.com/kolanuvarun/sample/-/commit/"
+            "0a156ba5afc84646e6ac9ece810a70b6280c033e"
+        )
+        del payload["merge_request"]
+        expected_topic_name = "sample / commit #0a156ba5afc84646e6ac9ece810a70b6280c033e"
+        expected_message = "Varun Kolanu added the emoji :thumbsup:."
+        self.check_webhook(
+            "emoji_hook__award__merge_request",
+            expected_topic_name,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_emoji_award_on_commit_note(self) -> None:
+        payload = orjson.loads(self.get_body("emoji_hook__revoke__merge_request_note"))
+        payload["object_attributes"]["awardable_type"] = "Note"
+        payload["note"] = {"noteable_type": "Commit"}
+        payload["object_attributes"]["awarded_on_url"] = (
+            "https://gitlab.com/kolanuvarun/sample/-/commit/"
+            "0a156ba5afc84646e6ac9ece810a70b6280c033e#note_123"
+        )
+        del payload["merge_request"]
+        expected_topic_name = "sample / commit #0a156ba5afc84646e6ac9ece810a70b6280c033e"
+        expected_message = (
+            "Varun Kolanu removed the emoji :heart: from "
+            "[a comment](https://gitlab.com/kolanuvarun/sample/-/commit/"
+            "0a156ba5afc84646e6ac9ece810a70b6280c033e#note_123)."
+        )
+        self.check_webhook(
+            "emoji_hook__revoke__merge_request_note",
+            expected_topic_name,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_emoji_award_on_commit_sha_ending_in_digits(self) -> None:
+        # Prefer the full commit SHA over a trailing-digit false match.
+        payload = orjson.loads(self.get_body("emoji_hook__award__merge_request"))
+        payload["object_attributes"]["awardable_type"] = "Commit"
+        payload["object_attributes"]["awarded_on_url"] = (
+            "https://gitlab.com/kolanuvarun/sample/-/commit/"
+            "abcdef0123456789abcdef0123456789abcdef12"
+        )
+        del payload["merge_request"]
+        expected_topic_name = "sample / commit #abcdef0123456789abcdef0123456789abcdef12"
+        expected_message = "Varun Kolanu added the emoji :thumbsup:."
+        self.check_webhook(
+            "emoji_hook__award__merge_request",
+            expected_topic_name,
+            expected_message,
+            custom_payload=payload,
+        )
+
     def test_emoji_revoke_in_merge_request_note_with_custom_topic(self) -> None:
         expected_topic_name = "notifications"
         expected_message = "[[sample](https://gitlab.com/kolanuvarun/sample)] Varun Kolanu removed the emoji :heart: from [a comment](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003)."
