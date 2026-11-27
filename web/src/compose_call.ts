@@ -1,3 +1,4 @@
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 
 export type OAuthCallProvider = "google_meet" | "webex" | "zoom";
@@ -32,6 +33,10 @@ export function get_jitsi_server_url(video_call_id?: string): URL | null {
 }
 
 export function compute_show_video_chat_button(): boolean {
+    if (!settings_data.user_can_create_video_calls()) {
+        return false;
+    }
+
     const available_providers = realm.realm_available_video_chat_providers;
     if (realm.realm_video_chat_provider === available_providers.disabled.id) {
         return false;
@@ -48,6 +53,10 @@ export function compute_show_video_chat_button(): boolean {
 }
 
 export function compute_show_audio_chat_button(): boolean {
+    if (!settings_data.user_can_create_video_calls()) {
+        return false;
+    }
+
     const available_providers = realm.realm_available_video_chat_providers;
     if (
         (realm.realm_video_chat_provider === available_providers.jitsi_meet?.id &&

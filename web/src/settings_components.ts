@@ -284,6 +284,15 @@ export function is_video_chat_provider_jitsi_meet(): boolean {
     return video_chat_provider_id === jitsi_meet_id;
 }
 
+export function is_video_chat_provider_disabled(): boolean {
+    const video_chat_provider_id = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#id_realm_video_chat_provider").val()!,
+        10,
+    );
+    const disabled_id = realm.realm_available_video_chat_providers.disabled.id;
+    return video_chat_provider_id === disabled_id;
+}
+
 function get_jitsi_server_url_setting_value(
     $input_elem: JQuery<HTMLSelectElement>,
     for_api_data = true,
@@ -886,6 +895,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
         case "realm_can_create_private_channel_group":
+        case "realm_can_create_video_calls_group":
         case "realm_can_create_write_only_bots_group":
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
@@ -1143,6 +1153,7 @@ export function populate_data_for_realm_settings_request(
                     "can_create_groups",
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
+                    "can_create_video_calls_group",
                     "can_create_web_public_channel_group",
                     "can_create_write_only_bots_group",
                     "can_manage_all_groups",
@@ -1567,7 +1578,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
     }
 
     if (
-        $subsection_elem.attr("id") === "org-compose-settings" &&
+        $subsection_elem.attr("id") === "org-call-settings" &&
         should_disable_save_button_for_jitsi_server_url_setting()
     ) {
         ui_util.disable_element_and_add_tooltip(
@@ -1673,6 +1684,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_create_groups", null],
     ["realm_can_create_public_channel_group", null],
     ["realm_can_create_private_channel_group", null],
+    ["realm_can_create_video_calls_group", null],
     ["realm_can_create_write_only_bots_group", null],
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],

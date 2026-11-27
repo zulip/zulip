@@ -32,9 +32,9 @@ supported by Zulip are:
 ## Configure your organization's call provider
 
 <FlattenedSteps>
-  <NavigationSteps target="settings/organization-settings" />
+  <NavigationSteps target="settings/organization-permissions" />
 
-  1. Under **Compose settings**, select the desired provider from the
+  1. Under **Call settings**, select the desired provider from the
      **Call provider** dropdown.
 
   <SaveChanges />
@@ -47,11 +47,27 @@ as its default call provider. You can also use a self-hosted
 instance of Jitsi Meet.
 
 <FlattenedSteps>
-  <NavigationSteps target="settings/organization-settings" />
+  <NavigationSteps target="settings/organization-permissions" />
 
-  1. Under **Compose settings**, select **Custom URL** from the
+  1. Under **Call settings**, select **Custom URL** from the
      **Jitsi server URL** dropdown.
   1. Enter the URL of your self-hosted Jitsi Meet server.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Configure who can create voice and video call links
+
+You can configure who can create voice and video call links. This permission
+can be granted to any combination of [roles](/help/user-roles),
+[groups](/help/user-groups), and individual
+[users](/help/introduction-to-users).
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Call settings**, configure **Who can create voice and
+     video call links**.
 
   <SaveChanges />
 </FlattenedSteps>

@@ -426,6 +426,11 @@ class Realm(models.Model):
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup which is allowed to create voice and video call links.
+    can_create_video_calls_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     WILDCARD_MENTION_POLICY_TYPES = [field.value for field in WildcardMentionPolicyEnum]
 
     # Threshold in days for new users to create streams, and potentially take
@@ -849,6 +854,11 @@ class Realm(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
+        ),
+        can_create_video_calls_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
         ),
         can_create_web_public_channel_group=GroupPermissionSetting(
             require_system_group=True,
