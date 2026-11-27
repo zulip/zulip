@@ -13575,13 +13575,29 @@ paths:
                   - $ref: "#/components/schemas/CodedError"
                   - example:
                       {
-                        "msg": "Unable to access channel (private).",
+                        "msg": "Insufficient permission",
                         "result": "error",
                         "code": "BAD_REQUEST",
                       }
                     description: |
                       An example JSON response for when the requesting user does not have
-                      access to a private channel and `"authorization_errors_fatal": true`:
+                      permission to create a new channel:
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "msg": "Insufficient permission",
+                        "result": "error",
+                        "code": "PERMISSION_DENIED",
+                      }
+                    description: |
+                      An example JSON response for when the requesting user does not have
+                      access to a requested channel and `"authorization_errors_fatal": true`:
     delete:
       operationId: unsubscribe
       summary: Unsubscribe from a channel
@@ -26101,8 +26117,24 @@ paths:
                         type: integer
                         description: "The ID of the newly created channel."
                 example: {"result": "success", "msg": "", "id": 50}
+        "403":
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        result: "error",
+                        msg: "Insufficient permission",
+                        code: "PERMISSION_DENIED",
+                      }
+                    description: |
+                      An example JSON error response for when a channel with the submitted
+                      name already exists and the acting user does not have access to it:
         "409":
-          description: Bad request.
+          description: Conflict.
           content:
             application/json:
               schema:
@@ -26116,7 +26148,7 @@ paths:
                       }
                     description: |
                       An example JSON error response for when a channel with the submitted
-                      name already exists.
+                      name already exists and the acting user has metadata access to it:
   /user_groups/create:
     post:
       operationId: create-user-group

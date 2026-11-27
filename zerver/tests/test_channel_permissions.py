@@ -405,7 +405,8 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "Unable to access channel (private_stream).")
+        self.assert_json_error(result, "Insufficient permission", status_code=403)
+        self.assertEqual(result.json()["code"], "PERMISSION_DENIED")
 
     def test_stream_settings_for_subscribing(self) -> None:
         realm = get_realm("zulip")
@@ -416,14 +417,16 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
 
-        def check_user_can_subscribe(user: UserProfile, error_msg: str | None = None) -> None:
+        def check_user_can_subscribe(
+            user: UserProfile, error_msg: str | None = None, *, status_code: int = 400
+        ) -> None:
             result = self.subscribe_via_post(
                 user,
                 [stream.name],
                 allow_fail=error_msg is not None,
             )
             if error_msg:
-                self.assert_json_error(result, error_msg)
+                self.assert_json_error(result, error_msg, status_code=status_code)
                 return
 
             self.assertTrue(
@@ -487,10 +490,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
 
         stream = self.subscribe(self.example_user("iago"), "private_stream", invite_only=True)
 
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(desdemona, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(hamlet, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(othello, "Insufficient permission", status_code=403)
 
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
@@ -499,9 +502,9 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             stream, "can_subscribe_group", owners_group, acting_user=othello
         )
 
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(hamlet, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(othello, "Insufficient permission", status_code=403)
         check_user_can_subscribe(desdemona)
 
         hamletcharacters_group = NamedUserGroup.objects.get(
@@ -510,9 +513,9 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", hamletcharacters_group, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(desdemona, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(othello, "Insufficient permission", status_code=403)
         check_user_can_subscribe(hamlet)
 
         setting_group_member_dict = UserGroupMembersData(
@@ -521,8 +524,8 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_subscribe_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(hamlet, "Insufficient permission", status_code=403)
         check_user_can_subscribe(othello)
         check_user_can_subscribe(desdemona)
 
@@ -533,8 +536,8 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_add_subscribers_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(hamlet, "Insufficient permission", status_code=403)
         check_user_can_subscribe(othello)
         check_user_can_subscribe(desdemona)
 
@@ -546,10 +549,10 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         do_change_stream_group_based_setting(
             stream, "can_administer_channel_group", setting_group_member_dict, acting_user=othello
         )
-        check_user_can_subscribe(shiva, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(hamlet, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(othello, f"Unable to access channel ({stream.name}).")
-        check_user_can_subscribe(desdemona, f"Unable to access channel ({stream.name}).")
+        check_user_can_subscribe(shiva, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(hamlet, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(othello, "Insufficient permission", status_code=403)
+        check_user_can_subscribe(desdemona, "Insufficient permission", status_code=403)
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
@@ -764,6 +767,69 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, 2)
+
+    def test_channel_name_collision_permissions(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = iago.realm
+
+        private_active = self.subscribe(iago, "secret-active", invite_only=True)
+        private_archived = self.subscribe(iago, "secret-archived", invite_only=True)
+        self.subscribe(cordelia, "secret-archived")
+        do_deactivate_stream(private_archived, acting_user=iago)
+
+        public_archived = self.make_stream("public-archived")
+        do_deactivate_stream(public_archived, acting_user=iago)
+
+        # Unauthorized users receive identical 403 PERMISSION_DENIED errors for
+        # active private and archived private channels without leaking details.
+        for channel_name in (private_active.name, private_archived.name):
+            sub_result = self.subscribe_via_post(hamlet, [channel_name], allow_fail=True)
+            self.assert_json_error(sub_result, "Insufficient permission", status_code=403)
+            self.assertEqual(sub_result.json()["code"], "PERMISSION_DENIED")
+
+            create_result = self.create_channel_via_post(hamlet, name=channel_name)
+            self.assert_json_error(create_result, "Insufficient permission", status_code=403)
+            self.assertEqual(create_result.json()["code"], "PERMISSION_DENIED")
+
+        # Users with metadata access (admin, active subscriber, or non-guest on
+        # public archived channel) still receive 409 CHANNEL_ALREADY_EXISTS.
+        for actor, channel_name in (
+            (iago, private_active.name),
+            (iago, private_archived.name),
+            (cordelia, private_archived.name),
+            (hamlet, public_archived.name),
+        ):
+            result = self.create_channel_via_post(actor, name=channel_name)
+            self.assert_json_error(
+                result, f"Channel '{channel_name}' already exists", status_code=409
+            )
+            self.assertEqual(result.json()["code"], "CHANNEL_ALREADY_EXISTS")
+
+        # A former subscriber who unsubscribes from an archived private channel
+        # loses metadata access and gets 403 PERMISSION_DENIED.
+        self.unsubscribe(cordelia, private_archived.name)
+        result = self.create_channel_via_post(cordelia, name=private_archived.name)
+        self.assert_json_error(result, "Insufficient permission", status_code=403)
+        self.assertEqual(result.json()["code"], "PERMISSION_DENIED")
+
+        # Users who cannot create channels get the same 400 creation-permission
+        # error whether the channel name collides with a hidden channel or not.
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_create_public_channel_group", nobody_group, acting_user=iago
+        )
+        for channel_name in (private_active.name, "nonexistent-probe"):
+            sub_result = self.subscribe_via_post(hamlet, [channel_name], allow_fail=True)
+            self.assert_json_error(sub_result, "Insufficient permission", status_code=400)
+            self.assertEqual(sub_result.json()["code"], "BAD_REQUEST")
+
+            create_result = self.create_channel_via_post(hamlet, name=channel_name)
+            self.assert_json_error(create_result, "Insufficient permission", status_code=400)
+            self.assertEqual(create_result.json()["code"], "BAD_REQUEST")
 
 
 class PermissionCheckConfigDict(TypedDict):

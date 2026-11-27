@@ -57,6 +57,7 @@ from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    PermissionDeniedError,
 )
 from zerver.lib.markdown.fenced_code import wrap_in_quote_block
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
@@ -704,8 +705,6 @@ def create_channel(
     realm = user_profile.realm
     request_settings_dict = locals()
 
-    check_stream_name_available(realm, name)
-
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
@@ -734,6 +733,11 @@ def create_channel(
         message_retention_days=parsed_message_retention_days,
     )
 
+    if default_push_notifications and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+
+    check_stream_name_available(realm, name, user_profile)
+
     stream_group_settings_map, anonymous_group_membership = (
         access_requested_group_permissions_for_streams(
             [name],
@@ -742,9 +746,6 @@ def create_channel(
             request_settings_dict,
         )
     )
-
-    if default_push_notifications and not user_profile.is_realm_admin:
-        raise JsonableError(_("Insufficient permission"))
 
     group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
@@ -919,11 +920,14 @@ def add_subscriptions_backend(
     )
 
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
+        check_channel_creation_permissions(
+            user_profile,
+            is_default_stream=is_default_stream,
+            invite_only=invite_only,
+            is_web_public=is_web_public,
+            message_retention_days=stream_dicts[0]["message_retention_days"],
         )
+        raise PermissionDeniedError
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("Insufficient permission"))
 
