@@ -240,6 +240,14 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".settings-sidebar-lock-tooltip",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".toggle-subscription-tooltip",
         trigger: "mouseenter",
         delay: EXTRA_LONG_HOVER_DELAY,
