@@ -1072,6 +1072,7 @@ def do_update_message(
 
     new_stream_current_user_ids: set[int] = set()
     new_stream_active_user_ids: set[int] = set()
+    target_stream_subscriber_ids: set[int] = set()
 
     guest_user_ids: set[int] = set()
 
@@ -1116,18 +1117,18 @@ def do_update_message(
 
             if stream_id == new_stream.id and sub_active:
                 new_stream_current_user_ids.add(user_id)
-                if is_user_active and not user_long_term_idle:
-                    new_stream_active_user_ids.add(user_id)
+                if is_user_active:
+                    target_stream_subscriber_ids.add(user_id)
+                    if not user_long_term_idle:
+                        new_stream_active_user_ids.add(user_id)
 
-    elif stream_being_edited.is_history_public_to_subscribers():
-        # A topic-only move only needs new_stream_active_user_ids.
-        new_stream_active_user_ids = set(
-            get_active_subscriptions_for_stream_id(
-                message_edit_request.target_stream.id, include_deactivated_users=False
-            )
-            .exclude(user_profile__long_term_idle=True)
-            .values_list("user_profile_id", flat=True)
-        )
+    else:
+        for user_id, user_long_term_idle in get_active_subscriptions_for_stream_id(
+            message_edit_request.target_stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", "user_profile__long_term_idle"):
+            target_stream_subscriber_ids.add(user_id)
+            if not user_long_term_idle:
+                new_stream_active_user_ids.add(user_id)
 
     if message_edit_request.is_stream_edited:
         edit_history_event["prev_stream"] = stream_being_edited.id
@@ -1331,21 +1332,20 @@ def do_update_message(
     # messages. A UserMessage row by itself does not grant access, so
     # notifying every UserMessage-row holder would leak the edited
     # content to users who have lost access.
-    #
-    # TODO: We can improve some unnecessary computation that is being
-    # done currently as event_recipient_ids_for_action_on_messages
-    # also computes UserMessage rows and the target stream subscribers.
-    message_access_user_ids = event_recipient_ids_for_action_on_messages(
-        changed_message_ids,
-        is_channel_message=True,
-        channel=message_edit_request.target_stream,
-        exclude_long_term_idle_users=False,
-    )
-    users_to_be_notified = [
-        user_info(um)
-        for um in unmodified_user_messages
-        if um.user_profile_id in message_access_user_ids
-    ]
+    if message_edit_request.target_stream.is_public():
+        unmodified_user_messages = unmodified_user_messages.select_related("user_profile")
+        users_to_be_notified = [
+            user_info(um)
+            for um in unmodified_user_messages
+            if um.user_profile_id in target_stream_subscriber_ids
+            or um.user_profile.role != UserProfile.ROLE_GUEST
+        ]
+    else:
+        users_to_be_notified = [
+            user_info(um)
+            for um in unmodified_user_messages
+            if um.user_profile_id in target_stream_subscriber_ids
+        ]
     if stream_being_edited.is_history_public_to_subscribers():
         subscriber_ids = new_stream_active_user_ids.copy()
 
