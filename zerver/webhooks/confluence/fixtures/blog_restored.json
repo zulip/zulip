@@ -1,0 +1,8 @@
+{
+  "timestamp": 1778071365412,
+  "event": "blog_restored",
+  "userKey": "def456",
+  "blog": {
+    "id": 234567
+  }
+}
