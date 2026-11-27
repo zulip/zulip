@@ -146,14 +146,16 @@ with test_server_running(
     do_reactivate_user(guest_user, acting_user=None)
 
     # Test realm deactivated error
-    do_deactivate_realm(
-        guest_user.realm, acting_user=None, deactivation_reason="owner_request", email_owners=False
-    )
-
+    # The client must be created before deactivating the realm, since
+    # creating a client fetches /server_settings, which returns an
+    # error for a deactivated realm.
     client = Client(
         email=email,
         api_key=api_key,
         site=site,
+    )
+    do_deactivate_realm(
+        guest_user.realm, acting_user=None, deactivation_reason="owner_request", email_owners=False
     )
     test_realm_deactivated(client)
     do_reactivate_realm(guest_user.realm)
