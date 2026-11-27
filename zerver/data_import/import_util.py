@@ -699,7 +699,7 @@ def process_avatars(
 
 # Retry on 429 (rate-limited) and common server errors that are
 # typically transient for file-hosting services like Slack's CDN.
-_data_import_session = OutgoingSession(
+data_import_session = OutgoingSession(
     role="data_import",
     timeout=60,
     max_retries=Retry(
@@ -714,6 +714,9 @@ _data_import_session = OutgoingSession(
         # together.
         backoff_jitter=4,
         status_forcelist=[429, 500, 502, 503, 504],
+        # Once retries run out, return the last response instead of raising
+        # RetryError, so callers can log the service's error message.
+        raise_on_status=False,
     ),
 )
 
@@ -727,7 +730,7 @@ def request_file_stream(
     if "stream" not in kwargs:
         kwargs.update(stream=True)
 
-    response = _data_import_session.get(
+    response = data_import_session.get(
         url,
         params=params,
         headers=headers,

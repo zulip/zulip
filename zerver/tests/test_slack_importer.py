@@ -21,8 +21,8 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests.adapters import HTTPAdapter
-from requests.exceptions import RetryError
 from requests.models import PreparedRequest
+from urllib3.util import Retry
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, create_confirmation_link, get_object_from_key
@@ -4084,7 +4084,7 @@ To Do
         responses.reset()
         for _ in range(7):
             responses.add(responses.GET, request_url, status=429)
-        with self.assertRaises(RetryError):
+        with self.assertLogs(level="INFO"), self.assertRaises(Exception) as e:
             download_and_export_upload_file(
                 output_dir,
                 UploadFileRequest(
@@ -4096,6 +4096,7 @@ To Do
                 ),
             )
         self.assert_length(responses.calls, 7)
+        self.assertEqual("Failed downloading file.", str(e.exception))
 
         # responses doesn't sleep between retries, so check the retry
         # settings that determine the backoff instead.
@@ -4105,6 +4106,31 @@ To Do
         self.assertEqual(adapter.max_retries.backoff_factor, 2)
         self.assertEqual(adapter.max_retries.backoff_jitter, 4)
         self.assertTrue(adapter.max_retries.respect_retry_after_header)
+
+    @responses.activate
+    def test_download_and_export_upload_file_after_retries(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/DEF.png?token=xoxe-AAA-BBB-CCC-DDD"
+        responses.add(responses.GET, request_url, status=503, body="Service Unavailable")
+
+        with (
+            mock.patch.object(Retry, "sleep"),
+            self.assertLogs(level="INFO") as logs,
+            self.assertRaises(Exception) as e,
+        ):
+            download_and_export_upload_file(
+                "",
+                UploadFileRequest(
+                    output_file_path_id="text.txt",
+                    request_url=request_url,
+                    params=None,
+                    headers=None,
+                    kwargs={},
+                ),
+            )
+        # The first request plus 6 retries.
+        self.assert_length(responses.calls, 7)
+        self.assertIn("INFO:root:HTTP error: 503, Response: Service Unavailable", logs.output)
+        self.assertEqual("Failed downloading file.", str(e.exception))
 
     @responses.activate
     def test_slack_get_emojis(self) -> None:
