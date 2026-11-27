@@ -12,7 +12,7 @@ supported by Zulip are:
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
 - [Webex](https://zulip.com/integrations/webex)
-- [Google Meet](https://zulip.com/integrations/category/video-calling)
+- [Google Meet](https://zulip.com/integrations/google-meet)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
