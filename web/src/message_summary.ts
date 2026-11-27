@@ -8,9 +8,13 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as message_fetch from "./message_fetch.ts";
+import * as mouse_drag from "./mouse_drag.ts";
+import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as user_card_popover from "./user_card_popover.ts";
+import * as user_group_popover from "./user_group_popover.ts";
 import * as util from "./util.ts";
 
 export function get_narrow_summary(channel_id: number, topic_name: string): void {
@@ -65,12 +69,34 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
                         const summary_html = render_topic_summary({
                             summary_markdown,
                         });
-                        $("#topic-summary-modal .modal__content")
-                            .removeClass("hide")
-                            .addClass("rendered_markdown");
-                        $("#topic-summary-modal .modal__content").html(summary_html);
-                        rendered_markdown.update_elements(
-                            $("#topic-summary-modal .modal__content"),
+
+                        const $summary_content = $("#topic-summary-modal .modal__content");
+                        $summary_content.removeClass("hide").addClass("rendered_markdown");
+                        $summary_content.html(summary_html);
+                        rendered_markdown.update_elements($summary_content);
+
+                        $summary_content.find(".user-mention").each(function () {
+                            const user_id = rendered_markdown.get_user_id_for_mention_button(this);
+                            if (typeof user_id === "number" && people.is_my_user_id(user_id)) {
+                                $(this).addClass("user-mention-me");
+                            }
+                        });
+
+                        $summary_content.on(
+                            "click",
+                            ".user-mention",
+                            user_card_popover.unsaved_message_user_mention_event_handler,
+                        );
+                        $summary_content.on(
+                            "click",
+                            ".user-group-mention",
+                            function (this: HTMLElement, e) {
+                                e.stopPropagation();
+                                if (mouse_drag.is_drag(e)) {
+                                    return;
+                                }
+                                user_group_popover.toggle_user_group_info_popover(this, undefined);
+                            },
                         );
                     },
                 },
