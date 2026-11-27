@@ -3,6 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as blueslip from "./blueslip.ts";
+import * as browser_idle_detection from "./browser_idle_detection.ts";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
@@ -42,6 +44,10 @@ export type ActivityState = "active" | "idle";
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
 const DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
+// Whether this window has been interacted with recently, which is a
+// weaker claim than the user being at their computer; code that cares
+// whether this window itself is in use wants this variable.
+//
 // When you open Zulip in a new browser window, client_is_active
 // should be true.  When a server-initiated reload happens, however,
 // it should be initialized to false.  We handle this with a check for
@@ -56,6 +62,13 @@ export let client_is_active = document.hasFocus();
 export let new_user_input = true;
 
 export let received_new_messages = false;
+
+let idle_handler_setup_done = false;
+
+// Whether the user is at their computer, per the browser's IdleDetector
+// API, or undefined when we have no such signal. Only the presence
+// status uses this; `client_is_active` answers a different question.
+let user_is_active_on_system: boolean | undefined;
 
 type UserInputHook = () => void;
 const on_new_user_input_hooks: UserInputHook[] = [];
@@ -105,6 +118,13 @@ export function compute_active_status(): ActivityState {
             return "idle";
         }
         return "active";
+    }
+
+    if (user_is_active_on_system !== undefined) {
+        if (user_is_active_on_system) {
+            return "active";
+        }
+        return "idle";
     }
 
     if (client_is_active) {
@@ -182,9 +202,81 @@ export function mark_client_active(): void {
     // exported for testing
     if (!client_is_active) {
         client_is_active = true;
-        send_presence_to_server();
+        if (user_is_active_on_system === undefined) {
+            send_presence_to_server();
+        }
     }
     mark_client_idle_later();
+}
+
+function set_user_active_on_system(is_active: boolean | undefined): void {
+    const previous_status = compute_active_status();
+    user_is_active_on_system = is_active;
+    if (previous_status !== "active" && compute_active_status() === "active") {
+        send_presence_to_server();
+    }
+}
+
+function handle_idle_detection_permission(granted: boolean): void {
+    if (!granted) {
+        browser_idle_detection.stop();
+        set_user_active_on_system(undefined);
+        return;
+    }
+
+    void browser_idle_detection
+        .init({
+            idle_timeout: DEFAULT_IDLE_TIMEOUT_MS,
+            on_idle() {
+                set_user_active_on_system(false);
+            },
+            on_active() {
+                set_user_active_on_system(true);
+            },
+        })
+        // eslint-disable-next-line promise/prefer-await-to-then
+        .then((result) => {
+            if (result === "started") {
+                blueslip.info("Browser IdleDetector started");
+                return;
+            }
+            if (result.name === "AbortError") {
+                return;
+            }
+            set_user_active_on_system(undefined);
+            blueslip.error("Browser IdleDetector failed to start: " + result.message);
+            return;
+        });
+}
+
+export function setup_idle_handler(): void {
+    if (electron_bridge?.get_idle_on_system !== undefined) {
+        return;
+    }
+
+    if (!browser_idle_detection.supported()) {
+        blueslip.log("Browser idle detector not supported");
+        return;
+    }
+
+    if (idle_handler_setup_done) {
+        return;
+    }
+    idle_handler_setup_done = true;
+
+    $(document).one(
+        "keypress click",
+        /* istanbul ignore next */ () => {
+            void browser_idle_detection.request_permission();
+        },
+    );
+
+    void browser_idle_detection.on_permission_change(handle_idle_detection_permission);
+}
+
+export function reset_idle_handler_for_testing(): void {
+    idle_handler_setup_done = false;
+    user_is_active_on_system = undefined;
 }
 
 export function initialize(): void {
@@ -199,4 +291,6 @@ export function initialize(): void {
     if (client_is_active) {
         mark_client_idle_later();
     }
+
+    setup_idle_handler();
 }
