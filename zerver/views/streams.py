@@ -25,7 +25,7 @@ from zerver.actions.default_streams import (
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
     do_send_messages,
-    internal_prep_private_message,
+    internal_prep_private_messages,
     internal_prep_stream_message,
 )
 from zerver.actions.streams import (
@@ -59,7 +59,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.markdown.fenced_code import wrap_in_quote_block
-from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
 from zerver.lib.response import json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
@@ -1014,9 +1014,7 @@ def send_user_unsubscribed_notifications(
         # at once, as sending them can be expensive and spammy.
         return False
 
-    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
-    mention_backend = MentionBackend(acting_user.realm_id)
-    notifications = []
+    direct_messages: list[tuple[UserProfile, str]] = []
     for user_id, channel_names in channels_by_user.items():
         recipient_user = user_by_id[user_id]
         msg = you_were_just_unsubscribed_message(
@@ -1024,17 +1022,14 @@ def send_user_unsubscribed_notifications(
             recipient_user=recipient_user,
             channel_names=channel_names,
         )
-        notifications.append(
-            internal_prep_private_message(
-                sender=sender,
-                recipient_user=recipient_user,
-                content=msg,
-                mention_backend=mention_backend,
-                acting_user=acting_user,
-            )
-        )
+        direct_messages.append((recipient_user, msg))
 
-    do_send_messages(notifications)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    do_send_messages(
+        internal_prep_private_messages(
+            acting_user.realm, sender, direct_messages, acting_user=acting_user
+        )
+    )
     return True
 
 
@@ -1049,11 +1044,11 @@ def send_user_subscribed_and_new_channel_notifications(
 ) -> None:
     """
     If a user is subscribing lots of other users to existing channels,
-    then this function can be pretty expensive in terms of generating
-    lots of queries and sending lots of direct messages. We isolate
-    the code partly to make it easier to test things like
-    excessive query counts by mocking this function so that it
-    doesn't drown out query counts from other code.
+    then this function can be pretty expensive in terms of sending
+    lots of direct messages. We isolate the code partly to make it
+    easier to test things like excessive query counts by mocking this
+    function so that it doesn't drown out query counts from other
+    code.
     """
     notifications = []
     # Inform users if someone else subscribed them to an existing channel.
@@ -1062,8 +1057,7 @@ def send_user_subscribed_and_new_channel_notifications(
 
         newly_created_stream_names = {s.name for s in created_streams}
 
-        realm = user_profile.realm
-        mention_backend = MentionBackend(realm.id)
+        direct_messages: list[tuple[UserProfile, str]] = []
         for id, subscribed_stream_names in new_subscriptions.items():
             if id == str(user_profile.id):
                 # Don't send a notification DM if you subscribed yourself.
@@ -1080,21 +1074,18 @@ def send_user_subscribed_and_new_channel_notifications(
                 continue
 
             recipient_user = id_to_user_profile[id]
-            sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
-
             msg = you_were_just_subscribed_message(
                 acting_user=user_profile,
                 recipient_user=recipient_user,
                 stream_names=notify_stream_names,
             )
+            direct_messages.append((recipient_user, msg))
 
-            notifications.append(
-                internal_prep_private_message(
-                    sender=sender,
-                    recipient_user=recipient_user,
-                    content=msg,
-                    mention_backend=mention_backend,
-                    acting_user=user_profile,
+        if len(direct_messages) > 0:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+            notifications.extend(
+                internal_prep_private_messages(
+                    user_profile.realm, sender, direct_messages, acting_user=user_profile
                 )
             )
 

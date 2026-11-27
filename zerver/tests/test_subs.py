@@ -87,6 +87,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
 from zerver.models.users import (
     active_non_guest_user_ids,
@@ -3370,7 +3371,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=35,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3393,19 +3394,16 @@ class StreamAdminTest(ZulipTestCase):
         """
         If you're a realm admin, you can remove multiple users from a stream.
 
-        TODO: We have too many queries for this situation--each additional
-              user leads to 4 more queries.
-
-              Fortunately, some of the extra work here is in
-              do_mark_stream_messages_as_read, which gets deferred
-              using a queue.
+        The queries that each additional user leads to are for marking
+        their messages in the stream as read, which gets deferred
+        using a queue.
         """
         target_users = [
             self.example_user(name)
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=56,
+            query_count=43,
             cache_count=26,
             target_users=target_users,
             is_realm_admin=True,
@@ -3425,7 +3423,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=38,
+            query_count=39,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3452,7 +3450,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=39,
+            query_count=40,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=False,
@@ -3488,7 +3486,7 @@ class StreamAdminTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         result = self.attempt_unsubscribe_of_principal(
-            query_count=35,
+            query_count=36,
             target_users=[cordelia],
             is_realm_admin=True,
             is_subbed=True,
@@ -3510,7 +3508,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=44,
+            query_count=38,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3981,7 +3979,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(public_stream)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, public_stream)
-        with self.assert_database_query_count(40):
+        with self.assert_database_query_count(34):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -3994,7 +3992,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(private_stream, invite_only=True)
         for user in [iago, cordelia, hamlet]:
             self.subscribe(user, private_stream)
-        with self.assert_database_query_count(34):
+        with self.assert_database_query_count(32):
             self.client_delete(
                 "/json/users/me/subscriptions",
                 {
@@ -5926,7 +5924,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        with self.assert_database_query_count(67):
+        with self.assert_database_query_count(40):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -6108,6 +6106,52 @@ class SubscriptionAPITest(ZulipTestCase):
             )
         data = self.assert_json_success(response)
         self.assertNotIn("new_subscription_messages_sent", data)
+
+    def test_notification_bot_dms_query_count(self) -> None:
+        """
+        Each user subscribed to a channel by someone else gets a
+        Notification Bot DM. This checks how the database queries for
+        those DMs depend on the number of users, and on whether each
+        user already has a DM conversation with Notification Bot.
+        """
+        iago = self.example_user("iago")
+        notification_bot = self.notification_bot(iago.realm)
+        users = [
+            self.example_user(name)
+            for name in ["cordelia", "hamlet", "othello", "prospero", "aaron", "ZOE"]
+        ]
+
+        def has_dm_conversation_with_notification_bot(user: UserProfile) -> bool:
+            return get_direct_message_group([notification_bot.id, user.id]) is not None
+
+        def subscribe_with_dms(
+            channel_name: str, subscribers: list[UserProfile], query_count: int
+        ) -> None:
+            self.make_stream(channel_name)
+            with self.assert_database_query_count(query_count):
+                response = self.subscribe_via_post(
+                    iago,
+                    [channel_name],
+                    dict(principals=orjson.dumps([user.id for user in subscribers]).decode()),
+                )
+            data = self.assert_json_success(response)
+            self.assertEqual(data["new_subscription_messages_sent"], True)
+            for user in subscribers:
+                message = most_recent_message(user)
+                self.assertEqual(message.sender_id, notification_bot.id)
+                self.assertEqual(
+                    message.content,
+                    f"@_**Iago|{iago.id}** subscribed you to #**{channel_name}**.",
+                )
+
+        # The number of queries doesn't depend on the number of users.
+        self.assertFalse(any(has_dm_conversation_with_notification_bot(user) for user in users))
+        subscribe_with_dms("first DMs to 2 users", users[:2], 40)
+        subscribe_with_dms("first DMs to 4 users", users[2:], 40)
+        self.assertTrue(all(has_dm_conversation_with_notification_bot(user) for user in users))
+
+        subscribe_with_dms("DMs to 2 users", users[:2], 34)
+        subscribe_with_dms("DMs to 4 users", users[:4], 34)
 
 
 class InviteOnlyStreamTest(ZulipTestCase):

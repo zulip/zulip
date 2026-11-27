@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from pydantic import Json
 
-from zerver.actions.message_send import do_send_messages, internal_prep_private_message
+from zerver.actions.message_send import do_send_messages, internal_prep_private_messages
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_groups,
@@ -24,7 +24,7 @@ from zerver.actions.user_groups import (
 )
 from zerver.decorator import require_non_guest_user, require_user_group_create_permission
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.types import UserGroupMembersData
@@ -321,9 +321,8 @@ def notify_for_user_group_subscription_changes(
     send_unsubscription_message: bool = False,
 ) -> None:
     realm = acting_user.realm
-    mention_backend = MentionBackend(realm.id)
 
-    notifications = []
+    direct_messages: list[tuple[UserProfile, str]] = []
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
     for recipient_user in recipient_users:
         if recipient_user.id == acting_user.id:
@@ -347,18 +346,14 @@ def notify_for_user_group_subscription_changes(
                     group_name=f"@_*{user_group.name}*",
                 )
 
-        notifications.append(
-            internal_prep_private_message(
-                sender=notification_bot,
-                recipient_user=recipient_user,
-                content=message,
-                mention_backend=mention_backend,
-                acting_user=acting_user,
+        direct_messages.append((recipient_user, message))
+
+    if len(direct_messages) > 0:
+        do_send_messages(
+            internal_prep_private_messages(
+                realm, notification_bot, direct_messages, acting_user=acting_user
             )
         )
-
-    if len(notifications) > 0:
-        do_send_messages(notifications)
 
 
 def add_members_to_group_backend(

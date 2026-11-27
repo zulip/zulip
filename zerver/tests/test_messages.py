@@ -6,11 +6,15 @@ from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
     get_notifiable_if_idle_user_ids,
 )
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserPresence, UserProfile
+from zerver.models import Message, Recipient, Subscription, UserPresence, UserProfile
 from zerver.models.recipients import (
+    DirectMessageGroup,
     bulk_get_direct_message_group_user_ids,
+    bulk_get_or_create_direct_message_groups,
     get_direct_message_group,
+    get_direct_message_group_hash,
     get_direct_message_group_user_ids,
     get_or_create_direct_message_group,
 )
@@ -157,3 +161,85 @@ class TestGetDirectMessageGroup(ZulipTestCase):
         result = get_direct_message_group([hamlet.id, cordelia.id, othello.id])
         assert result is not None
         self.assertEqual(result.group_size, 3)
+
+
+class TestBulkGetOrCreateDirectMessageGroups(ZulipTestCase):
+    def test_bulk_get_or_create_direct_message_groups(self) -> None:
+        """
+        Groups created in bulk should be the same as those created one
+        at a time, and creating more of them shouldn't take more
+        queries.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        do_deactivate_user(prospero, acting_user=None)
+
+        def group_data(
+            direct_message_group: DirectMessageGroup,
+        ) -> tuple[int, set[tuple[int, bool]]]:
+            recipient = direct_message_group.recipient
+            assert recipient is not None
+            self.assertEqual(recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+            self.assertEqual(recipient.type_id, direct_message_group.id)
+            return (
+                direct_message_group.group_size,
+                set(
+                    Subscription.objects.filter(recipient=recipient).values_list(
+                        "user_profile_id", "is_user_active"
+                    )
+                ),
+            )
+
+        with self.assert_database_query_count(0):
+            self.assertEqual(bulk_get_or_create_direct_message_groups([]), {})
+
+        existing_group = get_or_create_direct_message_group([hamlet.id, cordelia.id])
+        id_lists = [
+            [hamlet.id, cordelia.id],
+            [hamlet.id, othello.id],
+            [othello.id, hamlet.id],
+            [hamlet.id, cordelia.id, prospero.id],
+            [hamlet.id],
+        ]
+        with self.assert_database_query_count(7):
+            direct_message_groups = bulk_get_or_create_direct_message_groups(id_lists)
+
+        self.assertEqual(
+            set(direct_message_groups), {get_direct_message_group_hash(ids) for ids in id_lists}
+        )
+        self.assert_length(direct_message_groups, 4)
+        self.assertEqual(
+            direct_message_groups[get_direct_message_group_hash([hamlet.id, cordelia.id])].id,
+            existing_group.id,
+        )
+        expected_data = {
+            (hamlet.id, cordelia.id): (2, {(hamlet.id, True), (cordelia.id, True)}),
+            (hamlet.id, othello.id): (2, {(hamlet.id, True), (othello.id, True)}),
+            (hamlet.id, cordelia.id, prospero.id): (
+                3,
+                {(hamlet.id, True), (cordelia.id, True), (prospero.id, False)},
+            ),
+            (hamlet.id,): (1, {(hamlet.id, True)}),
+        }
+        for ids, data in expected_data.items():
+            direct_message_group = get_direct_message_group(list(ids))
+            assert direct_message_group is not None
+            self.assertEqual(group_data(direct_message_group), data)
+            self.assertEqual(
+                direct_message_groups[get_direct_message_group_hash(list(ids))].id,
+                direct_message_group.id,
+            )
+
+        # A group created on its own gets the same data.
+        self.assertEqual(
+            group_data(get_or_create_direct_message_group([cordelia.id, othello.id])),
+            (2, {(cordelia.id, True), (othello.id, True)}),
+        )
+
+        # Creating a single group takes as many queries as creating three.
+        with self.assert_database_query_count(7):
+            bulk_get_or_create_direct_message_groups([[cordelia.id]])
+        with self.assert_database_query_count(1):
+            bulk_get_or_create_direct_message_groups(id_lists)

@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from collections.abc import Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
@@ -128,6 +128,7 @@ from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import (
     DirectMessageGroup,
+    bulk_get_or_create_direct_message_groups,
     get_direct_message_group_hash,
     get_direct_message_group_user_ids,
 )
@@ -282,6 +283,63 @@ class SentMessageResult:
     automatic_new_visibility_policy: int | None = None
 
 
+@dataclass(frozen=True)
+class PrefetchedDirectMessageData:
+    """Data fetched with bulk queries for a batch of direct messages
+    being prepared together."""
+
+    # By get_direct_message_group_hash of their users.
+    direct_message_groups: Mapping[str, DirectMessageGroup]
+    # The get_active_user_rows rows by user ID, with None for users
+    # who aren't active.
+    active_user_rows: Mapping[int, ActiveUserDict | None]
+
+
+def get_active_user_rows(user_ids: Collection[int]) -> list[ActiveUserDict]:
+    query: QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict] = (
+        # We use 'cast' because django-stubs says:
+        # Currently, the mypy plugin can recognize that specific names were passed to `QuerySet.annotate`
+        # and include them in the type, but does not record the types of these attributes.
+        #
+        # The knowledge of the specific annotated fields is not yet used in creating more specific types
+        # for `QuerySet`'s `values` method, however knowledge that the model was annotated _is_ used to
+        # create a broader type result type for `values`, and to allow `filter`ing on any field.
+        #
+        # ref: https://github.com/typeddjango/django-stubs/blob/de8e0b4dd6588129f0e02f601a71486f42799533/README.md?plain=1#L263
+        cast(
+            "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
+            UserProfile.objects.filter(is_active=True)
+            .annotate(
+                # Uses index "zerver_device_user_push_token_id_idx"
+                # and "zerver_pushdevicetoken_user_id_015e5dc1".
+                has_push_device_registered=Exists(
+                    Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
+                )
+                | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
+            )
+            .values(
+                "id",
+                "enable_online_push_notifications",
+                "enable_offline_email_notifications",
+                "enable_offline_push_notifications",
+                "is_bot",
+                "bot_type",
+                "long_term_idle",
+                "has_push_device_registered",
+            ),
+        )
+    )
+
+    # query_for_ids is fast highly optimized for large queries, and we
+    # need this codepath to be fast (it's part of sending messages)
+    query = query_for_ids(
+        query=query,
+        user_ids=sorted(user_ids),
+        field="id",
+    )
+    return list(query)
+
+
 def get_recipient_info(
     *,
     realm_id: int,
@@ -292,6 +350,7 @@ def get_recipient_info(
     possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
     dm_involved_user_ids: set[int] | None = None,
+    prefetched_active_user_rows: Mapping[int, ActiveUserDict | None] | None = None,
 ) -> RecipientInfoResult:
     stream_push_user_ids: set[int] = set()
     stream_email_user_ids: set[int] = set()
@@ -491,49 +550,16 @@ def get_recipient_info(
     # for our data structures not related to bots
     user_ids = message_to_user_id_set | possibly_mentioned_user_ids
 
-    if user_ids:
-        query: QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict] = (
-            # We use 'cast' because django-stubs says:
-            # Currently, the mypy plugin can recognize that specific names were passed to `QuerySet.annotate`
-            # and include them in the type, but does not record the types of these attributes.
-            #
-            # The knowledge of the specific annotated fields is not yet used in creating more specific types
-            # for `QuerySet`'s `values` method, however knowledge that the model was annotated _is_ used to
-            # create a broader type result type for `values`, and to allow `filter`ing on any field.
-            #
-            # ref: https://github.com/typeddjango/django-stubs/blob/de8e0b4dd6588129f0e02f601a71486f42799533/README.md?plain=1#L263
-            cast(
-                "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
-                UserProfile.objects.filter(is_active=True)
-                .annotate(
-                    # Uses index "zerver_device_user_push_token_id_idx"
-                    # and "zerver_pushdevicetoken_user_id_015e5dc1".
-                    has_push_device_registered=Exists(
-                        Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
-                    )
-                    | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
-                )
-                .values(
-                    "id",
-                    "enable_online_push_notifications",
-                    "enable_offline_email_notifications",
-                    "enable_offline_push_notifications",
-                    "is_bot",
-                    "bot_type",
-                    "long_term_idle",
-                    "has_push_device_registered",
-                ),
-            )
-        )
-
-        # query_for_ids is fast highly optimized for large queries, and we
-        # need this codepath to be fast (it's part of sending messages)
-        query = query_for_ids(
-            query=query,
-            user_ids=sorted(user_ids),
-            field="id",
-        )
-        rows = list(query)
+    # A message can mention users whose rows weren't fetched for its
+    # batch, in which case we query as usual.
+    if prefetched_active_user_rows is not None and user_ids <= prefetched_active_user_rows.keys():
+        rows = [
+            active_user_row
+            for user_id in sorted(user_ids)
+            if (active_user_row := prefetched_active_user_rows[user_id]) is not None
+        ]
+    elif user_ids:
+        rows = get_active_user_rows(user_ids)
     else:
         # TODO: We should always have at least one user_id as a recipient
         #       of any message we send.  Right now the exception to this
@@ -712,6 +738,7 @@ def build_message_send_dict(
     user_group_membership_details: UserGroupMembershipDetails | None = None,
     sender_is_subscribed: bool | None = None,
     dm_involved_user_ids: set[int] | None = None,
+    prefetched_active_user_rows: Mapping[int, ActiveUserDict | None] | None = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -746,6 +773,7 @@ def build_message_send_dict(
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
         dm_involved_user_ids=dm_involved_user_ids,
+        prefetched_active_user_rows=prefetched_active_user_rows,
     )
 
     # Render our message_dicts.
@@ -1921,10 +1949,14 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
+
+    prefetched_direct_message_data has data already fetched for a
+    batch of direct messages that this message is part of.
     """
     stream = None
     user_group_membership_details: UserGroupMembershipDetails | None = None
@@ -2018,7 +2050,15 @@ def check_message(
 
         try:
             recipient = recipient_for_user_profiles(
-                recipient_users, forwarder_user_profile, sender, forged=forged
+                recipient_users,
+                forwarder_user_profile,
+                sender,
+                forged=forged,
+                prefetched_direct_message_groups=(
+                    prefetched_direct_message_data.direct_message_groups
+                    if prefetched_direct_message_data is not None
+                    else None
+                ),
             )
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
@@ -2084,6 +2124,11 @@ def check_message(
         user_group_membership_details=user_group_membership_details,
         sender_is_subscribed=sender_is_subscribed,
         dm_involved_user_ids=dm_involved_user_ids,
+        prefetched_active_user_rows=(
+            prefetched_direct_message_data.active_user_rows
+            if prefetched_direct_message_data is not None
+            else None
+        ),
     )
 
     if (
@@ -2123,6 +2168,7 @@ def _internal_prep_message(
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest | None:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -2156,6 +2202,7 @@ def _internal_prep_message(
             forged_timestamp=forged_timestamp,
             archived_channel_notice=archived_channel_notice,
             acting_user=acting_user,
+            prefetched_direct_message_data=prefetched_direct_message_data,
         )
     except JsonableError as e:
         logging.exception(
@@ -2231,6 +2278,7 @@ def internal_prep_private_message(
     mention_backend: MentionBackend | None = None,
     disable_external_notifications: bool = False,
     acting_user: UserProfile | None = None,
+    prefetched_direct_message_data: PrefetchedDirectMessageData | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -2249,7 +2297,59 @@ def internal_prep_private_message(
         mention_backend=mention_backend,
         disable_external_notifications=disable_external_notifications,
         acting_user=acting_user,
+        prefetched_direct_message_data=prefetched_direct_message_data,
     )
+
+
+def internal_prep_private_messages(
+    realm: Realm,
+    sender: UserProfile,
+    recipient_users_and_contents: Sequence[tuple[UserProfile, str]],
+    *,
+    acting_user: UserProfile | None = None,
+) -> list[SendMessageRequest | None]:
+    """
+    Prepares direct messages from one sender to several users in the
+    given realm, such as Notification Bot's messages to the users
+    affected by an action. The sender must be allowed to send direct
+    messages to each of them.
+    See _internal_prep_message for details of how this works.
+    """
+    mention_backend = MentionBackend(realm.id)
+
+    # Messages about a user's action usually mention that user, so we
+    # fetch their row along with those of the messages' users.
+    user_ids = {sender.id} | {
+        recipient_user.id for recipient_user, content in recipient_users_and_contents
+    }
+    if acting_user is not None:
+        user_ids.add(acting_user.id)
+    active_user_rows = {row["id"]: row for row in get_active_user_rows(user_ids)}
+
+    prefetched_direct_message_data = PrefetchedDirectMessageData(
+        # Deactivated users can't receive these messages, so we don't
+        # create DM groups for them. Mirror dummy users are the
+        # exception; their groups are created one at a time.
+        direct_message_groups=bulk_get_or_create_direct_message_groups(
+            [
+                list({sender.id, recipient_user.id})
+                for recipient_user, content in recipient_users_and_contents
+                if recipient_user.is_active
+            ]
+        ),
+        active_user_rows={user_id: active_user_rows.get(user_id) for user_id in user_ids},
+    )
+    return [
+        internal_prep_private_message(
+            sender,
+            recipient_user,
+            content,
+            mention_backend=mention_backend,
+            acting_user=acting_user,
+            prefetched_direct_message_data=prefetched_direct_message_data,
+        )
+        for recipient_user, content in recipient_users_and_contents
+    ]
 
 
 def internal_send_private_message(
