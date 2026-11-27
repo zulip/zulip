@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
                     (7, "External account"),
                     (5, "Link"),
                     (2, "Paragraph"),
+                    (9, "Phone number"),
                     (8, "Pronouns"),
                     (1, "Short text"),
                     (6, "Users"),
