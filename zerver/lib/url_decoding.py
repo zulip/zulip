@@ -306,3 +306,6 @@ class Filter:
 
     def terms(self) -> list[NarrowTerm]:
         return self._terms
+
+    def terms_with_operator(self, operator: str) -> list[NarrowTerm]:
+        return [term for term in self.terms() if term.operator == operator and not term.negated]

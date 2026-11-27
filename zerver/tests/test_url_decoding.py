@@ -91,3 +91,47 @@ class NarrowTermFilterTest(ZulipTestCase):
         )
         for term in narrow_filter.terms():
             self.assertTrue(Filter.is_valid_canonical_term(term))
+
+    def test_terms_with_operator(self) -> None:
+        fixture_terms = [
+            NarrowTerm(negated=False, operator="channel", operand=13),
+            NarrowTerm(negated=False, operator="channel", operand=2),
+            NarrowTerm(negated=True, operator="channel", operand=88),
+            NarrowTerm(negated=False, operator="topic", operand="testing"),
+            NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            NarrowTerm(negated=True, operator="dm", operand=[90]),
+            NarrowTerm(negated=False, operator="near", operand=1),
+            NarrowTerm(negated=False, operator="near", operand=2),
+            NarrowTerm(negated=False, operator="with", operand="3"),
+        ]
+        narrow_filter = Filter(fixture_terms)
+
+        self.assertEqual(
+            narrow_filter.terms_with_operator("channel"),
+            [
+                NarrowTerm(negated=False, operator="channel", operand=13),
+                NarrowTerm(negated=False, operator="channel", operand=2),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.terms_with_operator("topic"),
+            [
+                NarrowTerm(negated=False, operator="topic", operand="testing"),
+                NarrowTerm(negated=False, operator="topic", operand="testing2"),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.terms_with_operator("near"),
+            [
+                NarrowTerm(negated=False, operator="near", operand=1),
+                NarrowTerm(negated=False, operator="near", operand=2),
+            ],
+        )
+        self.assertEqual(
+            narrow_filter.terms_with_operator("with"),
+            [
+                NarrowTerm(negated=False, operator="with", operand="3"),
+            ],
+        )
+        self.assertEqual(narrow_filter.terms_with_operator("dm"), [])
+        self.assertEqual(narrow_filter.terms_with_operator("stream"), [])
