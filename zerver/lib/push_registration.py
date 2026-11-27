@@ -156,10 +156,12 @@ def handle_register_push_device_to_bouncer(
     except (
         PushNotificationBouncerRetryLaterError,
         PushNotificationBouncerServerError,
-    ) as e:  # nocoverage
-        # Network error or 5xx error response from bouncer server.
-        # Keep retrying to register until `RequestExpiredError` is raised.
-        raise PushNotificationBouncerRetryLaterError(e.msg)
+    ):  # nocoverage
+        # Network error, rate limiting, or 5xx error response from
+        # bouncer server.  Keep retrying to register until
+        # `RequestExpiredError` is raised; we re-raise the original
+        # exception so the worker can wait out a rate limit first.
+        raise
     except (
         # Need to resubmit realm info - `manage.py register_server`
         MissingRemoteRealmError,

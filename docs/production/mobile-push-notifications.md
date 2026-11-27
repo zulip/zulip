@@ -373,6 +373,10 @@ this API every time it sends a push notification, which is fairly
 frequent, but we believe it to be unlikely that a self-hosted
 installation will hit this limit.
 
+If your server does hit this limit, it logs a `Received 429 from push
+notification bouncer` warning, waits for the limit to reset, and then
+retries sending the notification, up to three times.
+
 This limit is primarily intended to protect the service against DoS
 attacks (intentional or otherwise). If you hit this limit or you
 anticipate that your server will require sending more push

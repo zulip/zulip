@@ -28,6 +28,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.lib import redis_utils
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.remote_server import (
     PUSH_NOTIFICATIONS_RECENTLY_WORKING_REDIS_KEY,
     AnalyticsRequest,
@@ -40,6 +41,7 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
+from zerver.lib.response import json_response_from_error
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.types import AnalyticsDataUploadLevel
@@ -156,6 +158,49 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(True)
+
+        # Being rate-limited by the bouncer shows our credentials work, so
+        # it doesn't disable push notifications, even though they haven't
+        # been recently observed working.
+        rate_limited_response = json_response_from_error(RateLimitedError(secs_to_freedom=30))
+        with responses.RequestsMock() as resp, self.assertLogs("", level="WARNING") as mock_warning:
+            resp.add(
+                responses.GET,
+                ANALYTICS_STATUS_URL,
+                body=rate_limited_response.content,
+                status=rate_limited_response.status_code,
+            )
+            Realm.objects.all().update(push_notifications_enabled=True)
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                mock_warning.output, ["WARNING:root:Received 429 from push notification bouncer"]
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
+            self.assertPushNotificationsAre(True)
+
+        with responses.RequestsMock() as resp, self.assertLogs("", level="WARNING") as mock_warning:
+            resp.add(
+                responses.GET,
+                ANALYTICS_STATUS_URL,
+                json={
+                    "last_realm_count_id": 0,
+                    "last_installation_count_id": 0,
+                    "last_realmauditlog_id": 0,
+                },
+            )
+            resp.add(
+                responses.POST,
+                ANALYTICS_URL,
+                body=rate_limited_response.content,
+                status=rate_limited_response.status_code,
+            )
+            Realm.objects.all().update(push_notifications_enabled=True)
+            send_server_data_to_push_bouncer()
+            self.assertEqual(
+                mock_warning.output, ["WARNING:root:Received 429 from push notification bouncer"]
+            )
+            self.assertTrue(resp.assert_call_count(ANALYTICS_URL, 1))
             self.assertPushNotificationsAre(True)
 
         with (

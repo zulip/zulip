@@ -1,5 +1,6 @@
 import logging
 import secrets
+import time
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import urljoin
@@ -54,6 +55,14 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 
 class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError):
     http_status_code = 502
+
+
+class PushNotificationBouncerRateLimitedError(PushNotificationBouncerRetryLaterError):
+    http_status_code = 502
+
+    def __init__(self, msg: str, secs_to_freedom: float | None) -> None:
+        super().__init__(msg)
+        self.secs_to_freedom = secs_to_freedom
 
 
 class RealmCountDataForAnalytics(BaseModel):
@@ -139,6 +148,21 @@ class UserDataForRemoteBilling(BaseModel):
     full_name: str
 
 
+def get_bouncer_retry_after(res: requests.Response) -> float | None:
+    # The bouncer's RateLimitedError response includes the number of
+    # seconds until the limit resets as "retry-after" in its JSON body.
+    try:
+        result_dict = orjson.loads(res.content)
+    except orjson.JSONDecodeError:
+        return None
+    if not isinstance(result_dict, dict):
+        return None
+    retry_after = result_dict.get("retry-after")
+    if not isinstance(retry_after, int | float) or retry_after < 0:
+        return None
+    return float(retry_after)
+
+
 def send_to_push_bouncer(
     method: str,
     endpoint: str,
@@ -155,6 +179,10 @@ def send_to_push_bouncer(
 
     * 500 errors from the push bouncer or other unexpected responses;
       we don't try to parse the response, but do make clear the cause.
+
+    * 429 errors from the push bouncer, when this server has exceeded
+      its rate limit.  We raise an exception that tells callers how
+      long to wait before retrying.
 
     * 400 errors from the push bouncer.  Here there are 2 categories:
       Our server failed to connect to the push bouncer (should throw)
@@ -205,6 +233,15 @@ def send_to_push_bouncer(
         error_msg = f"Received {res.status_code} from push notification bouncer"
         logging.warning(error_msg)
         raise PushNotificationBouncerServerError(error_msg)
+    elif res.status_code == 429:
+        # The bouncer only rate-limits a server after validating its
+        # credentials, so this is a temporary condition; callers can
+        # retry, ideally after the time the bouncer asked us to wait.
+        error_msg = f"Received {res.status_code} from push notification bouncer"
+        logging.warning(error_msg)
+        raise PushNotificationBouncerRateLimitedError(
+            error_msg, secs_to_freedom=get_bouncer_retry_after(res)
+        )
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
         result_dict = orjson.loads(res.content)
@@ -261,6 +298,20 @@ def send_to_push_bouncer(
     return orjson.loads(res.content)
 
 
+# Remote servers are rate-limited over a 60-second window (see
+# "api_by_remote_server" in DEFAULT_RATE_LIMITING_RULES), so the bouncer
+# never legitimately asks us to wait longer than this.
+MAX_BOUNCER_RATE_LIMIT_WAIT_SECONDS = 60
+
+
+def maybe_wait_for_bouncer_rate_limit_reset(e: PushNotificationBouncerRetryLaterError) -> None:
+    """Called by queue workers before retrying a request that failed with
+    this error, so that a rate-limited retry doesn't immediately hit the
+    same limit again."""
+    if isinstance(e, PushNotificationBouncerRateLimitedError) and e.secs_to_freedom is not None:
+        time.sleep(min(e.secs_to_freedom, MAX_BOUNCER_RATE_LIMIT_WAIT_SECONDS))
+
+
 def send_json_to_push_bouncer(
     method: str, endpoint: str, post_data: Mapping[str, object]
 ) -> dict[str, object]:
@@ -301,6 +352,11 @@ def maybe_mark_pushes_disabled(
     if isinstance(e, PushNotificationBouncerServerError):
         # We don't fall through and deactivate the flag, since this is
         # not under the control of the caller.
+        return
+
+    if isinstance(e, PushNotificationBouncerRateLimitedError):
+        # Being rate-limited means the bouncer accepted our credentials,
+        # so push notifications aren't broken; we just need to slow down.
         return
 
     if isinstance(e, JsonableError):

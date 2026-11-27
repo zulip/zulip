@@ -29,7 +29,7 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_upd
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.push_notifications import (
     APNS_MAX_RETRIES,
     DeviceToken,
@@ -51,9 +51,11 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
+    PushNotificationBouncerRateLimitedError,
     PushNotificationBouncerRetryLaterError,
     PushNotificationBouncerServerError,
     get_realms_info_for_push_bouncer,
+    maybe_wait_for_bouncer_rate_limit_reset,
     prepare_for_registration_transfer_challenge,
     send_to_push_bouncer,
 )
@@ -1269,6 +1271,20 @@ class PushBouncerNotificationTest(BouncerTestCase):
             tokens = list(RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server))
             self.assert_length(tokens, 2)
 
+        # If the bouncer rate-limits us, the worker waits before retrying.
+        with (
+            mock.patch(
+                "zerver.worker.deferred_work.clear_push_device_tokens",
+                side_effect=PushNotificationBouncerRateLimitedError("test", secs_to_freedom=5),
+            ),
+            mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep,
+            mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry,
+        ):
+            with self.captureOnCommitCallbacks(execute=True):
+                do_regenerate_api_key(user, user)
+            mock_sleep.assert_called_once_with(5)
+            mock_retry.assert_called_once()
+
         # Now we successfully remove them:
         time_sent += timedelta(minutes=1)
         with (
@@ -2267,6 +2283,53 @@ class TestSendToPushBouncer(ZulipTestCase):
             with self.assertRaises(PushNotificationBouncerServerError):
                 send_to_push_bouncer("POST", "register", {"data": "true"})
             self.assertEqual(m.output, ["WARNING:root:Received 500 from push notification bouncer"])
+
+    @responses.activate
+    def test_429_error(self) -> None:
+        error_response = json_response_from_error(RateLimitedError(secs_to_freedom=12.5))
+        self.add_mock_response(body=error_response.content, status=error_response.status_code)
+        with self.assertLogs(level="WARNING") as m:
+            with self.assertRaises(PushNotificationBouncerRateLimitedError) as exc:
+                send_to_push_bouncer("POST", "register", {"data": "true"})
+            self.assertEqual(m.output, ["WARNING:root:Received 429 from push notification bouncer"])
+        self.assertEqual(exc.exception.secs_to_freedom, 12.5)
+
+    @responses.activate
+    def test_429_error_without_usable_retry_after(self) -> None:
+        error_response = json_response_from_error(RateLimitedError())
+        for body in [error_response.content, b"Too many requests", b"[]"]:
+            responses.reset()
+            self.add_mock_response(body=body, status=429)
+            with self.assertLogs(level="WARNING") as m:
+                with self.assertRaises(PushNotificationBouncerRateLimitedError) as exc:
+                    send_to_push_bouncer("POST", "register", {"data": "true"})
+                self.assertEqual(
+                    m.output, ["WARNING:root:Received 429 from push notification bouncer"]
+                )
+            self.assertIsNone(exc.exception.secs_to_freedom)
+
+    def test_maybe_wait_for_bouncer_rate_limit_reset(self) -> None:
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            maybe_wait_for_bouncer_rate_limit_reset(
+                PushNotificationBouncerRateLimitedError("test", secs_to_freedom=12.5)
+            )
+            mock_sleep.assert_called_once_with(12.5)
+
+        # The wait is capped at the bouncer's 60-second rate limit window.
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            maybe_wait_for_bouncer_rate_limit_reset(
+                PushNotificationBouncerRateLimitedError("test", secs_to_freedom=90)
+            )
+            mock_sleep.assert_called_once_with(60)
+
+        # Without a known reset time, or for other temporary failures,
+        # callers retry right away, as they always have.
+        with mock.patch("zerver.lib.remote_server.time.sleep") as mock_sleep:
+            maybe_wait_for_bouncer_rate_limit_reset(
+                PushNotificationBouncerRateLimitedError("test", secs_to_freedom=None)
+            )
+            maybe_wait_for_bouncer_rate_limit_reset(PushNotificationBouncerRetryLaterError("test"))
+            mock_sleep.assert_not_called()
 
     @responses.activate
     def test_400_error(self) -> None:
