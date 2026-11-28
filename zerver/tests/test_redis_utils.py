@@ -75,3 +75,13 @@ class RedisUtilsTest(ZulipTestCase):
     def test_get_data_key_format_validation(self) -> None:
         with self.assertRaises(ZulipRedisKeyOfWrongFormatError):
             get_dict_from_redis(self.redis_client, self.key_format, "nonmatching_format_1111")
+
+    def test_redis_db_setting(self) -> None:
+        with self.settings(REDIS_DB=1):
+            other_db_client = get_redis_client()
+        data = {"a": 1}
+        key = put_dict_in_redis(
+            other_db_client, self.key_format, data, expiration_seconds=self.expiration_seconds
+        )
+        self.assertEqual(get_dict_from_redis(other_db_client, self.key_format, key), data)
+        self.assertIsNone(get_dict_from_redis(self.redis_client, self.key_format, key))

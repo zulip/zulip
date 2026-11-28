@@ -724,6 +724,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # REDIS_HOST = "127.0.0.1"
 ## For a different Redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
+## To use a Redis database number other than 0, for example when sharing
+## a Redis server with other applications, set REDIS_DB here.
+# REDIS_DB = 0
 ## If you set redis_password in zulip-secrets.conf, Zulip will use that password
 ## to connect to the Redis server.
 

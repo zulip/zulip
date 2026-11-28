@@ -30,7 +30,7 @@ def get_redis_client() -> "redis.StrictRedis[bytes]":
         host=settings.REDIS_HOST,
         port=settings.REDIS_PORT,
         password=settings.REDIS_PASSWORD,
-        db=0,
+        db=settings.REDIS_DB,
         decode_responses=False,
     )
 
