@@ -23,6 +23,7 @@ import type {ColorSchemeValues} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as starred_messages from "./starred_messages.ts";
 import {current_user, realm, realm_billing} from "./state_data.ts";
+import type {NarrowCanonicalTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
@@ -80,6 +81,8 @@ type TopicPopoverContext = {
     can_summarize_topics: boolean;
     show_ai_features: boolean;
     has_topic_links: boolean;
+    files_url: string;
+    links_url: string;
 };
 
 type VisibilityChangePopoverContext = {
@@ -364,6 +367,18 @@ export function get_topic_popover_content_context({
     const has_topic_links =
         message_store.topic_links_from_narrow(stream_id, topic_name).length > 0 ||
         message_store.topic_links_to_narrow(stream_id, topic_name).length > 0;
+    const topic_terms: NarrowCanonicalTerm[] = [
+        {operator: "channel", operand: sub.stream_id.toString()},
+        {operator: "topic", operand: topic_name},
+    ];
+    const files_url = hash_util.search_terms_to_hash([
+        ...topic_terms,
+        {operator: "has", operand: "attachment"},
+    ]);
+    const links_url = hash_util.search_terms_to_hash([
+        ...topic_terms,
+        {operator: "has", operand: "link"},
+    ]);
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -387,6 +402,8 @@ export function get_topic_popover_content_context({
         can_summarize_topics: settings_data.user_can_summarize_topics(),
         show_ai_features: !user_settings.hide_ai_features,
         has_topic_links,
+        files_url,
+        links_url,
     };
 }
 

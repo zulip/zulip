@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -20,9 +21,11 @@ const message_parser = mock_esm("../src/message_parser", {
 
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
+const sub_store = zrequire("sub_store");
 const user_groups = zrequire("user_groups");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
 
 const noop = function () {};
@@ -66,13 +69,17 @@ mock_esm("../src/ui_util", {
 });
 mock_esm("../src/hash_util", {
     by_conversation_and_time_url: () => "conversation_and_time_url",
+    search_terms_to_hash: (terms) =>
+        "#narrow/" + terms.map((term) => `${term.operator}/${term.operand}`).join("/"),
 });
 mock_esm("../src/stream_data", {
     is_subscribed: () => true,
     is_stream_archived_by_id: () => false,
     get_sub_by_id: () => noop,
+    user_can_move_messages_out_of_channel: () => true,
     user_can_move_messages_within_channel: () => true,
     is_empty_topic_only_channel: () => false,
+    can_resolve_topics: () => true,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {
@@ -108,6 +115,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
+initialize_user_settings({user_settings: {}});
 
 // Define test users
 const mike = make_user({
@@ -605,4 +613,26 @@ run_test("get_scroll_to_date_suggestions - clicked slot is replaced not dropped"
     const filtered_dates = filtered.map((date) => date.iso_date_string.slice(0, 10));
     assert.equal(filtered.length, baseline.length);
     assert.ok(!filtered_dates.includes(clicked_date));
+});
+
+test("topic_popover_files_and_links_urls", () => {
+    const sub = make_stream({stream_id: 42, name: "design"});
+    sub_store.clear();
+    sub_store.add_hydrated_sub(sub.stream_id, sub);
+
+    const context = popover_menus_data.get_topic_popover_content_context({
+        stream_id: 42,
+        topic_name: "mockups",
+        url: "https://zulip.example.com/#narrow/channel/42-design/topic/mockups",
+    });
+    assert.equal(context.files_url, "#narrow/channel/42/topic/mockups/has/attachment");
+    assert.equal(context.links_url, "#narrow/channel/42/topic/mockups/has/link");
+
+    const empty_topic_context = popover_menus_data.get_topic_popover_content_context({
+        stream_id: 42,
+        topic_name: "",
+        url: "https://zulip.example.com/#narrow/channel/42-design/topic/",
+    });
+    assert.equal(empty_topic_context.files_url, "#narrow/channel/42/topic//has/attachment");
+    assert.equal(empty_topic_context.links_url, "#narrow/channel/42/topic//has/link");
 });
