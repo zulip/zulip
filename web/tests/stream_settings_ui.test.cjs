@@ -4,7 +4,9 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
@@ -12,6 +14,44 @@ const denmark_stream_id = 101;
 
 const scroll_util = mock_esm("../src/scroll_util", {
     get_content_element: ($element) => $element,
+});
+
+const narrow_title = mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
+});
+
+mock_esm("../src/compose_state", {
+    stream_id() {},
+});
+
+mock_esm("../src/message_live_update", {
+    update_stream_name() {},
+});
+
+mock_esm("../src/message_view_header", {
+    maybe_rerender_title_area_for_stream() {},
+});
+
+const narrow_state = mock_esm("../src/narrow_state", {
+    filter() {},
+    stream_id() {},
+});
+
+mock_esm("../src/stream_edit", {
+    empty_right_panel() {
+        $(".stream-row.active").removeClass("active");
+        $("#subscription_overlay .right").removeClass("show");
+        stream_settings_components.show_subs_pane.nothing_selected();
+    },
+    setup_subscriptions_tab_hash() {},
+    update_stream_name() {},
+});
+
+mock_esm("../src/stream_list", {
+    build_stream_list() {},
+    maybe_hide_topic_bracket() {},
+    redraw_stream_privacy() {},
+    rename_stream() {},
 });
 
 mock_esm("../src/hash_util", {
@@ -41,6 +81,7 @@ mock_esm("../src/resize", {
 set_global("page_params", {});
 
 const {set_current_user, set_realm} = zrequire("state_data");
+const {Filter} = zrequire("filter");
 const stream_data = zrequire("stream_data");
 const stream_settings_components = zrequire("stream_settings_components");
 const stream_settings_ui = zrequire("stream_settings_ui");
@@ -379,4 +420,38 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
+});
+
+run_test("update_stream_name_refreshes_browser_title", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", () => {});
+    const stream = make_stream({
+        name: "Denmark",
+        stream_id: 500,
+    });
+    stream_data.add_sub_for_tests(stream);
+    const stream_row_selector = `.stream-row[data-stream-id='${CSS.escape(
+        stream.stream_id.toString(),
+    )}']`;
+    const $stream_row = $.set_results(stream_row_selector, [$.create("stream-row")[0]]);
+    $stream_row.set_find_results(".stream-name", $.create("stream-name"));
+
+    const filter = new Filter([
+        {operator: "stream", operand: stream.stream_id.toString()},
+        {operator: "topic", operand: "current topic"},
+    ]);
+    override(narrow_state, "stream_id", () => stream.stream_id);
+    override(narrow_state, "filter", () => filter);
+
+    const title_stub = make_stub();
+    override(narrow_title, "update_narrow_title", title_stub.f);
+
+    stream_settings_ui.update_stream_name(stream, "Updated Denmark");
+
+    assert.equal(stream.name, "Updated Denmark");
+    assert.equal(title_stub.num_calls, 1);
+    assert.equal(title_stub.get_args("filter"), filter);
+
+    override(narrow_state, "stream_id", () => stream.stream_id + 1);
+    stream_settings_ui.update_stream_name(stream, "Renamed again");
+    assert.equal(title_stub.num_calls, 1);
 });

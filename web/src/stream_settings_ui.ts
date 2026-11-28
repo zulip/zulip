@@ -27,6 +27,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as overlays from "./overlays.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as resize from "./resize.ts";
@@ -156,6 +157,11 @@ export function update_stream_name(sub: StreamSubscription, new_name: string): v
 
     // Update navbar if needed
     message_view_header.maybe_rerender_title_area_for_stream(sub.stream_id);
+
+    // Update window title if needed
+    if (narrow_state.stream_id() === stream_id) {
+        narrow_title.update_narrow_title(narrow_state.filter());
+    }
 
     // Update the create stream error if needed
     if (overlays.streams_open()) {
