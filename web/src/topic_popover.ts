@@ -366,6 +366,14 @@ function register_popover_menu(target: string, placement: tippy.Placement): void
 
                 $popper.on(
                     "click",
+                    ".sidebar-popover-view-topic-files, .sidebar-popover-view-topic-links",
+                    () => {
+                        popover_menus.hide_current_popover_if_visible(instance);
+                    },
+                );
+
+                $popper.on(
+                    "click",
                     ".sidebar-popover-copy-link-to-topic",
                     function (this: HTMLElement) {
                         void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));

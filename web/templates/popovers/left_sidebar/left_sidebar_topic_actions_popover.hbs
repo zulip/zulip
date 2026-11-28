@@ -80,6 +80,18 @@
             </li>
             {{/if}}
             <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" href="{{ files_url }}" class="sidebar-popover-view-topic-files navigate-link-on-enter popover-menu-link" tabindex="0">
+                    <i class="popover-menu-icon zulip-icon zulip-icon-attachment" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "View messages with files" }}</span>
+                </a>
+            </li>
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" href="{{ links_url }}" class="sidebar-popover-view-topic-links navigate-link-on-enter popover-menu-link" tabindex="0">
+                    <i class="popover-menu-icon zulip-icon zulip-icon-link" aria-hidden="true"></i>
+                    <span class="popover-menu-label">{{t "View messages with links" }}</span>
+                </a>
+            </li>
+            <li role="none" class="link-item popover-menu-list-item">
                 <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
                     <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
                     <span class="popover-menu-label">{{t "Copy link to topic" }}</span>
