@@ -487,11 +487,11 @@ DEMO_ORG_DEADLINE_DAYS: int | None = None
 # The values will also be added to ALLOWED_HOSTS.
 REALM_HOSTS: dict[str, str] = {}
 
-# Map used to rewrite the URIs for certain realms during mobile
+# Map used to rewrite the URLs for certain realms during mobile
 # authentication.  This, combined with adding the relevant hosts to
 # ALLOWED_HOSTS, can be used for environments where security policies
 # mean that a different hostname must be used for mobile access.
-REALM_MOBILE_REMAP_URIS: dict[str, str] = {}
+REALM_MOBILE_REMAP_URLS: dict[str, str] = {}
 
 # Whether the server is using the PGroonga full-text search
 # backend.  Plan is to turn this on for everyone after further
