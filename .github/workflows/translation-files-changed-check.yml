@@ -1,0 +1,30 @@
+name: Translation file changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    paths:
+      - "locale/**"
+
+permissions: {}
+
+jobs:
+  warn-about-direct-edits:
+    runs-on: ubuntu-slim
+
+    steps:
+      - name: Show translation guidance
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ "$PR_TITLE" == i18n* ]]; then
+            exit 0
+          fi
+
+          echo "::warning title=Direct translation file edits::Use Weblate to update Zulip translations. See the job summary for guidance."
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          Please don't edit translation files directly, as this does not work with Zulip's translation system.
+
+          - To add or improve a translation, [join Zulip's volunteer translators on Weblate](https://zulip.readthedocs.io/en/latest/translating/translating.html).
+          - If you're a developer, see the [internationalization guide](https://zulip.readthedocs.io/en/latest/translating/internationalization.html).
+          EOF
