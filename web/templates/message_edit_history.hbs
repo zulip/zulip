@@ -55,6 +55,16 @@
                             {{ rendered_markdown body_to_render}}
                         </div>
                         {{/if}}
+                        {{#if revision_deleted_by}}
+                        <div class="message_content rendered_markdown message_edit_history_content">
+                            <p class="message_edit_history_deleted_notice">
+                                {{#tr}}
+                                    Content deleted from this message's history by <z-user></z-user>.
+                                    {{#*inline "z-user"}}<span class="user-mention silent" data-user-id="{{revision_deleted_by.user_id}}">{{revision_deleted_by.full_name}}</span>{{/inline}}
+                                {{/tr}}
+                            </p>
+                        </div>
+                        {{/if}}
                         {{/if}}
                     </div>
                 </div>
